@@ -54,7 +54,7 @@ CONFIG_CMDLINE="console=ttyAMA0 root=/dev/ram0"
 修改为静态编译：
 `make menuconfig`。到界面里选择静态编译，保存退出。
 开始编译：
-`make -j12 ARCH=arm CROSS_COMPILE= arm-linux-gnueabihf-`
+`make -j12 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-`
 编译成功后，会在busybox目录下得到一个名字为busybox的静态执行文件。
 我在编译过程中遇到了头文件的问题。可以把Ubuntu系统的`/usr/include/`下的文件拷贝到busybox的include文件里来解决。
 
