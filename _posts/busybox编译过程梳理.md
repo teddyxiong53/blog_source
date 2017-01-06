@@ -79,8 +79,14 @@ busybox里的命令分为3种，我们以ls、pwd、arp这3条命令为例进行
 ```
 `APPLET`由busybox创建子进程。
 `APPLET_NOEXEC`由fork来创建子进程。
-`APPLET_NOFORK`不创建子进程，只调用相关函数，相当于buildin的。效率最高。
-在linux里fork和exec是很耗时的。
+`APPLET_NOFORK`不创建子进程，只调用相关函数，相当于buildin的。效率最高。在linux里fork和exec是很耗时的。
+buildin的命令在busybox/shell/ash.c里。
+```
+static const struct builtincmd builtintab[] = {
+	{ BUILTIN_SPEC_REG      "."       , dotcmd     },
+	{ BUILTIN_SPEC_REG      ":"       , truecmd    },
+```
+
 下面分析一下入口的main函数。
 ```
 {
