@@ -8,5 +8,19 @@ yaffs和jffs2是比较常用而且传统的文件系统。yaffs适合在nand fla
 一般喜欢采用这种混合方式来做，在nor flash里放代码镜像，因为nor flash擦写速度慢，但是读取速度快。
 在nand flash里放数据，因为容量大，擦写快。
 
+# 1. cramfs
+cramfs是Linus写的一个简单的文件系统，压缩率较好，可以直接从Flash上运行，不用load到内存里。
+这个文件系统的只读的。
+
+# 2. squashfs
+squashfs是对cramfs的改进。是一种较新的文件系统，还有待进一步的验证。
+生成文件系统时，可以指定`-comp lzo`来用特定的方式来压缩。
+默认是用gzip来压缩。squashfs默认就是压缩的。
+
+
+# 3. ubifs
+这个文件系统的生成时，需要指定的参数较多。
+
+
 
 
