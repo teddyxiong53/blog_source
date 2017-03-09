@@ -26,7 +26,7 @@ teddy@teddy-ubuntu:~/work/qemu/linux-rpi-4.4.y$ make versatile_defconfig ARCH=ar
 这样就配置好了。
 接下来编译。用12个线程来编译，几分钟就编译好了。
 ```
-make -j12 ARCH=arm CROSS_COMPILE= arm-linux-gnueabihf-
+make -j12 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
 ```
 编译好之后，在`arch/arm/boot`目录下生产kernel镜像文件。
 ```

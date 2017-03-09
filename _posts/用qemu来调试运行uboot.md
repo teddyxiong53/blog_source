@@ -42,5 +42,8 @@ Hit any key to stop autoboot:  0
 从打印来看，这块板子的配置是128M的内存，256M的Nand Flash。
 
 
+对应的board目录在u-boot-master/board/armltd/vexpress目录下。
+属于armv7的核。
+
 
 
