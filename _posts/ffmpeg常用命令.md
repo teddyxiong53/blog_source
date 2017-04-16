@@ -58,5 +58,6 @@ h264有两种封装，一种是annexb模式，传统模式，有startcode，SPS�
 `./ffmpeg.exe -f image2 -i pic/test%d.jpg test3.mp4`。
 得到的test3.mp4大小是1.5M左右。
 
-
+6. 从mp4文件中提取yuv数据。
+`./ffmpeg.exe -i test.mp4 -vcodec rawvideo -an test.yuv`
 

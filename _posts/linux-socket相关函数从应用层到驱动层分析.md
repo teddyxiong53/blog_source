@@ -38,7 +38,7 @@ SYSCALL_DEFINE5(select, int, n, fd_set __user *, inp, fd_set __user *, outp,
 ```
 ---
 sparse简介
-sparse诞生于2004年，是Linus的作品（好吧，真有你的，大神）。
+sparse诞生于2004年，是Linus的作品。
 这个是一个静态的代码检查工具，用来减少内核代码里的隐患。
 在之前，用的是swat，这个工具不是免费的，所以Linus就自己写了sparse。这个套路是不是很眼熟，git的诞生也是因为之前用的版本管理工具要收费了，Linus自己写的。大神从来都是自己动手，丰衣足食啊。
 在内核代码的Document/sparse.txt里，有一些介绍。
