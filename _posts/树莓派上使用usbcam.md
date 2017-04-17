@@ -36,11 +36,22 @@ locate_motion_mode on
 videodevice /dev/video0
 width 640
 height 480
-target_dir /home/pi/motion #拍摄照片存放的位置
+target_dir /var/lib/motion #拍摄照片存放的位置
 threshold 3000 #3000像素，越小，则越容易触发动作。
 ```
-
+为了避免权限问题，最好`sudo motion`来运行。
+运行之后，用手在摄像头前面晃动一下，可以看到出现如下的打印：
+```
+[1] [NTC] [EVT] event_new_video FPS 16
+[1] [NTC] [EVT] event_newfile: File of type 8 saved to: /var/lib/motion/01-20170416150801.avi
+[1] [NTC] [ALL] motion_detected: Motion detected - starting event 1
+[1] [NTC] [EVT] event_newfile: File of type 1 saved to: /var/lib/motion/01-20170416150801-13.jpg
+[1] [NTC] [EVT] event_newfile: File of type 1 saved to: /var/lib/motion/01-20170416150802-03.jpg
+[1] [NTC] [EVT] event_newfile: File of type 1 saved to: /var/lib/motion/01-20170416150802-07.jpg
+[1] [NTC] [ALL] motion_loop: End of event 1
+```
 # 4. mjpg-streamer
+
 
 
 
