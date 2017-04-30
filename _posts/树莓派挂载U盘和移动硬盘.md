@@ -11,7 +11,7 @@ tags:
 pi@raspberrypi:~ $ ls /dev/sd
 sda   sda1  
 ```
-我们进行挂载：
+我们进行挂载，U盘是懒人听书的，所以命名为lrts：
 ```
 sudo mkdir /mnt/lrts
 sudo mount -o uid=pi,gid=pi /dev/sda1 /mnt/lrts
