@@ -23,6 +23,8 @@ docker的官网是：https://www.docker.com
 
 github地址是：[https://github.com/docker/docker](https://github.com/docker/docker)
 
+为了方便运行，可以把身份切换为root用户再进行下面的操作。
+
 
 
 # 1. docker的安装
@@ -72,7 +74,6 @@ Share images, automate workflows, and more with a free Docker ID:
 
 For more examples and ideas, visit:
  https://docs.docker.com/engine/userguide/
-
 ```
 
 上面的处理过程是：先在本地找helloworld这个镜像，如果没有找到，那么就到网上去下载，得益于我们配置的加速器，这个过程很快就完成了。我试了在没有配置加速器的时候，下载失败了。
