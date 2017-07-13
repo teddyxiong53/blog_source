@@ -575,6 +575,10 @@ adb shell ping www.sina.com
 
 是正常的。
 
+# 5. 系统的一些基本情况
+
+1、内置了toybox，是类似busybox的一个东西。
+
 
 
 # 5. 用Android studio开发一个helloworld
