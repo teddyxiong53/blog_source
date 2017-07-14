@@ -15,6 +15,26 @@ Android Things的前身是谷歌发布的物联网平台Brillo。大概是为了
 
 在Android Things系统上搭载了Weave，Weave是谷歌推出的一个物联网通信协议。当前可以支持电灯、插头、开关和恒温器。
 
+# 1. Brillo
+
+Brillo是2015年Google IO大会上推出的。谷歌基于这个系统推出过一款路由器。
+
+
+
+# 2. Android Things
+
+2016年12月推出，相对于Brillo，做了如下的改进：
+
+1、Brillo只能用C和C++开发，AndroidThings可以用Java开发。
+
+2、AndroidThings 的SDK 是Android SDK的子集。
+
+3、可以通过Google Cloud石永红Firebase，极大地加快了数据的处理速度。
+
+4、集成了weave协议。
+
+AndroidThings目前还是开发者预览阶段。每6到8周会更新一版。
+
 
 
 

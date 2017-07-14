@@ -579,9 +579,34 @@ adb shell ping www.sina.com
 
 1、内置了toybox，是类似busybox的一个东西。
 
+2、查看SD卡的分区情况。
+
+```
+ 179        0   15273984 mmcblk0
+ 179        1      65536 mmcblk0p1
+ 179        2       1024 mmcblk0p2
+ 179        3       1024 mmcblk0p3
+ 179        4      32768 mmcblk0p4
+ 179        5      32768 mmcblk0p5
+ 179        6     524288 mmcblk0p6
+ 179        7     524288 mmcblk0p7
+ 179        8         64 mmcblk0p8
+ 179        9         64 mmcblk0p9
+ 179       10       1024 mmcblk0p10
+ 179       11      32768 mmcblk0p11
+ 179       12      32768 mmcblk0p12
+ 179       13     262144 mmcblk0p13
+ 179       14     262144 mmcblk0p14
+ 179       15    2683736 mmcblk0p15
+```
 
 
-# 5. 用Android studio开发一个helloworld
+
+# 6. 用Android studio跑simpleio
+
+先把Android Studio配置好。需要Android7.0以上的版本。到github上下载。地址是`https://github.com/androidthings`。然后点击Run就行了。
+
+
 
 
 
