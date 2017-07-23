@@ -34,5 +34,19 @@ git clone -b manyuser https://github.com/shadowsocksr/shadowsocksr.git
 
 试了，好像不行。
 
+我下载了对应的SSR Android客户端，还是效果很不好。也许不能怪这个。
+
+下载windows版本的客户端看看。感觉作者给的下载地址也是在各种捉迷藏，估计也是被逼的。
+
+还是不行。
+
+看来现在这条路走不通了。
+
+
+
+
+
+
+
 
 
