@@ -95,6 +95,20 @@ sudo make install
     Missing dependencies
 ```
 
+不知道是不是因为我的Raspbian是精简版本，而不是带图形界面的完整版导致的。
+
+换一种方式，用apt-get来安装看看：
+
+`sudo apt-get install python-pygame`
+
+这种方式安装就好了。得出一个结论：pip安装不好的，用apt-get可能就可以顺利解决。
+
+运行上面的Python代码，可以抓出图片来。
+
+
+
+
+
 
 
 

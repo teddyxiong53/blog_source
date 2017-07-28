@@ -10,6 +10,8 @@ tags:
 已经有SD卡，并且安装好了Raspbian系统。树莓派在SD卡上运行正常。
 方便起见，直接用串口线连接到板子。
 
+参考的文章是：https://www.raspberrypi.org/documentation/hardware/raspberrypi/bootmodes/msd.md
+
 # 1. 打开板子的从usb启动的配置
 ```
 sudo apt-get update
@@ -49,8 +51,22 @@ root@raspberrypi:~# mkfs.ext4 /dev/sda2
 我们先看一种简单场景，就是把当前SD卡上的系统复制到U盘上的这种情况，我们这么做的目的就是替代SD卡。
 
 
+
+
+
+
 # 4. 直接把系统安装到U盘
 这一步是在前面的基础上来做。
+
+把U盘插入到电脑，直接用win32diskimager把镜像写入到U盘，但是要改一些boot分区的内容。不过好在boot分区是fat32的，在windows下可以识别，我们可以在windows下完成这一步。
+
+1、修改config.txt的内容。把之前可以用的那个U盘的内容拷贝过来。
+
+2、修改cmdline.txt，还是把之前可以用的那个U盘的内容拷贝过来。
+
+3、把start.elf和bootcode.bin文件都替换掉。
+
+
 
 # 5. 通过uboot来中转
 从`https://github.com/gonzoua/u-boot-pi/archive/rpi.tar.gz`这个地址下载针对树莓派修改过的uboot代码。
