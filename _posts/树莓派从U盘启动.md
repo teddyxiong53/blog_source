@@ -62,7 +62,21 @@ root@raspberrypi:~# mkfs.ext4 /dev/sda2
 
 1、修改config.txt的内容。把之前可以用的那个U盘的内容拷贝过来。
 
+就是在最后增加这几行：
+
+```
+program_usb_boot_mode=1
+enable_uart=1
+start_x=0
+```
+
 2、修改cmdline.txt，还是把之前可以用的那个U盘的内容拷贝过来。
+
+就是改成这样：
+
+```
+dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 root=/dev/sda2 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait
+```
 
 3、把start.elf和bootcode.bin文件都替换掉。
 

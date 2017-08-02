@@ -54,8 +54,71 @@ threshold 3000 #3000像素，越小，则越容易触发动作。
 ```
 # 4. mjpg-streamer
 
+下载源代码。这个apt-get不能安装。
+
+wget [https://github.com/jacksonliam/mjpg-streamer/archive/master.zip](http://jump.bdimg.com/safecheck/index?url=rN3wPs8te/r8jfr8YhogjfUWFoMgIRa83KqgVswSQ4m6yARY42pFziTvIV8F84f9vo06e7Xl/yNiZHzCcc+SIMMx4hMSb96TpkIhMmUefkbWV5cxFm4v0m/r+n902d2/VI4TdC/RH4eTCg6iKEVBFj/uLDrhMxCTAx0kOLvwKWRhKHoBncgUV/MCbnyhLl0YU9LI4CCJvs4wPGbuJnYGNA==)
+
+编译：
+
+```
+make USE_LIBV4L2=true clean 
+make USE_LIBV4L2=true  all 
+sudo make install
+```
+
+我的cmake没有安装，装上。
+
+运行：
+
+```
+./mjpg_streamer -i "input_uvc.so" -o "output_http.so -p 8090 -w /www" 
+```
+
+用搜狗浏览器打开地址：`http://192.168.0.101:8090/?action=stream`。就可以看到视频了。
+
+用vlc来打开这个地址，也是可以看到的。
 
 
+
+# 5. uvcdynctrl
+
+这个工具是用来查看系统支持的图片的格式。
+
+```
+pi@raspberrypi:~/work/fswebcam$ uvcdynctrl -f
+Listing available frame formats for device video0:
+Pixel format: YUYV (YUYV 4:2:2; MIME type: video/x-raw-yuv)
+  Frame size: 640x480
+    Frame rates: 30, 15
+  Frame size: 352x288
+    Frame rates: 30, 15
+  Frame size: 320x240
+    Frame rates: 30, 15
+  Frame size: 176x144
+    Frame rates: 30, 15
+  Frame size: 160x120
+    Frame rates: 30, 15
+pi@raspberrypi:~/work/fswebcam$ sudo uvcdynctrl -l
+Listing available devices:
+  video0   USB2.0 PC CAMERA
+    Media controller device: /dev/media0
+    Entity 1: USB2.0 PC CAMERA. Type: 65537, Revision: 0, Flags: 1, Group-id: 0, Pads: 1, Links: 0
+      Device node
+      Entity: 1, Pad 0, Flags: 1
+    Entity 2: Processing 2. Type: 131072, Revision: 0, Flags: 0, Group-id: 0, Pads: 2, Links: 1
+      Subdevice:       Entity: 2, Pad 0, Flags: 1
+      Entity: 2, Pad 1, Flags: 2
+      Out link: Source pad { Entity: 2, Index: 1, Flags: 2 } => Sink pad { Entity: 1, Index: 0, Flags: 1 }
+    Entity 3: Camera 1. Type: 131072, Revision: 0, Flags: 0, Group-id: 0, Pads: 1, Links: 1
+      Subdevice:       Entity: 3, Pad 0, Flags: 2
+      Out link: Source pad { Entity: 3, Index: 0, Flags: 2 } => Sink pad { Entity: 2, Index: 0, Flags: 1 }
+```
+
+
+
+# 6 音频相关工具
+
+arecord命令可以做录音。
 
 
 
