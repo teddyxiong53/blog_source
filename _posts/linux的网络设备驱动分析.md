@@ -9,7 +9,7 @@ tags:
 与字符设备和块设备不同，网络设备在/dev目录下没有节点。网络设备不太符合“一切都是文件”的思想。
 
 
-从全局来看，Linux对网络驱动的框架体系设计如下，分为4层。：
+从全局来看，Linux对网络驱动的框架体系设计如下，分为4层。
 ```
 -------------------
 协议接口层。这个就是跟tcpip对接的那一层，提供一个发送一个接收函数给tcpip调用。
@@ -37,18 +37,43 @@ tags:
 net_device实现了对所有网络设备的抽象。达到对上提供统一接口的目的。
 结构体内容较多，定义的代码有300行左右。我们总结重要的如下：
 1. 全局信息类。
-有个name字符数组。
+  有个name字符数组。
 2. 硬件信息类。
-共享内存的起始和结束地址、中断号。
+  共享内存的起始和结束地址、中断号。
 3. 接口信息类。
-就是包头长度，MTU值，设备地址这些。
+  就是包头长度，MTU值，设备地址这些。
 4. 设备操作函数。
 5. 其他。
 
 
 # 3. 以dm9000为例来分析
 
+dm9000的硬件特点：
+
+1、有100个引脚。
+
+2、数据位宽是16位的。
+
+3、只有一根地址线。
+
+4、支持10M/100M模式。
+
+dm9000的寄存器有：从0x00到0xff。
+
+0x00：NCR。控制寄存器。
+
+不一一去看了。
+
+
+
+我们写驱动，驱动文件里写的都是platform_driver。而这个driver里面的函数的参数就是platform_device。
+
+就是这样联系起来的。
+
+
+
 入口函数，非常简单如下：
+
 ```
 static int __init
 dm9000_init(void)
@@ -87,6 +112,57 @@ probe函数原型是：`int (*probe)(struct platform_device *);`。`platform_dri
 
 
 
+probe函数的唯一参数是platform_device。怎样由这个参数得到其他的结构体呢？
+
+1、dm9000_platform_data。这个是在include/linux/dm9000.h这个头文件里。（这个头文件都放到这个层级的目录里了，算是Linux系统的一部分了）
+
+平台设备的相关内容是在arch/arm/mach-s3c2410/mach-bast.c里。
+
+看文件里的信息，这个文件属于某个板子，这块板子是德国的simtec公司的，这家公司是做运动模拟系统的。
 
 
+
+## 3.1 dm9000_probe函数分析
+
+输入：platform_device *pdev
+
+主要要操作的结构体：
+
+net_device。
+
+
+
+1、通过pdev->dev.platform_data得到dm9000_plat_data。
+
+2、用alloc_etherdev函数来得到struct net_device *ndev。
+
+​	这个函数的参数，传递的就是私有数据的大小。
+
+3、把ndev的dev的parent设置为pdev->dev。这样就把net_device和platform_device联系起来了。
+
+4、把struct board_info * bi = netdev_priv(ndev)。来取到私有数据的地址。
+
+​	私有数据里有一个dev指针，一个ndev指针。
+
+5、 初始化delayed_work，这个是用来处理phy状态的，应该就是网线的插拔处理用。
+
+6、ioremap一些资源。
+
+7、dm9000_set_io。这个是设置是32位还是16位的数据宽度。
+
+8、dm9000_reset。写一些寄存器。
+
+9、读取dm9000的id，如果不对，就报错。然后根据id，设置一些配置。
+
+10、调用ether_setup。就是设置net_device参数，例如包长度，类型等。
+
+11、ndev的一些重要成员赋值。netdev_ops。ethtool_ops
+
+12、从eeprom读取mac地址。
+
+13、platform_set_drvdata。把pdev和ndev联系起来。
+
+14、register_netdev。
+
+## 3.2 net_device_ops分析
 
