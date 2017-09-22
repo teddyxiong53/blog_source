@@ -9,6 +9,8 @@ tags:
 
 
 
+mqtt是Message Queues Telemetry Transport的缩写。表示消息队列遥测传输。
+
 mqtt是和http在同一层的应用层协议。http协议的请求回答模式对于物联网应用不太适用。mqtt使用的是发布订阅模式。
 
 http是基于文本的，mqtt是基于二进制的。
