@@ -17,4 +17,5 @@ Type "help", "copyright", "credits" or "license" for more information.
 >>>
 ```
 
+locals是只读的，globals不是。
 
