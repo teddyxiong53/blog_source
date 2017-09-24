@@ -177,7 +177,50 @@ tzset：
 
 # 4. threading
 
-
+参考我的对应文章。
 
 # 5. subprocess
+
+参考我的对应文章。
+
+
+
+# 6. logging
+
+```
+import logging
+logging.debug("this is log debug")
+logging.info("this is log info")
+还有warning和error函数，特别是还有critical，这个是比error还严重的错误。
+```
+
+
+
+# 7. random
+
+默认是生成浮点数的。
+
+```
+import random
+random.random() #得到0.5469829944041857这样的一个浮点数
+如果想要指定随机数的范围，怎么做的呢？
+random.uniform(1,10) #这样就得到1到10之间的随机数
+如果我想要整数的随机数，怎么做 ？
+random.randint(1,10) #这个必须要指定范围
+如果我的随机值，是希望指定步进值的，怎么弄？例如指定步进值为5.
+random.randrange(0,100,5)
+#如果我有一个list，我想要从里面随机选取一个，怎么做？
+mylist = [1,5,8]
+random.choice(mylist)
+如果有一个list，我想要把里面的顺序打乱，怎么做？
+mylist = [1, 3, 5, 7]
+random.shuffle(mylist)
+我要从一个list，随机选取几个元素，怎么做？
+random.sample(mylist, 2)
+
+```
+
+
+
+
 
