@@ -18,6 +18,8 @@ tags:
 
 如果下载不下来，可以在51cto上找到。
 
+这篇文章和https://wenku.baidu.com/view/bdbc5cb45901020206409c10.html 这篇文章一起看。
+
 # 1.环境预备
 
 1、在Ubuntu下启动mosquitto。
@@ -180,7 +182,109 @@ publish ack：
 
 
 
+# 6. sub消息分析
 
+到这里，因为我的Ubuntu虚拟机编译安装mosquitto有问题，导致mosquitto_sub和mosquitto_pub工具不能用。我的mosquitto服务器转而在树莓派上运行。
+
+在win7上是eclipse paho上。订阅里，添加主题rpi0和rpi1，rpi0的服务质量设置为0，rpi1的设置为1。
+
+点击订阅按钮。可以看到抓到包了。
+
+sub request的内容：
+
+```
+82 10 00 01 00 04 72 70 69 30 00 00 04 72 70 69 31 01
+```
+
+82：表示sub request。后面的2表示，二进制是0010，qos的是01。
+
+10：表示消息长度是16字节。
+
+00 01：表示message id是0001。
+
+00 04：长度为4个字节。
+
+72 70 69 30：rpi0的ASCII码。
+
+00：表示qos是0 。
+
+00 04：表示4字节。
+
+72 70 69 31 ：rpi1的ASCII码。
+
+01：表示qos是1 。
+
+再看sub ack的包的内容。很简单。
+
+```
+90 04 00 01 00 01
+```
+
+90：表示sub ack消息。
+
+04：表示4个自己。
+
+00 01：message id。
+
+00：表示qos是0。
+
+01：表示qos是1。如果失败，返回是128 。
+
+
+
+# 7. 取消订阅消息unsub分析
+
+我们接着上面的，把rpi0和rpi1都退订。
+
+unsub request
+
+```
+a2 0e 00 02 00 04 72 70 69 30 00 04 72 70 69 31
+```
+
+a2：表示类型是取消订阅。
+
+0e：表示后面的内容总长度是13个字节。
+
+00 02：message id。
+
+00 04 ：表示后面的内容长度是4个字节。
+
+72 70 69 30：rpi0.
+
+00 04 ：表示后面的内容长度是4个字节。
+
+72 70 69 31：rpi1.
+
+
+
+unsub ack内容：
+
+```
+b2 02 00 02 00 00 
+```
+
+b2：表示unsub ack消息。
+
+02：表示后面内容长度是2个字节。
+
+00 02 ：message id。
+
+00 00 ：不知道是什么，多余的。
+
+# 8. qos为2的消息发布过程分析
+
+qos为2的通信过程比其他情况要复杂。总共分为4步：
+
+1、client给server发pub message。
+
+2、server给client回复pub receive。
+
+3、client给server发pub release。
+
+4、server给client回复pub complete。
+
+消息内容本身都很简单。不细看了。
 
 
 
