@@ -163,3 +163,31 @@ action的可选值有：store（默认），store_const，store_true，store_fal
 
 
 
+看一个例子：
+
+```
+#!/usr/bin/python 
+
+import argparse
+
+parser = argparse.ArgumentParser(description="test ArgumentParser desc")
+parser.add_argument("--no-network-check", action="store_true", help="check help info")
+
+args = parser.parse_args()
+
+print args
+
+```
+
+运行效果：
+
+```
+pi@raspberrypi:~/work/test/py-test$ ./test.py 
+Namespace(no_network_check=False)
+pi@raspberrypi:~/work/test/py-test$ ./test.py --no-network-check
+Namespace(no_network_check=True)
+pi@raspberrypi:~/work/test/py-test$ 
+```
+
+可以看到，参数里的`-`被转成了下划线。
+
