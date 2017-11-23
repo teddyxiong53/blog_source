@@ -26,7 +26,12 @@ host www.baidu.com
 icmp
 ```
 
+可以用的连接词有：and 、or、not。
+
+
+
 # 2. 显示的常用过滤规则
+
 1.过滤源ip和目标ip
 ```
 ip.src==192.168.0.10
@@ -71,3 +76,17 @@ eth.addr
 ```
 udp.length == 26
 ```
+
+
+
+# 3.其他操作
+
+1、导出图片、视频、音频文件。
+
+这个一般是在http的包里面。
+
+```
+1、选中对应的包。
+2、在下面的框里面的JPEG File Interchange Format上右键。选择导出字节分组流。然后在弹出的对话框里面，选all file。然后保存为test.jpg。就可以了。
+```
+
