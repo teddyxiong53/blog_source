@@ -1,13 +1,9 @@
 ---
 title: python之logging
-
 date: 2017-07-23 00:13:38
-``tags:
-
+tags:
 	- python
-
 	- logging
-
 ---
 
 logging是线程安全的。

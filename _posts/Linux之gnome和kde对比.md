@@ -1,6 +1,5 @@
 ---
-title: Linux之
-ggnome和kde对比
+title: Linux之gnome和kde对比
 date: 2017-07-29 22:57:36
 tags:
 
