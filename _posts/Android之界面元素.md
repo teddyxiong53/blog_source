@@ -119,7 +119,142 @@ Intent intent = new Intent(MainActivity.this, TextDemoActivity.class);
                 startActivity(intent);
 ```
 
-接下来
+#EditTextDemo加入
+
+接下来我在btn2上，加入进入EditTextDemo的代码。
+
+这样看来，我的Demo的组织不是非常合理，不过，每个Button进入的东西简单一致就好。一个Button相当于一个知识点。当前是14个Button，如果有可能超过14条，我就把最后一个Button表示其他的意思，进去是一个List，然后这个就可以无限扩展。就这么安排。
+
+EditText常用的：
+
+1、hint。就是你框里面的提示文字。
+
+2、selectAllOnFocus。焦点切到上面时，把里面的内容都选中。
+
+3、inputType。常用的有：numberPassword（只接受数字密码）、number（只接受数字输入）、date（只接受日期输入）、phone（只接受电话号码）。
+
+这个界面就用TableLayout来布局。
+
+我们就构造一个注册界面，这种界面最适合TableLayout和EditText了。
+
+开始动手：
+
+1、新建一个新的xml文件：edittext_demo.xml。
+
+界面内容：
+
+```
+用户名：
+密码：
+生日：
+电话：
+邮箱：
+注册按钮（按下后，给一个toast提示“注册成功”）
+```
+
+生成toast的方法：
+
+```
+Toast toast = Toast.makeText(EditTextDemoActivity.this, "注册成功", Toast.LENGTH_LONG);
+                toast.show();
+```
+
+# 按钮演示
+
+到目前，我们只用了最基本的带文字的普通按钮。
+
+1、Switch。比较好看。类似显示中的开关。Toggle的话，是按下后，字符会变化。不好看。不用。
+
+2、单选。RadioButton。重要属性有：checked（设置默认选中的那个为true）、text。男、女是两个Radio。属于同一个RadioGroup。
+
+3、多选。还是有用的。
+
+其实，这个是可以加入到上面的注册界面上的。但是出于简单化的考虑，还是单独放一个界面。
+
+这个界面用哪种Layout呢？这个还是用TableLayout。
 
 
+
+# ImageView
+
+这个就ImageView这一个类。
+
+演示程序，就做一个简单的图片浏览器。可以显示一张图片。
+
+重要的属性：
+
+1、src。指定图片的名字。
+
+具体操作：
+
+1、增加image_demo.xml文件。
+
+2、增加mageDemoActivity.java文件。
+
+其实很简单，但是我的不知道为什么图片一直显示不出来。我先放着。
+
+
+
+# ListView
+
+这个是一个很常用的组件。例如一般文件管理器里，显示所有的文件的时候，就是一个ListView。
+
+主要的属性：
+
+1、entries。就是List条目的内容写什么。可以指定到values目录下的arrays.xml文件里。
+
+指定数组元素内容的方式是最简单的，但是不够灵活。不能对ListView的外观进行改变。
+
+如果想要改变的话，怎么做呢？
+
+就要通过Adapter来做。对ListView调用setAdapter来做。
+
+另外，还有其他Android帮我们做好的一些东西，例如直接继承ListActivity。做法有好几种。
+
+我们现在只做基于数组元素的。
+
+操作步骤：
+
+1、新建list_demo.xml文件。
+
+2、在values目录下新建arrays.xml文件。
+
+内容如下：
+
+```
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+    <string-array name="habits">
+        <item>读书</item>
+        <item>打球</item>
+        <item>旅行</item>
+    </string-array>
+</resources>
+```
+
+4、新建ListDemoActivity.java。
+
+# 进度条
+
+进度条，我就看普通的水平进度条和环形进度条。
+
+ProgressBarDemo设计：
+
+1、设计一个Button，点击开始，然后让两个进度条在2秒内走完。
+
+2、暂时不在弹窗里做，就在普通的Activity里做。
+
+搞定。
+
+# 弹窗
+
+弹窗有基本的确定取消弹窗，还有进度条弹窗。
+
+我就涉及一个Button，一点击，就弹出一个弹窗。
+
+搞定。
+
+
+
+暂时先到这。
 
