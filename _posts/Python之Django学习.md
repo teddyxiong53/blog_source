@@ -26,6 +26,8 @@ django.VERSION
 
 ```
 
+这样安装好的版本是1.7.11的。
+
 # 3. 创建一个Helloworld
 
 安装完Django之后，系统提供了一个工具给我们来用，叫做django-admin。
@@ -34,7 +36,7 @@ django.VERSION
 django-admin startproject HelloWorld
 ```
 
-这条命令的作用就是建立下面这个目录。
+这条命令的作用就是建立下面这个目录。外层的HelloWorld相当于是project，里面默认有一个同名的App，实际上，你还可以在本目录下./manage.py startapp xxx。来另外创建一个App。层次关系是一个project下面有多个App。
 
 ```
 pi@raspberrypi:~/HelloWorld$ tree
@@ -45,7 +47,6 @@ pi@raspberrypi:~/HelloWorld$ tree
 │   ├── urls.py
 │   └── wsgi.py
 └── manage.py
-
 ```
 
 你现在不需要加一行代码，这个已经算是一个可以运行的程序了。
@@ -436,13 +437,185 @@ def deldb(request):
 
 # 6. Django表单
 
-html表单是网站交互的经典方式。
+html表单是网站交互的经典方式。现在我们看看Django是如何进行表单的处理的。
+
+先看get方法的。
+
+新建`HelloWorld/HelloWorld/search.py`文件。内容如下：
+
+```
+from django.http import HttpResponse
+from django.shortcuts import render_to_response
+
+def search_form(request):
+	return render_to_response('search_form.html')
+	
+def search(request):
+	request.encoding = 'utf-8'
+	if 'q' in request.GET:
+		message = 'the content you search is :' + request.GET['q']
+	else:
+		message = "you commit the empty form"
+	return HttpResponse(message)
+	
+```
+
+在templates目录里增加search-form.html文件。内容如下：
+
+```
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>xhl test django</title>
+</head>
+<body>
+	<form action="/search" method="get">
+		<input type="text" name="q">
+		<input type="submit" value="search">
+	</form>
+</body>
+</html>
+```
+
+在urls.py里加上这个：
+
+```
+url(r'^search-form$',search.search_form),
+	url(r'^search$', search.search),
+```
+
+运行测试。ok。
+
+再看post方法的。
+
+1、在templates目录下新建post.html文件。内容如下：
+
+```
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>xhl test django</title>
+</head>
+<body>
+	<form action="/search-post" method="post">
+		{% csrf_token %}
+		<input type="text" name="q">
+		<input type="submit" value="submit">
+	</form>
+	<p>{{ rlt  }}</p>
+</body>
+</html>
+
+```
+
+2、新建search2.py文件。内容如下：
+
+```
+from django.shortcuts import render
+from django.views.decorators import csrf 
+
+def search_post(request):
+	ctx = {} 
+	if request.POST:
+		ctx['rlt'] = request.POST['q']
+	return render(request, "post.html", ctx)
+	
+```
+
+3、urls.py里增加对应内容。
+
+```
+url(r'^search-post$', search2.search_post),
+```
 
 
 
+# 7. Django Admin管理工具
+
+Django提供了基于web的管理工具。
+
+在urls.py里我们可以看到这个代码：
+
+```
+INSTALLED_APPS = (
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+```
+
+django.contrib是一套庞大的功能集，是Django的基本代码的组成部分。
+
+我们把urls.py里的这个打开：
+
+```
+url(r'^admin/', include(admin.site.urls)),
+```
+
+然后我们就可以用`http://127.0.0.1:8000/admin/`来访问了。
+
+会得到一个登陆界面，但是管理员的名字和密码从哪里来呢？
+
+用`python manage.py createsuperuser `来创建。
+
+然后就可以用设置的用户名和密码来登陆了。
 
 
 
+# 8. 部署Django到nginx中
+
+1、安装nginx。`sudo apt-get install nginx`。
+
+2、启动nginx试一下。sudo nginx。如果有错误，解决错误。
+
+3、安装uwsgi。`sudo pip install uwsgi`
+
+4、写一个test.py文件。用来测试uwsgi工作是否支持。文件如下：
+
+```
+def application(env, start_response):
+	start_response("200 OK", [("Content-Type", "text/html")])
+	return "hello"
+```
+
+测试命令：`uwsgi --http :8001 --wsgi-file test.py`。然后在浏览器就可以访问了。
+
+5、进行uwsgi配置。
+
+在/etc目录下，新建一个uwsgi.ini文件。
+
+```
+[uwsgi]
+socket = :80
+master = true
+vhost = true
+no-site = true
+workers = 2
+reload-mercy = 10
+vacuum = true
+max-requests = 1000
+limit-as = 512
+buffer-size = 30000
+pidfile = /var/run/uwsgi.pid
+daemonize = /var/run/uwsgi.log
+```
+
+6、配置nginx。
+
+```
+
+```
+
+7、启动运行。
+
+```
+sudo uwsgi --ini /etc/uwsgi.ini &
+sudo nginx
+```
 
 
 
