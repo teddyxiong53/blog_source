@@ -25,9 +25,13 @@ github地址是：[https://github.com/docker/docker](https://github.com/docker/d
 
 为了方便运行，可以把身份切换为root用户再进行下面的操作。
 
-
+官网的教程在这：https://docs.docker.com/get-started/
 
 # 1. docker的安装
+
+docker到目前有2个版本：社区版本和企业版本。企业版本比社区版本功能要多一些。
+
+
 
 发现一个较好的国内的加速的安装方式。
 

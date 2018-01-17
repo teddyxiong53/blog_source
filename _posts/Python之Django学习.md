@@ -566,58 +566,5 @@ url(r'^admin/', include(admin.site.urls)),
 
 
 
-# 8. 部署Django到nginx中
-
-1、安装nginx。`sudo apt-get install nginx`。
-
-2、启动nginx试一下。sudo nginx。如果有错误，解决错误。
-
-3、安装uwsgi。`sudo pip install uwsgi`
-
-4、写一个test.py文件。用来测试uwsgi工作是否支持。文件如下：
-
-```
-def application(env, start_response):
-	start_response("200 OK", [("Content-Type", "text/html")])
-	return "hello"
-```
-
-测试命令：`uwsgi --http :8001 --wsgi-file test.py`。然后在浏览器就可以访问了。
-
-5、进行uwsgi配置。
-
-在/etc目录下，新建一个uwsgi.ini文件。
-
-```
-[uwsgi]
-socket = :80
-master = true
-vhost = true
-no-site = true
-workers = 2
-reload-mercy = 10
-vacuum = true
-max-requests = 1000
-limit-as = 512
-buffer-size = 30000
-pidfile = /var/run/uwsgi.pid
-daemonize = /var/run/uwsgi.log
-```
-
-6、配置nginx。
-
-```
-
-```
-
-7、启动运行。
-
-```
-sudo uwsgi --ini /etc/uwsgi.ini &
-sudo nginx
-```
-
-
-
 
 

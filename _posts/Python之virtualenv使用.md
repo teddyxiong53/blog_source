@@ -163,3 +163,14 @@ pi@raspberrypi:~$ workon ve2
 
 
 
+## 4.3 其他
+
+mkproject等于在mkvirtualenv + 创建项目。
+
+mkproject能够工作的前提是，在`~/.bashrc`里加上一句：
+
+```
+export PROJECT_HOME=$HOME/ve_workspace
+```
+
+这个目录是随意指定的。
