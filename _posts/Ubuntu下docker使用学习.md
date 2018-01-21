@@ -31,21 +31,49 @@ github地址是：[https://github.com/docker/docker](https://github.com/docker/d
 
 docker到目前有2个版本：社区版本和企业版本。企业版本比社区版本功能要多一些。
 
-
-
-发现一个较好的国内的加速的安装方式。
+docker必须在64位的系统里才能用。我基于Ubuntu16.04来做下面的操作。
 
 ```
-curl -sSL https://get.daocloud.io/docker | sh
+sudo apt-get install docker.io
 ```
 
-这个就是下载了一个脚本然后执行，执行后就是安装启动了docker。
+查看docker的状态：
 
-配置docker加速器。
+```
+sudo service docker status
+```
 
-网址在这里：https://www.daocloud.io/mirror#accelerator-doc
+启动docker：
 
-按照提示操作就是了。
+```
+sudo service docker start
+```
+
+我的docker版本是：
+
+```
+root@teddy-ubuntu:/home/teddy/work# docker version
+Client:
+ Version:      1.13.1
+ API version:  1.26
+ Go version:   go1.6.2
+ Git commit:   092cba3
+ Built:        Thu Nov  2 20:40:23 2017
+ OS/Arch:      linux/amd64
+
+Server:
+ Version:      1.13.1
+ API version:  1.26 (minimum version 1.12)
+ Go version:   go1.6.2
+ Git commit:   092cba3
+ Built:        Thu Nov  2 20:40:23 2017
+ OS/Arch:      linux/amd64
+ Experimental: false
+```
+
+
+
+
 
 # 2. 运行helloworld
 
@@ -185,21 +213,141 @@ root@teddy-ubuntu:/home/teddy#
 
 
 
-# 4. 搜索可用的镜像
+# 4.web应用
 
-用docker search keyword的方式，就可以搜索到你想要的镜像。
+前面运行的容器，都是没有什么实际用途的。
 
-例如：`docker search ubuntu`。
-
-下载一个镜像。
+现在我们尝试用docker来构建一个web应用。
 
 ```
-docker pull ubuntu
+docker pull training/webapp
+```
+
+运行：
+
+```
+root@teddy-ubuntu:~# docker run -d -P training/webapp python app.py
+06a503e747c33056593594f16ecf3516ffc2bcae67594b4acea5f531b1838418
+root@teddy-ubuntu:~# 
+```
+
+-d表示在后台运行。-P表示将容器内部使用的网络端口映射到我们使用的主机上。
+
+查看：
+
+```
+root@teddy-ubuntu:~# docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED              STATUS              PORTS                     NAMES
+06a503e747c3        training/webapp     "python app.py"     About a minute ago   Up About a minute   0.0.0.0:32768->5000/tcp   stoic_shaw
+root@teddy-ubuntu:~# 
+```
+
+我们在浏览器访问这个地址：http://192.168.190.131:32768/
+
+可以看到一个hello world的网页。
+
+查看端口情况：
+
+```
+root@teddy-ubuntu:~# docker port 06a503e747c3
+5000/tcp -> 0.0.0.0:32768
 ```
 
 
 
+# 5. docker镜像管理
 
+1、查看本地有哪些镜像。
+
+```
+root@teddy-ubuntu:~# docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+ubuntu              latest              7b9b13f7b9c0        7 months ago        118 MB
+hello-world         latest              48b5124b2768        12 months ago       1.84 kB
+training/webapp     latest              6fae60ef3446        2 years ago         349 MB
+```
+
+注意TAG这个东西。REPOSITORY可以一样，TAG相当于版本号一样。
+
+例如我们要运行14.04的Ubuntu。则是用这样的命令：
+
+```
+docker run -t -i ubuntu:14.04 /bin/bash
+```
+
+2、获取新的镜像。
+
+```
+docker pull ubuntu:12.04
+```
+
+3、查找镜像。
+
+```
+docker search httpd
+```
+
+
+
+# 6. docker安装nginx
+
+有两种方式。
+
+## 用Dockerfile构建
+
+1、新建一个nginx目录。下面创建www、logs、conf3个目录。
+
+2、在nginx目录下新建Dockerfile。内容如下：
+
+```
+FROM debian:jessie
+
+MAINTAINER NGINX Docker Maintainers "docker-maint@nginx.com"
+
+ENV NGINX_VERSION 1.10.1-1~jessie
+
+RUN apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys 573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62 \
+        && echo "deb http://nginx.org/packages/debian/ jessie nginx" >> /etc/apt/sources.list \
+        && apt-get update \
+        && apt-get install --no-install-recommends --no-install-suggests -y \
+                                                ca-certificates \
+                                                nginx=${NGINX_VERSION} \
+                                                nginx-module-xslt \
+                                                nginx-module-geoip \
+                                                nginx-module-image-filter \
+                                                nginx-module-perl \
+                                                nginx-module-njs \
+                                                gettext-base \
+        && rm -rf /var/lib/apt/lists/*
+
+# forward request and error logs to docker log collector
+RUN ln -sf /dev/stdout /var/log/nginx/access.log \
+        && ln -sf /dev/stderr /var/log/nginx/error.log
+
+EXPOSE 80 443
+
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+3、通过Dockerfile创建镜像。
+
+```
+docker build -t nginx .
+```
+
+## 直接拉取官方的镜像。
+
+```
+docker pull nginx
+```
+
+
+
+接下来运行nginx这个镜像。
+
+
+
+# 7. docker使用php
 
 
 
