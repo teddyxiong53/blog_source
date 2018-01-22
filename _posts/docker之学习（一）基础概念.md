@@ -30,6 +30,8 @@ docker就是不可变基础设施的一种实现。
 
 从docker的logo上的鲸鱼驮着集装箱，可以把docker理解为集装箱。什么都可以往里面装。
 
+docker借鉴了集装箱的概念。
+
 # docker和虚拟机的关系
 
 虚拟机从全虚拟，发展到半虚拟的Xen，docker是比半虚拟更加轻量的一种方式。
@@ -49,4 +51,74 @@ docker利用了Linux的cgroup和namespaces来实现。
 根据可执行程序和进程的概念来进行类比，镜像相当于可执行程序，容器相当于进程。
 
 镜像运行后，就是一个容器了。一个镜像可以多次运行，形成多个实例。
+
+镜像是构建docker世界的基石。
+
+# docker带来的好处
+
+1、提供了一种简单、轻量的建模方式。docker上手非常快，用户只需要几分钟就可以把自己的程序“docker化“。
+
+2、职责的逻辑分离。用了docker之后，开发人员只需要关心容器里的应用，运维人员只需要关心如何管理容器。
+
+3、鼓励使用面向服务的架构。
+
+docker推荐一个容器只运行一个应用。这样就形成了一个分布式的应用程序模型。
+
+# registry
+
+registry的字面意思是挂号处。
+
+docker用registry来保存用户构建的镜像。
+
+registry分为共有和私有两种。
+
+docker公司维护的公共registry就是docker hub。
+
+用户可以在dockerhub网站上注册，分享保存自己的镜像。
+
+用户还可以架设自己的本地registry。
+
+#分析一个docker容器
+
+```
+docker run -i -t ubuntu:14.04
+```
+
+然后在起来的终端里看一些东西。
+
+```
+root@677da434144e:/# hostname
+677da434144e
+root@677da434144e:/# cat /etc/hosts
+127.0.0.1       localhost
+::1     localhost ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+172.17.0.6      677da434144e
+root@677da434144e:/# ifconfig 
+eth0      Link encap:Ethernet  HWaddr 02:42:ac:11:00:06  
+          inet addr:172.17.0.6  Bcast:0.0.0.0  Mask:255.255.0.0
+          inet6 addr: fe80::42:acff:fe11:6/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:27 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:8 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0 
+          RX bytes:3600 (3.6 KB)  TX bytes:648 (648.0 B)
+```
+
+可以看到有一个eth0，网段是172.17.0.6，对应的主机里有个叫docker0的网卡，ip是172.17.0.1 。
+
+我们在这个容器内部的操作。可以在主机里，用docker logs xxx(xxx是指容器id)来看到。
+
+```
+teddy@teddy-ubuntu:~/work/test/exampleapp$ docker logs 677da434144e
+root@677da434144e:/# 
+root@677da434144e:/# uname
+Linux
+root@677da434144e:/# hostname
+677da434144e
+root@677da434144e:/# cat /etc/hosts
+```
 

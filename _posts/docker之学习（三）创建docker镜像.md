@@ -130,3 +130,13 @@ Removing intermediate container 801f105c44a5
 Successfully built 913bff44f2c0
 ```
 
+# 什么是docker镜像
+
+1、docker镜像是由文件系统叠加而成的。
+
+2、最低端是一个引导文件系统，叫做bootfs。
+
+3、第二层是rootfs。rootfs里放的就是Ubuntu系统。
+
+4、镜像可以叠加。最底层的叫基础镜像。
+
