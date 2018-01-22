@@ -104,3 +104,36 @@ teddy@teddy-ubuntu:~$ echo $?
 teddy@teddy-ubuntu:~$ 
 ```
 
+# 用`.`执行和直接执行脚本的区别
+
+用点来执行是使得脚本内容在当前shell里执行，而不是另外开一个shell来执行。
+
+这个带来的一个好处就是环境变量都可以访问到。
+
+一个典型用途，就是让脚本直接可以进行包含。
+
+新建一个inc.sh和一个test.sh。
+
+inc.sh：
+
+```
+#!/bin/sh 
+
+xxx=a
+echo "abc"
+
+```
+
+test.sh：
+
+```
+#!/bin/sh
+
+. ./inc.sh
+
+echo $xxx
+
+```
+
+在test.sh里可以访问到inc.sh里定义的变量。这就是最大的好处。
+
