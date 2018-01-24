@@ -212,7 +212,144 @@ boards：放着vexpress-a9等板子的内核config配置文件。还有一个Mak
 
 buildroot：
 
+prebuilt：这里放了编译好的镜像。直接可以用，就是因为默认用了这里的镜像。
+
 
 
 ## readme文件分析
+
+1、查看有哪些可选的东西。
+
+```
+make list
+```
+
+会列出6种板子。
+
+## Makefile分析
+
+这个的Makefile写得比较长。
+
+1、选项V判断。看是否开启verbose模式。
+
+2、board如果没有配置，就用vexpress-a9的。
+
+3、会把boards/vexpress-a9下面的Makefile include进来。
+
+
+
+在docker里改文件，就是改到了外面的文件里了。
+
+docker里，再启动了一个qemu虚拟机。
+
+make boot启动过程打印分析
+
+是通过uboot引导的。
+
+uboot是2015.07的版本。
+
+dram是128M。
+
+flash也是128M。
+
+带一个MMC接口。
+
+网卡是smc911x-0
+
+kernel启动地址是6000 3000这里。
+
+linux版本是4.6.7的。
+
+镜像大小是3.9M，没有压缩。
+
+initrd放在6000 9000这里。
+
+大小是1.3M。
+
+load entry是0000 0000 
+
+设备树展开在6050 0000这里。
+
+armv7的核心。
+
+machine model是V2P-CA9
+
+是一个单核CPU。
+
+arm versatile express
+
+是arm官方推出用来加快开发和降低新的soc设计风险的。
+
+关键特性：
+
+1、支持多种arm处理器。
+
+2、大内存，支持丰富的外设，以太网、usb、PCI、显示。
+
+3、支持完整的CoreSight调试和跟踪。
+
+4、linux发行版本。
+
+5、用户手册。
+
+vexpress主要是面向soc设计者，所以板子的设计方法也很特别。采用了主板+子板的设计结构。
+
+主板提供各种外围接口，子板提供CPU核心。
+
+##自己编译并执行
+
+使用vexpress-a9来进行编译。
+
+1、make BOARD=vexpress-a9
+
+```
+Makefile的默认目标是board。它的行为是：
+1、把板子的名字存到当前目录下一个叫.board_config的文件里。
+2、打印板子的信息。
+```
+
+2、make root-defconfig
+
+```
+做的事情是：
+1、依赖root checkout和root patch
+2、root checkout是进入到buildroot目录进行git checkout操作。
+3、在当前代码都是下载好的情况下，执行10几秒就完成了。
+```
+
+3、make root
+
+```
+我碰到了错误。说legacy配置问题。
+谷歌查了一下。说是要进行menuconfig，手动关闭这些选项。强制进行这个操作，是因为要你清楚这个变化。
+里面就是把最后一项默认是打开的，你要手动关闭这一项。然后保存退出。
+再执行就好了。
+但是执行过程非常耗时，还是要到网上下载不少的东西，网速又慢。我睡了一觉，起来看到已经编译通过了。
+从output/arm/buildroot-2016.05-cortext-a9/images目录下的文件来看，是花了3个小时左右才生成的。
+```
+
+4、make kernel
+
+```
+也是报错。需要先make kernel-config就好了。
+编译只要几分钟。
+```
+
+5、make modules && make modules-install
+
+```
+都没有做事情。提示是最新的。用make modules-list查看，只有一个叫ldt的东西。
+```
+
+6、make boot
+
+```
+会出现启动卡住在Starting kernel ...处。
+```
+
+
+
+
+
+
 

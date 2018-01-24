@@ -54,6 +54,71 @@ docker利用了Linux的cgroup和namespaces来实现。
 
 镜像是构建docker世界的基石。
 
+镜像代表一个只读的layer。layer是指容器文件系统中可叠加的一部分。
+
+在进一步理解之前，我们先看看镜像相关的4个概念：rootfs、union mount、image和layer。
+
+## rootfs
+
+代表一个容器起来后，里面看到的文件系统。
+
+传统的linux启动过程中，内核先挂载一个只读的rootfs。检测完整性之后，根据bootcmd决定是否切换为R/W模式。
+
+docker架构下，docker daemon没有将container的文件系统设置为RW模式，而是利用union mount的技术，在只读的rootfs上挂载了一个RW的文件系统。挂载的时候，这个RW文件系统没有任何内容。
+
+实现了这种union mount的文件系统，就叫做union filesystem。
+
+AUFS就是一种union filesystem。
+
+AUFS涉及的技术就是COW写时复制的特性。
+
+cow文件系统和其他文件系统的最大区别就是：从不覆写已有文件系统的已有内容。这些东西全部靠内核来做，用户感觉不出来的。
+
+
+
+## 镜像
+
+镜像又有父镜像和基础镜像这2个概念。
+
+
+
+## layer
+
+在docker的术语中，layer和镜像是含义比较接近的词。
+
+rootfs中每个只读的镜像都可以叫做一个layer。
+
+
+
+#镜像大小情况
+
+官方镜像很少基于Ubuntu，使用Debian多一些。现在很多官方镜像都往更加精简的alpine迁移。
+
+先看一下os的大小情况。
+
+```
+Ubuntu:latest   187MB
+debian:latest   125MB
+centos:latest    196M
+alpine           5M
+```
+
+可见，alpine很小。alpine是一个面向安全的轻型linux发行版。跟一般的linux发行版不同，alpine采用了musl libc和busybox。提供了包管理工具apk。这个包管理还是很强大的。
+
+例如，这个安装了mysql的客户端，Dockerfile这样就可以了：
+
+```
+FROM alpine:3.3
+RUN apk add --no-cache mysql-client
+ENTRYPOINT ["mysql"]
+```
+
+但是是否需要很关注基础镜像的size，这也是一个值得讨论的问题。
+
+小是alpine的最大优势，但是docker的文件系统可以进行分层缓存。对于已经拉取过镜像的机器来说，每次的增量更新内容并不多。也就是说，如果所有的镜像都使用相同的基础镜像，这个机器上都只会pull一次。
+
+
+
 # docker带来的好处
 
 1、提供了一种简单、轻量的建模方式。docker上手非常快，用户只需要几分钟就可以把自己的程序“docker化“。
