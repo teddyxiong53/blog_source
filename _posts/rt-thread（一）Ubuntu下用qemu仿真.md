@@ -107,7 +107,141 @@ $ arm-none-eabi-gdb
 
 这样就可以进行单步调试了。
 
+但是每次启动都要输入这些命令，是挺烦人的，我们再当前目录新建一个gdb_cmd.txt文件。
 
+```
+file rtthread.elf 
+target remote:1234
+b rtthread_startup
+c
+```
+
+然后执行：
+
+```
+arm-none-eabi-gdb 0<gdb_cmd.txt 
+```
+
+但这样会自动退出来。不行。
+
+把gdb_cmd.txt改名为.gdbinit。
+
+直接指向arm的gdb。会提示：
+
+```
+warning: File "/home/teddy/work/rt-thread/rt-thread/bsp/qemu-vexpress-a9/.gdbinit" auto-loading has been declined by your `auto-load safe-path' set to "$debugdir:$datadir/auto-load".
+```
+
+意思是路径不安全。
+
+要解决这个问题。有2个方法。
+
+默认是~/.gdbinit这个是默认的安全位置。放到这里就行。但是这个会影响全局。不想这么做。
+
+简单的解决方法：
+
+1、先启动gdb。
+
+2、然后输入一句：source .gdbinit就好了。
+
+
+
+# gdb跟读一下代码
+
+1、rt_cpu_vector_set_base
+
+这个在cpu/cp15_gcc.S里。
+
+gdb查看汇编里的寄存器是用 `p $r0`这样来引用的。
+
+默认打印的是十进制，如果要看十六进制，则这样：`p/x $r0`。
+
+2、动态内存是8M。
+
+```
+#define HEAP_BEGIN      ((void*)&__bss_end)
+#define HEAP_END        (void*)(0x60000000 + 8 * 1024 * 1024)
+```
+
+3、
+
+先是board level的初始化。
+
+rt_hw_timer_init
+
+rt_hw_uart_init
+
+# 看看SD卡
+
+vexpress-a9默认配置文件系统最多2个，我改为8个。在rtconfig.h里改。gdb看到排序是这样的。
+
+```
+(gdb) p filesystem_operation_table
+$2 = {0x600696d8 <_device_fs>, 0x6006960c <_romfs>, 0x600697e4 <_ramfs>, 0x600699a8 <dfs_elm>, 0x0, 0x0, 0x0, 0x0}
+```
+
+这个顺序是INIT_COMPONENT_EXPORT初始化决定的：
+
+```
+dfs_elm.c (rt-thread\components\dfs\filesystems\elmfat):INIT_COMPONENT_EXPORT(elm_init);
+dfs_nfs.c (rt-thread\components\dfs\filesystems\nfs):INIT_COMPONENT_EXPORT(nfs_init);
+dfs_ramfs.c (rt-thread\components\dfs\filesystems\ramfs):INIT_COMPONENT_EXPORT(dfs_ramfs_init);
+dfs_romfs.c (rt-thread\components\dfs\filesystems\romfs):INIT_COMPONENT_EXPORT(dfs_romfs_init);
+i2c_core.c (rt-thread\components\drivers\i2c):INIT_COMPONENT_EXPORT(rt_i2c_core_init);
+module.c (rt-thread\src):INIT_COMPONENT_EXPORT(rt_system_module_init);
+rtdef.h (rt-thread\include):#define INIT_COMPONENT_EXPORT(fn)       INIT_EXPORT(fn, "4")
+
+```
+
+
+
+另外，需要给qemu加上一个SD卡才行。
+
+1、产生一个1G的空文件。
+
+```
+dd if=/dev/zero of=./sd0 bs=1M count=1024
+```
+
+2、格式化这个文件。
+
+```
+mkfs.vfat ./sd0
+```
+
+3、修改qemu启动命令：
+
+```
+sudo qemu-system-arm -M vexpress-a9 -net nic,model=lan9118 -net tap -kernel rt-thread/bsp/qemu-vexpress-a9//rtthread.elf -sd ./sd0 -gdb tcp::1234 -S -nographic 2>/dev/null
+```
+
+现在就 可以在系统里看到SD卡了。可以进行操作。
+
+启动过程的打印：
+
+```
+SD card capacity 1048576 KB
+probe mmcsd block device!
+file system initialization done!
+```
+
+
+
+# shell操作
+
+1、默认进来是msh。这个的操作风格跟bash的类似。
+
+2、输入exit，就会推出到finsh。这个是函数式的输入，例如：ls()，后面要带上括号。
+
+3、如果要再进入到msh，输入msh()就可以了。
+
+这些是在rtconfig.h里配置的。
+
+```
+#define RT_USING_FINSH
+#define FINSH_USING_MSH
+#define FINSH_USING_MSH_DEFAULT
+```
 
 
 
