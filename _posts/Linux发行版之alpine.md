@@ -446,3 +446,24 @@ https://mirrors.aliyun.com/alpine/v3.7/main/
 https://mirrors.aliyun.com/alpine/v3.7/community/
 ```
 
+仓库的main、community是指什么？
+
+main：alpine的基本包。
+
+community：其他包。不保证维护超过6个月。
+
+另外，还有个edge是代表什么？
+
+edge：是指当前开发版本。跟3.7这个是对应的。
+
+```
+vm-alpine-0:/etc/apk# apk update
+fetch https://mirrors.aliyun.com/alpine/v3.7/main/x86/APKINDEX.tar.gz
+fetch https://mirrors.aliyun.com/alpine/v3.7/community/x86/APKINDEX.tar.gz
+v3.7.0-56-g2e8e7a0d34 [https://mirrors.aliyun.com/alpine/v3.7/main/]
+v3.7.0-57-gcb445b4a9d [https://mirrors.aliyun.com/alpine/v3.7/community/]
+OK: 8970 distinct packages available
+```
+
+可以看到有8970个软件包。
+
