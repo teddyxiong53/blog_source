@@ -7,7 +7,7 @@ tags:
 ---
 搭建嵌入式Linux，总是要下载编译uboot、kernel、busybox这些组件，分别编译，显得比较繁琐，有没有办法精简这个过程呢？有的。就是我们现在要介绍的buildroot。
 
-官网地址是：`https://buildroot.org/`。可以在官网上下载手册进行学习。
+官网地址是：https://buildroot.org/。可以在官网上下载手册进行学习。
 下面列出的就是我从手册总结的内容。
 
 

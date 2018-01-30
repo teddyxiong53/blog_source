@@ -351,7 +351,7 @@ kernel_init：
 			-- cpu_dev_init。
 			-- memory_dev_init。如果内存不可以热拔插，就是空的。
 		4）init_irq_proc。
-		5）do_initcalls。
+		5）do_initcalls。这一步很关键。把很多的initcall宏定义的函数都执行了。其中包括了initramfs的挂载。tcp协议栈也是在这里初始化的。这里做了一大堆的事情。
 	3、sys_open("/dev/console")，然后sys_dup，得到stdin、stdout、stderr。
 	4、init_post。这个函数也很重要。
 		1）free_initmem。把启动阶段用的内存释放掉。

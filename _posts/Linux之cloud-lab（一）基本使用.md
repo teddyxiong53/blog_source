@@ -347,9 +347,130 @@ Makefile的默认目标是board。它的行为是：
 会出现启动卡住在Starting kernel ...处。
 ```
 
+重新配置menuconfig，把early print打开看看。
+
+加了后，反而出错直接退出qemu了。
+
+再make kernel-defconfig一次。编译看看。配置信息感觉是没有什么问题的。
+
+不行就换块板子的试一下。
+
+编译完了，只是看镜像大了很多。可以了。
+
+#分析执行过程
+
+当前的命令是：
+
+```
+qemu-system-arm -M vexpress-a9 -m 128M -net nic,model=lan9118 -net tap \
+	-smp 1 -kernel /lab/linux-lab/prebuilt/uboot/arm/vexpress-a9/v2015.07/u-boot -no-reboot \
+	-pflash tftpboot/pflash.img -nographic
+```
+
+可以看到，uboot是用的现成的镜像。启动介质是flash。
+
+使用了uboot镜像引导。
+
+pflash.img又有些什么东西在里面呢？
+
+这个要看顶层Makefile的内容。
+
+1、make root，root依赖root-Build，然后执行make root-install。
+
+2、make root-Build。是执行make O=/xx -C buildroot -j4
+
+所以实际执行内容，还是在buildroot里的Makefile里写的。
+
+3、buildroot里的Makefile，默认目标是all，依赖world目标。
+
+world依赖target-post-image。
+
+target-post-image：
+
+```
+依赖：
+1、$(TARGET_ROOTFS)
+2、target-finalize。
+执行：
+
+```
+
+4、root-install做的事情。
+
+```
+调用tools/rootfs/install.sh
+
+```
+
+5、比较重要的是tools/uboot/pflash.sh这个脚本。
+
+依次把uImage、rootfs.img、dtb image烧写到flash上。
+
+flash的大小是在boards/vexpress-a9/Makefile里定义的。这个Makefile被顶层Makefile include了。
+
+```
+BOOTDEV ?= flash
+PFLASH_BASE ?= 0x40000000
+PFLASH_SIZE ?= 64，64M？
+PFLASH_BS   ?= 512，最小单位。
+```
+
+# 编译uboot
+
+1、make uboot-defconfig。
+
+会在output目录下生成.config文件。
+
+2、make uboot-menuconfig。
+
+3、有涉及两个概念：bootdev和rootdev。这2个一般是同一个设备，但是可以不是同一个设备。
+
+我们可以指定bootdev为flash，rootdev为nfs。
+
+bootdev也可以指定为tftp。
+
+4、make uboot。编译。
+
+会报错。说我的gcc版本低于6.0，不支持了。
+
+我的gcc是4.8的。暂时不管这个。
 
 
 
+#查看linux开机信息
+
+/etc/issue这个文件里就是放的登陆欢迎消息的。
+
+/etc/hostname就是主机名。
 
 
+
+# 顶层目录分析
+
+# 
+
+```
+teddy@teddy-ubuntu:~/work/txkj/cloud-lab/labs/linux-lab$ tree -L 1
+.
+├── boards：下面是按板子名字放的目录，各板子目录下放着kernel的defconfig、buildroot的defconfig、uboot的defconfig。还有一个Makefile，配置的板子是硬件的信息。
+├── buildroot：buildroot的全部代码。
+├── COPYING
+├── doc：放着qemu等的文档。
+├── examples：放着C、汇编、shell的基本示例。
+├── feature：不清楚用途，东西不多。
+├── hostshare：没东西。
+├── linux-stable：linux源代码。
+├── Makefile：顶层Makefile。
+├── modules：就一个叫ldt的模块，就是模块示例代码。
+├── output：编译输出目录。make -O指定到这里。
+├── patch：一些补丁。
+├── prebuilt：预编译的镜像。
+├── qemu：qemu的源代码。
+├── README.md：帮助文档。
+├── system：会在制作文件系统的时候被拷贝到rootfs里的东西。
+├── tftpboot：做好的镜像放在这里。
+├── TODO.md：接下来的开发计划。
+├── tools：工具脚本。
+└── u-boot：uboot源代码。
+```
 

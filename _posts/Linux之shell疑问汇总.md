@@ -128,16 +128,52 @@ test.sh：
 
 ```
 #!/bin/sh
-
 . ./inc.sh
-
 echo $xxx
 
 ```
 
 在test.sh里可以访问到inc.sh里定义的变量。这就是最大的好处。
 
+用`.`执行时的参数情况和直接执行的也不同。
+
+test.sh内容：
+
+```
+#!/bin/sh
+echo "0:$0" 
+echo "1:$1"
+```
+
+直接执行：
+
+```
+teddy@teddy-ubuntu:~/work/test/shell$ ./test.sh aa
+0:./test.sh
+1:aa
+```
+
+用`.`执行：
+
+```
+teddy@teddy-ubuntu:~/work/test/shell$ . ./test.sh aa
+0:-bash
+1:aa
+```
+
+感觉用点执行的效果就像是把脚本内容一条条扒出来在命令行上敲是一样的效果。
+
+
+
 # su和su -的区别
 
 su -会把环境变量也带过去。相当于以root用户登录一样。
+
+
+
+# printf和echo区别
+
+1、printf的用法跟c语言中的很类似，可以格式化打印。
+
+2、printf打印后，不会自动换行的。
 
