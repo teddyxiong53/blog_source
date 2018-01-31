@@ -467,3 +467,7 @@ OK: 8970 distinct packages available
 
 可以看到有8970个软件包。
 
+# 使用情况
+
+1、发现alpine里的软件都没有man手册。
+

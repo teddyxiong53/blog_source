@@ -57,14 +57,48 @@ http://fs.devloop.org.uk/ 这个网站上有，我们选择64位的Ubuntu的文�
 
 解压后的名字是Ubuntu-TrustyTahr-AMD64-root_fs。为了使用方便，我们改名为rootfs。
 
-4、用gdb调试。
+4、带rootfs运行kernel。
+
+我现在的目录是这么放的。
 
 ```
- gdb linux ./rootfs
+
+teddy@teddy-ubuntu:~/work/uml$ tree -L 1
+.
+├── linux-rpi-4.4.y
+├── linux-rpi-4.4.y.zip
+├── root_dir
+└── rootfs
+```
+
+所以执行命令：
+
+```
+./linux-rpi-4.4.y/linux ubd0=./rootfs mem=256m
+```
+
+运行起来会在这里卡住。不知道为什么。
+
+```
+Virtual console 8 assigned device '/dev/pts/14'
+Virtual console 9 assigned device '/dev/pts/15'
+Virtual console 10 assigned device '/dev/pts/16'
+Virtual console 11 assigned device '/dev/pts/17'
+Virtual console 12 assigned device '/dev/pts/18'
+```
+
+
+
+5、用gdb调试。
+
+```
+ gdb linux ./rootfs ubd0=./rootfs mem=256m
  (gdb) b start_kernel
 ```
 
 
+
+总的来说，没有跑起来。不弄了。这种方式并不是很好。不如qemu的方式好。
 
 
 

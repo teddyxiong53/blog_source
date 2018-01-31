@@ -5,6 +5,16 @@ tags:
 	- setjmp
 	- c语言
 ---
+
+
+# 为什么会有setjmp的存在？
+
+C语言的前辈是汇编，在汇编里，程序员是想怎么跳转就怎么跳转。但是到了C语言里，goto只能在函数内部打转。如果我就是想从一个函数跳到另外一个函数，怎么办？setjmp就是干这个的。
+
+
+
+
+
 setjmp是C语言里处理exception的标准方案。
 C语言里的运行控制模型，是一个基于栈结构的指令执行序列，是一个call/return的过程。
 而setjmp/longjmp是另外一种形式的call/return。
@@ -12,6 +22,7 @@ return是以C语言关键字的方式提供，setmp和longjmp是以库的方式�
 setjmp可以用来模拟coroutine。但是不是很好用。
 C++里的异常处理就是通过封装了setjmp和longjmp来实现的。
 一个简单的演示程序如下。
+
 ```
 #include <stdio.h>
 #include <setjmp.h>
