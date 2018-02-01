@@ -38,3 +38,4 @@ tags:
 
 # bugzilla
 
+安装也挺麻烦的。
