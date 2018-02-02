@@ -35,13 +35,40 @@ start.s主要做的就是系统各个方面的初始化。主要是下面几件�
 
 # 2. start.S逐句分析
 
-1、`_global:start`
+1、`.global:_start`
 
 可以参考《gas ARM Ref》文档。地址在：
 
 [http://re-eject.gbadev.org/files/GasARMRef.pdf](http://re-eject.gbadev.org/files/GasARMRef.pdf)
 
-`_global`相当于c语言里的extern声明，说明这个`_start`变量是全局的。
+`.global`相当于c语言里的extern声明，说明这个`_start`符号是全局的。
+
+这个_start在u-boot.lds里有用到：
+
+```
+ENTRY(_start)
+```
+
+继续看。`_start:`后面带冒号就表示是一个label。这里就是最后链接出来的东西的开始的位置。
+
+如果是从nor flash里启动，那么这个地址就是真的是物理地址0 。
+
+如果relocation之后，就是我们配置的内存里的某个地址。就是uboot里的TEXT_BASE这个变量。
+
+例如是0x33d0 0000这样的值。
+
+```
+_start:
+	b reset
+```
+
+继续。
+
+```
+.balignl 16, 0xdeadbeef
+```
+
+就是说要16字节对齐，如果没有对齐，就用0xdeafbeef这个数据来占用几个字节的空间。
 
 
 

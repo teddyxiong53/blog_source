@@ -292,5 +292,9 @@ There was an error sending mail from '1073167306@qq.com' to 'teddyxiong53@163.co
 
 基本知道怎么回事了。
 
+汉化一些，就是下载中文包，放在bugzilla/tempaltes目录下。再访问就好了。
 
+
+
+总体感觉上，没jira好用。
 
