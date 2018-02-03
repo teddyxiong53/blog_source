@@ -14,6 +14,21 @@ elf文件里一般包括3个索引表：
 2. Program header。用来告诉系统如何创建进程。可重定向文件不需要这个。
 3. section header。
 
+
+
+一个elf文件的结构是这样：
+
+```
+elf header
+program headers talbe
+section1
+section2
+...
+section headers table
+```
+
+
+
 # 2. elf header的数据结构
 在elf.h里。
 ```
@@ -35,7 +50,11 @@ typedef struct elf32_hdr{
 } Elf32_Ehdr;
 ```
 写一个helloword程序，编译了。
+
+##2.1 x86上
+
 看elf header。
+
 ```
 teddy@teddy-ubuntu:~/test/c-test$ readelf -h a.out 
 ELF 头：
@@ -153,6 +172,34 @@ teddy@teddy-ubuntu:~/test/c-test$ hexdump -C -n 52 a.out
 前面2个字节0002表示是可执行文件。再2个字节是0003，表示cpu是x86的。
 再一个00000001表示当前版本。再08048320是entry地址。
 后面的不细看了，可以参照结构体的内容看。
+
+## 2.2 arm上
+
+
+
+```
+pi@raspberrypi:~/work/test/gcc$ readelf -h a.out 
+ELF Header:
+  Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF32
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              EXEC (Executable file)
+  Machine:                           ARM
+  Version:                           0x1
+  Entry point address:               0x102f4
+  Start of program headers:          52 (bytes into file)
+  Start of section headers:          4496 (bytes into file)
+  Flags:                             0x5000402, has entry point, Version5 EABI, hard-float ABI
+  Size of this header:               52 (bytes)
+  Size of program headers:           32 (bytes)
+  Number of program headers:         8
+  Size of section headers:           40 (bytes)
+  Number of section headers:         30
+  Section header string table index: 27
+```
 
 
 
