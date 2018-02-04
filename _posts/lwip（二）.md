@@ -107,3 +107,21 @@ ip地址的定义和赋值。
 
 1、初始化，就是把loop这netif初始化并且启动了。
 
+
+
+# netbuf
+
+netbuf是资源，资源就有分配和释放两种基本行为。
+
+1、分配。
+
+有netbuf_new和netbuf_alloc。new是从memp里分配。alloc是从heap里分配。
+
+是分配pbuf。传输层的。
+
+2、删。
+
+有netbuf_delete和netbuf_free这2个。跟增的2个函数一一对应。
+
+3、其他。
+

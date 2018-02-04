@@ -71,6 +71,18 @@ ping
 							
 ```
 
+接收流程：
+
+```
+netif_loop_output
+	netif_poll ：触发了这个。
+		ip_input
+			ip4_input
+				
+```
+
+
+
 我们可以用gdb来调试一下。
 
 但是不行。网络相关的内容，用gdb调试很难。因为要相互协调的。
