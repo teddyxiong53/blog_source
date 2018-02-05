@@ -473,7 +473,31 @@ char *basename(char *s)
 
 接下来，希望可以用ifconfig看到loop的信息。
 
-在ethernetif.c里。实现list_if函数。
+在ethernetif.c里。实现list_if函数。先只实现查询是否up，ip地址这些基本信息。
+
+需要访问netif_list。所以netif_add需要实现。不然这个netif_list就是空的。
+
+进行编译，现在发现错误增加了很多，memp.c引入了很多。暂时把udp的关闭。
+
+arp也暂时关闭。
+
+不得不改opt.h里一个点。
+
+现在core/init.c里：
+
+```
+void lwip_init(void)
+{
+    mem_init();
+    memp_init();
+    pbuf_init();
+    netif_init();
+}
+```
+
+现在可以查询到loop的信息了。上传版本。
+
+另外开一篇文章。
 
 
 
