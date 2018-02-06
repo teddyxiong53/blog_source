@@ -76,3 +76,5 @@ profile: {name:teddy, age:20}
 animal: [cat, dog]
 ```
 
+数组还可以嵌套数组。
+
