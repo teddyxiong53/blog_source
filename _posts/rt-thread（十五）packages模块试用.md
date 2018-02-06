@@ -23,7 +23,7 @@ system packages
 IOT ：物联网相关的包。
 	paho mqtt：mqtt协议支持。
 	webclient：
-	mongoose：
+	mongoose：这个是一个web server。还有一个同名的rtos。
 	webterminal：
 	cjson：
 	ljson：
@@ -156,5 +156,27 @@ mq_start对应client。默认是要访问iot.eclipse.org。我的qemu连不了�
 
 不过我可以把对应目录下的SConscript改个名字，就不会编译了。
 
-# cjson
+##cjson
+
+解析cjson的文件。我另外写了一篇文章进行实验。
+
+
+
+# security
+
+
+
+## libsodium
+
+
+
+## tinycrypt
+
+
+
+# MultiMedia
+
+
+
+## openmv
 
