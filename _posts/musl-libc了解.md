@@ -213,3 +213,6 @@ vm-alpine-0:~/work/musl-master/src/stdlib$ ls -lh *.c
 
 所以文件虽然多。1500个文件，就是对应了1500个函数。
 
+# 编译配置
+
+前面我们进行了编译。

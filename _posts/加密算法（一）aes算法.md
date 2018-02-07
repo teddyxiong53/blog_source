@@ -68,5 +68,116 @@ aes为分组密码。
 
 
 
-echo "hello" | openssl aes-128-ecb  -k 123 > 1.txt
+aes加密有4种模式：
+
+1、ECB模式。Electronic codebook。电子密码本模式。最简单。每个分组都使用相同的秘钥进行加密。
+
+2、CBC模式。Cipher-block chaining。密码分组链接。每个分组在加密之前，会跟一个密码块进行异或操作。（这个密码块叫做初始化向量）。然后再进行加密。完成加密或者解密后，更修改初始化向量的内容。
+
+3、CFB。Cipher Feedback。密文反馈。
+
+4、OFB模式。output Feedback。输出反馈。
+
+
+
+
+
+
+
+# C语言编程示例
+
+```
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <openssl/aes.h>
+
+int main(int argc ,char **argv)
+{
+    AES_KEY aes;
+    unsigned char key[AES_BLOCK_SIZE];//这个就是分组单位，16字节。
+    unsigned char iv[AES_BLOCK_SIZE];//init vector
+    char *input;
+    char *encryptstr;
+    char *decryptstr;
+    unsigned int len, i;
+    int ret;
+    if(argc != 2)
+    {
+        printf("usage: ./test string");
+        exit(1);
+    }
+    //长度凑成16的整数倍。
+    len = 0;
+    if((strlen(argv[1])+1)%AES_BLOCK_SIZE == 0)
+    {
+        len = strlen(argv[1])+1;
+        
+    }
+    else 
+    {
+        len = (strlen(argv[1]) + 1)/AES_BLOCK_SIZE;
+        len = (len +1)*AES_BLOCK_SIZE;
+    }
+    input = (char *)calloc(len, 1);
+    if(input == NULL)
+    {
+        printf("calloc failed \n");
+        exit(1);
+    }
+    strncpy(input, argv[1], strlen(argv[1]));
+    //产生128位的key
+    for(i=0; i<AES_BLOCK_SIZE; i++)
+    {
+        key[i] = 32+i;
+    }
+    for(i=0; i<AES_BLOCK_SIZE; i++)
+    {
+        iv[i] = 0;
+    }
+    ret = AES_set_encrypt_key(key, 128, &aes);
+    if(ret)
+    {
+        printf("set encrypt key failed \n");
+        exit(1);
+    }
+    
+    encryptstr = (char *)calloc(len, 1);
+    if(encryptstr == NULL)
+    {
+        printf("alloc encryptstr failed ");
+        exit(1);
+    }
+    //加密
+    AES_cbc_encrypt(input, encryptstr, len, &aes, iv, AES_ENCRYPT);
+    
+    printf("the string after encrypt is:%s \n", encryptstr);
+    //一般加密后的内容会有奇怪字符，多加几个换行看看。
+    printf("\n\n\n");
+    //开始解密
+    decryptstr = (char *)calloc(len, 1);
+    if(decryptstr == NULL)
+    {
+        printf("decryptstr alloc failed \n");
+        exit(1);
+    }
+    for(i=0; i<AES_BLOCK_SIZE; i++)
+    {
+        iv[i] = 0;
+    }
+    ret = AES_set_decrypt_key(key, 128, &aes);
+    if(ret < 0)
+    {
+        printf("decrypt failed\n");
+        exit(1);
+    }
+    //解密
+    AES_cbc_encrypt(encryptstr, decryptstr, len ,&aes, iv, AES_DECRYPT);
+    printf("the string after decrypt is: %s", decryptstr);
+    return 0;
+}
+
+```
+
+需要链接libcrypto.a才能编译过。
 
