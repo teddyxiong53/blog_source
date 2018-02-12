@@ -44,25 +44,19 @@ MSH_CMD_EXPORT(python, MicroPython: `python [file.py]` execute python script);
 
 
 
-mkimage的选项：
+# 4. 默认配置
 
-```
--A：指定ARCH
--O：指定os
--T：指定image type
--C：指定压缩type
--a：指定load addr
--e：指定entry addr
--n：指定镜像的name
--x：设置是否XIP。
--d：从哪个data文件里来数据。
-#查看类的：
--l：查看当前镜像的信息。
-```
+在port/mpconfigport.h里。如果这里没有配置，就用py/mpconfig.h里的默认值。
 
-举例：把zImage做成uImage。其实就是加了一个64字节的头部。头部信息就是arch、os这些信息。
 
-```
-mkimage -A arm -O linux -T kernel -C none -a 0x30008000 -e 0x30008000 -n "MyLinux" -d zImage uImage
-```
+
+# 5. mp项目了解
+
+mp的官网在这里：http://www.micropython.org/
+
+这个实现是以python3的为参考的。
+
+实现了生成器、异常处理等高级特性。只需要256K的rom和16K的ram就可以跑起来。
+
+官方有推出一款叫做pyboard的开发板来做这个。
 

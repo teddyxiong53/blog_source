@@ -1,0 +1,10 @@
+import os
+from building import *
+Import('ROOT_DIR')
+
+cwd = GetCurrentDir()
+src = Glob('src/*.c')
+print src
+CPPPATH = [os.path.join(cwd,'include')]
+group = DefineGroup('mod1', src, depend=[], CPPPATH=CPPPATH)
+Return ('group')

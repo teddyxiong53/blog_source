@@ -1,0 +1,11 @@
+import os
+Import('ROOT_DIR')
+from building import *
+
+cwd     = GetCurrentDir()
+src     = ['main.c']
+CPPPATH = [cwd]
+
+group = DefineGroup('app', src, depend = [], CPPPATH = CPPPATH)
+
+Return('group')
