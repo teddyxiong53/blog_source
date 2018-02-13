@@ -60,3 +60,7 @@ mp的官网在这里：http://www.micropython.org/
 
 官方有推出一款叫做pyboard的开发板来做这个。
 
+mp是一个Python compiler和runtime。
+
+提供了一个叫machine的模块来访问底层硬件。
+
