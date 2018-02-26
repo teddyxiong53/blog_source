@@ -28,7 +28,7 @@ tags:
 
 argv：
 
-path：这个就是模块的搜索路径。
+path：这个就是模块的搜索路径。常用的是sys.path.append。
 
 modules：这个是载入的所有模块。
 
@@ -115,7 +115,7 @@ stdout = open('') # real value of type <type 'file'> replaced
 
 增：
 
-os.mkdir：可以新建目录。
+os.makedirs：可以新建目录。
 
 os.open：可以新建文件。
 
@@ -130,6 +130,8 @@ os.removedirs：
 os.chdir
 
 查：
+
+os.access
 
 os.getcwd：
 
