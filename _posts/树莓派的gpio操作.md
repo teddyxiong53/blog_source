@@ -1,6 +1,7 @@
 ---
 title: 树莓派的gpio操作
 date: 2017-04-17 21:17:10
+typora-root-url: ..\
 tags:
 	- 树莓派
 ---
