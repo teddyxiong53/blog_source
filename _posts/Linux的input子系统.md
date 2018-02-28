@@ -108,3 +108,21 @@ int main()
 }
 ```
 
+# 看input/keyboard/s3c-keypad.c
+
+这个是针对s5pv210这个系列的芯片的。因为这个系列的芯片集成了按键控制器。可以支持很多键的键盘。
+
+对应的板级文件看arch/arm/mach-s5pv210.c。
+
+当然这个板子也可以接一个红外的遥控，板端的接收芯片就是一个gpio脚跟CPU相连。
+
+对应的文件是input/keyboard/tq210_hs0038.c。
+
+
+
+涉及的文件：
+
+1、arch/arm/plat-s5p/devs.c。定义了resource。
+
+
+

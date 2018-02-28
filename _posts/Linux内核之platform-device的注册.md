@@ -67,7 +67,31 @@ static struct resource bast_dm9k_resource[] = {
 
 
 
-​	
+# 其他方式
+
+上面这种方式需要改板级文件，那就是需要重新编译kernel，这个动作也太大了。
+
+我们只需要在驱动里这样写：
+
+```
+struct platform_device test_device = {
+  .name = "test_platform",
+  .id = -1,
+};
+struct platform_driver test_driver = {
+  .probe = test_probe,
+  .remove = test_remove,
+  .driver = {
+    .name = "test_platform",
+    .owner = THIS_MODULE,
+  },
+};
+static int test_init(void)
+{
+  platform_device_register(&test_device);
+  platform_driver_register(&test_driver);
+}
+```
 
 
 
