@@ -165,3 +165,10 @@ OF代表的就是OpenFirmware。就是设备树了。
 1、interrupt-controller。这属性没有value。声明性质的。
 
 2、`#interrupt-cells`。表示这中断控制器需要几个单位做中断描述符。
+
+
+
+
+
+
+

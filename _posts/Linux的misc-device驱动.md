@@ -19,6 +19,14 @@ misc device的内部实现就是用字符设备来实现的。
 
 
 
+# 为什么需要misc dev？
+
+1、节省主设备号。
+
+2、使用更加简单。开发人员注册一个char dev比misc dev要麻烦多了。
+
+
+
 # drivers/misc/eeprom/at24.c
 
 看看这个eeprom的代码。
