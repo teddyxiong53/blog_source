@@ -22,6 +22,116 @@ linux3.x开始引入。
 
 于是就把公共部分提取为dtsi。
 
+相关缩写：
+
+dt：device tree
+
+dtb： device tree block
+
+dts：device tree source
+
+dtsi：device tree source include
+
+
+
+uboot和kernel只能识别二进制的dtb文件。而我们编写的是dts这种字符文件。
+
+需要需要dtc这个工具来把dts编译成dtb文件。
+
+dtc的源代码在linux/scripts/dtc目录下。这个下面还有fdtdump这些工具，可以把dtb文件内容读取出来。
+
+dtc的使用语法是：
+
+```
+dtc -I dts -O dtb -o xxx.dtb xxx.dts
+```
+
+看一下树莓派上的一个文件。
+
+```
+pi@raspberrypi:/boot/overlays$ fdtdump -s i2c1-bcm2708.dtbo  
+i2c1-bcm2708.dtbo: found fdt at offset 0
+/dts-v1/;
+// magic:               0xd00dfeed
+// totalsize:           0x356 (854)
+// off_dt_struct:       0x38
+// off_dt_strings:      0x2e4
+// off_mem_rsvmap:      0x28
+// version:             17
+// last_comp_version:   16
+// boot_cpuid_phys:     0x0
+// size_dt_strings:     0x72
+// size_dt_struct:      0x2ac
+
+/ {
+    compatible = "brcm,bcm2708";
+    fragment@0 {
+        target = <0xdeadbeef>;
+        __overlay__ {
+            pinctrl-0 = <0x00000001>;
+            status = "okay";
+        };
+    };
+    fragment@1 {
+        target = <0xdeadbeef>;
+        __overlay__ {
+            i2c1 {
+                brcm,pins = <0x00000002 0x00000003>;
+                brcm,function = <0x00000004>;
+                phandle = <0x00000001>;
+            };
+        };
+    };
+    __overrides__ {
+        sda1_pin = <0x00000001 0x6272636d 0x2c70696e 0x733a3000>;
+        scl1_pin = <0x00000001 0x6272636d 0x2c70696e 0x733a3400>;
+        pin_func = <0x00000001 0x6272636d 0x2c66756e 0x6374696f 0x6e3a3000>;
+    };
+    __symbols__ {
+        i2c1_pins = "/fragment@1/__overlay__/i2c1";
+    };
+    __local_fixups__ {
+        fragment@0 {
+            __overlay__ {
+                pinctrl-0 = <0x00000000>;
+            };
+        };
+        __overrides__ {
+            sda1_pin = <0x00000000>;
+            scl1_pin = <0x00000000>;
+            pin_func = <0x00000000>;
+        };
+    };
+    __fixups__ {
+        i2c1 = "/fragment@0:target:0";
+        gpio = "/fragment@1:target:0";
+    };
+};
+```
+
+设备树的文件头信息定义在scripts/dtc/libfdt/fdt.h里的struct fdt_header里。
+
+而下面的各个节点的信息是存放在fdt_node_header和fdt_property这2个结构体里。
+
+kernel对解析处理的设备树信息，是存放在一个struct property结构体里。
+
+设备树的每一个node节点，经过kernel处理，都对应一个struct device_node结构体。这个结构体最后会被关联到struct device里去（device结构体里直接包含了这个指针）。
+
+
+
+```
+start_kernel
+	setup_arch
+		setup_machine_fdt
+			early_init_dt_scan_nodes
+				这里还没有做实质性的解析。
+	unflatten_device_tree
+		这里面才是解析。得到了所有的device_node结构体。
+		然后需要做的是，跟platform_device进行关联。
+```
+
+
+
 
 
 #设备树的意义
@@ -40,133 +150,413 @@ linux3.x开始引入。
 
 1、需要合入的bsp代码更少了。
 
+
+
+
+
 # 设备树语法
 
-我们先以dm9000的驱动的为例，来进行分析。
+https://elinux.org/Device_Tree_Usage
 
-对应的文档在Documentation/devicetree/bindings/net/davicom-dm9000.txt。
+这篇文章讲了基本用法。
 
-一个设备树的基本框架是这样的。一般`/`表示的就是板子。
-
-```
-/{
-	node1{
-		key=value;
-		...
-		node2{
-			key=value;
-		}
-	}
-	node3{
-		key=value;
-	}
-}
-```
-
-1、每个设备都有一个根节点。每个设备都是一个节点。节点名长度不超过31个字符。
-
-2、节点可以嵌套，形成父子关系。
-
-3、每个设备属性都用一组键值对来描述。
-
-4、属性用分号结尾。
-
-5、`#`不是注释。
-
-##节点
-
-节点名一般写出这个格式：
+sample machine的规格：
 
 ```
-name@0xaaaabbbb
+1、是32位的arm cpu。双核A9
+2、i2c、uart、spi等控制器是内置的。
+3、256M的sdram，物理地址是0 。
+4、2个串口，分别在0x101f 0000 和0x101f 2000
+5、gpio的控制器在0x101f 3000
+6、spi控制在0x1017 0000，spi接了这么一个设备。SD卡卡槽，检测脚是GPIO#1
+7、外部bus bridge挂了这些设备：
+	SMC91111以太网，地址在0x1010 0000
+	i2c控制器，在0x1016 0000 ，挂了这个设备：maxim DS1338 的rtc。i2c地址是0x58
+	64M的nor flash，地址在0x3000 0000
 ```
 
-另外，还有几个特殊的节点，并不对应真正的设备。而是一些传递给os的参数。例如：
+1、建立这个machine的框架。
 
 ```
-chosen {
-  bootargs="console=ttySAC2,115200";
-  
-}
+/dts-v1/;
+/ {
+    compatible = "acme,coyotes-revenge";
+};
 ```
 
-##引用
+compatible指定了系统的名字。字符串的格式是：`<manufacturer>,<model>`。
 
-当我们找一个节点的时候，我们必须书写完整的节点路径，这样当一个节点嵌套比较深的时候，就不方便了。所以设备树运行我们给节点起别名。可以实现类似函数调用的效果。
+这个指定正确的设备很重要，包含厂家的名字，是为了避免namespaces冲突。
 
-在编译设备树的时候，相同节点的不同属性信息会被合并，相同属性会被覆盖。
+这里假定一个叫acme的厂家，机器的名字叫小狼的复仇。
 
-有了引用，我们就不用到处去找节点了。直接在板级的dts里写就行了。
+2、加入cpu的描述。
+
+```
+/dts-v1/;
+/ {
+    compatible = "acme,coyotes-revenge";
+    cpus {
+        cpu@0 {
+            compatible = "arm,cortex-a9";
+        };
+        cpu@1 {
+            compatible = "arm,cortex-a9";
+        };
+    };
+};
+```
+
+从这里，我们可以讨论一下node的命名。
+
+格式是这样的：
+
+```
+<name>[@<unit-address>]
+```
+
+name是ascii字符串，最多31个字符。一般来说，name是设备类型，而不是具体设备名。
+
+例如dm9000的以太网卡，name应该是ethernet，而不是dm9000 。
+
+3、加入device的描述。
+
+```
+/dts-v1/;
+/ {
+    compatible = "acme,coyotes-revenge";
+    cpus {
+        cpu@0 {
+            compatible = "arm,cortex-a9";
+        };
+        cpu@1 {
+            compatible = "arm,cortex-a9";
+        };
+    };
+    serial@101F0000 {
+        compatible = "arm,pl011";
+    };
+    serial@101F2000 {
+        compatible = "arm,pl011";
+    };
+    
+    gpio@101F3000 {
+        compatible = "arm,pl061";
+    };
+    
+    interrupt-controller@10140000 {
+        compatible = "arm,pl190";
+    };
+    
+    spi@10115000 {
+        compatible = "arm,pl022";
+    };
+    
+    external-bus {
+        ethernet@0,0{
+            compatible = "smc,smc911c1111";
+        };
+        
+        i2c@1,0 {
+            compatible = "acme, a1234-i2c-bus";
+            rtc@58 {
+                compatible = "maxim, ds1338";
+            };
+        };
+        flash@2,0 {
+            compatible = "samsung, k8f1315ebm", "cfi-flash";
+        };
+    };
+};
+```
+
+这个设备树现在还不合法，因为没device之间连接的信息。后面加。
+
+每个设备都有一个compatible属性。flash节点属性有2个字符串。
+
+compatible属性，是内核用来决定把哪个device driver跟device绑定起来的关键。
+
+可寻址的设备，使用这3个属性来编码地址信息。
+
+```
+reg
+#address-cells
+#size-cells
+```
+
+4、给cpu加上寻址信息。
+
+```
+cpus {
+        #address-cells = <1>;
+        #size-cells = <0>;
+        cpu@0 {
+            compatible = "arm,cortex-a9";
+            reg = <0>;
+        };
+        cpu@1 {
+            compatible = "arm,cortex-a9";
+            reg = <1>;
+        };
+    };
+```
+
+address-cells设置为1，size-cells设置为0，表示reg的值是一个single uint32，而且没有size这个域。
+
+5、看在cpu寻址空间内的设备如何添加地址信息。
 
 ```
 / {
-  ...
-}
-&uart0 { 这里就是一个引用，注意位置，在根节点外。
-  status = "okay";
-}
+    compatible = "acme,coyotes-revenge";
+    #address-cells = <1>;
+    #size-cells = <1>;
+    cpus {
+        #address-cells = <1>;
+        #size-cells = <0>;
+        cpu@0 {
+            compatible = "arm,cortex-a9";
+            reg = <0>;
+        };
+        cpu@1 {
+            compatible = "arm,cortex-a9";
+            reg = <1>;
+        };
+    };
+    serial@101F0000 {
+        compatible = "arm,pl011";
+        reg = <0x101f0000 0x1000>;
+    };
+    serial@101F2000 {
+        compatible = "arm,pl011";
+        reg = <0x101f2000 0x1000>;
+    };
+    
+    gpio@101F3000 {
+        compatible = "arm,pl061";
+        reg = <0x101f3000 0x1000 0x101f4000 0x0010>;
+    };
+    
+    interrupt-controller@10140000 {
+        compatible = "arm,pl190";
+        reg = <0x10140000 0x1000>;
+    };
+    
+    spi@10115000 {
+        compatible = "arm,pl022";
+        reg = <0x10115000 0x1000>;
+    };
 ```
 
-
-
-# key
-
-节点的属性是键值对。
-
-我们看key有哪些可用的。
-
-linux定义了这些规范属性：
-
-1、compatible。
-
-2、address。
-
-3、interrupt。
-
-###先看compatible。
-
-dts里是这样的写：
+6、对于external bus上的设备加上寻址信息。
 
 ```
-	ethernet@18000000 {
-		compatible = "davicom,dm9000";
-		reg = <0xA8000000 0x2 0xA8000002 0x2>;
-		interrupt-parent = <&gph1>;
-		interrupts = <1 4>;
-		local-mac-address = [00 00 de ad be ef];
-		davicom,no-eeprom;
-	};
+    external-bus {
+        #address-cells = <2>;
+        #size-cells = <1>;
+        ethernet@0,0{
+            compatible = "smc,smc911c1111";
+            reg = <0 0 0x1000>;
+        };
+        
+        i2c@1,0 {
+            compatible = "acme, a1234-i2c-bus";
+            reg = <1 0 0x1000>;
+            rtc@58 {
+                compatible = "maxim, ds1338";
+            };
+        };
+        flash@2,0 {
+            compatible = "samsung, k8f1315ebm", "cfi-flash";
+            reg = <2 0 0x4000000>;
+        };
+    };
 ```
 
-而在drivers/net/ethernet/davicom/dm9000.c里是这样的：
+可以看到，external bus使用2个uint32来表示地址，1个uint32来表示length。
+
+对于rtc这个挂接在i2c上，不在cpu寻址范围内的设备。
 
 ```
-#ifdef CONFIG_OF
-static const struct of_device_id dm9000_of_matches[] = {
-	{ .compatible = "davicom,dm9000", },
-	{ /* sentinel */ }
+i2c@1,0 {
+            compatible = "acme, a1234-i2c-bus";
+            #address-cells = <1>
+            #size-cells = <0>;
+            reg = <1 0 0x1000>;
+            rtc@58 {
+                compatible = "maxim, ds1338";
+                reg = <58>;
+            };
+        };
+```
+
+7、地址翻译。
+
+设备树的root node，描述的是站在CPU的角度看到的东西。
+
+root node的子节点的地址信息，是没问题的。
+
+但是孙子节点就不行了。所以就要ranges这个地址翻译来做。
+
+```
+    external-bus {
+        #address-cells = <2>;
+        #size-cells = <1>;
+        ranges = <0 0 0x10100000 0x10000 //ethernet 
+            1 0 0x10160000 0x10000 //i2c 
+            2 0 0x30000000 0x1000000>; //nor flash
+```
+
+8、加入中断。
+
+中断不像设备寻址那样自然表达。中断可能在任意设备发生。中断在设备树立是各个node之间的link。
+
+中断有4个属性：
+
+```
+1、interrupt-controller。一个空的属性。声明一个node可以接收中断信号。
+2、#interrupt-cells。
+3、interrupt-parent。
+4、interrupts。
+```
+
+加入后的设备树文件。
+
+```
+/dts-v1/;
+/ {
+    compatible = "acme,coyotes-revenge";
+    #address-cells = <1>;
+    #size-cells = <1>;
+    interrupt-parent=<&intc>;
+    
+    cpus {
+        #address-cells = <1>;
+        #size-cells = <0>;
+        cpu@0 {
+            compatible = "arm,cortex-a9";
+            reg = <0>;
+        };
+        cpu@1 {
+            compatible = "arm,cortex-a9";
+            reg = <1>;
+        };
+    };
+    serial@101F0000 {
+        compatible = "arm,pl011";
+        reg = <0x101f0000 0x1000>;
+        interrupts = <1 0>;
+    };
+    serial@101F2000 {
+        compatible = "arm,pl011";
+        reg = <0x101f2000 0x1000>;
+        interrupts = <2 0>;
+    };
+    
+    gpio@101F3000 {
+        compatible = "arm,pl061";
+        reg = <0x101f3000 0x1000 0x101f4000 0x0010>;
+        interrupts = <3 0>;
+    };
+    
+    intc:interrupt-controller@10140000 {
+        compatible = "arm,pl190";
+        reg = <0x10140000 0x1000>;
+        interrupt-controller;
+        #interrupt-cells = <2>;
+    };
+    
+    spi@10115000 {
+        compatible = "arm,pl022";
+        reg = <0x10115000 0x1000>;
+        interrupts =<4 0>;
+    };
+    
+    external-bus {
+        #address-cells = <2>;
+        #size-cells = <1>;
+        ranges = <0 0 0x10100000 0x10000 //ethernet 
+            1 0 0x10160000 0x10000 //i2c 
+            2 0 0x30000000 0x1000000>; //nor flash
+        ethernet@0,0{
+            compatible = "smc,smc911c1111";
+            reg = <0 0 0x1000>;
+            interrupts = <5 2>;
+        };
+        
+        i2c@1,0 {
+            compatible = "acme, a1234-i2c-bus";
+            #address-cells = <1>
+            #size-cells = <0>;
+            reg = <1 0 0x1000>;
+            interrupts = <6 2>;
+            rtc@58 {
+                compatible = "maxim, ds1338";
+                reg = <58>;
+                interrupts = <7 3>;
+            };
+        };
+        flash@2,0 {
+            compatible = "samsung, k8f1315ebm", "cfi-flash";
+            reg = <2 0 0x4000000>;
+        };
+    };
 };
-MODULE_DEVICE_TABLE(of, dm9000_of_matches);
-#endif
 ```
 
-OF代表的就是OpenFirmware。就是设备树了。
+这个machine有一个中断控制器。lable intc是用来注册一个phandle到interrupt-parent属性。
 
-###再看address的。
+interrupts有2个uint32数字，第一个表示中断号。第二个表示中断的触发方式，例如高电平、低电平、上升沿等。
 
-没有太明白，先空着。
+9、设备相关的数据。
 
-### interrupts
+```
+1、设备相关属性，命名要加上厂家的前缀，以免命名冲突。
+2、
+```
 
-计算机系统里的大量设备都是通过中断来请求CPU服务的，所以设备节点中就要指定中断号。
+10、特殊node。
 
-常用的属性有：
+别名node。
 
-1、interrupt-controller。这属性没有value。声明性质的。
+chosen node。
 
-2、`#interrupt-cells`。表示这中断控制器需要几个单位做中断描述符。
+```
+    chosen {
+        bootargs = "root=/dev/nfs rw nfsroot=192.168.1.1 console=ttyS0,115200";
+    };
+```
 
 
+
+# 树莓派设备树分析
+
+1、在arch/arm/boot/dts目录下。
+
+bcm2710-rpi-3-b.dts文件。
+
+```
+#include "bcm2710.dtsi"
+	#include "bcm2708_common.dtsi"
+		#include "dt-bindings/clock/bcm2835.h"
+        #include <dt-bindings/clock/bcm2835-aux.h> 定义了4个宏。
+        #include "dt-bindings/power/raspberrypi-power.h" 简单的宏。
+        #include "dt-bindings/gpio/gpio.h" 
+        #include "dt-bindings/pinctrl/bcm2835.h"
+        #include "skeleton.dtsi"
+```
+
+skeleton.dtsi的内容是这样的：
+
+```
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	chosen { };
+	aliases { };
+	memory { device_type = "memory"; reg = <0 0>; };
+};
+
+```
 
 
 
