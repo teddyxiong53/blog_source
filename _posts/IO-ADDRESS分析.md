@@ -2,7 +2,6 @@
 title: IO_ADDRESS分析
 date: 2017-05-18 18:49:18
 tags:
-
 	- Linux驱动
 
 ---
@@ -64,6 +63,18 @@ static __exit void sram_exit()
 ```
 
 
+
+S3C2410_ADDR 定义如下：
+
+\#define S3C2410_ADDR(x)      ((void __iomem *)0xF0000000 + (x))
+
+这里就是一种线性偏移关系，即s3c2410创建的I/O静态映射表会被映射到0xF0000000之后。(这个线性偏移值可以改，也可以你自己在virtual成员里手动定义一个值，只要不和其他IO资源映射地址冲突,但最好是在0XF0000000之后。)
+
+其实这里S3C2410_ADDR的线性偏移只是s3c2410平台的一种做法，很多其他ARM平台采用了通用的IO_ADDRESS宏来计算物理地址到虚拟地址之前的偏移。
+
+IO_ADDRESS宏定义如下：
+
+\#define IO_ADDRESS(x)            (((x) & 0x0fffffff) + (((x) >> 4) & 0x0f000000) + 0xf0000000) )
 
 
 

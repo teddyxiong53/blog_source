@@ -65,9 +65,17 @@ tags:
 2、唯一的一个函数就是_main。
 
 ```
+_main做了这些事情：
+1、为调用board_init_f函数做准备。就是把sp指向一个内存地址（因为接下来要调用c函数），保留一个内存给gd。
+	这个都是在sram里。
+```
+
+
+
+```
 1、ldr r0, CONFIG_SYS_INIT_SP_ADDR。把初始化堆栈地址取出来。这个是在vexpress-common.h里定义的。
 	对于我现在分析的vexpress-a9的板子来说。物理内存从0x6000 0000开始。
-	这个值等于(0x60000000 + 0x1000 - 176)。那堆栈只能是往上增长的了。
+	这个值等于(0x60000000 + 0x1000 - 176)。176是global_data的结构体长度。
 2、调用board_init_f_alloc_reserve。
 	从这里保留一段内存来保存global_data用。这个是一个很大的结构体。很重要。
 3、board_init_f_init_reserve。根上面一个函数配合。
