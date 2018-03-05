@@ -87,15 +87,14 @@ void daemonize(const char *cmd)
 
 
 
+其实，linux已经提供了这样一个现成的函数。daemon。
 
+```
+#include <unistd.h>
+int daemon(int nochdir, int noclose);
+```
 
-
-
-
-
-
-
-
+默认2个参数都给0，表示：工作目录设置为根目录。输入输出重定向到/dev/null。
 
 
 
