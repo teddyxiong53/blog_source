@@ -84,6 +84,46 @@ sudo apt install gcc-arm-none-eabi
 
 编译通过。
 
+# 板子对应的资料
+
+http://infocenter.arm.com/help/topic/com.arm.doc.dui0448i/DUI0448I_v2p_ca9_trm.pdf
+
+这个是板子的硬件构成。
+
+1GB的DDR2 SDRAM 。266MHz。
+
+# memory map
+
+我从0地址开始描述：
+
+```
+0到64M：可以remap的区域。
+0x1000 0000 +128KB：motherboard 外设。
+0x1020 0000 0x2000 0000： daughterboard私有的。
+0x2000 0000到0x4000 0000:512MB，保留。
+0x4000 0000到0x5c00 0000：motherboard外设，一般是memory device。
+0x5c00 0000到0x6000 0000:64MB。保留。
+0x6000 0000到0x8000 0000： 512M，ddr2
+0x8000 0000到0x8200 0000： 64M的可remap区域。
+0x8000 0000到0xa000 0000： ddr2,512M。
+0xa000 0000到0xe000 0000： daughterboard私有 。
+
+```
+
+外设的寄存器分布：
+
+在0x1020 0000这个位置。
+
+```
+DAP ROM
+ETB
+CTI
+TPIU
+
+```
+
+
+
 # 使用gdb来调试rt-thread
 
 1、在qemu命令后面加上`-gdb tcp::1234 -S`。
