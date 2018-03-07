@@ -8,9 +8,7 @@ typora-root-url: ..\
 
 
 
-本文是对ldd3的14章的学习记录。书在这里。
 
-https://lwn.net/Kernel/LDD3/
 
 2.5版本的一个重要开发目标就是为内核创造一个统一的设备模型。
 
@@ -18,7 +16,11 @@ https://lwn.net/Kernel/LDD3/
 
 但是现在电源管理等复杂需求，迫切需要一个通用的抽象机制。
 
-于是设备模式就被做出来了。
+于是设备模型就被做出来了。
+
+
+
+linux设备模型的核心是Bus、Class、Device、Driver四大概念。将不同的硬件设备，以树状结构的形式进行归纳抽象，方便kernel的统一管理。
 
 
 
@@ -49,6 +51,33 @@ class描述的是功能。
 
 
 设备模型太复杂，从上往下，难以看清，所以我们从下往上看。
+
+
+
+# kobject
+
+kobject是linux设备模型的基础。也是设备模型中最难理解的一部分。官方的文档在Documentation/kobject.txt。
+
+kobject是对所有设备的抽象。
+
+kobject目前主要提供这些功能：
+
+1、通过parent指针，可以将所有kobject以层次结构的形式组合起来。
+
+2、使用引用计数，记录kobject的被引用次数，在引用次数变为0的时候释放。
+
+3、和sysfs配合，将每一个kobject及其特性，以文件的形式，开放到用户空间。
+
+```
+在linux中，kobject几乎不会单独存在。它的主要功能就是嵌入在其他的大型数据结构里，为它们提供一些底层功能。
+所以，kobject的相关接口，驱动开发者一般也不会用到。
+```
+
+一个kobject对应/sys目录下的一个目录。
+
+kobj_type代表了kobject的属性操作集合。
+
+kset是一个特别的kobject。
 
 
 
@@ -86,7 +115,7 @@ kobject_get（引用加1）和kobjet_put（引用减1）。
 
 每个kobject都必须有一个释放函数，这个函数没有存储在kobject里，而是在kobj_type里，我们简称为ktype。
 
-ktype里有一个release函数。
+**ktype里有一个release函数。**
 
 每个kobject都需要一个关联的kobj_type。实际上，在kobject里有2个地方可以找到kobj_type。一个是kobject包含的，一个是kset里包含的。
 
@@ -94,13 +123,33 @@ kobject里的parent指针，是用来建立sysfs的层级关系的。
 
 一个kset对应sysfs里的一个目录。
 
-kset里也包含了kobject，所以kset相当于kobject的子类。
+**kset里也包含了kobject，所以kset相当于kobject的子类。**
 
 kset还包含了一个kobject的链表。
 
 kset相当于文件夹，kobject相当于文件，文件夹是一种特殊的文件。
 
 subsystem是kset的容器。
+
+
+
+kobject_add的作用：
+
+1、建立kobj对象间的层次关系。
+
+2、在sysfs里建立一个目录。
+
+parent为NULL的话，则是在/sys目录下。
+
+
+
+# class
+
+class相当于device，它是对设备进行功能性的划分。
+
+class是类似功能的device的容器。
+
+
 
 #以一个platform设备来分析kobject
 
@@ -181,3 +230,6 @@ platform_device_register
 
 
 
+# 设备模型的用途
+
+1、一个重要用途就是设备的热插拔的支持。

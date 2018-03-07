@@ -30,6 +30,28 @@ cd mycroft-core
 
 2、安装virtualenv。
 
+我下载压缩文件包到我的树莓派上。
+
+运行会报错。
+
+我把dev_setup.h里这里注释：
+
+```
+#install_deps
+
+#git config commit.template .gitmessage
+```
+
+我的依赖文件都是好的。git也不需要。
+
+继续执行。会在这个目录生成virtualenv。
+
+```
+/home/pi/.virtualenvs/mycroft/bin/python2.7
+```
+
+不过安装过程还是会用git去下载东西。
+
 
 
 # 运行
