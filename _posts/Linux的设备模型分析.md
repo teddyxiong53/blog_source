@@ -127,9 +127,9 @@ kobject里的parent指针，是用来建立sysfs的层级关系的。
 
 kset还包含了一个kobject的链表。
 
-kset相当于文件夹，kobject相当于文件，文件夹是一种特殊的文件。
+**kset相当于文件夹，kobject相当于文件，文件夹是一种特殊的文件。**
 
-subsystem是kset的容器。
+**subsystem是kset的容器。**
 
 
 
@@ -140,6 +140,14 @@ kobject_add的作用：
 2、在sysfs里建立一个目录。
 
 parent为NULL的话，则是在/sys目录下。
+
+# kset和kobj关系图
+
+这个的LDD3里的一副经典的图。
+
+![kset和kobj关系](/images/kset和kobj关系.png)
+
+
 
 
 
@@ -233,3 +241,122 @@ platform_device_register
 # 设备模型的用途
 
 1、一个重要用途就是设备的热插拔的支持。
+
+
+
+
+
+下面把网上的系列文章进行学习总结。
+
+
+
+# linux设备模型浅析之设备篇
+
+原文在这里。
+
+https://wenku.baidu.com/view/4b7241e9b8f67c1cfad6b89e.html?rec_flag=default
+
+这个是基于linux2.6，用S3C2410的rtc驱动为分析入口。
+
+platform_add_devices，把smdk2440-devices全部注册到platform_bus_type这个bus上。
+
+然后看device_initialize函数。
+
+```
+1、把dev->kobj.kset指向 devices_kset。相当于放入到devices目录下。生成/sys/devices目录。
+2、kobject(&dev->kobj, &device_ktype)。相当于
+```
+
+
+
+# Linux那些事儿之我是Sysfs
+
+https://wenku.baidu.com/view/b261808a4431b90d6d85c713.html
+
+写得很活泼。容易懂。
+
+
+
+***底层模型***
+
+## kobject
+
+kobject是linux2.6引入的新的设备管理机制，提供基本的对象管理。
+
+它与sysfs紧密关联。每个kobject对应sysfs下的一个目录。
+
+kobject相当于基类。它需要被嵌入到容器里使用。
+
+bus、device、driver都是典型的容器。
+
+这些容器就是通过kobject连接成了树形结构。
+
+引用计数的操作是靠kobject_get/put这2个函数来做的。
+
+引用计数为0时，所有该对象的资源释放。
+
+结构体成员的解释：
+
+```
+struct kobject {
+	const char		*name;
+	struct list_head	entry;//挂接到kset中
+	struct kobject		*parent;//
+	struct kset		*kset;//所属kset指针。
+	struct kobj_type	*ktype;
+	struct sysfs_dirent	*sd;//sysfs文件系统中跟这个kobj对应的文件节点的路径指针。
+	struct kref		kref;
+}；
+```
+
+## kobj_type
+
+结构体分析：
+
+```
+struct kobj_type {
+	void (*release)(struct kobject *kobj);//释放kobj占用的资源。
+	const struct sysfs_ops *sysfs_ops;
+	struct attribute **default_attrs;
+```
+
+## kset
+
+kset的作用就是建立上层（subsystem）和下层（kobject）的关联性。
+
+然后在/sys目录下的正确位置建立目录。
+
+kset和ktype都可以用来指导kobject建立目录的位置，而kset的优先级高。
+
+如果kobject的kset是NULL，才会用ktype来建立关系。
+
+##subsystem
+
+这个结构体就是kset再加一个semaphore，现在已经没有了。
+
+完全被kset取代了。
+
+------
+
+***上层容器***
+
+## bus
+
+
+
+## device
+
+
+
+## driver
+
+
+
+## 举例说明
+
+用ldd3里的lddbus.ko来举例。
+
+
+
+后面大部分是将usb的例子。
+
