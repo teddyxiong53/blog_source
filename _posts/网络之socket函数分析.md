@@ -66,13 +66,13 @@ backlog是指处理多个连接时，可以让多少个进行排队。
 
 在listen和accept之间，可以加上select来阻塞。但是accept其实也是阻塞的。
 
-3、accept函数。
+3、accept函数。**注意第三个长度参数，是一个指针。**
 
 ```
 3个参数。
 1、int sockfd。
 2、struct sockaddr *addr。得到连接的client的地址。
-3、socklen_t len。
+3、socklen_t len。注意注意注意。这个是一个指针*len。如果给了一个值，就会出现accept的时候，Bad Address错误了。
 ```
 
 输入的是前面listen的那个sock（叫监听socket）。得到的是另外一个sock值（叫连接socket）。这个sock表示的是跟client的tcp连接信息。
