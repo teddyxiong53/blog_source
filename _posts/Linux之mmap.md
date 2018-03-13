@@ -34,7 +34,7 @@ int xxx_map(struct file *file, struct vm_area_struct *vma);
 
 用对内存的直接操作来取代read/write这些系统调用。
 
-好处就是效率高了。
+好处就是效率高了。因为减少了copy_to_user、copy_from_user这个拷贝过程。
 
 对于硬盘上的普通文件，这样操作，是非常提高效率的。
 
@@ -53,7 +53,7 @@ static int demo_dev_mmap(struct file *file, struct vm_area_struct *vma)
         vma,
         vma->vm_start,
         virt_to_phys(buf)>>PAGE_SHIFT,//buf是在open的时候kmalloc的4096字节的内存。
-        vma->vm_end - vma->vm_end,
+        vma->vm_end - vma->vm_start,
         vma->vm_page_prot
     );
     return ret;
@@ -72,3 +72,10 @@ void main()
 }
 ```
 
+
+
+# 参考文章
+
+1、
+
+https://www.jianshu.com/p/c3afc0f02560
