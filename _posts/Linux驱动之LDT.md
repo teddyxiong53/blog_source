@@ -214,6 +214,72 @@ write：用kfifo_from_user来拷贝数据。
 
 
 
+# 自己写一遍
+
+1、尽量简化，所有打印都用printk来做。
+
+2、先只写ldt.c和Makefile。解决各种编译错误。
+
+现在编译通过，insmod，发现提示说debugfs相关符号找不到，可能是我的kernel没有包含相关内容，把debugfs的注释掉，就两行。
+
+ioctl的先留空。
+
+3、现在可以看到/dev/ldt设备。
+
+开2个终端窗口，一个cat /dev/ldt，会阻塞。另外一个echo 123 > /dev/ldt
+
+并没有产生预期的效果，echo内容进去后，另外一个没有读到数据。
+
+看我是在ldt_write里，拷贝后，没有调度ldt_tasklet。
+
+加上后，再试，还是没有反应。
+
+tasklet_func是一样的。
+
+把ldt-test的弄过来看看。可以。
+
+就是loopback要是1才行。
+
+先上传到github上。然后继续完善。
+
+当前测试还不方便，需要手动去开窗口去做。所以需要改善ldt-test脚本。
+
+```
+teddy@teddy-ubuntu:~/work/linux_driver/myldt$ dmesg
+[42381.378607] loopback:1 
+[42381.387112] opened by ldt-test 
+[42381.387128] write from ldt-test 
+[42381.387129] now write
+[42381.387145] data_out:1
+[42381.387162] data_out:2
+[42381.387176] data_out:3
+[42381.387190] data_out:r
+[42381.387203] data_out:w
+[42381.387217] data_out:
+
+[42381.387243] data_in:1
+[42381.387257] data_in:2
+[42381.387271] data_in:3
+[42381.387285] data_in:r
+[42381.387299] data_in:w
+[42381.387313] data_in:
+
+[42381.387326] closed by ldt-test 
+[42381.890230] opened by dd 
+[42381.890315] read from dd 
+[42381.890316] can read now 
+[42381.890319] read from dd 
+[42381.890383] closed by dd 
+```
+
+测试基本读写正常。
+
+我看第二个读写，没有看出什么特别的意义来。就不做了。
+
+看mmap。这个就需要写dio这个应用层测试程序了。
+
+
+
 
 
 

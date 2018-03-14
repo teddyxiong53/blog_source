@@ -224,7 +224,7 @@ brw-rw---- 1 root disk 1, 0 Mar 12 15:17 /dev/ram0
 
 
 ```
-set bootargs 'route=172.17.0.3 root=/dev/ram0 rw console=ttyAMA0'; cp 0x40000000 0x60003000 0x500000 ; cp 0x40500000 0x60900000 0x400000; cp 0x40900000 0x60500000 0x100000; bootm 0x60003000 0x60900000 0x60500000
+set bootargs 'route=172.17.0.3 root=/dev/ram0 rw console=ttyAMA0 rdinit=/linuxrc'; cp 0x40000000 0x60003000 0x500000 ; cp 0x40500000 0x60900000 0x400000; cp 0x40900000 0x60500000 0x100000; bootm 0x60003000 0x60900000 0x60500000
 ```
 
 
@@ -248,4 +248,79 @@ set bootargs 'route=172.17.0.3 root=/dev/ram0 rw console=ttyAMA0'; cp 0x40000000
 之前的不经过uboot的方式，是直接给qemu指定-initrd参数来做的。这个跟实际开发还是不同的。
 
 
+
+```
+static int __init rdinit_setup(char *str)
+{
+	unsigned int i;
+
+	ramdisk_execute_command = str;
+	/* See "auto" comment in init_setup */
+	for (i = 1; i < MAX_INIT_ARGS; i++)
+		argv_init[i] = NULL;
+	return 1;
+}
+__setup("rdinit=", rdinit_setup);
+```
+
+指定rdinit=/linuxrc。
+
+现在就报错。说没有这个文件。
+
+明明放进去了的。
+
+算了。我写一个脚本算了。
+
+建立目录结构为这样。
+
+```
+teddy@teddy-ubuntu:~/work/mylinuxlab/rootfs_origin$ tree
+.
+├── bin
+│   ├── busybox
+│   └── sh -> busybox
+├── dev
+│   ├── console
+│   ├── null
+│   └── ram0
+├── etc
+│   └── inittab
+└── init
+```
+
+init脚本内容如下：
+
+```
+
+```
+
+但是还是不行。我看除了/dev/console之外，其他的都无法访问。
+
+```
+xhl -- func:kernel_init_freeable, line:1084 ,rd cmd:/init ,ret:0 
+xhl -- func:kernel_init_freeable, line:1086 ,rd cmd:/init ,ret:-2 
+xhl -- func:kernel_init_freeable, line:1088 ,rd cmd:/init ,ret:-2 
+xhl -- func:kernel_init_freeable, line:1090 ,rd cmd:/init ,ret:-2 
+xhl -- func:kernel_init_freeable, line:1092 ,rd cmd:/init ,ret:-2 
+```
+
+我为了方便调试，把ramdisk改成不压缩的。
+
+```
+xhl -- func:kernel_init_freeable, line:1084 ,rd cmd:/init ,ret:0 
+xhl -- func:kernel_init_freeable, line:1086 ,rd cmd:/init ,ret:-2 
+xhl -- func:kernel_init_freeable, line:1088 ,rd cmd:/init ,ret:-2 
+xhl -- func:kernel_init_freeable, line:1090 ,rd cmd:/init ,ret:0 
+xhl -- func:kernel_init_freeable, line:1092 ,rd cmd:/init ,ret:0 
+xhl -- func:kernel_init_freeable, line:1097 
+```
+
+现在就有几个文件可以访问到了。真是奇怪。
+
+现在是null和ram0访问不到。
+
+```
+Failed to execute /init (error -26)
+Starting init: /bin/sh exists but couldn't execute it (error -26)
+```
 

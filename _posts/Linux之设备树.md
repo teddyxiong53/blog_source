@@ -775,6 +775,43 @@ chosen node。
     };
 ```
 
+# include的效果
+
+xxx.dtsi文件。
+
+```
+/ {
+  .compatible = "aaa";
+  node1 {
+    uart0:serial@44e09000 {
+      compatible="ccc";
+      reg = <11 22>;
+      status = "disabled";
+    };
+  };
+};
+```
+
+yyy.dts
+
+```
+include xxx.dtsi
+/ {
+  .compatible = "aaa","bbb";
+  node1 {
+    uart0:serial@44e09000 {
+      status="okay";
+    };
+  };
+};
+```
+
+最后的效果是这样：
+
+```
+yyy的覆盖xxx的同名属性。
+```
+
 
 
 # 树莓派设备树分析
@@ -809,3 +846,7 @@ skeleton.dtsi的内容是这样的：
 
 
 
+# 参考文章
+
+1、
+http://www.eefocus.com/marianna/blog/14-10/306247_821be.html
