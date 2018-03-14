@@ -113,3 +113,15 @@ bootcmdx=set bootargs 'route=172.17.0.3 root=/dev/ram0 console=ttyAMA0'; cp 0x40
 5、其他的环境变量基本都没用。
 ```
 
+
+
+# 编译uboot
+
+1、make  uboot，会碰到一些编译错误，根据提示解决就好了。
+
+2、如果编译成功，make boot就会使用你编译的uboot来启动了。
+
+3、运行看看。提示for、do、done这些命令找不到。
+
+而且地址也不对。不知道这些地址命令从哪里配置进来的。
+

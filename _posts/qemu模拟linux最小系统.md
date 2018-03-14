@@ -472,3 +472,9 @@ major minor  #blocks  name
   31        0      65536 mtdblock0
 ```
 
+
+
+# 参考文章
+
+http://tinylab.org/using-qemu-simulation-inserts-the-type-system-to-produce-the-whole-process/
+
