@@ -324,3 +324,100 @@ Failed to execute /init (error -26)
 Starting init: /bin/sh exists but couldn't execute it (error -26)
 ```
 
+2018年3月16日14:10:37
+
+现在我把内核配置里的ram设备打开。
+
+我把ram0的权限改为666，现在不会出现设备找不到的问题了。
+
+
+
+现在我要放弃initrd的方式，改用initramfs来做。
+
+```
+
+```
+
+
+
+不带上：`-sd ./sd.ext2 `
+
+```
+Card did not respond to voltage select!
+mmc_init: -95, time 16
+=> 
+```
+
+带上：`-sd ./sd.ext2 `
+
+```
+=> mmcinfo
+unable to select a mode
+mmc_init: -524, time 22
+```
+
+
+
+SD卡这个也走不通。
+
+
+
+```
+sudo apt-get install nfs-kernel-server
+```
+
+
+
+配置电脑的ip地址为：
+
+```
+ sudo ifconfig tap0 192.168.0.1 netmask 255.255.255.0
+```
+
+配置板子的ip地址为：
+
+```
+setenv bootargs root=/dev/nfs nfsroot=192.168.1.10:/home/teddy/work/mylinuxlab/rootfs ip=192.168.0.2:192.168.0.1:192.168.0.1:255.255.255.0::smc911x-0:off init=/init
+```
+
+现在uboot默认的环境变量非常复杂，而且很多，导致我自己的值，都不容易找到，把uboot代码里改了。
+
+把uboot/include/configs/vexpress_common.h里CONFIG_EXTRA_ENV_SETTINGS不要定义。
+
+就好很多了。
+
+```
+=> pri
+arch=arm
+baudrate=38400
+board=vexpress
+board_name=vexpress
+bootcmd=run distro_bootcmd; run bootflash
+bootdelay=2
+cpu=armv7
+ethact=smc911x-0
+ethaddr=52:54:00:12:34:56
+stderr=serial
+stdin=serial
+stdout=serial
+vendor=armltd
+
+Environment size: 248/262140 bytes
+```
+
+现在设置nfs的环境变量。
+
+
+
+```
+cp 0x40000000 0x60003000 0x500000 ; cp 0x40500000 0x60900000 0x400000; cp 0x40900000 0x60500000 0x100000; bootm 0x60003000 0x60900000 0x60500000 
+```
+
+
+
+算了，我再退一步。不想在这些问题上卡住了。
+
+我换成之前实现过的initramfs的方案，不要uboot来启动，直接用kernel镜像。
+
+这个暂停。
+
