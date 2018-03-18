@@ -42,3 +42,29 @@ undisplay 1 #1是一个序号，上面有的。
 
 如果只看一次，就用p替代display就好了。
 
+# 优化问题
+
+1、打印变量内容，提示`optimized out`。
+
+我是在调试linux内核的时候碰到这个问题的。
+
+```
+ifdef CONFIG_PROFILE_ALL_BRANCHES
+KBUILD_CFLAGS	+= -O2 $(call cc-disable-warning,maybe-uninitialized,)
+else
+KBUILD_CFLAGS   += -O2 //这个O2改成O0
+endif
+```
+
+O0的编译不过。我加上一个函数，还是有一堆找不到，改成O1的编译可以。
+
+```
+void __bad_cmpxchg(volatile void *ptr, int size)
+{
+	printk("cmpxchg: bad data size: pc 0x%p, ptr 0x%p, size %d\n",
+		__builtin_return_address(0), ptr, size);
+	BUG();
+}
+EXPORT_SYMBOL(__bad_cmpxchg);
+```
+

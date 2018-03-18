@@ -196,3 +196,24 @@ Unpacking initramfs...
 
 这个函数是放在init段里被调用到的。
 
+
+
+# 分析autoconf.h
+
+顺便看看这里面的配置。
+
+1、CONFIG_I2C_BOARDINFO。
+
+这个支持i2c的boardinfo配置。
+
+
+
+```
+CONFIG_ARCH_VEXPRESS=y
+CONFIG_ARCH_VEXPRESS_CORTEX_A5_A9_ERRATA=y
+CONFIG_ARCH_VEXPRESS_DCSCB=y
+CONFIG_ARCH_VEXPRESS_SPC=y
+CONFIG_ARCH_VEXPRESS_TC2_PM=y
+CONFIG_PLAT_VERSATILE=y
+```
+
