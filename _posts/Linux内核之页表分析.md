@@ -8,6 +8,29 @@ typora-root-url: ..\
 
 
 
+# 缩写
+
+PGD：Page Global Directory
+
+PUD：Page Upper Directory
+
+PMD：Page Middle Directory
+
+PTE：Page Table Entry
+
+```
+typedef pteval_t pte_t;
+typedef pmdval_t pmd_t;
+typedef pmdval_t pgd_t[2];
+typedef pteval_t pgprot_t;
+```
+
+val_t的，都是u32的。所以都是u32的。
+
+使用二级页表的话，PGD==PMD。
+
+
+
 Linux在启动之初，会建立临时页表，后面再start_kernel函数里又会建立真正的页表和页目录。
 
 ![Linux内核内存分布](/images/Linux内核内存分布.png)
@@ -136,6 +159,56 @@ os在管理物理内存的过程中，不断地在做这些事情：
 中断vector的位置，默认是在0这里，也是CP15里的寄存器配置，某个位为1，则会放到0xFFFF 0000这里。
 一般都会这么做，这样位置0，就可以被当成无效指针来定义了。
 ```
+
+
+
+Linux下的页表映射分为两种：
+
+1、Linux自身的页表映射。
+
+2、ARM的MMU的硬件的映射。
+
+由于arm和linux的页表项不同，所以维护了两套PTE。
+
+
+
+arm硬件上，二级页表：
+
+1、 高12位，4K个条目。
+
+2、 中间8位，256个条目。
+
+Linux实现上，是三级页表结构，硬件无关。
+
+三级的实现对接到二级的页表，就是只用PGD和PTE。PMD不用就好了。
+
+读pgtable-2level.h里的注释。
+
+L_PTE_xxx是Linux的。
+
+PTE_xxx是arm的。
+
+```
+/*
+ * "Linux" PTE definitions.
+ *
+ * We keep two sets of PTEs - the hardware and the linux version.
+ * This allows greater flexibility in the way we map the Linux bits
+ * onto the hardware tables, and allows us to have YOUNG and DIRTY
+ * bits.
+ *
+ * The PTE table pointer refers to the hardware entries; the "Linux"
+ * entries are stored 1024 bytes below.
+ */
+```
+
+CONFIG_PGTABLE_LEVELS=2 配置的页表分级是二级的。
+
+
+
+# 特殊的零页
+
+零页是要特别构建的，就像0号进程一样。
 
 
 

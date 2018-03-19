@@ -48,3 +48,25 @@ printk()
 }
 ```
 
+
+
+# 在mylinuxlab里实验
+
+```
+static inline void prepare_page_table(void)
+{
+	unsigned long addr;
+	phys_addr_t end;
+	pr_notice("xhl -- pr_notice");
+	printascii("xhl -- pmd size 111");
+	printk("xhl -- pmd size:%d \n", PMD_SIZE);
+```
+
+我在这里加了3行打印，只有pr_notice打印出来了。
+
+我当前的配置。
+
+```
+#define CONFIG_MESSAGE_LOGLEVEL_DEFAULT 7
+```
+
