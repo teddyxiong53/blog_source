@@ -30,13 +30,13 @@ ttyS0::respawn:-/bin/sh
 要密码的passwd文件内容：
 
 ```
-root:x:0:0:/root:/bin/sh
+root:x:0:0:root:/root:/bin/sh
 ```
 
 不要密码的passwd文件内容：
 
 ```
-root::0:0:/root:/bin/sh
+root::0:0:root:/:/bin/sh
 ```
 
 区别就在于root后面那个x，有x，要密码，没有x，不要密码。

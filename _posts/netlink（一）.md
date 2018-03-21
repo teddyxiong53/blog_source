@@ -28,6 +28,20 @@ tags:
 
 这让我们很容易联想到udp协议。
 
+# netlink的优势是什么？
+
+1、可以进行内核用户态的双向通信。但是系统调用也可以啊。
+
+netlink的优势在于，你要给内核增加自己特有的东西的时候，不用冒着污染内核代码的风险。
+
+你只需要再netlink.h里加上你自己定义的一个宏。
+
+netlink是异步的，就跟普通的socket类似，可以有缓冲区。
+
+系统调用则是同步的。
+
+
+
 # netlink通信类型
 
 支持两种通信类型：
@@ -72,17 +86,38 @@ value.....
 
 
 
-# App到内核的单向通信示例
+# 接口
+
+接口包括2类：
+
+1、内核态的。
+
+2、用户态。
 
 
+
+socket failed 
+Protocol not supported
+
+
+
+netlink
 
 # 参考文章
 
-1、用户空间和内核空间通讯
+1、用户空间和内核空间通讯。这篇文章是基于linux2.6的，我现在是在4.14上做实验，所以有些地方需要自己改。
 
 http://blog.csdn.net/varistor/article/details/25311177
 
-这篇文章是基于linux2.6的，我现在是在4.14上做实验，所以有些地方需要自己改。
+
+
+2、
+
+http://bbs.chinaunix.net/thread-2029813-1-1.html
+
+3、
+
+https://gist.github.com/arunk-s/c897bb9d75a6c98733d6
 
 
 

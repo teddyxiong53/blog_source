@@ -115,3 +115,36 @@ max log size
 
 
 
+我在树莓派上这样配置。
+
+```
+#======================= Global Settings =======================
+
+[global]
+    workgroup = WORKGROUP
+    server string = this is ubuntu samba server
+    log file = /var/log/samba/log.%m
+    max log size = 1000
+
+
+
+#======================= Share Definitions =======================
+
+[homes]
+   comment = this is my home dir
+   browseable = yes
+   read only = no
+   create mask = 0777
+   directory mask = 0777
+   valid users = %S
+   
+[share]
+    path = /
+    available = yes
+    browsable = yes
+    public = yes
+    writeable = yes
+```
+
+开始一直报用户密码不对。后面发现是因为我没有`sudo smbpasswd -a pi`导致的。
+

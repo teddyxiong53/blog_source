@@ -170,3 +170,23 @@ driver_init
 		
 ```
 
+# 看samples里的这里
+
+我看了，有了这样的理解。
+
+1、kobject和kset都是sys目录下的目录。
+
+2、那么sys下面的文件对什么结构体呢？就是kobj_attribute了。
+
+文件实际上对于了内核里的一个int数据。
+
+cat  xxx的时候，就是读取这个int变量的值打印出来。
+
+echo 1>  xxx的时候，就是改变这个int变量的值。
+
+这样就实现了用户态跟内核的通信了。
+
+3、一个kobj_attribute只有个属性，一个是name，就对应了文件的名字。
+
+一个是mode，文件的可读可写性。
+
