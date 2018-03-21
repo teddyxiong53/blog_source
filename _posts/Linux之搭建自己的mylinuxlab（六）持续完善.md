@@ -266,3 +266,41 @@ ash_main里会read_profile("/etc/profile"); read_profile("$HOME/.profile");
 
 
 
+# 加入多用户
+
+加入2个带密码的用户。teddy和xhliang。
+
+```
+/etc # cat passwd-
+root::0:0:root:/:/bin/sh
+teddy:Vqj1rLdE/APjI:1000:1000:Linux User,,,:/home/teddy:/bin/sh
+xhliang:x:1001:1001:Linux User,,,:/home/xhliang:/bin/sh
+/etc # cat passwd
+root::0:0:root:/:/bin/sh
+teddy:Vqj1rLdE/APjI:1000:1000:Linux User,,,:/home/teddy:/bin/sh
+xhliang:cHT9gEtiS2R4o:1001:1001:Linux User,,,:/home/xhliang:/bin/sh
+```
+
+添加后的情况是这样的。
+
+把这2个文件保存下来。以后做出来的文件夹默认就带这个。
+
+# 加入syslogd的配置
+
+1、新建/etc/syslogd.conf文件。内容如下：
+
+```
+mail.* /var/log/maillog
+cron.* /var/log/cron
+news.=crit /var/log/news/news.crit
+user.* /var/log/userlog
+```
+
+2、在rcS脚本里加上动态创建/var目录的语句。算了，还是静态创建吧。
+
+3、脚本里默认启动syslogd。
+
+# 运行thttpd
+
+
+
