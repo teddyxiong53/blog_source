@@ -32,6 +32,12 @@ sudo apt-get install i2c-tools
 4、i2cset。
 ```
 
+工具的用法。
+
+```
+i2cget  i2cbus chip-address [data-address [mode]]
+```
+
 
 
 
@@ -126,4 +132,74 @@ pi@raspberrypi:~$
 
 
 
+
+树莓派的i2c信息。
+
+```
+pi@raspberrypi:/sys/class/i2c-dev/i2c-1$ tree
+.
+├── dev
+├── device -> ../../../i2c-1
+├── name
+├── power
+│   ├── autosuspend_delay_ms
+│   ├── control
+│   ├── runtime_active_time
+│   ├── runtime_status
+│   └── runtime_suspended_time
+├── subsystem -> ../../../../../../../class/i2c-dev
+└── uevent
+
+3 directories, 8 files
+pi@raspberrypi:/sys/class/i2c-dev/i2c-1$ cat dev
+89:1
+pi@raspberrypi:/sys/class/i2c-dev/i2c-1$ cat device
+cat: device: Is a directory
+pi@raspberrypi:/sys/class/i2c-dev/i2c-1$ cat name
+bcm2835 I2C adapter
+pi@raspberrypi:/sys/class/i2c-dev/i2c-1$ cat uevent 
+MAJOR=89
+MINOR=1
+DEVNAME=i2c-1
+pi@raspberrypi:/sys/class/i2c-dev/i2c-1$
+```
+
+
+
+```
+pi@raspberrypi:/sys/class/i2c-adapter/i2c-1$ tree
+.
+├── delete_device
+├── device -> ../../3f804000.i2c
+├── i2c-dev
+│   └── i2c-1
+│       ├── dev
+│       ├── device -> ../../../i2c-1
+│       ├── name
+│       ├── power
+│       │   ├── autosuspend_delay_ms
+│       │   ├── control
+│       │   ├── runtime_active_time
+│       │   ├── runtime_status
+│       │   └── runtime_suspended_time
+│       ├── subsystem -> ../../../../../../../class/i2c-dev
+│       └── uevent
+├── name
+├── new_device
+├── of_node -> ../../../../../firmware/devicetree/base/soc/i2c@7e804000
+├── power
+├── subsystem -> ../../../../../bus/i2c
+└── uevent
+
+9 directories, 12 files
+pi@raspberrypi:/sys/class/i2c-adapter/i2c-1$ cat name 
+bcm2835 I2C adapter
+pi@raspberrypi:/sys/class/i2c-adapter/i2c-1$ cat uevent 
+OF_NAME=i2c
+OF_FULLNAME=/soc/i2c@7e804000
+OF_COMPATIBLE_0=brcm,bcm2835-i2c
+OF_COMPATIBLE_N=1
+OF_ALIAS_0=i2c1
+pi@raspberrypi:/sys/class/i2c-adapter/i2c-1$ 
+```
 

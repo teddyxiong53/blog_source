@@ -14,25 +14,15 @@ cdev和device是如何关联起来的？
 
 
 
-Linux下几乎所有的设备都是device的子类，无论是platform设备还是I2C设备还是网络设备。但是唯独cdev不是。这个可以从cdev的结构体定义可以看出，cdev_add也只是把它放到cdev_map里。这个是历史原因造成的。
 
-（但是我看block_device结构体里也没有包含device。）
-
-
-
-cdev是传统的东西，device和sysfs是2.6以后出现的。
-
-新的旧的交叉在一起了。
 
 cdev和device的联系纽带是dev_t的设备号。还有共有的kobject。
 
 
 
-cdev是一种高层次的封装。不属于linux设备驱动模型的一部分了。
-
-
-
 cdev更适合理解为一种接口，而不是一种设备。
+
+cdev只是对kobject进行一次封装，属于比较底层的东西。
 
 
 
