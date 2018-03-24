@@ -68,3 +68,10 @@ void __bad_cmpxchg(volatile void *ptr, int size)
 EXPORT_SYMBOL(__bad_cmpxchg);
 ```
 
+# 调试带参数的程序
+
+```
+set args xxx
+show args
+```
+
