@@ -669,6 +669,7 @@ mkfs.jffs2 -n -s 2048 -e 128KiB -d rootfs -o rootfs.jffs2
 
 ```
 mkfs.jffs2 -n -s 512 -e 16KiB -d rootfs -o rootfs.jffs2 
+
 ```
 
 再用从nand启动的。
@@ -747,7 +748,7 @@ set bootargs noinitrd root=/dev/nfs rw nfsroot=192.168.1.1:/home/teddy/work/mini
 
 ```
 $ sudo tunctl -u $USER -t tap0
-$ sudo ifconfig tap0 192.168.1.1
+$ sudo ifconfig tap0 192.168.0.1
 ```
 
 然后qemu启停的时候，不要操作tap0了。
@@ -772,7 +773,44 @@ arp -s 192.168.1.2 08:08:11:18:12:27
 
 
 
+我觉得没有必要用flashimg来做nand.bin。我自己dd一个出来。
 
+但是怎么进行分区呢？
+
+还是用flashimg。把root分区缩小到16M。
+
+```
+nand read 0x31000000 0x60000 0x500000
+set bootargs noinitrd root=/dev/mtdblock3   rootfstype=jffs2 mtdparts=mtdparts=nandflash0:256k@0(boot),128k(params),5m(kernel),16m(root) console=ttySAC0,115200  
+bootm 0x31000000
+```
+
+开机后，还是狂打印。不管。过了一会儿就不打印了。就可以正常操作了。
+
+下次开机，打印就没有那么多了。
+
+先把这套环境上传到github。
+
+
+
+加入带界面的。这个只能在Ubuntu的图形界面下用。
+
+1、修改启动qemu的命令。
+
+```
+boot-ui:
+	$(ROOT_DIR)/qemu/arm-softmmu/qemu-system-arm  -M mini2440 -serial stdio \
+	-mtdblock $(ROOT_DIR)/image/nand.bin  \
+	-usb -usbdevice keyboard -usbdevice mouse -show-cursor
+```
+
+2、修改bootargs。
+
+```
+nand read 0x31000000 0x60000 0x500000
+set bootargs noinitrd root=/dev/mtdblock3   rootfstype=jffs2 mtdparts=mtdparts=nandflash0:256k@0(boot),128k(params),5m(kernel),16m(root) console=ttySAC0,115200  mini2440=3tb
+bootm 0x31000000
+```
 
 
 

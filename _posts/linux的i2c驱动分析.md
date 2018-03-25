@@ -7,7 +7,6 @@ tags:
 typora-root-url: ..\
 ---
 
-
 i2c总线是常见而有简单的总线，分析其linux驱动，对于帮助我们理解linux的驱动框架很有用。
 先把分析场景画图如下：
 ![linux-i2c分析场景图](/images/linux-i2c分析场景图.jpg)
@@ -15,6 +14,20 @@ i2c总线是常见而有简单的总线，分析其linux驱动，对于帮助我
 对于一款新的芯片，移植i2c驱动需要做两个方面的事情，一个是cpu侧的，一个是设备侧的。
 cpu侧：需要进行总线驱动的编写。这个一般由cpu厂家提供了。不过我们可以分析一下。cpu侧重点关注i2c_adapter。
 设备侧：以我们当前的场景来看，就是要写eeprom和rtc的驱动。设备重点关注i2c_driver结构体。
+
+
+
+我觉得是这样：
+
+一个挂在I2C总线上的设备，有两种方式来操作。
+
+1、使能内核的i2c-dev特性。在用户空间用/dev/i2c-0来操作。相当于把具体逻辑放在了用户态。
+
+2、直接写对应设备的驱动，例如eeprom驱动，用户空间用/dev/at24这样的节点来操作。把具体逻辑就放在驱动里了。
+
+不过第二种方式是更加常见的。
+
+
 
 #cpu侧的总线驱动编写
 假设现在有一款新的cpu，名字叫xxx。需要将它的I2C功能驱动起来。则需要做这些事情。
@@ -408,6 +421,41 @@ i2c-0  i2c-1
 ```
 
 3、我尝试给qemu添加i2c设备进来，但是没有成功。先放着。
+
+# 基于mini2440-lab做实验
+
+我另外建立了一个mini2440-lab。用的是定制版本的qemu。
+
+所以有AT24C08的eeprom。
+
+现在可以用i2ctools进行操作。
+
+现在就分析一下程序的执行流程。
+
+先看i2cdump的过程。
+
+在busybox的miscutils/i2c_tools.c里。
+
+```
+i2cdump_main
+{
+  1、int fd = i2c_dev_open
+  	open("/dev/i2c-0")
+  2、用fd ioctl来检查读函数。cmd是I2C_FUNCS，这个定义在i2c-dev.h里。
+}
+```
+
+
+
+CPU端的adapter是这里做的 。里面malloc了一个s3c的结构体。里面包含了i2c_adapter。
+
+```
+static int __init i2c_adap_s3c_init(void)
+{
+	return platform_driver_register(&s3c24xx_i2c_driver);
+}
+subsys_initcall(i2c_adap_s3c_init);
+```
 
 
 
