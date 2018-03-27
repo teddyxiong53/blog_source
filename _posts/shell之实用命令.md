@@ -15,7 +15,10 @@ du -h --max-depth=1 ./
 ###同时查找多种文件
 
 ```
-find -name "Makefile" -o -name "*.mk" -o -name "*.sh" | xargs grep -nwr "generic\-package"
+find -name "Makefile" \
+-o -name "*.mk" \
+-o -name "*.sh" \
+| xargs grep -nwr "generic\-package"
 ```
 
 ### 排除几种文件

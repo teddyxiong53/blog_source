@@ -2,9 +2,7 @@
 title: Linux的input子系统
 date: 2017-05-09 21:55:27
 tags:
-
 	- Linux
-
 	- input
 
 ---

@@ -26,11 +26,11 @@ https://github.com/notro/fbtft/wiki
 
 Documentation/fb/deferred_io.txt里。
 
-deferred io是一种延迟和重新定位的io。它使用host memory作为buffer和mmu页错误作为一个触发条件，来执行device io操作。
+deferred io是一种延迟和重新定位的io。它使用host memory作为buffer，用mmu页错误作为一个预触发条件，来执行device io操作。
 
 1、用户App mmap framebuffer。
 
-2、延迟io和驱动建立错误和页写handler。
+2、延迟io和驱动建立fault和page_mkwrite的handler。
 
 3、用户App试图去写mmap的内存。
 
@@ -53,6 +53,31 @@ deferred io是一种延迟和重新定位的io。它使用host memory作为buffe
 
 
 允许burst写fb，代价很小。
+
+
+
+## 在内核代码里的分析
+
+1、驱动调用fb_deferred_io_init(info);这个函数是在drivers/video/fbdev/core/fb_defio.c里。
+
+带进去的参数就是这2个。
+
+```
+	fbdefio->delay =           HZ/fps; //HZ等于100 ，fps等于30 。相当于延时3个tick左右。
+	fbdefio->deferred_io =     fbtft_deferred_io; //函数指针。
+```
+
+fb_deferred_io_init里有一个这样的delayed_work。
+
+```
+INIT_DELAYED_WORK(&info->deferred_work, fb_deferred_io_work);
+```
+
+
+
+
+
+
 
 # fbtft相关背景
 
@@ -120,7 +145,7 @@ fbtft-bus.c：
 fbtft-core.c
 fbtft-io.c：spi函数。
 fbtft-sysfs.c
-fbtft_device.c
+fbtft_device.c：这里定义spi device和platform_data，这个单独是一个ko，要先加载。
 fb_ili9341.c
 fb_ssd1306.c
 ```

@@ -293,11 +293,44 @@ QEMU ee24c08_tx: write 0001=aa
 
 但是再读取出来，还是0xff。
 
-我们看看
+现在往i2c-s3c2440.c里加打印。可以看到dump的时候，是一个字节一个字节地读取的。
+
+```
+/ # i2cdump -f -y 0 0x50
+     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f    0123456789abcdef
+00: xhl -- msgs->addr:80, msgs->flags :00000000 
+00
+
+xhl -- ----------------
+ff xhl -- msgs->addr:80, msgs->flags :00000000 
+01
+
+xhl -- ----------------
+ff xhl -- msgs->addr:80, msgs->flags :00000000 
+02
+```
+
+为什么打印出来是256个呢？因为busybox里写死的。
+
+```
+for (i = 0; i < I2CDUMP_NUM_REGS; i += 0x10) {
+```
+
+然后又是一个一个字节地读。
+
+```
+case I2C_SMBUS_BYTE_DATA:
+				res = i2c_smbus_read_byte_data(bus_fd, i+j);
+				block[i+j] = res;
+```
+
+你可以设置参数选择整块读取的。
 
 
 
-看mini2440的bsp文件。
+
+
+#mini2440的bsp文件
 
 定义了一个bootargs。
 

@@ -123,3 +123,68 @@ ENC28J60里有一个8K的缓冲区。我们要把这个划分为发送buf和接�
 
 
 
+从注释看，是因为用到了spi_sync。这个接口会阻塞，所以没有用tasklet等方式。而用了work_struct。
+
+```
+static irqreturn_t enc28j60_irq(int irq, void *dev_id)
+{
+	struct enc28j60_net *priv = dev_id;
+
+	/*
+	 * Can't do anything in interrupt context because we need to
+	 * block (spi_sync() is blocking) so fire of the interrupt
+	 * handling workqueue.
+	 * Remember that we access enc28j60 registers through SPI bus
+	 * via spi_sync() call.
+	 */
+	schedule_work(&priv->irq_work);
+
+	return IRQ_HANDLED;
+}
+```
+
+
+
+看接收一个包的过程。
+
+```
+enc28j60_irq_work_handler
+	enc28j60_rx_interrupt
+		enc28j60_hw_rx
+			enc28j60_mem_read
+			skb = netdev_alloc_skb(ndev, len + NET_IP_ALIGN);
+			netif_rx_ni(skb);
+				netif_rx_internal
+					enqueue_to_backlog
+						sd = &per_cpu(softnet_data, cpu);
+						__skb_queue_tail(&sd->input_pkt_queue, skb);
+							这个就是加入到一个list里了。
+```
+
+
+
+```
+static int __init net_dev_init(void)
+	skb_queue_head_init(&sd->input_pkt_queue);
+	sd->backlog.poll = process_backlog;
+```
+
+process_backlog就是循环处理。
+
+```
+process_backlog
+	while 1
+		while ((skb = __skb_dequeue(&sd->process_queue))) {
+			rcu_read_lock();
+			local_irq_enable();
+			__netif_receive_skb(skb);//这里拿数据的。
+```
+
+```
+__netif_receive_skb
+	__netif_receive_skb_core
+		deliver_skb
+			调用到回调。
+			ip_rcv	
+```
+
