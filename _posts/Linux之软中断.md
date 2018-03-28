@@ -119,6 +119,28 @@ do_softirq。
 
 
 
+所谓tasklet基于softirq，就是指的这个。
+
+```
+void __tasklet_schedule(struct tasklet_struct *t)
+{
+	unsigned long flags;
+
+	local_irq_save(flags);
+	t->next = NULL;
+	*__this_cpu_read(tasklet_vec.tail) = t;
+	__this_cpu_write(tasklet_vec.tail, &(t->next));
+	raise_softirq_irqoff(TASKLET_SOFTIRQ);//激活一个软中断。
+	local_irq_restore(flags);
+}
+```
+
+
+
+
+
+
+
 # 参考文章
 
 1、Linux软中断原理浅析

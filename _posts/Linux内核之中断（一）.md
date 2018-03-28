@@ -327,7 +327,9 @@ static int s3c24xx_serial_init_port(struct s3c24xx_uart_port *ourport,
 
 # 为什么说tasklet是中断上下文？
 
+因为tasklet本质上是软中断，软中断不能打断软中断。
 
+也就是说，以网络收包为例，当前收包没有处理完，是不能收下一个包的。
 
 
 
