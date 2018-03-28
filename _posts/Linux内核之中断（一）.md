@@ -3,7 +3,7 @@ title: Linux内核之中断（一）
 date: 2018-03-24 10:13:24
 tags:
 	- Linux内核
-
+typora-root-url: ..\
 ---
 
 
@@ -22,9 +22,9 @@ tags:
 
 1、CPU。
 
-2、外设。
+2、外设。外设的中断信号发给中断控制器。
 
-3、GIC。中断控制器。
+3、中断控制器。可以控制中断的开关，优先级等。arm架构下，以前用的多的是VIC。进入多核时代后，GIC应用比较多。
 
 
 
@@ -134,6 +134,197 @@ asm_do_IRQ 这个就是在中断向量那里。
    35 c00093c0 T s3c24xx_handle_irq
 ```
 
+
+
+# 通用中断子系统
+
+架构图是这样的。
+
+![Linux内核之中断-图1](/images/Linux内核之中断-图1.png)
+
+## 硬件封装层
+
+所有跟CPU架构有关的内容都在这里抽象统一。
+
+这一层的结构体是：
+
+struct irq_chip
+
+```
+除了name和flag之外，全部都是函数指针。
+```
+
+是对中断控制器的接口抽象。
+
+## 中断通用逻辑
+
+这一层实现了对中断系统几个重要数据的管理。并提供了几个辅助管理函数。
+
+还实现了中断线程的实现和管理。
+
+共享中断、嵌套中断也在这里处理。
+
+## 中断流控层
+
+所谓中断流控，就是指合理并且正确地处理连续发生的中断。
+
+例如，一个中断在处理的时候，下一个中断来了，应该怎么安排。
+
+这一层实现了跟硬件无关的流控。
+
+asm_do_IRQ就是这一层的。
+
+
+
+## 驱动程序api
+
+这一层就是封装接口给驱动程序用的。
+
+就是request_irq这一套接口。
+
+```
+驱动开发者使用irq，只需要包含linux/interrupt.h就好了。
+里面主要就是：
+1、request_irq和free_irq。
+2、tasklet结构体和函数。
+```
+
+另外，还有一个setup_irq可以用。这个传递参数，是都整合到一个结构体irqaction里了。
+
+跟request_irq一样，都是调用到`__setup_irq`函数。
+
+```
+static struct irqaction samsung_clock_event_irq = {
+	.name		= "samsung_time_irq",
+	.flags		= IRQF_TIMER | IRQF_IRQPOLL,
+	.handler	= samsung_clock_event_isr,
+	.dev_id		= &time_event_device,
+};
+```
+
+
+
+struct irq_desc。中断描述符，整个中断子系统都是以这个为中心的。
+
+
+
+# 看mini2440里对中断如何处理
+
+```
+1、bsp里的init_irq指向s3c2440_init_irq
+2、s3c2440_init_irq在drivers/irqchip/irq-s3c2440.c里。
+	这里面就是初始化了2个中断控制器。s3c_intc[0]和s3c_intc[1]
+	s3c_intc[0]指向基本的。
+	s3c_intc[1]指向二级的。
+
+```
+
+
+
+串口中断是如何处理的？
+
+看看mini2440里的这些中断都是在哪里注册进去的。中断处理函数做了些什么。
+
+```
+/dev/input # cat /proc/interrupts 
+           CPU0       
+ 29:    2140301       s3c  13 Edge      samsung_time_irq
+ 32:          0       s3c  16 Edge      s3c2410-lcd
+ 43:          0       s3c  27 Edge      s3c2440-i2c.0
+ 55:          0   s3c-ext   7 Edge      eth0
+ 56:          0   s3c-ext   8 Edge      Button 1
+ 59:          0   s3c-ext  11 Edge      Button 2
+ 61:          0   s3c-ext  13 Edge      Button 3
+ 62:          0   s3c-ext  14 Edge      Power
+ 63:          0   s3c-ext  15 Edge      Button 5
+ 74:        148  s3c-level   0 Edge      s3c2440-uart
+ 75:        375  s3c-level   1 Edge      s3c2440-uart
+ 87:          0  s3c-level  13 Edge      s3c2410-wdt
+Err:          0
+```
+
+总共12个中断。
+
+## samsung_time_irq
+
+这个中断号是29 。
+
+是在bsp里的init_time回调做的。是系统tick中断。
+
+## s3c2410-lcd
+
+```
+./arch/arm/mach-s3c24xx/include/mach/irqs.h:43:#define IRQ_LCD         S3C2410_IRQ(16)      /* 32 */
+```
+
+这个是平台设备的resource里注册进去的。
+
+加载fb的驱动的时候，
+
+```
+./drivers/video/fbdev/s3c2410fb.c:1106:         .name   = "s3c2410-lcd",
+```
+
+在probe里会request_irq的。
+
+在drivers/video/fbdev/s3c2410fb.c里。
+
+```
+ret = request_irq(irq, s3c2410fb_irq, 0, pdev->name, info);
+```
+
+## s3c2440-i2c.0
+
+在drivers/i2c/busses/i2c-s3c2410.c里。
+
+```
+ret = devm_request_irq(&pdev->dev, i2c->irq, s3c24xx_i2c_irq, 0,
+				dev_name(&pdev->dev), i2c);
+```
+
+## eth0
+
+
+
+## Button 1
+
+这些都是在gpio-keys.c里。
+
+
+
+## s3c2440-uart
+
+```
+./drivers/tty/serial/samsung.c:2346:            .name           = "s3c2440-uart",
+```
+
+```
+static struct platform_driver samsung_serial_driver = {
+	.probe		= s3c24xx_serial_probe,
+	.remove		= s3c24xx_serial_remove,
+	.id_table	= s3c24xx_serial_driver_ids,
+	.driver		= {
+		.name	= "samsung-uart",
+		.pm	= SERIAL_SAMSUNG_PM_OPS,
+		.of_match_table	= of_match_ptr(s3c24xx_uart_dt_match),
+	},
+};
+```
+
+
+
+```
+static int s3c24xx_serial_init_port(struct s3c24xx_uart_port *ourport,
+				    struct platform_device *platdev)
+	ret = platform_get_irq(platdev, 1);
+	if (ret > 0)
+		ourport->tx_irq = ret;
+```
+
+
+
+
+
 # 为什么说tasklet是中断上下文？
 
 
@@ -153,3 +344,7 @@ https://blog.csdn.net/droidphone/article/details/7467436
 3、linux驱动之中断处理过程C程序部分
 
 https://www.cnblogs.com/amanlikethis/p/6941666.html?utm_source=itdadao&utm_medium=referral
+
+4、Linux中断（interrupt）子系统之一：中断系统基本原理
+
+https://blog.csdn.net/droidphone/article/details/7445825
