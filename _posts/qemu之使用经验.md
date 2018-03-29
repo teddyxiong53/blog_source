@@ -16,5 +16,19 @@ tags:
 
 加上：命令行可以继续输入。
 
+2、指定内存大小。
+
+这样：
+
+```
+qemu-system-arm -M vexpress-a9 -m 1G 
+```
+
+这样就指定了1G的内容。如果指定超出了。就会报错：
+
+```
+vexpress-a9: cannot model more than 1GB RAM
+```
+
 
 

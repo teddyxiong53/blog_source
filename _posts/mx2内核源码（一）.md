@@ -342,13 +342,26 @@ LOC:     860939     105545     102266     208525  Local timer interrupts
 
 
 
-看看蓝牙的。
+
+
+
 
 ```
+machine_desc->map_io是在mmu.c里的devicemaps_init里调用。是在paging_init里。
+machine_desc->init_irq是在init_IRQ里调用。这个是在start_kernel里调用。
+machine_desc->init_machine是在customize_machine里调用。这个被
+arch_initcall(customize_machine);这样调用到。
 
+map_io也两个地方有，一个machine的，一个是cpu的。
+各自建立一部分的固定映射。
+
+machine_init里做的事情：
+1、设置platform device的私有数据，
+	然后i2c_register_board_info。
+	好几个i2c的依次做。
+	然后是是其他的平台设备的。
+2、最后platform_add_devices用这个一锅端了。
 ```
-
-
 
 
 

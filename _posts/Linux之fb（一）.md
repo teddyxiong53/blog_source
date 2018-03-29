@@ -225,3 +225,161 @@ clcd-pl11x 1001f000.clcd: /smb@4000000/motherboard/iofpga@7,00000000/clcd@1f000 
 
 我看fb设备有2个，fb0和fb1，默认是操作fb0，对fb1操作不会报错，但是没有用。
 
+
+
+# lcd的分类
+
+lcd就是液晶显示技术制作的显示屏。
+
+lcd根据驱动方式可以分为：
+
+1、静态驱动。
+
+2、简单矩阵驱动。TN（液晶分子扭转90度）和STN（液晶分子扭转180度）。
+
+3、主动矩阵驱动。TFT（液晶分子扭转90度）。
+
+# oled和lcd的区别
+
+oled是1979年华裔教授邓青云发现的。
+
+oled是有机发光二极体的缩写。
+
+oled的显示原理跟lcd的完全不同。它不需要背光，有机材料自动会发光。
+
+
+
+# deferred io原理分析
+
+主要文件是：fb_defio.c。
+
+看看这个文件里的内容：
+
+对外接口是3个。
+
+```
+1、fb_deferred_io_init。在fb被注册的时候，调用到。
+	这里做的事情最多：
+	1）info->fbops->fb_mmap = fb_deferred_io_mmap;
+		注册自己特有的mmap。
+	2）INIT_DELAYED_WORK(&info->deferred_work, fb_deferred_io_work);
+	这2个很关键。是核心原理。
+2、fb_deferred_io_open，在fb被open的时候，调用到。
+3、fb_deferred_io_cleanup，在fb被close的时候，调用到。
+```
+
+fb_deferred_io_mmap
+
+```
+参数就是vma。
+1、给vma->vm_ops赋值为fb_deferred_io_vm_ops
+	
+```
+
+fb_deferred_io_vm_ops内容是这样的。
+
+```
+static const struct vm_operations_struct fb_deferred_io_vm_ops = {
+	.fault		= fb_deferred_io_fault,
+	.page_mkwrite	= fb_deferred_io_mkwrite,
+};
+```
+
+
+
+
+
+这里很关键。
+
+```
+info->flags =              FBINFO_FLAG_DEFAULT | FBINFO_VIRTFB;
+```
+
+
+
+fb_mmap。这个就是我们在应用层mmap时会调用到的。
+
+set_page_dirty会怎么样？会触发去把数据刷出去吗？
+
+
+
+理一下过程：
+
+1、应用层mmap。就是调用到fbmem.c里的fb_mmap。
+
+但是底层的fbtft，并没有实现fb_info里的fb_mmap了。所以这个只到fb通用层这里。
+
+为什么fbtft的驱动不实现呢？是没有必要了。通用层的够了。我看s3c2410的也是一样的。
+
+这里mmap的内存，到底是对应哪里分配的呢？
+
+```
+fbi->screen_base,//这个是cpu地址。
+fbi->fix.smem_start//这个的dma地址。所以三星的有，fbtft的没有。
+```
+
+应用层mmap，得到的地址指向vmalloc得到的screen_base。
+
+2、然后我写入一屏的数据。怎么走？
+
+当前写入数据，不是用write接口，而是直接操作内存的。
+
+这个行为如何关联到驱动层呢？
+
+往这个内存写数据，一定会触发缺页异常，就是靠这个来驱动的。
+
+3、fbtft_deferred_io调用到update_display。这里面write_vmem，然后用spi接口把数据发出去。
+
+我觉得fbtft这里也是坑啊。在发送前，有一次处理。每个像素都处理了一下。
+
+```
+	for (x = 0; x < par->info->var.xres; x++) {
+		for (y = 0; y < par->info->var.yres/8; y++) {
+			*buf = 0x00;
+			for (i = 0; i < 8; i++)
+				*buf |= (vmem16[(y*8+i)*par->info->var.xres+x] ? 1 : 0) << i;
+			buf++;
+		}
+	}
+```
+
+
+
+看看三星的，如何用dma的方式把数据发送出去。
+
+
+
+
+
+#关于page cache
+
+页高速缓存（page cache）是内核所使用的主要的磁盘高速缓存机制。
+
+在大多数情况下，内核在读写磁盘的时候，都引用page cache。
+
+在把一页数据传送到块设备之前，内核首先检查对应的页是否已经在page cache里了。
+
+如果不在，就在page cache加上一项。然后把要写入磁盘的数据填充进来。
+
+io并不会马上开始，而是要延迟几秒钟。这就是延迟写操作。
+
+几乎所有的文件读和写操作都依赖page cache。
+
+不过可以绕过，你open的时候，传递O_DIRECT标志。
+
+
+
+page cache的核心对象是address_space结构体。
+
+对address_space的操作有：
+
+writepage、readpage、write_pages、set_page_dirty、direct_IO。
+
+
+
+linux支持大道几个TB的文件。访问大文件的时候，page cache里就有太多的文件页。
+
+这样要顺序扫描就很耗时。
+
+所以这里就应用了radix tree技术。
+

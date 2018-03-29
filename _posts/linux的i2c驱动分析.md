@@ -457,6 +457,40 @@ static int __init i2c_adap_s3c_init(void)
 subsys_initcall(i2c_adap_s3c_init);
 ```
 
+# /dev/i2c-0节点如何产生的？
+
+实际上，我在rootfs里，没有mknod，但是这个节点却是有的。如何产生的呢？
+
+是因为我调用了mdev -s。
+
+这个命令是扫描了/sys/dev下面所有的节点，来创建/dev下面的节点的。
+
+/sys/dev下面的都是指向devices下面的软链接。文件名字就是major：minor的格式。
+
+所以sysfs和procfs是内核的亲儿子，内核会自动生成对应的节点。/dev文件系统主要靠用户态来生成节点。
+
+```
+lrwxrwxrwx    1 root     0                0 Mar 29 00:19 7:129 -> ../../devices/virtual/vc/vcsa1
+```
+
+
+
+这个是我在对应函数加打印看到的内容。
+
+
+
+```
+xhl -- devname:(null), path:/sys/dev/char/10:62, op:0
+xhl -- devname:(null), path:/sys/dev/char/4:22, op:0
+xhl -- devname:(null), path:/sys/dev/char/4:4, op:0
+xhl -- devname:(null), path:/sys/dev/char/4:50, op:0
+xhl -- devname:(null), path:/sys/dev/char/4:12, op:0
+xhl -- devname:(null), path:/sys/dev/char/4:40, op:0
+xhl -- devname:(null), path:/sys/dev/char/2:5, op:0
+xhl -- devname:(null), path:/sys/dev/char/2:15, op:0
+xhl -- devname:(null), path:/sys/dev/char/4:30, op:0
+```
+
 
 
 # 参考资料
