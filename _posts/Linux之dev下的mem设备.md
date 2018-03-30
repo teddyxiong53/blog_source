@@ -93,5 +93,39 @@ xhl -- vma->vm_end:76f71000, vma->vm_start:76f70000
 
 
 
+# /dev/kmem
+
+kmem和mem的对比
+
+1、mem是物理内存的全镜像，可以用来访问物理内存。
+
+2、kmem是从kernel的视角看到的虚拟内存的全镜像。可以用来访问kernel的内容。
 
 
+
+用/dev/mem来mmap访问gpio，就是一种实现用户空间驱动的方法。
+
+用/dev/kmem，可以查看kernel里的变量，或者用来做rootkit。
+
+
+
+# /dev/mem的一个妙用
+
+1、驱动里。
+
+```
+virt_addr = kmalloc(size, GFP_KERNEL);
+phy_addr = __pa(virt_addr);
+```
+
+2、然后你可以把这个地址导出到proc文件系统里。
+
+3、再写应用程序，拿到那个物理地址。mmap出来，就可以让应用和驱动直接操作同一段物理地址了。效率很高。
+
+
+
+# 参考资料
+
+1、应用程序中对/dev/mem和/dev/kmem设备文件的访问
+
+https://blog.csdn.net/dumgeewang/article/details/7756396

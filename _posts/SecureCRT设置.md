@@ -14,3 +14,5 @@ tags:
 
 Emulation选择VT100，勾选ANSI Color和use color scheme。
 
+ansi color不选的话，make menuconfig就会混乱。
+

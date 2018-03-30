@@ -142,9 +142,17 @@ asm_do_IRQ 这个就是在中断向量那里。
 
 ![Linux内核之中断-图1](/images/Linux内核之中断-图1.png)
 
+
+
+
+
+中断子系统内部定义了几个重要的数据结构，这些数据结构的各个字段控制或影响着中断子系统和各个irq的行为和实现方式。例如：irq_desc，irq_chip，irq_data，irqaction，等等。其中 irq_desc[NR_IRQS]数组是linux内核中用于维护IRQ资源的管理单元，它记录了某IRQ号对应的流控处理函数，中断控制器、中断服务程序、IRQ自身的属性、资源等，是内核中断子系统的一个核心数组，中断驱动接口“request_irq()”就是通过修改该数组以实现中断的注册。
+
 ## 硬件封装层
 
 所有跟CPU架构有关的内容都在这里抽象统一。
+
+这部分的主要工作是：
 
 这一层的结构体是：
 
@@ -155,6 +163,10 @@ struct irq_chip
 ```
 
 是对中断控制器的接口抽象。
+
+
+
+
 
 ## 中断通用逻辑
 
@@ -333,6 +345,52 @@ static int s3c24xx_serial_init_port(struct s3c24xx_uart_port *ourport,
 
 
 
+
+
+```
+从bsp开始看中断相关。
+drivers/irqchip/irq-s3c24xx.c
+
+struct irq_chip s3c_irq_chip
+struct irq_chip s3c_irq_level_chip 
+struct irq_chip s3c_irqext_chip 
+struct irq_chip s3c_irq_eint0t4
+
+这几种irq_chip，各有什么区别呢？
+以s3c_irqext_chip这个为例，看看是如何被系统处理的。
+irq_set_chip_and_handler(virq, &s3c_irqext_chip, handle_edge_irq);
+每一种irq_chip对应一个特别的handler。
+
+s3c2440_init_irq
+	1、s3c_intc[0] = s3c24xx_init_intc(NULL, &init_s3c2440base[0], NULL,0x4a000000);
+		这里做了这些事情：
+		1）kzmalloc了一个s3c_irq_intc。初始化。
+		2）intc->domain = irq_domain_add_legacy
+			这里牵涉到s3c24xx_irq_ops
+				irq_ops可以做：map和xlate。
+		3）set_handle_irq(s3c24xx_handle_irq);
+			s3c24xx_handle_irq这就是注册给了全局函数变量handle_arch_irq
+			这会在arch/arm/kernel/entry-armv.S里调用。
+				.macro	irq_handler
+					ldr	r1, =handle_arch_irq
+					mov	r0, sp
+					badr	lr, 9997f
+					ldr	pc, [r1]
+			s3c24xx_handle_irq本身做的事情是：
+				handle_domain_irq
+					generic_handle_irq
+						desc->handle_irq(desc);//这个就是request_irq注册进来的了。
+							//不是，request_irq注册的在irqaction->handle。
+							//这里这个是通用的，handle_edge_irq这种。
+							//handle_edge_irq这种函数里，就调用芯片的ack，就是清中断。
+	2、注册外部中断。也是子中断。
+	s3c24xx_init_intc(NULL, &init_eint[0], s3c_intc[0], 0x560000a4);
+	3、s3c_intc[1] = s3c24xx_init_intc(NULL, &init_s3c2440subint[0],s3c_intc[0], 0x4a000018);
+		这个是做子中断的注册。
+```
+
+
+
 # 参考资料
 
 1、
@@ -350,3 +408,9 @@ https://www.cnblogs.com/amanlikethis/p/6941666.html?utm_source=itdadao&utm_mediu
 4、Linux中断（interrupt）子系统之一：中断系统基本原理
 
 https://blog.csdn.net/droidphone/article/details/7445825
+
+5、Linux的IRQ中断子系统分析
+
+这篇文章特别好。
+
+http://blog.sina.com.cn/s/blog_c91863e60102w48u.html
