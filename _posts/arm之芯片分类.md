@@ -3,7 +3,7 @@ title: arm之芯片分类
 date: 2018-03-30 15:43:55
 tags:
 	- arm
-
+typora-root-url: ..\
 ---
 
 
@@ -70,12 +70,16 @@ A系列是目前最多的，我现在重点看看这个。
 
 
 
+这个图显示了芯片架构和芯片型号的关系。
 
-
-
+![arm芯片分类](/images/arm芯片分类.jpg)
 
 # 参考资料
 
 1、ARM Cortex-A5 A7 A8 A9 A12 A15 A17内核比较
 
 http://www.veryarm.com/1025.html
+
+2、计算机硬件之ARM处理器型号
+
+https://blog.csdn.net/qq_31504597/article/details/79601234

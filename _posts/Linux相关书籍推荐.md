@@ -28,6 +28,10 @@ tags:
 
 linux设备驱动第3版。
 
+5、《Essential Linux Device Driver》
+
+
+
 # 2. 应用编程
 
 1、《UNIX环境高级编程》。
@@ -61,6 +65,12 @@ linux设备驱动第3版。
 3、《Linux内核源码剖析》。
 
 4、《深入理解Linux虚拟内存管理 》
+
+5、《深度探索Linux操作系统：系统构建和原理分析》
+
+6、《Linux内核设计与实现》
+
+Robert Love著。陈莉君译。
 
 
 

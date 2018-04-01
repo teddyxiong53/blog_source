@@ -220,6 +220,38 @@ struct irq_desc。中断描述符，整个中断子系统都是以这个为中�
 
 
 
+# arm linux的中断响应过程
+
+1、当一个中断发生的时候，CPU切换到irq模式。
+
+2、pc跳转到0x18，就是irq的中断入口。
+
+```
+	.macro	irq_handler
+	get_irqnr_preamble r5, lr
+1:	get_irqnr_and_base r0, r6, r5, lr
+	movne	r1, sp
+	@
+	@ routine called with r0 = irq number, r1 = struct pt_regs *
+	@
+	adrne	lr, BSYM(1b)
+	bne	asm_do_IRQ //这个函数在汇编里调用，实现是在C语言里。
+```
+
+看这个注释。
+
+```
+/*
+ * do_IRQ handles all hardware IRQ's.  Decoded IRQs should not
+ * come via this function.  Instead, they should provide their
+ * own 'handler'
+ */
+asmlinkage void __exception asm_do_IRQ(unsigned int irq, struct pt_regs *regs)
+{
+```
+
+
+
 # 看mini2440里对中断如何处理
 
 ```
@@ -335,6 +367,47 @@ static int s3c24xx_serial_init_port(struct s3c24xx_uart_port *ourport,
 
 
 
+## mini2440如何处理中断共享
+
+发生中断的时候，内核并不判断共享中断线上的哪个设备发生了中断。
+
+它会循环执行该中断号上注册的handler链表。
+
+所以需要handler自己来判断是不是自己的中断。
+
+2440里，是如何处理的呢？
+
+我们知道，4到10号的外部中断，8到23号外部中断，分别共用了一个中断。
+
+在arch/arm/mach-2410/include/mach里。
+
+```
+#define IRQ_EINT4t7    S3C2410_IRQ(4)	    /* 20 */
+#define IRQ_EINT8t23   S3C2410_IRQ(5)
+
+
+....
+/* interrupts generated from the external interrupts sources */
+#define IRQ_EINT4      S3C2410_IRQ(32)	   /* 48 */
+#define IRQ_EINT5      S3C2410_IRQ(33)
+#define IRQ_EINT6      S3C2410_IRQ(34)
+#define IRQ_EINT7      S3C2410_IRQ(35)
+#define IRQ_EINT8      S3C2410_IRQ(36)
+#define IRQ_EINT9      S3C2410_IRQ(37)
+```
+
+4到7这些子中断，可以看到也是单独给分配了一个中断号了。
+
+具体怎么处理的呢？
+
+在arch/arm/plat-s3c24xx/irq.c里。
+
+```
+void __init s3c24xx_init_irq(void)
+	set_irq_chained_handler(IRQ_EINT4t7, s3c_irq_demux_extint4t7);
+	set_irq_chained_handler(IRQ_EINT8t23, s3c_irq_demux_extint8);
+```
+
 
 
 # 为什么说tasklet是中断上下文？
@@ -391,6 +464,68 @@ s3c2440_init_irq
 
 
 
+# 软中断
+
+作为软中断，从内核同步的角度来说它有两个特点：
+
+一是软中断总是和cpu绑定在一起的。
+
+二是除了中断或是异常（一般内核太不会出现异常）没有什么东西能够抢占它。
+
+因为和cpu绑定，软中断喜欢使用cpu变量，这样就不用考虑SMP的竞争，因为不会被其他软中断或是内核抢占，使得不用在嵌套上太过于小心。
+
+一般而言，软中断是在中断的下半部分执行的，优先级大于进程。
+
+不过大量的软中断会阻塞进程的正常进行。
+
+因此内核有一个机制，软中断如果连续出现多次后就不再继续在中断下半部分执行软中断，而是将其放ksoftirqd内核线程中继续执行。
+
+这个在代码里的表现就是，有2个地方调用了do_softirq函数。
+
+一个是在`_local_bh_enable_ip`函数里，一个是在run_ksoftirqd函数里。
+
+每一个CPU对应一个ksoftirqd内核线程。
+
+内核线程跟中断底半部的执行环境是不同的。那么内核线程里是如何完成软中断的呢？
+
+先看看绑定CPU的问题。
+
+
+
+每个处理器都有一个这样的线程，名字为ksoftirqd/n，n为处理器的编号。
+
+```
+static DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
+```
+
+
+
+```
+  PID  PPID USER     STAT   VSZ %VSZ CPU %CPU COMMAND
+  930   786 root     R     1676  0.1   2  4.0 top
+    8     2 root     RW       0  0.0   3  0.8 [rcu_sched]
+    1     0 root     S     1676  0.1   1  0.0 init
+  786     1 root     S     1676  0.1   1  0.0 -/bin/sh
+  782     1 root     S     1676  0.1   2  0.0 telnetd
+  448     2 root     IW       0  0.0   3  0.0 [kworker/3:1]
+    3     2 root     IW       0  0.0   0  0.0 [kworker/0:0]
+  764     2 root     SW       0  0.0   3  0.0 [mmcqd/0]
+  928     2 root     IW       0  0.0   2  0.0 [kworker/2:2]
+  927     2 root     IW       0  0.0   2  0.0 [kworker/2:0]
+    7     2 root     SW       0  0.0   0  0.0 [ksoftirqd/0]
+  240     2 root     IW       0  0.0   0  0.0 [kworker/u8:3]
+   68     2 root     IW       0  0.0   2  0.0 [kworker/u8:2]
+   14     2 root     SW       0  0.0   1  0.0 [ksoftirqd/1]
+  313     2 root     SW       0  0.0   3  0.0 [khungtaskd]
+   13     2 root     SW       0  0.0   1  0.0 [migration/1]
+   18     2 root     SW       0  0.0   2  0.0 [migration/2]
+    2     0 root     SW       0  0.0   2  0.0 [kthreadd]
+   10     2 root     SW       0  0.0   0  0.0 [migration/0]
+   23     2 root     SW       0  0.0   3  0.0 [migration/3]
+```
+
+
+
 # 参考资料
 
 1、
@@ -414,3 +549,15 @@ https://blog.csdn.net/droidphone/article/details/7445825
 这篇文章特别好。
 
 http://blog.sina.com.cn/s/blog_c91863e60102w48u.html
+
+6、ksoftirqd内核线程是如何补充实现软中断功能的
+
+https://blog.csdn.net/sdulibh/article/details/51453843
+
+7、ARM+Linux中断系统详细分析
+
+http://blog.chinaunix.net/uid-26215986-id-3333236.html
+
+8、linux-3.4.2中断机制分析——asm_do_IRQ  
+
+http://liu1227787871.blog.163.com/blog/static/205363197201281011450559/
