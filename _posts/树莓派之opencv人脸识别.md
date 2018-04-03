@@ -2,9 +2,7 @@
 title: 树莓派之opencv人脸识别
 date: 2017-07-28 19:42:15
 tags:
-
 	- 树莓派
-
 	- opencv
 
 ---
