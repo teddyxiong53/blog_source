@@ -153,6 +153,15 @@ Filesystem                Size      Used Available Use% Mounted on
 
 之前的/dev/root都是显示/dev/mmcblk0 。
 
+不过实际上也就是一个软链接而已。
+
+```
+~ # ls /dev/root -l
+lrwxrwxrwx    1 root     0                7 Mar 18 15:47 /dev/root -> mmcblk0
+```
+
+
+
 # telnet登陆问题
 
 我要调试一个程序，会阻塞当前的shell窗口。所以就要打开telnetd，另外telnet连接上去。
