@@ -2,9 +2,7 @@
 title: Linux下对mtd的用户态编程示例
 date: 2017-05-03 21:34:04
 tags:
-
 	- Linux
-
 	- mtd
 
 ---
@@ -112,9 +110,9 @@ major minor  #blocks  name
 
 这两者对应的同一个设备的同一个分区，就像一个东西的2个名字一样。
 
-mtdblock这种名字是在mount命令里用的。
+mtdblock这种名字是在mount命令里用的。这个是块设备接口。
 
-mtd0这种名字是在mtd-utils命令用的。
+mtd0这种名字是在mtd-utils命令用的。这个是字符设备接口。
 
 
 

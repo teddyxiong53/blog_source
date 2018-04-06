@@ -170,8 +170,34 @@ static inline void arch_spin_lock(arch_spinlock_t *lock)
 
 ```
 
+# spinlock在up上的表现
+
+up下的自旋锁。
+在spinlock_api_up.h里。
+
+```
+spin_lock(spinlock_t *lock)
+	raw_spin_lock(&lock->rlock);
+		_raw_spin_lock(lock)
+			__LOCK(lock)  //这里开始不同的。
+				preempt_disable();//只有这句有用。那么就是变成了只是禁止调度了。
+				__acquire(lock); 
+				(void)(lock);
+```
+
+
+
+spinlock在不同情况下的表现：
+
+1、up非抢占系统。被忽略了。
+
+2、up抢占系统。变成了禁止调度。
+
+3、smp抢占系统。防止多处理器并发访问临界资源。
+
 
 
 # 参考资料
 
 1、http://blog.chinaunix.net/uid-20543672-id-3252604.html
+

@@ -24,7 +24,44 @@ tags:
 
 
 
+# 在什么时候进行抢占？
+
+抢占分为两种：
+
+1、用户抢占。
+
+2、内核抢占。
+
+用户抢占发生的时机：
+
+1、系统调用返回到用户空间的时候。
+
+2、从中断返回到用户空间的时候。
+
+内核抢占发生的时机：
+
+1、从中断返回到内核空间的时候。
+
+2、当内核使能抢占的时候，例如spin_unlock的时候，会进行抢占。
+
+3、内核里直接调用schedule的地方。
+
+4、内核中的任务阻塞。
+
+# spinlock用在哪些地方？
+
+1、中断处理程序。
+
+2、网卡驱动的poll。
+
+3、一些内核程序。
+
+
+
 # 参考资料
 
 1、https://wiki.linuxfoundation.org/realtime/documentation/technical_basics/preemption_models
 
+2、spinlock与linux内核调度的关系
+
+https://blog.csdn.net/armlinuxww/article/details/9025409
