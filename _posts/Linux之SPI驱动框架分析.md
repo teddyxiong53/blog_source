@@ -125,3 +125,236 @@ spi_write_buf(struct enc28j60_net *priv, int len,const u8 *data)
 
 
 
+# spi和i2c驱动对比
+
+spi_board_info对应i2c_board_info。
+
+spi_master相当于i2c_adapter和i2c_alogrithm。host端。
+spi_device相当于i2c_client。设备端。
+spi_message对应i2c_msg。
+spi_driver对应i2c_driver。
+
+
+##board_info
+
+用来在bsp里的machine_init里注册信息。
+
+```
+struct spi_board_info {
+	char		modalias[SPI_NAME_SIZE];
+	const void	*platform_data;
+	void		*controller_data;
+	int		irq;
+	u32		max_speed_hz;
+	u16		bus_num;
+	u16		chip_select;
+	u16		mode;
+};
+```
+
+```
+struct i2c_board_info {
+	char		type[I2C_NAME_SIZE];
+	unsigned short	flags;
+	unsigned short	addr;
+	void		*platform_data;
+	struct dev_archdata	*archdata;
+	struct device_node *of_node;
+	struct fwnode_handle *fwnode;
+	int		irq;
+};
+```
+
+## host端
+
+可以看到，spi_master内容特别多。相当于i2c_adapter和i2c_algorithm的总和。
+
+```
+struct spi_master {
+	struct device	dev;
+	struct list_head list;
+	s16			bus_num;
+	u16			num_chipselect;
+	u16			dma_alignment;
+	u16			mode_bits;
+
+	u32			bits_per_word_mask;
+	u32			min_speed_hz;
+	u32			max_speed_hz;
+	u16			flags;
+	spinlock_t		bus_lock_spinlock;
+	struct mutex		bus_lock_mutex;
+	bool			bus_lock_flag;
+	int			(*setup)(struct spi_device *spi);
+	int			(*transfer)(struct spi_device *spi,
+						struct spi_message *mesg);
+	void			(*cleanup)(struct spi_device *spi);
+
+	bool			(*can_dma)(struct spi_master *master,
+					   struct spi_device *spi,
+					   struct spi_transfer *xfer);
+	bool				queued;
+	struct kthread_worker		kworker;
+	struct task_struct		*kworker_task;
+	struct kthread_work		pump_messages;
+	spinlock_t			queue_lock;
+	struct list_head		queue;
+	struct spi_message		*cur_msg;
+	bool				idling;
+	bool				busy;
+	bool				running;
+	bool				rt;
+	bool				auto_runtime_pm;
+	bool                            cur_msg_prepared;
+	bool				cur_msg_mapped;
+	struct completion               xfer_completion;
+	size_t				max_dma_len;
+	int (*prepare_transfer_hardware)(struct spi_master *master);
+	int (*transfer_one_message)(struct spi_master *master,
+				    struct spi_message *mesg);
+	int (*unprepare_transfer_hardware)(struct spi_master *master);
+	int (*prepare_message)(struct spi_master *master,
+			       struct spi_message *message);
+	int (*unprepare_message)(struct spi_master *master,
+				 struct spi_message *message);
+	void (*set_cs)(struct spi_device *spi, bool enable);
+	int (*transfer_one)(struct spi_master *master, struct spi_device *spi,
+			    struct spi_transfer *transfer);
+	void (*handle_err)(struct spi_master *master,
+			   struct spi_message *message);
+	int			*cs_gpios;
+	struct spi_statistics	statistics;
+	struct dma_chan		*dma_tx;
+	struct dma_chan		*dma_rx;
+	void			*dummy_rx;
+	void			*dummy_tx;
+};
+```
+
+```
+struct i2c_adapter {
+	struct module *owner;
+	unsigned int class;		  /* classes to allow probing for */
+	const struct i2c_algorithm *algo; /* the algorithm to access the bus */
+	void *algo_data;
+	struct rt_mutex bus_lock;
+	int timeout;			/* in jiffies */
+	int retries;
+	struct device dev;		/* the adapter device */
+	int nr;
+	char name[48];
+	struct completion dev_released;
+	struct mutex userspace_clients_lock;
+	struct list_head userspace_clients;
+	struct i2c_bus_recovery_info *bus_recovery_info;
+	const struct i2c_adapter_quirks *quirks;
+};
+```
+
+## 设备端
+
+设备端都不复杂。都有device成员，都有irq。都持有host端的指针。都有一个名字。
+
+```
+struct spi_device {
+	struct device		dev;
+	struct spi_master	*master;
+	u32			max_speed_hz;
+	u8			chip_select;
+	u8			bits_per_word;
+	u16			mode;
+	int			irq;
+	void			*controller_state;
+	void			*controller_data;
+	char			modalias[SPI_NAME_SIZE];
+	int			cs_gpio;	/* chip select gpio */
+};
+```
+
+```
+struct i2c_client {
+	unsigned short flags;		
+	unsigned short addr;		
+	char name[I2C_NAME_SIZE];
+	struct i2c_adapter *adapter;	
+	struct device dev;		
+	int irq;			
+	struct list_head detected;
+};
+```
+
+## 消息
+
+spi的要复杂很多。
+
+```
+struct spi_message {
+	struct list_head	transfers;
+	struct spi_device	*spi;
+	unsigned		is_dma_mapped:1;
+	void			(*complete)(void *context);
+	void			*context;
+	unsigned		frame_length;
+	unsigned		actual_length;
+	int			status;
+	struct list_head	queue;
+	void			*state;
+};
+
+struct spi_transfer {
+	const void	*tx_buf;
+	void		*rx_buf;
+	unsigned	len;
+	dma_addr_t	tx_dma;
+	dma_addr_t	rx_dma;
+	struct sg_table tx_sg;
+	struct sg_table rx_sg;
+	unsigned	cs_change:1;
+	unsigned	tx_nbits:3;
+	unsigned	rx_nbits:3;
+	u8		bits_per_word;
+	u16		delay_usecs;
+	u32		speed_hz;
+	struct list_head transfer_list;
+};
+
+```
+
+```
+struct i2c_msg {
+	__u16 addr;	/* slave address			*/
+	__u16 flags;
+	__u16 len;		/* msg length				*/
+	__u8 *buf;		/* pointer to msg data			*/
+};
+```
+
+## 驱动
+
+```
+struct spi_driver {
+	const struct spi_device_id *id_table;
+	int			(*probe)(struct spi_device *spi);
+	int			(*remove)(struct spi_device *spi);
+	void			(*shutdown)(struct spi_device *spi);
+	struct device_driver	driver;
+};
+```
+
+```
+struct i2c_driver {
+	unsigned int class;
+	int (*attach_adapter)(struct i2c_adapter *) __deprecated;
+	int (*probe)(struct i2c_client *, const struct i2c_device_id *);
+	int (*remove)(struct i2c_client *);
+	void (*shutdown)(struct i2c_client *);
+	void (*alert)(struct i2c_client *, unsigned int data);
+	int (*command)(struct i2c_client *client, unsigned int cmd, void *arg);
+	struct device_driver driver;
+	const struct i2c_device_id *id_table;
+	int (*detect)(struct i2c_client *, struct i2c_board_info *);
+	const unsigned short *address_list;
+	struct list_head clients;
+};
+```
+

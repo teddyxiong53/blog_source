@@ -44,6 +44,28 @@ spi flash则是外挂的flash，不是在芯片的寻址空间里。
 
 驱动开发者需要做的事情就是在bsp文件里，配置一下resource。
 
+# nand和nor对比
+
+nor的特点：
+
+1、贵。
+
+2、慢。
+
+3、可靠。
+
+所以nor一般用来保存关键数据。
+
+nand的特点：
+
+1、偏移。
+
+2、快。
+
+3、不太可靠。
+
+所以nand一般用来保存大容量的数据。
+
 
 
 # OneNand是什么
@@ -62,3 +84,8 @@ spi flash则是外挂的flash，不是在芯片的寻址空间里。
 
 
 
+# 参考资料
+
+1、
+
+https://www.cnblogs.com/lifexy/p/7737174.html
