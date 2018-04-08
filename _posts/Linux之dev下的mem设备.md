@@ -51,6 +51,22 @@ static const struct memdev {
 
 都是常用的。
 
+对null设备的操作。
+
+```
+static ssize_t read_null(struct file *file, char __user *buf,
+			 size_t count, loff_t *ppos)
+{
+	return 0;
+}
+
+static ssize_t write_null(struct file *file, const char __user *buf,
+			  size_t count, loff_t *ppos)
+{
+	return count;
+}
+```
+
 
 
 我们关注mem的mmap_mem这个函数。
