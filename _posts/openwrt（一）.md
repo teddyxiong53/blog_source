@@ -71,6 +71,19 @@ make V=99 -j4
 
 V为什么要给99？我也是网上看到 。还有V=s的。但是我V=1，好像没有看到太多打印。
 
+99和s是等价的。在include/verbose.mk里。
+
+```
+ifeq ($(OPENWRT_VERBOSE),1)
+  OPENWRT_VERBOSE:=w
+endif
+ifeq ($(OPENWRT_VERBOSE),99)
+  OPENWRT_VERBOSE:=s
+endif
+```
+
+
+
 这样编译了10几分钟，编译通过。因为我之前编译过一次，已经下载完成了大部分的文件。
 
 编译完成，需要关注的就是bin目录下的内容。

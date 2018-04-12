@@ -177,3 +177,26 @@ su -会把环境变量也带过去。相当于以root用户登录一样。
 
 2、printf打印后，不会自动换行的。
 
+
+
+# 怎么查看所有的环境变量
+
+用export就可以看到。用env也可以看到。二者的区别是，export的排序了，env的没有排序。
+
+# declare用法
+
+declare是一个命令，是bash版本2才开始有的。
+
+用来限定变量的属性。
+
+```
+declare -r a #变量a就是只读的了。
+declare -i b #变量b就是整数的了。
+declare -a c #变量c是数组。
+declare -f ddd # ddd是函数
+declare -x e #变量e会被export。
+
+```
+
+
+
