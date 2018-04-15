@@ -195,8 +195,21 @@ declare -i b #变量b就是整数的了。
 declare -a c #变量c是数组。
 declare -f ddd # ddd是函数
 declare -x e #变量e会被export。
+```
+
+# exec命令
+
+这个跟直接执行的区别就是，exec是取代了原有进程。
+
+我们在shell上执行：
 
 ```
+exec ls
+```
+
+执行完会退出shell的。
+
+好处是什么？
 
 
 
