@@ -266,6 +266,23 @@ s3c2410-ohci s3c2410-ohci: init err (00000000 0000)
 
 
 
+# 代码阅读
+
+ohcu_hcd是usb_hcd的一个实例。
+
+需要重点看的文件是ohci-hcd.c和ohci-s3c2410.c。
+
+ohcd-hcd.c里include了不少的c文件。
+
+```
+#include "ohci-hub.c"
+#include "ohci-dbg.c"
+#include "ohci-mem.c"
+#include "ohci-q.c"
+```
+
+
+
 # 参考资料
 
 1、Linux USB 驱动开发（一）—— USB设备基础概念

@@ -78,11 +78,15 @@ dm9000_interrupt
 						这里就是触发了net_rx的软中断了。
 ```
 
-enc28j60的是这样。
+# napi和netpoll区别
 
-```
+netpoll主要目的是让内核在网络和io子系统还不能使用的时候，依然可以收发数据。
 
-```
+主要用在网络控制台net console和远程内核调试里。
+
+实现netpoll函数，主要是要实现kernel里的poll_controller函数。
+
+
 
 
 
@@ -101,3 +105,7 @@ https://blog.csdn.net/hejin_some/article/details/72722555
 3、6410 linux DM9000收包机制
 
 https://blog.csdn.net/chengwenyang/article/details/52187715
+
+4、napi和netpoll区别
+
+http://www.360doc.com/content/11/1023/09/7975692_158366329.shtml
