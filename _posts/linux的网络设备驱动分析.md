@@ -64,6 +64,33 @@ dm9000的寄存器有：从0x00到0xff。
 
 不一一去看了。
 
+## 硬件分析
+
+以mini2440的为例进行分析。
+
+dm9000可以外接phy芯片。也可以用内部的phy芯片。
+
+一般是不外接phy芯片的。所以dm9000直接跟RJ45端口相连。是4根线。TX+、TX-、RX+、RX- 。
+
+所以phy的读写是这样的：
+
+```
+db->mii.mdio_read    = dm9000_phy_read;
+	db->mii.mdio_write   = dm9000_phy_write;
+```
+
+数据宽度是16bit的。
+
+addr_res物理地址在0x2000 0300 ，data_res物理地址在0x2000 0304 。
+
+
+
+
+
+
+
+
+
 
 
 我们写驱动，驱动文件里写的都是platform_driver。而这个driver里面的函数的参数就是platform_device。
