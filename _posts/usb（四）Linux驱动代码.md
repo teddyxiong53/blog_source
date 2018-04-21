@@ -283,6 +283,60 @@ ohcd-hcd.c里include了不少的c文件。
 
 
 
+# 看usbled.c文件
+
+这个因为功能很简单。所以适合作为分析的对象。在usb/misc目录下。
+
+1、首先要看的就是usb_device_id。
+
+```
+#define VENDOR_ID	0x0fc5
+#define PRODUCT_ID	0x1223
+
+/* table of devices that work with this driver */
+static const struct usb_device_id id_table[] = {
+	{ USB_DEVICE(VENDOR_ID, PRODUCT_ID) },
+	{ },
+};
+```
+
+2、probe函数。
+
+这个是在枚举之后，根据usb_deivce_id来调用的。
+
+3、断开disconnect函数。
+
+4、数据传输。这里的输出传输很简单，就是控制led灯的颜色。
+
+用的函数是usb_control_msg。
+
+在usb/core/message.c里。这里就是usb协议相关的东西了。
+
+
+
+对外头文件：
+
+linux/usb.h。
+
+对外结构体：
+
+```
+struct usb_device_id
+```
+
+
+
+
+
+
+
+主要接口函数
+usb_register
+
+
+
+
+
 # 参考资料
 
 1、Linux USB 驱动开发（一）—— USB设备基础概念
@@ -296,3 +350,19 @@ https://www.ibm.com/developerworks/cn/linux/l-usb/index1.html
 3、几种USB控制器类型：OHCI,UHCI,EHCI,xHCI
 
 https://wenku.baidu.com/view/5d7a7eb0102de2bd960588ae.html
+
+4、Linux USB 驱动开发实例（一） —— USB摄像头驱动实现源码分析
+
+知秋一叶的博客可以看看。
+
+https://blog.csdn.net/zqixiao_09/article/details/50984412
+
+5、 linux内核驱动--usbled.c学习分析
+
+https://blog.csdn.net/wang__rongwei/article/details/70991748
+
+6、QEMU调试Linux系统的USB协议栈
+
+这个思路很好。但是不方便操作。
+
+https://blog.csdn.net/zoomdy/article/details/50954190

@@ -85,6 +85,141 @@ recv
 
 
 
+# 代码文件层次
+
+```
+teddy@teddy-ubuntu:~/work/rt-thread/rt-thread/components/net/lwip-1.4.1/src$ tree
+.
+├── api
+│   ├── api_lib.c：netconn_xx接口，被sockets.c里的调用。
+│   ├── api_msg.c：do_xx接口，被api_lib.c里的调用。
+│   ├── err.c：就一个lwip_strerr接口。
+│   ├── netbuf.c：netbuf_alloc、netbuf_free等接口。
+│   ├── netdb.c：lwip_gethostbyname等接口。
+│   ├── netifapi.c：netifapi_netif_add接口，被netif目录下的ethernetif.c调用。
+│   ├── sockets.c：lwip_socket等接口。
+│   └── tcpip.c：对外的初始化接口。tcpip_init。主线程tcpip_thread。
+├── arch
+│   ├── include
+│   │   └── arch
+│   │       ├── bpstruct.h
+│   │       ├── cc.h
+│   │       ├── epstruct.h
+│   │       ├── perf.h
+│   │       └── sys_arch.h
+│   └── sys_arch.c：移植需要实现的。各种基础函数。
+├── core
+│   ├── def.c：htons等4个函数。
+│   ├── dhcp.c：dhcp_xx函数，对外接口dhcp_network_changed。被netif.c里调用。在网卡up的时候。
+│   ├── dns.c：dns_xx函数。对外接口dns_init。
+│   ├── init.c：一个函数，lwip_init。被tcpip_init调用。
+│   ├── ipv4
+│   │   ├── autoip.c：这个是在dhcp失败之后，生成一个ip地址，有防止冲突的机制。
+│   │   ├── icmp.c：
+│   │   ├── igmp.c
+│   │   ├── inet.c：就包含了头文件，没有什么意义。
+│   │   ├── inet_chksum.c：就是inet_chksum函数。
+│   │   ├── ip_addr.c：ipaddr_aton和ipaddr_ntoa。
+│   │   ├── ip.c：ip层。ip_input和ip_output。
+│   │   └── ip_frag.c：ip_frag函数。
+│   ├── ipv6
+│   │   ├── icmp6.c
+│   │   ├── inet6.c
+│   │   ├── ip6_addr.c
+│   │   ├── ip6.c
+│   │   └── README
+│   ├── mem.c：实现mem_malloc和mem_free函数。
+│   ├── memp.c：实现memp_malloc和memp_free函数。
+│   ├── netif.c：netif_init、netif_add。
+│   ├── pbuf.c：pbuf_alloc、pbuf_free。
+│   ├── raw.c：raw socket的实现。raw_send、raw_recv。
+│   ├── snmp
+│   │   ├── asn1_dec.c
+│   │   ├── asn1_enc.c
+│   │   ├── mib2.c
+│   │   ├── mib_structs.c
+│   │   ├── msg_in.c
+│   │   └── msg_out.c
+│   ├── stats.c：统计信息。
+│   ├── sys.c：就一个sys_msleep函数。
+│   ├── tcp.c：tcp_alloc、tcp_bind。
+│   ├── tcp_in.c：tcp_input函数。
+│   ├── tcp_out.c：tcp_output函数。
+│   ├── timers.c：超时函数。
+│   └── udp.c：udp_input和udp_output函数。
+├── FILES
+├── include
+│   ├── ipv4
+│   │   └── lwip
+│   │       ├── autoip.h
+│   │       ├── icmp.h
+│   │       ├── igmp.h
+│   │       ├── inet_chksum.h
+│   │       ├── inet.h
+│   │       ├── ip_addr.h
+│   │       ├── ip_frag.h
+│   │       └── ip.h
+│   ├── ipv6
+│   │   └── lwip
+│   │       ├── icmp.h
+│   │       ├── inet.h
+│   │       ├── ip_addr.h
+│   │       └── ip.h
+│   ├── lwip
+│   │   ├── api.h
+│   │   ├── api_msg.h
+│   │   ├── arch.h
+│   │   ├── debug.h
+│   │   ├── def.h
+│   │   ├── dhcp.h
+│   │   ├── dns.h
+│   │   ├── err.h
+│   │   ├── init.h
+│   │   ├── mem.h
+│   │   ├── memp.h
+│   │   ├── memp_std.h
+│   │   ├── netbuf.h
+│   │   ├── netdb.h
+│   │   ├── netifapi.h
+│   │   ├── netif.h
+│   │   ├── opt.h
+│   │   ├── pbuf.h
+│   │   ├── raw.h
+│   │   ├── sio.h
+│   │   ├── snmp_asn1.h
+│   │   ├── snmp.h
+│   │   ├── snmp_msg.h
+│   │   ├── snmp_structs.h
+│   │   ├── sockets.h
+│   │   ├── stats.h
+│   │   ├── sys.h
+│   │   ├── tcp.h
+│   │   ├── tcp_impl.h
+│   │   ├── tcpip.h
+│   │   ├── timers.h
+│   │   └── udp.h
+│   ├── netif
+│   │   ├── etharp.h
+│   │   ├── ethernetif.h
+│   │   ├── ppp_oe.h
+│   │   └── slipif.h
+│   └── posix
+│       ├── netdb.h
+│       └── sys
+│           └── socket.h
+├── lwipopts.h
+└── netif
+    ├── etharp.c
+    ├── ethernetif.c
+    ├── FILES
+    ├── ppp目录。
+    └── slipif.c
+```
+
+另外还有驱动代码。以stm32的dm9000为例。
+
+要实现eth_device的eth_rx和eth_tx函数。
+
 
 
 

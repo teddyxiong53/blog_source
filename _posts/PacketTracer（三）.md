@@ -47,3 +47,7 @@ Router(config)#crypto isakmp key example address 200.1.1.2 //设置远端对等�
 1、
 
 https://wenku.baidu.com/view/830d7480bceb19e8b8f6bae4.html
+
+2、Cisco PacketTracer　5.2模拟器的Easy VPN实验指南 
+
+http://bbs.51cto.com/thread-614240-1.html
