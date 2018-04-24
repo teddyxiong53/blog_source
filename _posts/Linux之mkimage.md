@@ -76,6 +76,42 @@ Entry Point:  30008000
 
 
 
+# linux内核镜像格式
+
+格式有多种，包括：
+
+1、vmlinux。这个elf文件。有100M左右。
+
+2、Image。这个11M。
+
+3、zImage。3.7M。默认用gzip压缩的。
+
+4、bzImage。这个默认不是的。这个是用bzip来压缩的。
+
+5、uImage。在zImage前面再加64字节的头。给uboot专用的。
+
+6、xipImage。放在nor flash里用的。
+
+7、bootpImage。
+
+# linux内核镜像的产生过程
+
+在嵌入式linux里，内核的启动过程，分为2个阶段。
+
+第一阶段是在arch/arm/kernel/head.S里。跟CPU架构有关。跟板子无关。主要是初始化arm核心。
+
+第二阶段就是start_kernel这部分了。
+
+
+
+vmlinux先被压缩成Image，然后跟arch/arm/boot/compressed/head.S和arch/arm/boot/compressed/misc.c这2个一起打包成zImage。
+
+
+
+所以，运行入口，还是arch/arm/boot/compressed/head.S这个文件。
+
+这里的入口是start标签。
+
 
 
 # 参考资料
@@ -83,3 +119,7 @@ Entry Point:  30008000
 1、bootm命令中地址参数，内核加载地址以及内核入口地址
 
 https://blog.csdn.net/liangkaiming/article/details/5986680
+
+2、Linux内核镜像格式
+
+https://www.cnblogs.com/big-devil/p/7625880.html

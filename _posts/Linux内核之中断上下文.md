@@ -36,6 +36,24 @@ tags:
 
 
 
+中断上下文，是指系统当前正在处理硬中断或者软中断。
+
+# in_interrupt()宏
+
+in_interrupt()这个宏，就是用来判断中断上下文的。
+
+```
+/*
+ * Are we doing bottom half or hardware interrupt processing?
+ * Are we in a softirq context? Interrupt context?
+ */
+#define in_irq()		(hardirq_count())
+#define in_softirq()		(softirq_count())
+#define in_interrupt()		(irq_count())
+```
+
+
+
 
 
 在进程上下文里，可以用current这个宏来取得当前的进程。

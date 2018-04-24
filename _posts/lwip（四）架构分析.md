@@ -224,6 +224,36 @@ teddy@teddy-ubuntu:~/work/rt-thread/rt-thread/components/net/lwip-1.4.1/src$ tre
 
 
 
+# pbuf的层次
+
+pbuf涉及到2个枚举。
+
+```
+typedef enum {
+  PBUF_TRANSPORT,
+  PBUF_IP,
+  PBUF_LINK,
+  PBUF_RAW
+} pbuf_layer;
+
+typedef enum {
+  PBUF_RAM, /* pbuf data is stored in RAM */
+  PBUF_ROM, /* pbuf data is stored in ROM */
+  PBUF_REF, /* pbuf comes from the pbuf pool */
+  PBUF_POOL /* pbuf payload refers to RAM */
+} pbuf_type;
+```
+
+我们先看pbuf_layer这个枚举。
+
+层次的使用是这样的规律。
+
+在dns、dhcp这些应用层，是使用PBUF_TRANSPORT这样来分配的。
+
+规律就是，当前层分配，是用下一层的layer。
+
+至于pbuf_type，我们就只关注ram和ref就好了。
+
 
 
 
