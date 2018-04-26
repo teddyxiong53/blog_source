@@ -117,6 +117,55 @@ ubound是最大的timeout值。
 lbound是最小的timeout值。
 ```
 
+# 窗口大小具体是指什么？
+
+在TCP报头中，窗口字段是2字节，最大值65535，也就是缓冲区最大为16K字节。
+窗口控制大小的目的不是为了控制“长度”，而是控制“速度”。
+
+MTU
+
+是链路层的限制，但是需要在网络层处理。
+
+MSS
+
+Max Segment Size。是网络层的限制，需要传输层进行处理。
+
+指的是不包含tcp头和ip头的负载部分长度。
+
+例如mtu为1500 ，那么MSS就是1500 - ip头（20字节）- tcp头（20字节）= 1460 字节。
+
+如果是这样的两台机器进行通信。
+
+```
+A(MTU 1500) <---> B(MTU 1492)
+```
+
+建立tcp连接的过程中：
+
+1、A告诉B，我的mss是1460 。
+
+2、B告诉A，我的mss是1452 。
+
+3、协商的结构是用二者的较小值，就是1452 。
+
+
+
+如果A告诉B，自己的window是8192，意思就是，B最多可以连续给A发送8192个字节。
+
+如果A告诉B，自己的window是0，那么B就不会给A发送数据。
+
+一直A说自己的window是0的时候，是自己很忙，没空处理。
+
+但是A不能一直说自己很忙。B怎么知道A已经不忙了呢？
+
+这个就要借助一个坚持定时器。
+
+坚持定时器时间到了，B就给A发送负载为1个字节的tcp数据。意思说，你现在有空了吗？
+
+如果A还是很忙，则还是告诉B自己的window是0 。
+
+坚持定时器的时间是1s、2s、4s、8s这样依次递增的。
+
 
 
 # 参考文章
@@ -128,3 +177,14 @@ https://link.zhihu.com/?target=http%3A//coolshell.cn/articles/11564.html
 2、
 
 http://www.tcpipguide.com/free/t_TCPSlidingWindowAcknowledgmentSystemForDataTranspo-6.htm
+
+3、请问TCP的窗口大小到底指的是什么？
+
+https://zhidao.baidu.com/question/1641775096629872460.html
+
+4、TCP流量控制中的滑动窗口大小、TCP字段中16位窗口大小、MTU、MSS、缓存区大小有什么关系
+
+https://blog.csdn.net/scythe666/article/details/51967591
+
+
+
