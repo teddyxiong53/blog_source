@@ -235,3 +235,18 @@ This is TCP Server from RT-Thread.
 This is TCP Server from RT-Thread.fd
 ```
 
+
+
+# rtc
+
+```
+finsh />rtc_test()
+[RTC Test]RTC Test Start...
+[RTC Test]Set RTC 2017-04-01 12:30:46
+
+[RTC Test]Set RTC Date failed
+        1, 0x00000001
+```
+
+
+

@@ -184,6 +184,29 @@ teddy@teddy-ubuntu:~/work/rt-thread/rt-thread/components/net/lwip-1.4.1/src$ tre
 │   │   ├── netif.h
 │   │   ├── opt.h
 │   │   ├── pbuf.h
+│   │   ├── priv
+│   │   │   ├── api_msg.h
+│   │   │   ├── memp_priv.h
+│   │   │   ├── memp_std.h
+│   │   │   ├── nd6_priv.h
+│   │   │   ├── tcpip_priv.h
+│   │   │   └── tcp_priv.h
+│   │   ├── prot ：prot目录里的，定义的多是协议头部格式，内容不多。
+│   │   │   ├── autoip.h
+│   │   │   ├── dhcp.h
+│   │   │   ├── dns.h
+│   │   │   ├── etharp.h
+│   │   │   ├── ethernet.h
+│   │   │   ├── icmp6.h
+│   │   │   ├── icmp.h
+│   │   │   ├── igmp.h
+│   │   │   ├── ip4.h
+│   │   │   ├── ip6.h
+│   │   │   ├── ip.h
+│   │   │   ├── mld6.h
+│   │   │   ├── nd6.h
+│   │   │   ├── tcp.h
+│   │   │   └── udp.h
 │   │   ├── raw.h
 │   │   ├── sio.h
 │   │   ├── snmp_asn1.h

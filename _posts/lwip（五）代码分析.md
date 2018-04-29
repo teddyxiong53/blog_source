@@ -3,7 +3,7 @@ title: lwip（五）代码分析
 date: 2018-04-25 15:11:31
 tags:
 	- lwip
-
+typora-root-url: ..\
 ---
 
 
@@ -227,9 +227,310 @@ send
 ```
 
 ```
-
 tcp.c里，操作的核心数据是tcp_pcb。
 api_lib.c里，操作的核心数据是netconn。
 api_msg.c里，操作的核心数据是api_msg。
 ```
+
+
+
+继续看tcp的。一切以tcp_pcb为核心来展开。
+
+要把里面的每个成员，每个宏的用途弄清楚。
+
+
+
+tcp_hdr里，没有表示长度的成员。有个表示头部长度的值。
+
+
+
+现在搭建实验环境。
+
+qemu运行rt-thread。ip配置为192.168.1.30 。（因为默认命令是用这个举例的）。
+
+Ubuntu里配置ip为192.168.1.1 。网卡啊tap0 。
+
+rt-thread运行tcpserv，在5000端口上。
+
+连接时，抓包如下。
+
+```
+teddy@teddy-ubuntu:~$ sudo tcpdump -i tap0 -vv -t -X 'port 5000'
+tcpdump: listening on tap0, link-type EN10MB (Ethernet), capture size 262144 bytes
+IP (tos 0x0, ttl 64, id 65245, offset 0, flags [DF], proto TCP (6), length 60)
+    192.168.1.1.37244 > 192.168.1.30.5000: Flags [S], cksum 0x2527 (correct), seq 2223887629, win 29200, options [mss 1460,sackOK,TS val 48835536 ecr 0,nop,wscale 7], length 0
+        0x0000:  4500 003c fedd 4000 4006 b86e c0a8 0101  E..<..@.@..n....
+        0x0010:  c0a8 011e 917c 1388 848d d50d 0000 0000  .....|..........
+        0x0020:  a002 7210 2527 0000 0204 05b4 0402 080a  ..r.%'..........
+        0x0030:  02e9 2bd0 0000 0000 0103 0307            ..+.........
+IP (tos 0x0, ttl 255, id 30, offset 0, flags [none], proto TCP (6), length 44)
+    192.168.1.30.5000 > 192.168.1.1.37244: Flags [S.], cksum 0xdc93 (correct), seq 6510, ack 2223887630, win 8196, options [mss 1460], length 0
+        0x0000:  4500 002c 001e 0000 ff06 383e c0a8 011e  E..,......8>....
+        0x0010:  c0a8 0101 1388 917c 0000 196e 848d d50e  .......|...n....
+        0x0020:  6012 2004 dc93 0000 0204 05b4            `...........
+IP (tos 0x0, ttl 64, id 65246, offset 0, flags [DF], proto TCP (6), length 40)
+    192.168.1.1.37244 > 192.168.1.30.5000: Flags [.], cksum 0xa244 (correct), seq 1, ack 1, win 29200, length 0
+        0x0000:  4500 0028 fede 4000 4006 b881 c0a8 0101  E..(..@.@.......
+        0x0010:  c0a8 011e 917c 1388 848d d50e 0000 196f  .....|.........o
+        0x0020:  5010 7210 a244 0000                      P.r..D..
+IP (tos 0x0, ttl 255, id 31, offset 0, flags [none], proto TCP (6), length 74)
+    192.168.1.30.5000 > 192.168.1.1.37244: Flags [P.], cksum 0x216f (correct), seq 1:35, ack 1, win 8196, length 34
+        0x0000:  4500 004a 001f 0000 ff06 381f c0a8 011e  E..J......8.....
+        0x0010:  c0a8 0101 1388 917c 0000 196f 848d d50e  .......|...o....
+        0x0020:  5018 2004 216f 0000 5468 6973 2069 7320  P...!o..This.is.
+        0x0030:  5443 5020 5365 7276 6572 2066 726f 6d20  TCP.Server.from.
+        0x0040:  5254 2d54 6872 6561 642e                 RT-Thread.
+IP (tos 0x0, ttl 64, id 65247, offset 0, flags [DF], proto TCP (6), length 40)
+    192.168.1.1.37244 > 192.168.1.30.5000: Flags [.], cksum 0xa222 (correct), seq 1, ack 35, win 29200, length 0
+        0x0000:  4500 0028 fedf 4000 4006 b880 c0a8 0101  E..(..@.@.......
+        0x0010:  c0a8 011e 917c 1388 848d d50e 0000 1991  .....|..........
+        0x0020:  5010 7210 a222 0000                      P.r.."..
+```
+
+可以看到，1.1给1.30发送SYN的时候，带了额外选项。
+
+tcp的额外选项的格式是：
+
+```
+kind：1个字节。
+len：1个字节。表示的是kind+len+info的总长度。而不是info的长度。
+info：长度指定的字节数。
+```
+
+常用的选项有这7个。
+
+![](/images/tcp常用额外选项类型.jpg)
+
+kind为0，是选项表结束的意思。
+
+kind为1，表示空操作。一般用来对齐4字节。
+
+kind为2，就是设置mss。
+
+kind为3，表示窗口扩大因子。
+
+kind为4，表示打开sack这个选项。
+
+kind为8，表示时间戳。
+
+
+
+现在连接建立了。我从1.1发送“1234”这4个字符给1.30 。
+
+```
+IP (tos 0x0, ttl 64, id 65248, offset 0, flags [DF], proto TCP (6), length 45)
+    192.168.1.1.37244 > 192.168.1.30.5000: Flags [P.], cksum 0x33af (correct), seq 1:6, ack 35, win 29200, length 5
+        0x0000:  4500 002d fee0 4000 4006 b87a c0a8 0101  E..-..@.@..z....
+        0x0010:  c0a8 011e 917c 1388 848d d50e 0000 1991  .....|..........
+        0x0020:  5018 7210 33af 0000 3132 3334 0a         P.r.3...1234.
+IP (tos 0x0, ttl 255, id 412, offset 0, flags [none], proto TCP (6), length 74)
+    192.168.1.30.5000 > 192.168.1.1.37244: Flags [P.], cksum 0x214d (correct), seq 35:69, ack 6, win 8191, length 34
+        0x0000:  4500 004a 019c 0000 ff06 36a2 c0a8 011e  E..J......6.....
+        0x0010:  c0a8 0101 1388 917c 0000 1991 848d d513  .......|........
+        0x0020:  5018 1fff 214d 0000 5468 6973 2069 7320  P...!M..This.is.
+        0x0030:  5443 5020 5365 7276 6572 2066 726f 6d20  TCP.Server.from.
+        0x0040:  5254 2d54 6872 6561 642e                 RT-Thread.
+IP (tos 0x0, ttl 64, id 65249, offset 0, flags [DF], proto TCP (6), length 40)
+    192.168.1.1.37244 > 192.168.1.30.5000: Flags [.], cksum 0xa1fb (correct), seq 6, ack 69, win 29200, length 0
+        0x0000:  4500 0028 fee1 4000 4006 b87e c0a8 0101  E..(..@.@..~....
+        0x0010:  c0a8 011e 917c 1388 848d d513 0000 19b3  .....|..........
+        0x0020:  5010 7210 a1fb 0000                      P.r.....
+```
+
+现在1.1断开连接。
+
+```
+IP (tos 0x0, ttl 64, id 65250, offset 0, flags [DF], proto TCP (6), length 40)
+    192.168.1.1.37244 > 192.168.1.30.5000: Flags [F.], cksum 0xa1fa (correct), seq 6, ack 69, win 29200, length 0
+        0x0000:  4500 0028 fee2 4000 4006 b87d c0a8 0101  E..(..@.@..}....
+        0x0010:  c0a8 011e 917c 1388 848d d513 0000 19b3  .....|..........
+        0x0020:  5011 7210 a1fa 0000                      P.r.....
+IP (tos 0x0, ttl 255, id 432, offset 0, flags [none], proto TCP (6), length 40)
+    192.168.1.30.5000 > 192.168.1.1.37244: Flags [.], cksum 0xf40c (correct), seq 69, ack 7, win 8190, length 0
+        0x0000:  4500 0028 01b0 0000 ff06 36b0 c0a8 011e  E..(......6.....
+        0x0010:  c0a8 0101 1388 917c 0000 19b3 848d d514  .......|........
+        0x0020:  5010 1ffe f40c 0000                      P.......
+IP (tos 0x0, ttl 255, id 433, offset 0, flags [none], proto TCP (6), length 74)
+    192.168.1.30.5000 > 192.168.1.1.37244: Flags [P.], cksum 0x212b (correct), seq 69:103, ack 7, win 8190, length 34
+        0x0000:  4500 004a 01b1 0000 ff06 368d c0a8 011e  E..J......6.....
+        0x0010:  c0a8 0101 1388 917c 0000 19b3 848d d514  .......|........
+        0x0020:  5018 1ffe 212b 0000 5468 6973 2069 7320  P...!+..This.is.
+        0x0030:  5443 5020 5365 7276 6572 2066 726f 6d20  TCP.Server.from.
+        0x0040:  5254 2d54 6872 6561 642e                 RT-Thread.
+IP (tos 0x0, ttl 64, id 7327, offset 0, flags [DF], proto TCP (6), length 40)
+    192.168.1.1.37244 > 192.168.1.30.5000: Flags [R], cksum 0x2dca (correct), seq 2223887636, win 0, length 0
+        0x0000:  4500 0028 1c9f 4000 4006 9ac1 c0a8 0101  E..(..@.@.......
+        0x0010:  c0a8 011e 917c 1388 848d d514 0000 0000  .....|..........
+        0x0020:  5004 0000 2dca 0000                      P...-...
+```
+
+
+
+现在打开lwip的调试功能。
+
+```
+finsh />tcpserv()
+lwip_socket(PF_INET, SOCK_STREAM, 0) = 0
+lwip_bind(0, addr=0.0.0.0 port=5000)
+tcp_bind: bind to port 5000
+lwip_bind(0) succeeded
+lwip_listen(0, backlog=5)
+
+TCPServer Waiting for client on port 5000...
+lwip_accept(0)...
+tcpip_thread: PACKET 600cb860
+tcpip_thread: PACKET 600cb860
+tcpip_thread: PACKET 600cb860
+```
+
+然后我从1.1连接过来。
+
+```
+tcpip_thread: PACKET 600cb860
+TCP header:
++-------------------------------+
+|    37250      |     5000      | (src port, dest port)
++-------------------------------+
+|           1278940514          | (seq no)
++-------------------------------+
+|           0000000000          | (ack no)
++-------------------------------+
+| 10 |   |000010|     29200     | (hdrlen, flags (SYN 
+), win)
++-------------------------------+
+|    0x454f     |         0     | (chksum, urgp)
++-------------------------------+
+tcp_input: packed for LISTENing connection.
+TCP connection request 37250 -> 5000.
+tcp_parseopt: MSS
+tcp_parseopt: other
+tcp_parseopt: other
+tcp_parseopt: NOP
+tcp_parseopt: other
+tcp_enqueue_flags: queueing 6510:6511 (0x12)
+tcp_output: snd_wnd 29200, cwnd 1, wnd 1, effwnd 0, seq 6510, ack 6510
+tcp_output: snd_wnd 29200, cwnd 1, wnd 1, effwnd 0, seq 6510, ack 6510, i 0
+tcp_output_segment: rtseq 6510
+tcp_output_segment: 6510:6510
+tcpip_thread: PACKET 600cb860
+TCP header:
++-------------------------------+
+|    37250      |     5000      | (src port, dest port)
++-------------------------------+
+|           1278940515          | (seq no)
++-------------------------------+
+|           0000006511          | (ack no)
++-------------------------------+
+|  5 |   |010000|     29200     | (hdrlen, flags (ACK 
+), win)
++-------------------------------+
+|    0x9a3c     |         0     | (chksum, urgp)
++-------------------------------+
++-+-+-+-+-+-+-+-+-+-+-+-+-+- tcp_input: flags ACK 
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+State: SYN_RCVD
+TCP connection established 37250 -> 5000.
+tcp_receive: window update 29200
+tcp_receive: slow start cwnd 1461
+tcp_receive: ACK for 6511, unacked->seqno 6510:6511
+tcp_receive: removing 6510:6511 from pcb->unacked
+tcp_receive: pcb->rttest 0 rtseq 6510 ackno 6511
+tcp_process (SYN_RCVD): cwnd 4380 ssthresh 8196
+tcp_output: nothing to send (00000000)
+tcp_output: snd_wnd 29200, cwnd 4380, wnd 4380, seg == NULL, ack 6511
+State: ESTABLISHED
+lwip_accept(0) returning new sock=2 addr=192.168.1.1 port=37250
+I got a connection from (192.168.1.1 , 37250)
+lwip_send(2, data=600a918c, size=34, flags=0x0)
+tcp_write(pcb=600c4480, data=600a918c, len=34, apiflags=1)
+tcp_write: queueing 6511:6545
+tcp_output: snd_wnd 29200, cwnd 4380, wnd 4380, effwnd 34, seq 6511, ack 6511
+tcp_output: snd_wnd 29200, cwnd 4380, wnd 4380, effwnd 34, seq 6511, ack 6511, i 0
+tcp_output_segment: rtseq 6511
+tcp_output_segment: 6511:6545
+tcpip_thread: PACKET 600cb860
+TCP header:
++-------------------------------+
+|    37250      |     5000      | (src port, dest port)
++-------------------------------+
+|           1278940515          | (seq no)
++-------------------------------+
+|           0000006545          | (ack no)
++-------------------------------+
+|  5 |   |010000|     29200     | (hdrlen, flags (ACK 
+), win)
++-------------------------------+
+|    0x9a1a     |         0     | (chksum, urgp)
++-------------------------------+
++-+-+-+-+-+-+-+-+-+-+-+-+-+- tcp_input: flags ACK 
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+State: ESTABLISHED
+tcp_receive: window update 29200
+tcp_receive: slow start cwnd 5840
+tcp_receive: ACK for 6545, unacked->seqno 6511:6545
+tcp_receive: removing 6511:6545 from pcb->unacked
+tcp_receive: pcb->rttest 0 rtseq 6511 ackno 6545
+tcp_output: nothing to send (00000000)
+tcp_output: snd_wnd 29200, cwnd 5840, wnd 5840, seg == NULL, ack 6545
+State: ESTABLISHED
+lwip_send(2) err=0 written=34
+lwip_recvfrom(2, 600cc4f4, 1024, 0x0, ..)
+lwip_recvfrom: top while sock->lastdata=00000000
+tcp_slowtmr: processing active pcb
+tcp_slowtmr: processing active pcb
+tcp_slowtmr: polling application
+tcp_output: nothing to send (00000000)
+tcp_output: snd_wnd 29200, cwnd 5840, wnd 5840, seg == NULL, ack 6545
+tcp_slowtmr: processing active pcb
+tcp_slowtmr: processing active pcb
+tcp_slowtmr: polling application
+```
+
+
+
+api_msg.c里的这个函数很重要。
+
+```
+static void setup_tcp(struct netconn *conn)
+{
+	struct tcp_pcb *pcb;
+	pcb = conn->pcb.tcp;
+	tpc_arg(pcb, conn);
+	tcp_recv(pcb, recv_tcp);
+	tcp_sent(pcb, sent_tcp);
+	tcp_poll(pcb, poll_tcp, 2);
+	tcp_err(pcb, err_tcp);
+}
+```
+
+
+
+do_write是tcp调用的，其他的是调用do_send。
+
+
+
+do_write调用了tcp_write和tcp_output。
+
+tcp_write里操作很多，是很重要的。
+
+
+
+```
+pbuf_copy在哪些地方调用了？
+1、api_msg里的recv_raw里。
+2、etharp.c里的etharp_query里。
+3、icmp.c里的icmp_input函数。
+4、netif.c里的netif_loop_output里。
+5、udp.c里的udp_input函数。
+主要就这5个地方。可以看出，tcp里没有进行拷贝。
+拷贝的，都是无连接的。
+```
+
+
+
+# 参考资料
+
+1、3.2.2　TCP头部选项
+
+http://book.51cto.com/art/201306/400263.htm
 
