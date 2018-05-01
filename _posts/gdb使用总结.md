@@ -75,3 +75,10 @@ set args xxx
 show args
 ```
 
+# 清除断点
+
+delete 断点编号。
+
+
+
+#十六进制打印

@@ -8,7 +8,7 @@ tags:
 
 
 
-# 1. 用wget下载代码zip文件
+#  用wget下载代码zip文件
 
 wget https://codeload.github.com/xxx/yyy/zip/master
 
@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
 
 
-# 2. 下载加速
+# 下载加速
 
 ```
 192.30.253.112 assets-cdn.github.com
@@ -100,4 +100,14 @@ if __name__ == '__main__':
 host文件里加上这个。速度没有看到明显提升。
 
 但是至少不会下载时看不到进度，而且不会下载到中途认为完成了。实际上并没有完成。
+
+
+
+# 下载子目录
+
+有时候不想下载整个目录。只希望下载某个仓库下的子目录。怎么办？
+
+https://minhaskamal.github.io/DownGit/#/home?url=https:%2F%2Fgithub.com%2Ftxgcwm%2FLinux-C-Examples%2Ftree%2Fmaster%2Frtsp
+
+把你要下载的链接，输入到这里的输入框里，点击下载就好了。
 

@@ -27,3 +27,9 @@ configure: error: GD does not have JPEG support!
 
 
 
+
+# 参考资料
+
+1、
+
+https://github.com/fsphil/fswebcam/issues/4

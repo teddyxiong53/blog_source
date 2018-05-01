@@ -6,6 +6,14 @@ tags:
 
 ---
 
+
+
+# 说明
+
+后面我发现这个不适合进行学习。废弃。
+
+
+
 1、从这里下载代码。是一个简单的rtsp服务器代码。
 
 https://github.com/iskey/rtsp_rtp_server
