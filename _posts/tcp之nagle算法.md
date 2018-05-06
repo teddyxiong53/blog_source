@@ -34,3 +34,14 @@ Nagle算法是John Nagle发明的。
 
 
 
+对应到C代码里，就是一个判断条件。
+
+```
+#define tcp_do_output_nagle(tpcb) ((((tpcb)->unacked == NULL) || \
+                            ((tpcb)->flags & (TF_NODELAY | TF_INFR)) || \
+                            (((tpcb)->unsent != NULL) && (((tpcb)->unsent->next != NULL) || \
+                              ((tpcb)->unsent->len >= (tpcb)->mss))) || \
+                            ((tcp_sndbuf(tpcb) == 0) || (tcp_sndqueuelen(tpcb) >= TCP_SND_QUEUELEN)) \
+                            ) ? 1 : 0)
+```
+

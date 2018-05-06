@@ -14,7 +14,7 @@ tags:
 
 代码量不是很大，所以适合进行代码分析。
 
-
+这个以前的名字是叫PolarSSL。
 
 
 
@@ -25,3 +25,10 @@ tags:
 1、官网
 
 https://www.mbed.com/zh-cn/technologies/security/mbed-tls/
+
+2、使用mbedtls的使用说明和AES加密方法（原来的PolarSSL）
+
+https://www.cnblogs.com/fudong071234/p/6591844.html
+
+
+

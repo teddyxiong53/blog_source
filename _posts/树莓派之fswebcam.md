@@ -42,7 +42,7 @@ palette MJPEG
 1、指定拍照的名字，以时间命名。
 
 ```
- fswebcam -d /dev/video0  ./`date "+%Y-%m-%d_%H-%M-%S"`.jpg
+ fswebcam -d /dev/video0  ./`date "+%Y-%m-%d_%H-%M-%S"`.jpg 
 ```
 
 

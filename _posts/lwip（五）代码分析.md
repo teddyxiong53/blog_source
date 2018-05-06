@@ -528,6 +528,193 @@ pbuf_copy在哪些地方调用了？
 
 
 
+
+
+每2秒会poll一次。
+
+tcp_pcb成员分析。
+
+1、定时器相关。都是在fasttmr和slowtmr里用。
+
+```
+u8_t polltmr, pollinterval;//
+  u8_t last_timer;
+  u32_t tmr;
+```
+
+```
+pcb->tmr = tcp_ticks;
+```
+
+tcp_ticks每500ms加1 。
+
+2、接收方变量。
+
+```
+1、u32 rcv_nxt。//下一个要收的seqno。
+2、u16 rcv_wnd。接收窗口。
+3、u16 rcv_ann_wnd。接收声明窗口。
+4、u32 rcv_ann_right_edge。
+```
+
+```
+pcb->rcv_ann_right_edge = pcb->rcv_nxt + pcb->rcv_ann_wnd;
+```
+
+
+
+3、重传定时器。
+
+```
+s16 rtime
+```
+
+就是在slowtmr里加1 。
+
+4、mss。
+
+```
+u16 mss。从536开始。
+```
+
+5、rtt相关。
+
+```
+1、u32 rttest
+2、u32 rtseq。
+3、u16 sa，sv。
+```
+
+rttest和rtseq。只看到这里赋值了。
+
+```
+  if (pcb->rttest == 0) {
+    pcb->rttest = tcp_ticks;
+    pcb->rtseq = ntohl(seg->tcphdr->seqno);
+```
+
+sv初始化是30秒。sa初始化是0 。是用来计算rto用的。
+
+```
+pcb->rto = (pcb->sa >> 3) + pcb->sv;
+```
+
+
+
+6、rto相关。
+
+```
+s16 rto //超时时间。初始化的是时候，是30秒。
+u8 nrtx //超时次数。最大是12次。超过12次，对应的pcb会被remove掉。
+```
+
+7、快速重传和快速恢复。
+
+```
+u8 dupacks
+u32 lastack
+```
+
+8、拥塞避免控制变量。
+
+```
+u16 cwnd
+u16 ssthreash
+```
+
+9、发送方变量。这里很复杂。总共有13个变量。
+
+```
+1、u32 snd_nxt。下一个seqno。
+2、u32 snd_wl1
+3、u32 snd_wl2
+4、u32 snd_lbb 
+5、u32 snd_wnd_max
+6. u16 acked
+7、 u16 snd_buf。
+8、 u16 snd_queuelen 要发送的包的排队个数。
+9、 u16 unsent_oversize
+10. struct tcp_seg *unsent
+11. struct tcp_seg *unacked
+12. struct tcp_seg *ooseq
+13. struct pbuf *refused_data
+```
+
+wl1和wl2这2个变量。具体还不太清楚。不过看到有这样的代码。
+
+```
+      pcb->snd_wl1 = seqno;
+      pcb->snd_wl2 = ackno;
+```
+
+10、其他变量。
+
+
+
+首先看listen。再看accept。
+
+再看tcp_input。开始收到syn包。回复ack包。然后再收到syn+ack包。
+
+在tcp_process里。
+
+```
+  case SYN_RCVD:
+    if (flags & TCP_ACK) {
+      /* expected ACK number? */
+      if (TCP_SEQ_BETWEEN(ackno, pcb->lastack+1, pcb->snd_nxt)) {
+        u16_t old_cwnd;
+        pcb->state = ESTABLISHED;
+```
+
+```
+  case ESTABLISHED:
+    tcp_receive(pcb);
+    if (recv_flags & TF_GOT_FIN) { /* passive close */
+      tcp_ack_now(pcb);
+      pcb->state = CLOSE_WAIT;
+    }
+    break;
+  case FIN_WAIT_1:
+```
+
+
+
+
+
+乱序数据，如果长时间没有处理，就会被扔掉的。
+
+```
+    /* If this PCB has queued out of sequence data, but has been
+       inactive for too long, will drop the data (it will eventually
+       be retransmitted). */
+#if TCP_QUEUE_OOSEQ
+    if (pcb->ooseq != NULL &&
+        (u32_t)tcp_ticks - pcb->tmr >= pcb->rto * TCP_OOSEQ_TIMEOUT) {
+      tcp_segs_free(pcb->ooseq);
+      pcb->ooseq = NULL;
+      //LWIP_DEBUGF(TCP_CWND_DEBUG, ("tcp_slowtmr: dropping OOSEQ queued data\n"));
+    }
+#endif /* TCP_QUEUE_OOSEQ */
+```
+
+处于syn_rcvd状态太久，也会被清除掉连接的。
+
+
+
+在tcp_input的开头，就是把广播和组播包直接返回，不处理。
+
+PUSH这个标志，就是马上交给app处理的意思。
+
+```
+if (flags & TCP_PSH) {
+      p->flags |= PBUF_FLAG_PUSH;
+    }
+```
+
+为什么SYN 和 纯 ACK 不带PUSH标示，因为SYN 和纯 ACK 发送时不入队列。
+
+ 当前没有API通知TCP哪些数据需要被设置PUSH标示，完全由TCP自行判断决定。
+
 # 参考资料
 
 1、3.2.2　TCP头部选项

@@ -83,9 +83,15 @@ jffs2是目前flash上使用最多的文件系统。
 
 1、挂载时需要扫描整个flash，以确定节点的合法性以及建立必要的数据结构，这就导致了挂载速度慢。
 
+也因此不适合在大的nand flash上使用。
+
 2、将节点信息保存在内存，内存使用和节点数量成正比。
 
 3、用随机的方式来进行磨损平衡。
+
+4、当文件系统满，或者接近满的时候，会因为垃圾收集，而导致运行速度大大减慢。
+
+
 
 # 3. yaffs和yaffs2
 
@@ -114,9 +120,139 @@ ubi的字母含义是Unsorted Block Image。是一种类似于lvm的逻辑卷管
 
 主要实现磨损平衡、坏块管理等。
 
-ubifs不直接工作在mtd上，而是工作在ubi卷之上。
+ubifs不直接工作在mtd上，而是工作在ubi卷之上。所以ubifs不能用在SD卡上 。
+
+特性：
+
+1、可预测性。ubifs的挂载时间、内存消耗、io访问时间，都跟flash大小没有关系。所以flash越大，ubifs就越有优势。
+
+2.快速挂载。不会像jffs2那样进行扫描。不受flash大小影响。都是几个ms就完成了挂载。不过ubi的初始化还是跟flash大小有关系。
+
+3、容易异常重启。这样重启只是重做日志，而不需要扫描介质，所以影响也不大。
+
+4、快速压缩。跟jffs2类似，ubifs支持数据压缩存储。
+
+ubifs一般用在nand flash上。
 
 
+
+ubifs涉及了3个子系统：
+
+1、mtd子系统。
+
+2、ubi子系统。
+
+3、ubifs。
+
+
+
+nand flash，2G的flash为例。
+
+单位分为：
+
+1、page。2048字节+64字节的ecc。
+
+2、block。64个page组成一个block。
+
+3、device。一个flash设备，包含了2048个block。（2G字节）。
+
+我们把flash假想成一个长方体。一个page，就是一个横向的切片。64个切片堆叠起来，就是一个block。
+
+2048个block堆叠起来，得到最后的完整的长方体。
+
+
+
+做ubifs，就比较复杂一点。需要涉及的工具有：
+
+1、mkfs.ubifs。
+
+2、ubinize。
+
+
+
+之所以要多个工具，因为在uboot里，烧录mkfs.ubifs得到的镜像比较麻烦。
+
+需要：
+
+```
+1、uboot需要支持nand flash分区。
+2、在uboot里激活这个分区。
+3、用ubi write命令来写入。
+```
+
+我们借助ubinize工具，就可以得到可以用nand write来直接写入。
+
+mkfs.ubifs需要指定的参数有：
+
+```
+1、m。例如2K。
+2、x。指定压缩格式。
+3、e。逻辑课擦除数目。
+4、r或者d。就是rootfs所在的目录。
+5、o。指定输出文件名字。
+6、c。count。擦除块的个数。
+```
+
+举例：
+
+```
+mkfs.ubifs -x lzo -m 2k -e 64k -c 2048 -r ./rootfs -o rootfs.ubi
+```
+
+
+
+ubinize需要指定的参数。
+
+```
+[ubifs-volume]
+mode=ubi
+image=rootfs.ubi
+vol_id=0
+vol_size=filesize
+vol_type=dynamic
+vol_name=rootfs
+vol_flags=autosize
+vol_alignment=1
+```
+
+参数解释
+
+```
+1、m。最小的单位。
+2、p。擦除块的大小。
+3、s。subpage的大小。
+4、O。VID header offset。
+```
+
+
+
+举例：
+
+```
+ubinize -o rootfs.ubifs -m 2048 -p 64k -s xx -O xx
+```
+
+```
+Creating 9 MTDpartitions on "NAND":
+
+0x000000000000-0x000000100000: "mtdblock0_u-Boot 1MB "
+
+0x000000100000-0x000001000000 : "mtdbolck1_kernel 15MB"
+
+0x000001000000-0x000002400000: "mtdbolck2_ramdisk 20MB"
+
+0x000002400000-0x000003800000: "mtdblock3_cramfs 20MB"
+
+0x000003800000-0x000006000000: "mtdblock4_jffs2 40MB"
+
+0x000006000000-0x000008800000: "mtdblock5_yaffs2 40MB"
+
+0x000008800000-0x00000b000000: "mtdblock6_ubifs 40MB"
+
+0x00000b000000-0x00000d800000: "mtdblock7_apps 40MB"
+
+0x00000d800000-0x000010000000: "mtdblock8_data 40MB"
+```
 
 
 
@@ -130,6 +266,39 @@ lzo压缩率比gzip略高，但是压缩和解压速度远高于gzip。所以嵌
 
 squashfs文件系统最大可以达到`2^64`个字节，支持的单个最大文件可以到2TB。这个是cramfs做不到的。
 
+
+
+squashfs一般用在nor flash上。
+
+如果要用在nand flash上。需要修改内核代码，来处理坏块的情况。
+
+
+
+squashfs的制作没有什么特别的。就是可用指定压缩方式。其余跟jffs2这些没有什么不同。
+
+
+
+# 参考资料
+
+1、ubifs笔记
+
+http://www.cnblogs.com/pengdonglin137/p/3398724.html
+
+2、Flash文件系统介绍和平台采用squashfs+ubifs原因
+
+https://blog.csdn.net/yiwuxue/article/details/10464277
+
+3、NAND for SQUASHFS design
+
+https://blog.csdn.net/lwzlemon/article/details/4030463
+
+4、Openwrt学习笔记（二）——Flash Layout and file system
+
+https://blog.csdn.net/lee244868149/article/details/57076615
+
+5、内核移植和文件系统制作（4）：UBIFS根文件系统制作总结
+
+https://blog.csdn.net/u013236359/article/details/38758345
 
 
 
