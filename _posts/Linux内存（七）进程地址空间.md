@@ -149,3 +149,92 @@ ffff0000-ffff1000 r-xp 00000000 00:00 0          [vectors]
 
 # 页表
 
+
+
+# 切换进程时，如何切换页表？
+
+Linux进程切换的核心函数是context_switch。
+
+这个函数简化后，就是这样：
+
+```
+swtich_mm()
+switch_to()
+```
+
+switch_mm就是切换页表。
+
+对于arm架构，是把CP15的C2寄存器指向对应进程的页表的位置。
+
+对于x86架构，是CR3寄存器。
+
+# 为什么要用多级页表？
+
+页表本质是一个映射表。
+
+最直接的想法，就是每一个页对应一个条目。
+
+对应x86的32位，4KB的页，这样导致页表就要占用1M的空间。太大了。
+
+对于64位，问题就更加严重了。
+
+
+
+# pagemap proc
+
+在Documentation/vm/pagemap.txt里。
+
+在2.6.25版本以后，pagemap就是一个新的用户接口，用来在用户态查看page table。
+
+有4个组件是相关的。
+
+1、/proc/pid/pagemap
+
+用来查看物理页框和虚拟页的对应关系。
+
+```
+/proc/1 # hexdump pagemap 
+0000000 0000 0000 0000 0000 0000 0000 0000 0000
+*
+0000080 094e 0006 0000 a000 f7ec 0009 0000 a000
+0000090 f7ed 0009 0000 a000 800e 0006 0000 a000
+00000a0 0000 0000 0000 0000 0000 0000 0000 0000
+*
+0000100 0000 0000 0000 0000 0946 0006 0000 a000
+0000110 0947 0006 0000 a000 0008 0006 0000 a000
+```
+
+
+
+2、/proc/kpagecount。
+
+```
+/proc/1 # hexdump /proc/kpagecount 
+0000000 0000 0000 0000 0000 0000 0000 0000 0000
+*
+^C
+/proc/1 # hexdump /proc/kpageflags 
+0000000 0000 0010 0000 0000 0000 0010 0000 0000
+*
+^C
+```
+
+3、/proc/kpageflags。
+
+4、/proc/kpagecgroup。
+
+
+
+# 参考资料
+
+1、ARM-LINUX的进程切换
+
+https://blog.csdn.net/michael2012zhao/article/details/10384079
+
+2、[ARM Linux] 每个进程的内核页表为什么单独分配存储空间？
+
+https://www.zhihu.com/question/26825537
+
+3、
+
+https://github.com/gatieme/LDD-LinuxDeviceDrivers/blob/master/study/kernel/02-memory/02-pagetable/01-develop/README.md

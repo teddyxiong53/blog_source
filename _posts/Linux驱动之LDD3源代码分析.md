@@ -340,7 +340,7 @@ sudo insmod ./hellop.ko whom=teddy howmany=3
 
 10、sculld。挂在lddbus上的scull设备。
 
-11、scullv。
+11、scullv。v表示使用虚拟地址。
 
 12、snull。网络设备。
 

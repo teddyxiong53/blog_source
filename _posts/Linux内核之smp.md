@@ -71,6 +71,36 @@ SMP: Total of 4 processors activated (1738.24 BogoMIPS).
 CPU: All CPU(s) started in SVC mode.
 ```
 
+# smp启动过程
+
+由于系统中存在多个CPU，这就引入一个问题，当外部设备发生中断的时候，具体由哪个CPU进行处理呢？
+
+Intel提出的解决方案是IO APIC和LOCAL APIC体系结构。
+
+IO APIC 链接各个外设，并且可以设置分发类型，根据设定的分发类型，把中断分发到对应CPU的LOCAL APIC上。
+
+怎样确定哪个CPU是引导CPU呢？
+
+根据Intel提供的资料，系统上电后，会根据MP Initialization  Protocol随机选择一个CPU作为BP。
+
+只有BP会运行bios程序，其他的AP都进入到等待状态。直到BP发送了IPI中断信息后，其他AP才能运行。
+
+
+
+# smp的负载均衡
+
+每个cpu对应一个run_queue。
+
+如果一个进程处于task_running的时候，这个进程就会进入到run_queue，以便调度程序在合适的时候安排它在对应的CPU上运行。
+
+一个CPU对应一个run_queue这种设计，好处是：
+
+1、一个持续处于task_running状态的进程总是趋于在一个CPU上运行，这样便于进程的数据被缓存，提高效率。
+
+2、每个CPU上的调度程序之访问自己的run_queue，避免了竞争。但这也带来了一个问题，就是一些CPU很忙，一些CPU却很闲。这个就要靠负载均衡来解决了。
+
+smp的负载均衡是指，在一定的时机，让进程从一个run_queue迁移到另外一个run_queue。
+
 
 
 #smp的内核变量保护
@@ -189,3 +219,12 @@ https://blog.csdn.net/wh8_2011/article/details/53138377
 7、Linux内核同步机制之（二）：Per-CPU变量
 
 https://www.cnblogs.com/dirt2/p/5616513.html
+
+8、linux SMP 启动过程学习笔记
+
+https://blog.csdn.net/jemmy858585/article/details/4509375
+
+9、Linux内核SMP负载均衡浅析
+
+https://blog.csdn.net/u010937616/article/details/47396619
+
