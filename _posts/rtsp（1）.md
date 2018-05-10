@@ -8,6 +8,24 @@ typora-root-url: ..\
 
 
 
+下面引用的代码主要是来自这里：https://github.com/teddyxiong53/Linux-C-Examples/tree/master/rtsp
+
+
+
+rtsp在github上的相关开源代码有：
+
+1、librtsp。有26个star。
+
+https://github.com/ykst/librtsp
+
+2、rtspserver
+
+https://github.com/ashwing920/rtspserver
+
+3、v4l2rtspserver
+
+
+
 #流媒体定义
 
 流媒体有广义和狭义的两种定义。
@@ -162,6 +180,37 @@ bit3-7: 取值范围是0到31 。
 
 
 rtp数据是用udp发送出去的。
+
+
+
+NALU的类型：
+
+```
+#define H264_NAL_TYPE_NON_IDR 1
+#define H264_NAL_TYPE_SLICE_A 2
+#define H264_NAL_TYPE_SLICE_B 3
+#define H264_NAL_TYPE_SLICE_C 4
+#define H264_NAL_TYPE_IDR 5
+#define H264_NAL_TYPE_SEI 6
+#define H264_NAL_TYPE_SPS 7
+#define H264_NAL_TYPE_PPS 8
+```
+
+我们建立点播环境。
+
+打开wireshark抓包，就在filter那里填入h264就好了。
+
+
+
+
+
+
+
+rtspd里没有看到明显写PPS、SPS这些东西。
+
+https://zhuanlan.zhihu.com/p/27896239
+
+这篇文章讲了pps、sps。
 
 
 

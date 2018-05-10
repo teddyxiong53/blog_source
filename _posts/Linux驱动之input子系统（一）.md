@@ -231,3 +231,52 @@ Button type = 1, X = 0, Y = 0, Z = 34
 Button type = 0, X = 0, Y = 0, Z = 34
 ```
 
+看看input子系统核心所涉及的c文件。
+
+```
+linux-stable/drivers/input$ ls *.c -l
+ apm-power.c
+ evbug.c
+ evdev.c：重要。
+ ff-core.c
+ ff-memless.c
+ input.c：重要。
+ input-compat.c
+ input-leds.c
+ input-mt.c
+ input-polldev.c
+ joydev.c
+ matrix-keymap.c
+ mousedev.c
+ sparse-keymap.c
+```
+
+头文件有input.h。input/mt.h（mt表示multitouch多点触控）。
+
+有2个input.h，一个是在uapi目录下。
+
+
+
+input子系统的major是13 。最多可以有1024个minor。
+
+看input_register_device函数。
+
+```
+1、每个input设备都一定支持EV_SYN和SYN_REPORT。
+__set_bit(EV_SYN, dev->evbit);
+
+```
+
+
+
+input子系统的整体流程是怎样的？
+
+
+
+
+
+# 参考资料
+
+1、
+
+https://blog.csdn.net/ielife/article/details/7814108

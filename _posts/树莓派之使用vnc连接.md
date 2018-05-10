@@ -2,9 +2,7 @@
 title: 树莓派之使用vnc连接
 date: 2017-07-28 21:54:11
 tags:
-
 	- 树莓派
-
 	- vnc
 
 ---
@@ -19,3 +17,12 @@ tags:
 
 4、pc上启动vnc客户端。输入`192.168.0.101:1`，输入第3步设置的密码，就可以连接了。
 
+
+
+
+
+# 参考资料
+
+1、修改分辨率。
+
+https://support.realvnc.com/knowledgebase/article/View/523

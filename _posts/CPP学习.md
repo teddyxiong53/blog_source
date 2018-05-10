@@ -28,19 +28,44 @@ teddy@teddy-ubuntu:~/test/cpp-test$
 ```
 cpp文件只能用g++来编译，用gcc编译会报错。
 现在我们分析上面的这段代码。
-1. 为什么include后面的文件不带`.h`呢？
+
+1、为什么include后面的文件不带`.h`呢？
 带.h的是旧标准的，新标准的就不带.h。使用新标准的就要加上namespace的相关语句。
 iostream这个头文件在`/usr/include/c++/5/iostream`。
-2. 为什么要加上`using namespace std;`这句？
+
+2、为什么要加上`using namespace std;`这句？
 也可以不加。但是后面的cout就要写成`std::out`这样了。
+
+输入输出。
+
+```
+#include <string>
+#include <cmath>
+#include <iostream>
+#include <algorithm>
+#include <vector>
+
+using namespace std;
+
+int main()
+{
+	cout << "please input :" <<endl;
+	int a;
+	cin >> a;
+	cout << "a value is: " << a << endl;
+
+}
+```
+
+
 
 # 2. c++的基本情况
 标准c++由3个主要部分组成：
 1. 核心语言。就是关键字、语法规则等等。
 2. c++标准库。
 3. 标准模板库STL。
-标准就是ANSI C++。
-1998年第一个c++标准发布。2014年第四个版本的标准发布。
+  标准就是ANSI C++。
+  1998年第一个c++标准发布。2014年第四个版本的标准发布。
 
 # 3. 数据类型跟C不同的地方
 增加了bool类型。
