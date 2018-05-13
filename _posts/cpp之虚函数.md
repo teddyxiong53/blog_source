@@ -175,7 +175,7 @@ public:
 
 可以看到纯虚函数的特点：
 
-1、后面加上“=0“。
+1、后面加上“=0“。只能写成这个。
 
 2、没有函数体。
 
@@ -192,3 +192,7 @@ public:
 1、c++ 深入理解虚函数
 
 https://www.cnblogs.com/jin521/p/5602190.html
+
+2、在c++中，类的成员函数直接写成virtual bool good()=0；求大神解释一下后面
+
+https://zhidao.baidu.com/question/1540827235101011667.html

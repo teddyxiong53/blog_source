@@ -117,6 +117,45 @@ namespace ns_short = ns_with_long_name;//这样就定义了别名了。
 
 引用在这个场景的作用就跟指针类型了。可以修改参数的值。
 
+## 有没有引用的引用？
+
+我看tinystl的代码。看到这种写法。
+
+是什么意思？是表示二级引用吗？引用的引用？
+
+```
+vector(vector&& other);
+```
+
+https://www.zhihu.com/question/28023545
+
+这里找到一些说明。
+
+这里引入一个概念，引用折叠。
+
+```
+引用折叠规则：
+X& &（引用的引用）、X& &&（右值引用的引用）、X&& &（引用的右值引用）均折叠为X &。
+X&& &&（右值引用的右值引用）折叠为X &&。
+
+上面的类型别名和函数模板均触发了引用折叠。
+注意：引用折叠的前提必须是类型别名或者模板参数。标准禁止直接定义引用的引用。
+```
+
+## 如何理解引用折叠？
+
+https://www.zhihu.com/question/40346748
+
+一个简单说明是这样。
+
+```
+& && == && & == &
+```
+
+```
+楼上几位把结果都说得很清楚了，根本原因是因为C++中禁止reference to reference，所以编译器需要对四种情况(也就是L2L,L2R,R2L,R2R)进行处理，将他们“折叠”(也可说是“坍缩”)成一种单一的reference。
+```
+
 
 
 # nullptr
@@ -169,6 +208,46 @@ cout << __cplusplus <<endl;
 
 
 
+# 成员函数后面跟着const表示什么意思？
+
+1、编译器会自动给每个成员函数加上this指针。在函数后面加上const，表示这个函数不能修改成员变量的值。
+
+2、这个const其实是修饰到了this指针了。
+
+看一个例子。
+
+```
+#include <iostream>
+
+using namespace std;
+
+class Test {
+public:
+	void show() const {
+		cout << "const func" << endl;
+	}
+	void show() {
+		cout << "normal func" << endl;
+	}
+};
+int main(int argc, char const *argv[])
+{
+	Test a;
+	a.show();
+	const Test b;
+	b.show();
+	return 0;
+}
+```
+
+```
+teddy@teddy-ubuntu:~/work/test/cpp$ ./a.out 
+normal func
+const func
+```
+
+
+
 # 参考资料
 
 1、C++类成员冒号初始化以及构造函数内赋值
@@ -182,3 +261,7 @@ https://zhidao.baidu.com/question/510299233.html
 3、malloc/free和new/delete的区别
 
 https://blog.csdn.net/chance_wang/article/details/1609081
+
+4、成员函数后面加const，没有const，以及使用的区别
+
+https://blog.csdn.net/anye3000/article/details/6618615
