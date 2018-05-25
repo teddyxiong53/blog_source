@@ -78,6 +78,13 @@ the first char of str1 is :y
 
 
 
+这样都是可以的。
+
+```
+string aa("aa");
+string bb{"bb"};
+```
+
 
 
 # 字符串操作函数
