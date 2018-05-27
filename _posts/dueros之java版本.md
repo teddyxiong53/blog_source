@@ -98,6 +98,10 @@ util
 wakeup
 ```
 
+理解系统，重要的是devicemodule和framework这2个目录。
+
+devicemodule下面，是8个模块，就叫八大金刚吧。
+
 
 
 保存闹钟是alarms.json文件。
