@@ -16,3 +16,4 @@ tags:
   `sudo apt-get autoremove `
   下面这条命令是用来清理残留的配置文件。
   `dpkg -l |grep ^rc|awk '{print $2}' |sudo xargs dpkg -P`
+

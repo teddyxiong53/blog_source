@@ -42,6 +42,12 @@ network={
 
 上面的方法，并没有成功。不知道问题在哪里。暂时不管了。
 
+# 再试一次
+
+这次我没有什么特别要求了。能够连上路由器就好。
+
+
+
 
 
 # 参考资料
@@ -54,7 +60,13 @@ https://blog.csdn.net/wanshiyingg/article/details/52705861
 
 https://www.cnblogs.com/pied/archive/2013/07/23/3205636.html
 
+3、
+
+https://segmentfault.com/a/1190000011579147
 
 
 
+4、
+
+https://wiki.archlinux.org/index.php/WPA_supplicant_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)
 

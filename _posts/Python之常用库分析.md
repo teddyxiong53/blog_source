@@ -141,6 +141,10 @@ os.listdir：
 
 os.system：系统调用。
 
+os.pardir ：实际上就是“..”。表示上一层目录。
+
+
+
 ## os.path模块常用函数
 
 路径相关的函数，感觉以查询性质的为主。
@@ -150,6 +154,42 @@ os.system：系统调用。
 查询是否存在，查询访问、创建、修改时间。
 
 查询是文件还是目录。
+
+```
+# coding: utf-8
+
+import os, os.path
+
+f = __file__
+
+print f
+print os.path.abspath(f)
+print os.path.basename(f)
+print os.path.dirname(f)
+print os.path.exists(f)
+print os.path.lexists(f)
+print os.path.expanduser(f)
+print os.path.expandvars(f)
+print os.path.getatime(f)
+print os.path.isabs(f)
+print os.path.ismount(f)
+print os.path.islink(f)
+print os.path.isdir(f)
+print os.path.isfile(f)
+
+print os.path.normcase(f)
+print os.path.normpath(f)
+print os.path.realpath(f)
+
+#返回目录和文件名组成的元组。
+print os.path.split(f)
+#返回文件名和后缀组成的元组
+print os.path.splitext(f)
+#把路径分割为加载点和文件。
+print os.path.splitunc(f)
+```
+
+
 
 # 3. time
 
