@@ -85,9 +85,19 @@ network={
 
 现在网络就配置好了。可以跟路由器连接上了。
 
+# 总结
+
+下面总结一下，我现在要连上路由器。需要做的步骤：
+
+1、wpa_supplicant -i wlan0 -B -c /etc/wpa_supplicant/wpa_supplicant.conf
+
+2、wpa_cli reconfigure
+
+3、sudo ifconfig 192.168.0.200 netmask 255.255.255.0
 
 
-下面的子命令有136条。
+
+wpa_cli下面的子命令有136条。
 
 ```
 > 
