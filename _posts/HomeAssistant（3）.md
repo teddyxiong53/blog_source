@@ -39,3 +39,20 @@ pi@raspberrypi:~/work/hass/hass/homeassistant/components/weather$ tree
 
 `__init__.py`是入口。
 
+
+
+```
+core.py
+
+HomeAssistant
+EventBus
+Event
+
+State
+ServiceRegistry
+
+StateMachine
+Config
+CoreState
+```
+
