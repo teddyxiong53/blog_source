@@ -66,7 +66,23 @@ s = requests.Session()
 print s.get("http://httpbin.org/ip").text
 print s.get("http://httpbin.org/get").json()
 print s.post("http://httpbin.org/post", {"key": "value"}, headers={'user-agent':'xhl'}).text
+```
 
+
+
+# 代码分析
+
+我们在本地搭建一个环境。
 
 ```
+ docker run -p 80:80 kennethreitz/httpbin
+```
+
+这个会下载docker的运行环境。
+
+然后自动运行。
+
+我们用这个就可以访问到本地的httpbin了。
+
+http://192.168.190.137/
 

@@ -134,6 +134,16 @@ content不是。
 }
 ```
 
+# 响应内容
+
+响应内容：
+
+1、普通文本。
+
+2、二进制数据。
+
+3、json内容。
+
 
 
 # 高级用法
@@ -167,3 +177,10 @@ session可以帮你保存多个request的参数。
 
 # 身份认证
 
+
+
+# 参考资料
+
+1、
+
+http://docs.python-requests.org/zh_CN/latest/user/quickstart.html

@@ -18,7 +18,6 @@ client.send(r"GET / HTTP/1.1\r\nHost: www.baidu.com\r\n\r\n")
 # 4096 is buffer size
 response = client.recv(4096)
 print response
-
 ```
 # 2. 简单udp client
 ```
