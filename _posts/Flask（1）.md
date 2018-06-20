@@ -14,3 +14,9 @@ tags:
 
 
 
+http://brunorocha.org/python/flask/flasgger-api-playground-with-flask-and-swagger-ui.html
+
+
+
+https://changsiyuan.github.io/2017/05/20/2017-5-20-flasgger/
+
