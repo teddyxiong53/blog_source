@@ -86,3 +86,57 @@ print s.post("http://httpbin.org/post", {"key": "value"}, headers={'user-agent':
 
 http://192.168.190.137/
 
+
+
+不借助docker直接在本地运行的方法：
+
+1、下载代码。
+
+2、在代码目录下：
+
+```
+sudo python setup.py install
+```
+
+这个会下载一些依赖的东西进行安装。
+
+3、运行。
+
+```
+python
+>>> import httpbin
+用help查看信息。发现用法是下面的这样的
+>>> httpbin.app.run(port=5000, host='0.0.0.0') #如果要用80端口，就要用sudo来运行Python。
+```
+
+运行打印：
+
+```
+>>> httpbin.app.run(port=5000, host='0.0.0.0')  
+ * Serving Flask app "httpbin.core" (lazy loading)
+ * Environment: production
+   WARNING: Do not use the development server in a production environment.
+   Use a production WSGI server instead.
+ * Debug mode: off
+ * Running on http://0.0.0.0:5000/ (Press CTRL+C to quit)
+192.168.190.1 - - [20/Jun/2018 23:40:37] "GET / HTTP/1.1" 200 -
+192.168.190.1 - - [20/Jun/2018 23:40:37] "GET /flasgger_static/swagger-ui.css HTTP/1.1" 200 -
+192.168.190.1 - - [20/Jun/2018 23:40:37] "GET /flasgger_static/swagger-ui-bundle.js HTTP/1.1" 200 -
+192.168.190.1 - - [20/Jun/2018 23:40:37] "GET /flasgger_static/swagger-ui-standalone-preset.js HTTP/1.1" 200 -
+192.168.190.1 - - [20/Jun/2018 23:40:37] "GET /flasgger_static/lib/jquery.min.js HTTP/1.1" 200 -
+192.168.190.1 - - [20/Jun/2018 23:40:38] "GET /spec.json HTTP/1.1" 200 -
+192.168.190.1 - - [20/Jun/2018 23:40:55] "GET /static/favicon.ico HTTP/1.1" 200 -
+```
+
+
+
+这个是一个详细的教程。
+
+http://www.pythondoc.com/flask-mega-tutorial/
+
+
+
+http://www.pythondoc.com/
+
+
+
