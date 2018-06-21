@@ -85,6 +85,75 @@ network={
 
 现在网络就配置好了。可以跟路由器连接上了。
 
+
+
+# 检测密码错误
+
+https://superuser.com/questions/903464/wpa-supplicant-detecting-that-my-password-is-incorrect/903893
+
+这里讲了一种方法。但是不不方便使用。
+
+
+
+wpa的源代码。
+
+http://w1.fi/cgit/hostap/tree/wpa_supplicant
+
+```
+# wpa_supplicant -h
+wpa_supplicant v2.6
+Copyright (c) 2003-2016, Jouni Malinen <j@w1.fi> and contributors
+
+This software may be distributed under the terms of the BSD license.
+See README for more details.
+
+usage:
+  wpa_supplicant [-BddhKLqqtvW] [-P<pid file>] [-g<global ctrl>] \
+        [-G<group>] \
+        -i<ifname> -c<config file> [-C<ctrl>] [-D<driver>] [-p<driver_param>] \
+        [-b<br_ifname>] [-e<entropy file>] [-f<debug file>] \
+        [-o<override driver>] [-O<override ctrl>] \
+        [-N -i<ifname> -c<conf> [-C<ctrl>] [-D<driver>] \
+        [-p<driver_param>] [-b<br_ifname>] [-I<config file>] ...]
+
+drivers:
+  nl80211 = Linux nl80211/cfg80211
+  wext = Linux wireless extensions (generic)
+  wired = Wired Ethernet driver
+options:
+  -b = optional bridge interface name
+  -B = run daemon in the background
+  -c = Configuration file
+  -C = ctrl_interface parameter (only used if -c is not)
+  -d = increase debugging verbosity (-dd even more)
+  -D = driver name (can be multiple drivers: nl80211,wext)
+  -e = entropy file
+  -f = log output to debug file instead of stdout
+  -g = global ctrl_interface
+  -G = global ctrl_interface group
+  -h = show this help text
+  -i = interface name
+  -I = additional configuration file
+  -K = include keys (passwords, etc.) in debug output
+  -L = show license (BSD)
+  -M = start describing new matching interface
+  -N = start describing new interface
+  -o = override driver parameter for new interfaces
+  -O = override ctrl_interface parameter for new interfaces
+  -p = driver parameters
+  -P = PID file
+  -q = decrease debugging verbosity (-qq even less)
+  -t = include timestamp in debug messages
+  -v = show version
+  -W = wait for a control interface monitor before starting
+example:
+  wpa_supplicant -Dnl80211 -iwlan0 -c/etc/wpa_supplicant.conf
+```
+
+wpa_supplicant工具来配置无线网络。请记住重要的一点是，对无线网络的配置是全局性的，而非针对具体的接口。
+
+经过编译后的wpa_supplicant源程序可以看到两个主要的可执行工具：wpa_supplicant和wpa_cli。wpa_supplicant是核心程序，它和wpa_cli的关系就是服务和客户端的关系：后台运行wpa_supplicant，使用wpa_cli来搜索、设置、和连接网络。
+
 # 总结
 
 下面总结一下，我现在要连上路由器。需要做的步骤：

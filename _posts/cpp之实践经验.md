@@ -22,5 +22,21 @@ http://zh.cppreference.com/w/cpp/symbol_index
 
 
 
+# c++里用pthread必须static
 
+因为c++的函数，非static的，是要隐式地带一个this指针参数的。
+
+而static则不用。
+
+而pthread的线程函数，只能有一个参数。
+
+所以只能static。
+
+但是cpp的还可以非static的。
+
+```
+new std::thread(&SystemUpdateRevWrapper::mainLoop, this)
+```
+
+这样来创建线程就好了。
 

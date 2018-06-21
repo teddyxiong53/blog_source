@@ -116,3 +116,13 @@ pi@raspberrypi:~$
 
 
 
+交叉编译
+
+```
+./configure --host=aarch64-linux-gnu CC=aarch64-linux-gnu-gcc LD=aarch64-linux-gnu-ld --prefix=/home/hlxiong/tools/install/strace
+```
+
+```
+strace -p `pidof doss_speaker` -e signal -e trace=process -e trace=signal -t -o /tmp/doss_speaker &
+```
+

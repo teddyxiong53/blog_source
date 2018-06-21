@@ -16,3 +16,10 @@ Emulation选择VT100，勾选ANSI Color和use color scheme。
 
 ansi color不选的话，make menuconfig就会混乱。
 
+
+
+```
+d:\securecrt_log\[%S]-%M-%D-[%h-%m-%s].log
+[%h:%m:%s:%t]
+```
+
