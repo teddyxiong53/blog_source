@@ -19,3 +19,9 @@ index-url = http://mirrors.aliyun.com/pypi/simple/
 trusted-host=mirrors.aliyun.com 
 ```
 
+
+
+如果是windows下， 则是在C:\Users\Administrator\pip目录下，新建pip.ini文件。
+
+填入上面的内容。
+

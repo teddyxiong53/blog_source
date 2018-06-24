@@ -16,9 +16,32 @@ tags:
 
 
 
+# 思想
+
+《编写高质量代码：改善Python程序的91个建议》
+
 # 网络
 
-##《python网络编程基础》
+《python网络编程基础》
 
 美国人写的。写于2007年。
 
+
+
+# web开发
+
+《Flask Web开发》
+
+
+
+# GUI
+
+《wxPython in Action》
+
+有这一本就够了。
+
+
+
+# hacker
+
+《Black Hat Python》
