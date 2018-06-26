@@ -45,3 +45,12 @@ tags:
 # hacker
 
 《Black Hat Python》
+
+
+
+# 网站推荐
+
+http://python.jobbole.com
+
+
+
