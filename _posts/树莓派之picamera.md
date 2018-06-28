@@ -2,9 +2,7 @@
 title: 树莓派之picamera
 date: 2017-07-27 23:37:36
 tags:
-
 	- 树莓派
-
 	- video
 
 ---

@@ -145,3 +145,96 @@ Python里的字典是用C语言写的，做了很多的优化，效率很高。
 
 with是一种上下文管理器。
 
+python是基于协议的语言。
+
+上下文管理器协议。
+
+
+
+
+
+## contextlib简化上下文管理
+
+```
+#coding: utf-8
+import contextlib
+@contextlib.contextmanager
+def file_open(filename):
+    print "file open"
+    yield #关键是这里。
+    print "file end"
+
+with file_open("1.txt") as f:
+    print "processing file"
+    
+```
+
+输出是：
+
+```
+file open
+processing file
+file end
+```
+
+
+
+# 第五章 序列类
+
+序列就是Python里一个重要的协议。
+
+序列类型的分类：
+
+按照装的内容来分：
+
+1、容器序列。list、tuple、deque。
+
+容器序列就是里面可以放任意类型的数据。
+
+2、扁平序列。str、bytes、bytearray、array.array。
+
+按照可变和不可变来分：
+
+1、可变序列。
+
+2、不可变序列。str、tuple、bytes。
+
+## 序列类型的abc继承关系
+
+```
+from collections import abc
+```
+
+这个在Python3里才有的。
+
+## 序列的扩展extend
+
+append和extend的区别。
+
+## 实现可切片的对象
+
+
+
+# 第六章 dict和set深入
+
+dict属于Mapping类型。
+
+
+
+dict的实现是C语言写的，我们在PyCharm里跳转进去看到的，只是代码形式的文档而已。
+
+dict.copy是一个浅拷贝。
+
+如何做深拷贝？
+
+```
+import copy
+a = [1,2]
+b = copy.deepcopy(a)
+
+```
+
+
+
+dict的子类有哪些？
+
