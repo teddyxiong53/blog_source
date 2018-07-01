@@ -12,3 +12,7 @@ tags:
 
 https://blog.csdn.net/sgfmby1994/article/details/77876873
 
+
+
+# 安装scrapy
+
