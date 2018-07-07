@@ -57,3 +57,8 @@ DATA
 
 
 
+# 参考资料
+
+1、[译][python]ImportError:attempted relative import with no known parent package
+
+https://blog.csdn.net/nigelyq/article/details/78930330

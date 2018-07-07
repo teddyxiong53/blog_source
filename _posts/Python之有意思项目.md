@@ -54,3 +54,16 @@ http://python.jobbole.com/category/project/page/10/
 
 # 写一个简单计算器
 
+# python设计模式
+
+https://github.com/faif/python-patterns
+
+# 基于Flask+Vue+Celery+SQLAlchemy+Redis等实现的微信管理系统
+
+https://zhuanlan.zhihu.com/p/28102858
+
+# 参考资料
+
+1、教你阅读Python开源项目代码
+
+https://zhuanlan.zhihu.com/p/22275595?refer=python-cn
