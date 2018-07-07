@@ -8,6 +8,17 @@ tags:
 
 
 requests是基于urllib写的，是第三方库，不是python自带的。它在使用上比urllib要更加方便，更加适合在python中使用。
+
+它的作者是Python界的名人。这个库也得到了很高的评价。
+
+代码非常适合作为学习Python的材料。
+
+
+
+requests实际主要用途是什么？
+
+
+
 安装就用`pip install requests`来安装。
 
 下面内容参考http://docs.python-requests.org/en/latest/user/quickstart/ 。
@@ -179,8 +190,47 @@ session可以帮你保存多个request的参数。
 
 
 
+
+
+# 代码分析
+
+主要代码就这些：
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/study/requests-master/requests$ tree
+.
+├── adapters.py
+├── api.py
+├── auth.py
+├── certs.py
+├── compat.py
+├── cookies.py
+├── exceptions.py
+├── help.py
+├── hooks.py
+├── __init__.py
+├── _internal_utils.py
+├── models.py
+├── packages.py
+├── sessions.py
+├── status_codes.py
+├── structures.py
+├── utils.py
+└── __version__.py
+```
+
+分析上一层的Makefile。
+
+
+
+
+
 # 参考资料
 
-1、
+1、官方资料
 
 http://docs.python-requests.org/zh_CN/latest/user/quickstart.html
+
+2、Python-第三方库requests详解
+
+https://blog.csdn.net/shanzhizi/article/details/50903748

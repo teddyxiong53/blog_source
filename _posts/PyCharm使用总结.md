@@ -16,3 +16,9 @@ https://blog.csdn.net/sgfmby1994/article/details/77876873
 
 # 安装scrapy
 
+
+
+# pycharm edu版本
+
+这个版本可以下载一些教程。整个界面非常简洁。
+
