@@ -18,6 +18,12 @@ tags:
 
 练习了PhantomJS和selenium。
 
+# 图片转字符画
+
+这个是很有用的。
+
+https://www.cnblogs.com/mrchige/p/6379911.html
+
 # 检测相同图片
 
 我整理了很多的图片，其中可能有不少是重复的，希望通过Python来去掉重复的。
@@ -67,3 +73,7 @@ https://zhuanlan.zhihu.com/p/28102858
 1、教你阅读Python开源项目代码
 
 https://zhuanlan.zhihu.com/p/22275595?refer=python-cn
+
+2、
+
+https://wwwpython项目推荐（转载知乎）.cnblogs.com/tomahawk/archive/2017/12/26/8119244.html
