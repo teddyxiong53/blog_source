@@ -115,9 +115,25 @@ add_executable(xxx main.cpp)
 
 https://github.com/teddyxiong53/c_code/tree/master/cmake_template
 
+
+
+# 调试方法
+
+用
+
+```
+message([SEND_ERROR | STATUS | FATAL_ERROR] "message to display" ...)
+```
+
+
+
 # 参考资料
 
 https://blog.csdn.net/dabenxiong666/article/details/53998998
 
 https://blog.csdn.net/gg_18826075157/article/details/72780431
+
+
+
+https://www.cnblogs.com/lidabo/p/7359422.html
 
