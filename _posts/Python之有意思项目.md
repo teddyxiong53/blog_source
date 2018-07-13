@@ -68,6 +68,10 @@ https://github.com/faif/python-patterns
 
 https://zhuanlan.zhihu.com/p/28102858
 
+# 一个简单ftp服务器
+
+
+
 # 参考资料
 
 1、教你阅读Python开源项目代码
@@ -76,4 +80,4 @@ https://zhuanlan.zhihu.com/p/22275595?refer=python-cn
 
 2、
 
-https://wwwpython项目推荐（转载知乎）.cnblogs.com/tomahawk/archive/2017/12/26/8119244.html
+www.cnblogs.com/tomahawk/archive/2017/12/26/8119244.html
