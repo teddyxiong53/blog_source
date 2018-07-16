@@ -1,0 +1,150 @@
+---
+title: 《Python标准库》读书笔记
+date: 2018-07-15 21:25:53
+tags:
+	- 读书笔记
+
+---
+
+
+
+目录结构如下：
+
+```
+1、文本
+	string
+	textwrap
+	re
+	difflib
+2、数据结构
+	collections
+	array
+	heapq
+	bisect
+	Queue
+	struct
+	weakref
+	copy
+	pprint
+3、算法
+	functools
+	itertools
+	operator
+	contextlib
+4、日期和时间
+	time
+	datetime
+	calendar
+5、数学计算
+	decimal
+	fractions有理数
+	random
+	math
+6、文件系统
+	os.path
+	glob
+	linecache
+	tempfile
+	shutil
+	mmap
+	codecs
+	StringIO
+	fnmatch模式匹配
+	dircache：缓存目录列表
+	filecmp：比较文件
+7、数据持久化存储和交换
+	pickle
+	shelve
+	anydbm
+	whichdb
+	sqlite3
+	xml.etree.ElementTree
+	csv
+8、数据压缩与归档
+	zlib
+	gzip
+	bz2
+	tarfile
+	zipfile
+9、加密
+	hashlib
+	jmac
+10、进程与线程
+	subprocess
+	signal
+	threading
+	multiprocessing
+11、网络通信
+	socket
+	select
+	SocketServer
+	asyncore
+12、Internet
+	urlparse
+	BaseHTTPServer
+	urllib
+	urllib2
+	Base64
+	robotparser
+	Cookie
+	uuid
+	json
+	xmlrpclib
+	SimpleXMLRPCServer
+13、Email
+	smtplib
+	smtpd
+	imaplib
+	mailbox
+14、应用构建模块
+	getopt
+	optparse
+	argparse
+	readline
+	getpass
+	shlex
+	ConfigParser
+	日志
+	fileinput
+	atexit
+	sched
+15、国际化与本地化
+	gettext
+	locale
+16、开发工具
+	pydoc
+	doctest
+	unittest
+	traceback
+	cgitb
+	pdb
+	trace
+	profile和pstats：性能分析
+	timeit：测量执行时间
+	compileall
+	pyclbr：类浏览器
+17、运行时特性
+	site：全站点配置
+	sys
+	os
+	platform
+	resource
+	gc
+	sysconfig
+18、语言工具
+	warnings
+	abc
+	dis：字节码反汇编
+	inspect
+	exceptions
+19、模块与包
+	imp
+	zipimport
+	pkgutil
+	
+```
+
+
+
+# 第一章 文本
+

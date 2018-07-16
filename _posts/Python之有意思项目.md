@@ -72,6 +72,34 @@ https://zhuanlan.zhihu.com/p/28102858
 
 
 
+# cnprog：一个类似Stack Overflow的问答网站程序
+
+
+
+# 在github上搜索script
+
+得到下面这些有意思的代码库。
+
+一些web相关的脚本
+
+https://github.com/averagesecurityguy/scripts
+
+
+
+https://github.com/weechat/scripts/tree/master/python
+
+安卓测试脚本。
+
+https://github.com/gb112211/AndroidTestScripts/tree/master/python
+
+安全脚本。
+
+https://github.com/Lingerhk/hacking_script
+
+
+
+https://github.com/RealHacker/python-gems
+
 # 参考资料
 
 1、教你阅读Python开源项目代码

@@ -14,7 +14,11 @@ tags:
 
 # 语言
 
+《Python标准库》。应该仔细读。
 
+对应的示例程序在这里。
+
+https://doughellmann.com/blog/the-python-standard-library-by-example/
 
 # 思想
 
