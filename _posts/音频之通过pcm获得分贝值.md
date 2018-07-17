@@ -145,3 +145,22 @@ https://www.cnblogs.com/wangguchangqing/p/6197590.html
 
 Python解析wav并画出波形。
 
+
+
+
+
+为什么麦克风的灵敏度是负数，灵敏度－30dB和 －40dB这两个参数哪个属于高灵敏度
+
+http://ask.zol.com.cn/q/1928758.html
+
+
+
+-30dB表示的含义。
+人耳感觉到的响度，跟声音功率的关系是对数关系。
+0dB表示600欧姆负载下，输出1mW的功率。
+所对应的电压是0.775V。
+
+
+
+https://zh.wikipedia.org/wiki/%E5%88%86%E8%B2%9D
+
