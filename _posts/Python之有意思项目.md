@@ -68,6 +68,38 @@ https://github.com/faif/python-patterns
 
 https://zhuanlan.zhihu.com/p/28102858
 
+# 一个简单ftp服务器
+
+
+
+# cnprog：一个类似Stack Overflow的问答网站程序
+
+
+
+# 在github上搜索script
+
+得到下面这些有意思的代码库。
+
+一些web相关的脚本
+
+https://github.com/averagesecurityguy/scripts
+
+
+
+https://github.com/weechat/scripts/tree/master/python
+
+安卓测试脚本。
+
+https://github.com/gb112211/AndroidTestScripts/tree/master/python
+
+安全脚本。
+
+https://github.com/Lingerhk/hacking_script
+
+
+
+https://github.com/RealHacker/python-gems
+
 # 参考资料
 
 1、教你阅读Python开源项目代码
@@ -76,4 +108,4 @@ https://zhuanlan.zhihu.com/p/22275595?refer=python-cn
 
 2、
 
-https://wwwpython项目推荐（转载知乎）.cnblogs.com/tomahawk/archive/2017/12/26/8119244.html
+www.cnblogs.com/tomahawk/archive/2017/12/26/8119244.html
