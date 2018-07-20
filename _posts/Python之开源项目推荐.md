@@ -88,6 +88,8 @@ https://www.oschina.net/p/deepin-software-center
 
 是deepin os里的应用商店的代码，用Python写的。
 
+深度的软件都是开源的，都可以收集了解一下。
+
 
 
 # 流程图绘制软件Dia
@@ -99,6 +101,10 @@ https://www.oschina.net/p/deepin-software-center
 https://www.oschina.net/p/askbot
 
 
+
+# django-cms
+
+https://www.oschina.net/p/django-cms
 
 
 

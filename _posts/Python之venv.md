@@ -20,6 +20,8 @@ python -m venv filename
 
 
 
+相关资料太少。暂时不做了。
+
 
 
 # 参考资料
