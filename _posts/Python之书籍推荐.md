@@ -14,7 +14,7 @@ tags:
 
 # 语言
 
-《Python标准库》。应该仔细读。
+《Python标准库》。应该仔细读。比较厚，有1000页。
 
 对应的示例程序在这里。
 
@@ -49,6 +49,8 @@ https://doughellmann.com/blog/the-python-standard-library-by-example/
 # hacker
 
 《Black Hat Python》
+
+《Python绝技：运用Python成为顶级黑客》
 
 
 
