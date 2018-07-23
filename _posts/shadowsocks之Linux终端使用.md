@@ -119,3 +119,46 @@ alias hp="http_proxy=http://localhost:8123"
 hp curl www.google.com
 ```
 
+# 换一种思路
+
+思路就是：虚拟机通过pc机运行的ssr，pc为虚拟机提供代理服务。
+
+修改上面的hp这个alias为：
+
+```
+alias hp='http_proxy=http://192.168.190.1:1080'
+```
+
+然后测试一下：
+
+```
+teddy@teddy-ubuntu:~$ hp ping google.com
+```
+
+可以下载谷歌的首页下来。
+
+如果不带hp，则不行。
+
+我的手机平板都可以通过这种方式来上网。
+
+而我的pc当前承担是任务，可以转到我的树莓派上来。
+
+对于https的。我还需要加上一个：
+
+```
+alias hps='https_proxy=http://192.168.190.1:1080'
+```
+
+
+
+
+
+# 参考资料
+
+1、VMWare虚拟机通过主机shadowsocks代理上网
+
+https://blog.csdn.net/u010726042/article/details/53187937
+
+2、手机不安装软件实现翻墙（VPS和PC端已成功配置好SSR的前提下）
+
+https://therealinternet.ml/index.php/2017/10/03/%e6%89%8b%e6%9c%ba%e4%b8%8d%e5%ae%89%e8%a3%85%e8%bd%af%e4%bb%b6%e5%ae%9e%e7%8e%b0%e7%bf%bb%e5%a2%99%ef%bc%88vps%e5%92%8cpc%e7%ab%af%e5%b7%b2%e6%88%90%e5%8a%9f%e9%85%8d%e7%bd%ae%e5%a5%bdssr%e7%9a%84/

@@ -64,7 +64,13 @@ OpenStack每6个月更新一次。基本跟Ubuntu同步。
 
 
 
+OpenStack所有项目都是基于Python开发，并且都是标准的Python项目
 
+
+
+OpenStack可以成为云计算时代的linux。
+
+Mirantis是一家做OpenStack方案的公司。
 
 
 
@@ -97,3 +103,11 @@ http://cloud.51cto.com/art/201606/512215.htm
 7、基于openstack安装部署私有云详细图文教程
 
 https://www.jb51.net/article/104511.htm
+
+8、到底选openstack还是vmware?
+
+https://www.zhihu.com/question/24376873
+
+9、OpenStack主力公司Mirantis公开承认前者的衰败，转投K8阵营
+
+https://www.sohu.com/a/191483034_575815

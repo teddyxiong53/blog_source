@@ -111,3 +111,10 @@ https://minhaskamal.github.io/DownGit/#/home?url=https:%2F%2Fgithub.com%2Ftxgcwm
 
 把你要下载的链接，输入到这里的输入框里，点击下载就好了。
 
+
+
+# 参考资料
+
+1、解决GitHub下载速度太慢的问题
+
+https://blog.csdn.net/qing666888/article/details/79123742
