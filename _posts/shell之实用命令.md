@@ -118,3 +118,15 @@ echo "FLASH:["$flash_size"],"
 查看cpu的频率和修改。
 
 https://blog.csdn.net/zhangyongfeiyong/article/details/52923563
+
+
+
+## 去掉空格
+
+```
+function trim() 
+{ 
+	echo $1 |  awk 'gsub(/^ *| *$/,"")'
+}
+```
+
