@@ -85,3 +85,9 @@ wav转pcm
 ffmpeg -i volume_new.wav -f s16le -acodec pcm_s16le volume_new.pcm
 ```
 
+mp3转wav
+
+```
+ffmpeg  -i  input.mp3 output.wav
+```
+
