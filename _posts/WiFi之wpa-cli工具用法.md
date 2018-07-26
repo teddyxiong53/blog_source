@@ -87,6 +87,22 @@ network={
 
 
 
+
+
+wpa_cli scan
+
+wpa_cli scan_result
+
+这2个比较有用。
+
+
+
+wpa_cli ping
+
+这个是检查wpa_supplicant是否启动了。
+
+
+
 # 检测密码错误
 
 https://superuser.com/questions/903464/wpa-supplicant-detecting-that-my-password-is-incorrect/903893
