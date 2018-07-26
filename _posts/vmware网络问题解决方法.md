@@ -16,6 +16,10 @@ tags:
 
 但是我还是不能做出来。
 
+##桥接不能上网问题
+
+不能选择自动，而是要明确选择pc的物理网卡。
+
 
 
 # 参考资料
@@ -23,3 +27,7 @@ tags:
 1、VMWare虚拟机克隆或复制后eth0不存在，不能上网的解决办法
 
 https://my.oschina.net/MIKEWOO/blog/1589393
+
+2、Vmware桥接模式下主机和和虚机间为何互相ping不通
+
+https://blog.csdn.net/yuan1590/article/details/53504042

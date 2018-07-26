@@ -32,21 +32,21 @@ server {
 
 
 
-## 1.default_server代表什么？
+## default_server代表什么？
 
 因为一个conf文件里，可以配置多个server，如果都匹配不上，就交给配置了default_server的server进行处理。
 
 
 
-## 2. server_name为一个下划线代表什么？
+## server_name为一个下划线代表什么？
 
 下划线没有特别含义，表示一个无效值，server_name后面正常的应该是跟一个域名的。
 
 nginx里的虚拟主机是通过http请求里的host值来找到对应的虚拟主机的。如果找不到呢？那就是交给default_server来处理。
 
+写ip没有意义（这里要跟的是一个host name），可以写一个下划线(_)，或者完全不写server_name
 
-
-## 3. nginx配置调试方法
+## nginx配置调试方法
 
 改完后，用nginx -t测试一下。
 

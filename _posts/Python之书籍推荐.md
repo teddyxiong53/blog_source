@@ -36,6 +36,10 @@ https://doughellmann.com/blog/the-python-standard-library-by-example/
 
 《Flask Web开发》
 
+## django
+
+《Python高效开发实战：Django、Tornado、Flask、Twisted》
+
 
 
 # GUI

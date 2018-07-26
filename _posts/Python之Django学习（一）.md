@@ -23,7 +23,6 @@ sudo apt-get install python-django
 ```
 import django
 django.VERSION
-
 ```
 
 这样安装好的版本是1.7.11的。
