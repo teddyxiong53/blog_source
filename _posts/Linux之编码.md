@@ -215,6 +215,101 @@ c8:3a:35:4a:5e:30	2472	-20	[WPA-PSK-CCMP][WPA2-PSK-CCMP][ESS]	\xe7\x86\x8a\xe6\x
 
 
 
+echo -e对我当前不可用。因为把换行符的转义也干掉了。
+
+
+
+判断字符是不是utf-8的。
+
+```
+bool is_str_utf8(const char* str)
+{
+	unsigned int nBytes = 0;//UFT8可用1-6个字节编码,ASCII用一个字节  
+	unsigned char chr = *str;
+	bool bAllAscii = true;
+ 
+	for (unsigned int i = 0; str[i] != '\0'; ++i){
+		chr = *(str + i);
+		//判断是否ASCII编码,如果不是,说明有可能是UTF8,ASCII用7位编码,最高位标记为0,0xxxxxxx 
+		if (nBytes == 0 && (chr & 0x80) != 0){
+			bAllAscii = false;
+		}
+ 
+		if (nBytes == 0) {
+			//如果不是ASCII码,应该是多字节符,计算字节数  
+			if (chr >= 0x80) {
+ 
+				if (chr >= 0xFC && chr <= 0xFD){
+					nBytes = 6;
+				}
+				else if (chr >= 0xF8){
+					nBytes = 5;
+				}
+				else if (chr >= 0xF0){
+					nBytes = 4;
+				}
+				else if (chr >= 0xE0){
+					nBytes = 3;
+				}
+				else if (chr >= 0xC0){
+					nBytes = 2;
+				}
+				else{
+					return false;
+				}
+ 
+				nBytes--;
+			}
+		}
+		else{
+			//多字节符的非首字节,应为 10xxxxxx 
+			if ((chr & 0xC0) != 0x80){
+				return false;
+			}
+			//减到为零为止
+			nBytes--;
+		}
+	}
+ 
+	//违返UTF8编码规则 
+	if (nBytes != 0)  {
+		return false;
+	}
+ 
+	if (bAllAscii){ //如果全部都是ASCII, 也是UTF8
+		return true;
+	}
+ 
+	return true;
+}
+```
+
+这个的grep是一个奇怪的事情。
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/cpp$ cat 1.txt  | grep "\\xe7"
+c8:3a:35:4a:5e:30       2437    -22     [WPA-PSK-CCMP][WPA2-PSK-CCMP][ESS]      \xe7\x86\x8a\xe6\xb1\x89\xe8\x89\xaf
+hlxiong@hlxiong-VirtualBox:~/work/test/cpp$ cat 1.txt  | grep "\\xe7\\x86"
+```
+
+为什么搜一个还可用，搜多个就不行了呢？
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/cpp$ cat 1.txt  | grep "\\x86"     
+c8:3a:35:4a:5e:30       2437    -22     [WPA-PSK-CCMP][WPA2-PSK-CCMP][ESS]      \xe7\x86\x8a\xe6\xb1\x89\xe8\x89\xaf
+```
+
+是需要3个反斜杠才行。
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/cpp$ cat 1.txt  | grep "\\\xe7\\\x86\\\x8a\\\xe6\\\xb1\\\x89\\\xe8\\\x89\\\xaf" -w
+c8:3a:35:4a:5e:30       2437    -22     [WPA-PSK-CCMP][WPA2-PSK-CCMP][ESS]      \xe7\x86\x8a\xe6\xb1\x89\xe8\x89\xaf
+```
+
+前面2个反斜杠是得到一个反斜杠，后面的`\x`是为了得到x。
+
+
+
 # 参考资料
 
 https://blog.csdn.net/B_H_L/article/details/17956037
@@ -258,3 +353,12 @@ https://www.cnblogs.com/cute/p/4961280.html
 在C++11中，如何将一种编码的string转换为另一种编码的string？
 
 https://www.zhihu.com/question/39186934
+
+C++ 判断一个字符串是不是utf8或者GBK格式
+
+https://blog.csdn.net/thedarkfairytale/article/details/73457200
+
+
+
+
+
