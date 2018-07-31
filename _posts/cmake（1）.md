@@ -127,6 +127,22 @@ message([SEND_ERROR | STATUS | FATAL_ERROR] "message to display" ...)
 
 
 
+指定链接路径
+
+link_directories
+
+添加宏定义。
+
+add_definitions
+
+头文件包含
+
+include_directories
+
+定变量 set
+
+
+
 # 参考资料
 
 https://blog.csdn.net/dabenxiong666/article/details/53998998

@@ -246,3 +246,53 @@ clean session是0，表示客户端和服务端要建立长久的会话。这个
 
 
 
+
+
+# 其他
+
+我在实际使用中，发现这样的实现行为：
+
+我pub了一个消息是，qos为2的，然后启动一个sub。看broker的打印，可以看到broker就马上把之前pub出来的消息发给了这个sub。
+
+```
+1532927913: New connection from 127.0.0.1 on port 1883.
+1532927913: New client connected from 127.0.0.1 as doss_server (c1, k30).
+1532927913: Sending CONNACK to doss_server (0, 0)
+1532927914: Received SUBSCRIBE from doss_server
+1532927914:     doss/device_info (QoS 0)
+1532927914: doss_server 0 doss/device_info
+1532927914: Sending SUBACK to doss_server
+1532927914: Sending PUBLISH to doss_server (d0, q0, r1, m0, 'doss/device_info', ... (36 bytes))
+```
+
+但是实际上sub这边并没有看到。
+
+不过我先启动sub。再启动pub。是可以收到的。
+
+
+
+keepalive
+
+这个是用来做心跳间隔的。以秒位单位的。
+
+一个U16的长度，最长就是18个小时。
+
+mqtt_init 默认给的是300秒。
+
+sub程序，需要定时给broker发ping。
+
+对于pub，则没有要求，因为pub可以发一下，就马上退出的。
+
+如果到了应该发ping的时候，broker还没有收到，broker就会认为这个client已经断开了。
+
+
+
+mqtt支持离线，你订阅了某个topic，这个topic之前的消息就会都发过来的。
+
+
+
+# 参考资料
+
+1、
+
+http://www.blogjava.net/yongboy/archive/2014/02/09/409630.html

@@ -44,5 +44,11 @@ mosquitto_pub -t "xhliang" -m "hello"
 
 
 
+# password设置
+
+默认是可以不用密码的。
+
+如果要加上密码，该怎么弄呢？
+
 
 
