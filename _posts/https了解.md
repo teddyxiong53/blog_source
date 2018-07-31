@@ -58,11 +58,35 @@ B公司的前台李四小姐，看到介绍信上有A公司的公章，而A和B�
 
 
 
+http不安全的根源是http是明文传输的。
+
+你在谷歌搜索了一个关键词（假如谷歌使用的是http），在中间的任何一个节点上都可以抓取到你搜索的内容，你的隐私毫无保障。
+
 
 
 # 从零开始搭建https网站
 
 证书跟域名一样，也需要购买，而且价格不便宜。
+
+我们用免费的letsencrypt。
+
+```
+git clone https://github.com/letsencrypt/letsencrypt
+```
+
+我们使用letsencrypt来生成https所需要的整数。
+
+作为一个免费的解决方案，letsencrypt只提供域名认证证书。
+
+所以，我们只需要证明域名是自己所有即可。
+
+最简单的方式是用letsencrypt的webroot验证方式。
+
+告诉letsencrypt你的nginx的WebRoot和你的域名。
+
+letsencrypt会在WebRoot的.well-known文件夹下放一个特别的文件。
+
+然后使用域名去访问这个文件，如果可以访问到，当然能够证明域名是你的。
 
 
 

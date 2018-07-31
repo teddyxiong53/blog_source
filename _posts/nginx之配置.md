@@ -93,6 +93,49 @@ http { # http块
 
 
 
+# location配置详解
+
+```
+location = / {
+   # 规则A
+}
+location = /login {
+  # 规则B
+}
+location ^~ /static/ {
+  # 规则C
+}
+location ~ \.(gif|jpg|png|js|css)$ {
+  # 规则D
+}
+location ~* \.png$ {
+  # 规则E
+}
+location !~ \.xhtml$ {
+  # 规则F
+}
+location !~* \.xhtml$ {
+  # 规则G 
+}
+location / {
+  # 规则H
+}
+```
+
+访问根目录/，匹配到规则A。
+
+访问http://localhost/login 将匹配规则B。
+
+访问http://localhost/register 将匹配规则H。（为什么？？）
+
+访问http://localhost/static/a.html 将匹配规则C。
+
+
+
+uwsgi_pass
+
+
+
 # 参考资料
 
 1、Nginx配置详解
@@ -102,3 +145,13 @@ https://www.cnblogs.com/knowledgesea/p/5175711.html
 2、SSL证书安装指引
 
 https://www.cnblogs.com/lxwphp/p/8288003.html
+
+3、nginx的location配置详解
+
+这篇文档特别好。
+
+https://www.cnblogs.com/sign-ptk/p/6723048.html
+
+4、跨过Nginx上基于uWSGI部署Django项目的坑
+
+https://www.cnblogs.com/qingspace/p/6838747.html
