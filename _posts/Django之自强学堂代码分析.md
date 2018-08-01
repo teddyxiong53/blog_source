@@ -280,6 +280,31 @@ pip install -r ./zqxt/requirements.txt
 
 https://blog.csdn.net/libing1991_/article/details/48049227
 
+我现在把uwsgi在前台运行，这样就可以看到报错信息。的确是有报错。
+
+```
+Traceback (most recent call last):
+  File "/home/admin/.envs/zqxt/local/lib/python2.7/site-packages/django/core/handlers/wsgi.py", line 170, in __call__
+    self.load_middleware()
+  File "/home/admin/.envs/zqxt/local/lib/python2.7/site-packages/django/core/handlers/base.py", line 50, in load_middleware
+    mw_class = import_string(middleware_path)
+    
+中间省略
+django.db.utils.OperationalError: (1045, "Access denied for user 'tu'@'localhost' (using password: YES)")
+```
+
+看起来是访问数据库错误。
+
+需要修改settings.py里的配置。
+
+改了，再访问。
+
+现在报找不到数据库的错误。
+
+```
+django.db.utils.OperationalError: (1049, "Unknown database 'zqxt'")
+```
+
 
 
 # 参考资料
