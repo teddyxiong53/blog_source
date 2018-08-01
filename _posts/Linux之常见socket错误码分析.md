@@ -8,6 +8,34 @@ tags:
 
 
 
+read函数分析
+
+```
+nread = read(sockfd, buf, buflen);
+```
+
+过程：
+
+1、nread > 0。
+
+读取正常。
+
+2、nread == 0 。
+
+套接字关闭。break处理。
+
+3、nread < 0
+
+需要判断返回值。
+
+EINTR、EWOULDBLOCK、EAGAIN。这3个 都是正常的。continue处理。
+
+
+
+
+
+
+
 # EINTR
 
 阻塞的操作被取消阻塞的调用打断。例如设置了发送接收超时，就会遇到这种错误。
@@ -54,3 +82,12 @@ tags:
 
 而一般出现这个错误，并没有那么严重，所以一般进程都会自己捕获这个SIGPIPE，避免一不小心就被杀死。
 
+
+
+
+
+# 参考资料
+
+1、一篇文章完全搞清楚 scoket read/write 返回码、阻塞与非阻塞、异常处理 等让你头疼已久的问题
+
+https://www.cnblogs.com/junneyang/p/6126635.html

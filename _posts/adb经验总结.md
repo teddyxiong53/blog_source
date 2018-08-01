@@ -27,3 +27,20 @@ adb shell < cmd.txt
 ```
 
 在cmd.txt里写入需要执行的命令。
+
+## Windows下adb shell使用有问题
+
+有这些问题：
+
+1、vi不能用。
+
+2、adb shell里不能tab补全。
+
+下载这个adb专用的putty就可以了。
+
+https://github.com/sztupy/adbputty/downloads
+
+hostname那里填写：transport-usb 。连接类型选择：adb。
+
+这样就可以正常使用了。
+
