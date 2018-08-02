@@ -30,7 +30,9 @@ nread = read(sockfd, buf, buflen);
 
 EINTR、EWOULDBLOCK、EAGAIN。这3个 都是正常的。continue处理。
 
+EWOULDBLOCK==EAGAIN。表示的都是阻塞模式下，要读取，但是当前还没有数据。
 
+EINTR表示操作被中断。
 
 
 

@@ -66,6 +66,30 @@ hlxiong@hlxiong-VirtualBox:~/work/tmp/cmder_mini$ tree -L 2
 
 
 
+# 跟msys2结合
+
+什么是msys2？
+
+msys2是在mingw的基础上增加了一些其他的东西，例如包管理器。它的包管理器是pacman。
+
+
+
+
+
+我之前下载的都是cmder。现在我直接下载conemu看看。
+
+https://www.fosshub.com/ConEmu.html
+
+
+
+adb shell里不能补全的锅，应该是adb自己的。我的当前的adb版本是1.0.32 。
+
+下载这个，是1.0.40的。果然就是可以补全的。
+
+https://dl.google.com/android/repository/platform-tools_r28.0.0-windows.zip
+
+解压后，全部放到C:\Windows\system目录下就可以了。
+
 #参考资料
 
 1、官网帮助
@@ -87,3 +111,11 @@ https://conemu.github.io/en/VimXterm.html
 5、Conemu, Msys2 工具整合，提升windows下控制台工作效率
 
 http://www.bubuko.com/infodetail-2507958.html
+
+6、windows搭建gcc开发环境(msys2)
+
+https://blog.csdn.net/qiuzhiqian1990/article/details/56671839
+
+7、msys2配置记录
+
+https://www.jianshu.com/p/c740b71e7775

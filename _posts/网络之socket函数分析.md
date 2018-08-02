@@ -153,5 +153,41 @@ read不出错，就进行write，给客户端回复。
 
 
 
+# 地址体系
+
+```
+sockaddr
+	在sys/socket.h里。
+	sa_family和sa_data[14]这2个成员。
+	
+sockaddr_in
+	在netinet/in.h里。
+	4个成员：
+		sin_family。
+		sin_port。
+		struct in_addr sin_addr。
+		u8 sin_zero[8]
+struct in_addr
+	在netinet/in里。
+	一个成员：
+		u32 s_addr
+```
+
+
+
+# 其他函数
+
+gethostbyname
+
+https://www.cnblogs.com/zendu/p/4988006.html
+
+这里的例子，在64位上跑，会挂掉。在32位上跑则不会。
+
+
+
+# 参考资料
+
+1、
+
 
 
