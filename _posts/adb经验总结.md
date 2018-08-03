@@ -44,3 +44,21 @@ hostname那里填写：transport-usb 。连接类型选择：adb。
 
 这样就可以正常使用了。
 
+## 后台有程序运行，无法exit
+
+exit提示
+
+```
+/data/doss # exit
+You have stopped jobs.
+```
+
+只需要把后台的杀掉就好了。
+
+```
+/data/doss # kill %1
+[1]+  Terminated                 tail -f wakeup.log
+```
+
+
+
