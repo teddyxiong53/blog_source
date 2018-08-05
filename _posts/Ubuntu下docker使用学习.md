@@ -2,12 +2,12 @@
 title: Ubuntu下docker使用学习
 date: 2017-06-12 20:32:24
 tags:
-
 	- ubuntu
-
 	- docker
 
 ---
+
+
 
 docker是一个开源的应用容器引擎，用Go语言开发，基于Apache2.0协议进行开源。
 
@@ -26,6 +26,14 @@ github地址是：[https://github.com/docker/docker](https://github.com/docker/d
 为了方便运行，可以把身份切换为root用户再进行下面的操作。
 
 官网的教程在这：https://docs.docker.com/get-started/
+
+
+
+现在的主流linux系统都内置了docker软件了。
+
+谷歌在它的PaaS平台上，大量应用了docker技术。
+
+
 
 # 1. docker的安装
 
@@ -365,6 +373,11 @@ docker pull nginx
 
 
 
+# 参考资料
+
+1、Docker学习笔记
+
+https://www.cnblogs.com/52fhy/p/5638571.html
 
 
 
@@ -391,13 +404,4 @@ docker pull nginx
 
 
 
-
-
-
-
-Docker之所以这么吸引人，除了它的新颖的技术外，围绕官方Registry（Docker Hub）的生态圈也是相当吸引人眼球的地方。
-
-在Docker Hub上你可以很轻松下载到大量已经容器化的应用镜像，即拉即用。
-
-而且你还可以在Docker Hub中绑定你的代码托管系统（目前支持Github和Bitbucket）配置自动生成镜像功能，这样Docker Hub会在你代码更新时自动生成对应的Docker镜像，是不是很方便？
 
