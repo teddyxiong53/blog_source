@@ -22,7 +22,6 @@ tags:
 def application(env, start_response):
 	start_response("200 OK", [("Content-Type", "text/html")])
 	return "hello"
-
 ```
 
 测试命令：`uwsgi --http :8001 --wsgi-file test.py`。然后在浏览器就可以访问了。

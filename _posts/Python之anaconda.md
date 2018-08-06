@@ -20,6 +20,10 @@ anaconda是专注于数据分析的Python发行版本。
 
 conda是开源包和虚拟环境的管理系统。
 
+anaconda可以很方便设置虚拟环境。
+
+
+
 # anaconda的好处
 
 八个字：省时省心，分析利器。
@@ -73,3 +77,7 @@ conda list
 1、致Python初学者：Anaconda入门使用指南
 
 http://python.jobbole.com/87522/?repeat=w3tc
+
+2、Anaconda完全入门指南
+
+https://www.baidu.com/link?url=LMgL6ZhUPrZHWe5CutfZLCfdyICQ6AbRkTv5oe89OgjDi7olB3dPa6eR7kb9HCDj&wd=&eqid=db46c6610006cb3e000000035b669f27
