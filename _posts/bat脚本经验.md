@@ -52,6 +52,26 @@ echo %dirname%
 pause
 ```
 
+这个有点问题，对于小时数小于10的，不能正确处理。
+
+```
+@echo off
+set YYYYmmdd=%date:~0,4%%date:~5,2%%date:~8,2%
+if "%time:~0,2%" lss "10" (set hh=0%time:~1,1%) else (set hh=%time:~0,2%)
+set mi=%time:~3,2%
+set ss=%time:~6,2%
+
+set "dirname=doss_%YYYYmmdd%_%hh%%mi%%ss%"
+echo %dirname%
+
+if not exist %dirname% (
+	md %dirname%
+	
+) else (
+	echo %dirname% exist
+)
+```
+
 
 
 条件判断怎么做？

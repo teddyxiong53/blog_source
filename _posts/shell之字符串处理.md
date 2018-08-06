@@ -57,6 +57,12 @@ chip=`trim $chip`
 
 
 
+# 文本文件处理
+
+从一个ping的结果日志里，提取出时间值。
+
+
+
 linux shell 字符串操作详解 （长度，读取，替换，截取，连接，对比，删除，位置 ）
 
 https://www.cnblogs.com/gaochsh/p/6901809.html

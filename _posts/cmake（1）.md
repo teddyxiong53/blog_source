@@ -97,6 +97,26 @@ hlxiong@hlxiong-VirtualBox:~/work/test/cpp$ tree
 
 就得到xxx可执行文件了。
 
+# 基本语法
+
+定义变量
+
+```
+set mydir=./
+```
+
+条件判断：
+
+```
+if(${Platform} STREQUAL ABC
+else()
+endif()
+```
+
+```
+if(${Platform} MATCHES "ABC")
+```
+
 
 
 # 添加宏定义

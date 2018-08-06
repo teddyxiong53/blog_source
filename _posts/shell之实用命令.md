@@ -130,3 +130,39 @@ function trim()
 }
 ```
 
+## 逐行读取文件
+
+有两种方式：
+
+方式一：
+
+```
+cat 1.txt | while read line
+do
+	echo $line
+done
+```
+
+方式二：
+
+```
+while read line
+do 
+	echo $line
+done < 1.txt
+```
+
+## 文件名处理
+
+```
+fullfile=$1
+
+filename_with_postfix=$(basename "$fullfile")
+extension="${filename_with_postfix##*.}"
+filename="${filename_with_postfix%.*}"
+
+echo $filename_with_postfix
+echo $extension
+echo $filename
+```
+
