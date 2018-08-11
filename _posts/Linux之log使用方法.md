@@ -215,6 +215,15 @@ Mar 21 16:33:35 (none) user.info ./a.out[819]: hello syslog:1
 
 
 
+我当前的版本syslogd会忽略syslog.conf文件。
+
+```
+System logging utility
+(this version of syslogd ignores /etc/syslog.conf)
+```
+
+
+
 # 参考资料
 
 1、
@@ -224,3 +233,11 @@ https://baike.baidu.com/item/openlog/9502581?fr=aladdin
 2、syslogd的配置。
 
 http://book.51cto.com/art/201406/442922.htm
+
+3、开发板上syslog使用方法小结
+
+https://blog.csdn.net/yangxuan12580/article/details/51497069
+
+4、busybox syslog介绍
+
+http://www.mamicode.com/info-detail-2284735.html
