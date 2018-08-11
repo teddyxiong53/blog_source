@@ -72,6 +72,22 @@ conda list
 
 
 
+
+
+#安装出错的解决方法
+
+http://so.kszixue.com/?id=20
+
+```
+channels:
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/msys2/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+show_channel_urls: true
+```
+
+
+
 # 参考资料
 
 1、致Python初学者：Anaconda入门使用指南
