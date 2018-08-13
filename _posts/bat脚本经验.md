@@ -116,5 +116,29 @@ for循环。
 
 
 
+
+
+# 杀掉多个同名进程
+
+有两种方式：
+
+1、
+
+```
+wmic process where name='nginx.exe' call terminate
+```
+
+2、
+
+```
+taskkill /f /t /im nginx.exe
+```
+
+
+
+# 参考资料
+
+
+
 https://blog.csdn.net/qq_16559905/article/details/78575147
 

@@ -62,6 +62,68 @@ nginx属于典型的微内核设计。内核非常简洁和优雅。同时也有
 
 
 
+# windows下配置php在nginx
+
+1、下载php。
+
+https://windows.php.net/downloads/releases/archives/php-5.2.16-nts-Win32-VC6-x86.zip
+
+nginx下的php是以fastcgi的方式运行的。所以我们下载的是非线程安全的nts的包。
+
+2、另外还需要RunHiddenConsole。
+
+http://redmine.lighttpd.net/attachments/660/RunHiddenConsole.zip
+
+这个文件很小，只有2K。
+
+3、解压php的压缩包。
+
+我把内容放在D:\work\nginx\php5这个目录下。
+
+把php.ini-recommend改名为php.ini。
+
+修改内容：
+
+```
+1、把extension_dir修改为绝对路径
+extension_dir ="D:\work\nginx\php5"
+2、打开extension的php_mysql.dll和php_mysqli.dll的分号注释。
+3、把libmysql.dll拷贝到c:\windows目录下去。
+```
+
+做完上面这些步骤，php就可以支持mysql了。
+
+接下来，我们就让php跟nginx结合。
+
+我们找到这一行：
+
+```
+;cgi.fix_pathinfo=1
+```
+
+把分号去掉，这个是打开cgi的。
+
+接下来要在nginx.conf里进行设置。
+
+我把网站的根目录指定为D:\work\nginx\www。
+
+我们新建一个脚本，就叫startup-php.bat。写入：
+
+```
+@echo off
+D:/work/nginx/php5/php-cgi.exe -b 127.0.0.1:9000 -c D:/work/nginx/php5/php.ini
+```
+
+但是我这个运行，怎么都跑不起来。
+
+问题在于，指定网站的根目录不能在nginx目录之外，我把目录改回到默认的html目录，就正常了。
+
+我开发就这么做。
+
+
+
+
+
 
 
 # 参考资料
