@@ -148,7 +148,206 @@ $GLOBALS['x']
 
 static用法跟C语言的一样。
 
+参数的用法。
 
+```
+<?php 
+function myfunc($x)
+{
+	echo $x;
+}
+myfunc(5);
+
+?>
+```
+
+##数据类型
+
+字符串。
+
+可以用单引号，也可以用双引号。
+
+整型。
+
+没有什么特别的。
+
+可以用var_dump函数来打印变量的类型。
+
+bool类型。
+
+给变量赋值true和false，就相当于定义了一个bool类型。
+
+数组。
+
+```
+<?php
+$students = array("allen", "bob");
+var_dump($students)
+?>
+```
+
+对象。
+
+用class关键字来做。
+
+```\
+<?php 
+class Car
+{
+	var $color;
+	function __construct($color="green") {
+		$this->color = $color;
+	}
+	function what_color() {
+		return $this->color;
+	}
+}
+
+function print_vars($obj) {
+	foreach (get_object_vars($obj) as $prop => $val) {
+		echo "$prop = $val\n";
+	}
+}
+$car = new Car("white");
+print_vars($car)
+
+?>
+```
+
+null。可以通过给变量赋值为null来清空变量。
+
+```
+<?php 
+$x = "hello";
+$x = null;
+echo $x;
+
+?>
+```
+
+常量。
+
+常量是全局的。
+
+定义方法：最后一个参数给true，就是常量的名字，大小写不敏感。
+
+```
+<?php 
+define("GREETING", "hello Wolrd\n", true);
+echo GREETING;
+echo "==========";
+echo greeting;
+?>
+```
+
+## 字符串操作
+
+连接字符串。
+
+```
+$txt1 = "hello";
+$txt2 = "world";
+echo $txt1. "".$txt2;
+```
+
+求字符串长度。
+
+```
+echo strlen("hello");
+```
+
+strpos函数。
+
+```
+echo strpos("hello world", "world");
+```
+
+## 运算符
+
+和C语言的类型，多了一些and、or、not这些单词的运算符。
+
+## 分支
+
+```
+if() {
+} elseif () {
+  
+} else {
+  
+}
+```
+
+还有switch，跟C语言的一样。
+
+## 数组排序
+
+sort。升序排序。
+
+rsort。降序排序。
+
+asort。根据关联数组的值，进行升序排序。
+
+ksort。根据关联数组的键，进行升序排序。
+
+arsort。
+
+krsort。
+
+## 超级全局变量
+
+就是php预定义的全局变量，在任何地方都可以用的。
+
+$GLOBALS。
+
+$_SERVER。
+
+$_POST
+
+$_GET
+
+## 循环
+
+有四种。
+
+```
+while() {
+  
+}
+do {
+  
+}while();
+for() {
+  
+}
+forear
+```
+
+## 函数
+
+提供了超过100个內建函数。
+
+## 魔数常量
+
+```
+__FILE__
+__LINE__
+__DIR__
+__FUNCTION__
+__CLASS__
+__METHOD__
+__NAMESPACE__
+
+```
+
+## 命名空间
+
+这个是在5.3版本开始引入的。
+
+
+
+看到这里，基本语法就了解完了。
+
+我们可以开始看实际项目代码了。
 
 
 
