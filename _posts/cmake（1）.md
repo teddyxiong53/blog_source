@@ -163,6 +163,14 @@ include_directories
 
 
 
+添加链接选项。
+
+```
+set_target_properties
+```
+
+
+
 # 参考资料
 
 https://blog.csdn.net/dabenxiong666/article/details/53998998
@@ -173,3 +181,6 @@ https://blog.csdn.net/gg_18826075157/article/details/72780431
 
 https://www.cnblogs.com/lidabo/p/7359422.html
 
+CMake 指定目标的链接选项
+
+https://blog.csdn.net/icbm/article/details/53390467
