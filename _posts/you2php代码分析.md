@@ -44,3 +44,7 @@ EMAIL
 
 # header.php
 
+
+
+# footer.php
+
