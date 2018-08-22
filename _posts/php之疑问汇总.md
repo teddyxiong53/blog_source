@@ -56,3 +56,8 @@ this表示当前对象。
 
 是为了避免重复加载文件。
 
+
+
+## session_start
+
+https://www.cnblogs.com/hyt-jinhua/p/6404632.html
