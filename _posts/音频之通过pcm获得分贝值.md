@@ -164,3 +164,51 @@ http://ask.zol.com.cn/q/1928758.html
 
 https://zh.wikipedia.org/wiki/%E5%88%86%E8%B2%9D
 
+
+
+
+
+WAV文件中的数据与dB之间的关系 
+
+http://blog.sina.com.cn/s/blog_533074eb0101dc0j.html
+
+
+
+wav文件里存放的是电压幅值信号。只要把电压信号重现在小喇叭上，就可以逼真地重现wav文件了。
+
+喇叭上发出的声音，其实就是驱动喇叭的电压的变化，对于pc上的数字开关喇叭，只有0和1这2种状态。
+
+为1的时候，纸盆向外运动，为0的时候，纸盆向内回到正常位置。
+
+但是因为纸盆有惯性，当我们给1的时候，纸盆向外运动有一个延迟，还没有达到最外面的位置，我们再给0，纸盆转而向内运动。
+
+根据这个特性，我们通过控制喇叭向外运动的时间，就可以间接地控制纸盆运动的幅度，从而根据wav文件里的值来控制喇叭声音大小。
+
+
+
+db和幅值的计算关系。
+
+```
+dB = 20 * log10(amplitude)
+```
+
+
+
+How can I calculate audio dB level?
+
+https://stackoverflow.com/questions/2445756/how-can-i-calculate-audio-db-level
+
+
+
+分贝仪。
+
+https://www.zhihu.com/question/39070608
+
+手机上也可以用软件来测试。
+
+
+
+计算wav文件的rms。
+
+https://rosettacode.org/wiki/Averages/Root_mean_square#Python
+

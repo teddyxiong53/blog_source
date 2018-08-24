@@ -237,3 +237,34 @@ otp                       remove_network
 
 ```
 
+
+
+下面把常用的命令列出来。
+
+```
+wpa_cli stat 
+```
+
+这个可以查看连接到热点名字，ip地址，连接状态。
+
+stat和status是一样的。写成statu也可以。这个只管stat这4个字母匹配就好了。
+
+```
+wpa_cli ping
+```
+
+这个是探测wpa_supplicant进程是否正常工作。
+
+```
+wpa_cli reconfigure
+```
+
+重新读入配置文件。
+
+
+
+# 参考资料
+
+wpa_cli 命令介绍
+
+https://blog.csdn.net/ltm157/article/details/24810685
