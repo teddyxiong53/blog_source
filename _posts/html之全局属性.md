@@ -12,6 +12,21 @@ tags:
 
 全局属性一共16个。
 
+常用的就是：
+
+class、id、style、title。
+
+style：这个指定当前标签的样式。
+
+可以这样：
+
+```
+<body style="backgroud-color:yellow">
+
+```
+
+
+
 
 
 #accesskey

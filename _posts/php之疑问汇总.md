@@ -61,3 +61,17 @@ this表示当前对象。
 ## session_start
 
 https://www.cnblogs.com/hyt-jinhua/p/6404632.html
+
+
+
+## 如何遍历数组
+
+遍历_SERVER。
+
+```
+foreach ($_SERVER as $k=>$v) {
+    echo $k."=>".$v.'<br/>';
+}
+```
+
+https://www.cnblogs.com/Darlin356230410/p/4509796.html
