@@ -32,3 +32,6 @@ https://baike.baidu.com/item/gstreamer/10998598?fr=aladdin
 
 https://wenku.baidu.com/view/95f916c708a1284ac850432a.html
 
+3、gstreamer，vlc，ffmpeg比较
+
+https://blog.csdn.net/ds1130071727/article/details/78492566?locationNum=9&fps=1

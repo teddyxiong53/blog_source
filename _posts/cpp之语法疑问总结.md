@@ -262,6 +262,14 @@ int Test::a = 1;
 
 
 
+# 判断string为空
+
+https://blog.csdn.net/Xuebing_han/article/details/78143560?locationNum=9&fps=1
+
+
+
+
+
 # 参考资料
 
 1、C++类成员冒号初始化以及构造函数内赋值
