@@ -26,6 +26,41 @@ dhcpcd是 dhcp client daemon的缩写。是dhcp 客户端。
 
 
 
+```
+-K, --nolink
+             Don't receive link messages for carrier status.  You should only have to use this with buggy device drivers or running dhcpcd through a network manager.
+```
+
+
+
+```
+If any interface reports a working carrier then dhcpcd will try and obtain a lease before forking to the background, otherwise it will fork right away.  This behaviour can be mod‐
+     ified with the -b, --background and -w, --waitip options.
+```
+
+
+
+有些回调脚本在这个目录下。这些都是默认的脚本。
+
+```
+/lib/dhcpcd/dhcpcd-hooks # ls
+01-test         20-resolv.conf  50-ntp.conf
+02-dump         30-hostname
+```
+
+使用了-c选项后，就不会用这些了。
+
+```
+-c, --script script
+             Use this script instead of the default /lib/dhcpcd/dhcpcd-run-hooks.
+```
+
+
+
+avahi是什么？
+
+
+
 # 参考资料
 
 https://bbs.archlinux.org/viewtopic.php?id=103278
