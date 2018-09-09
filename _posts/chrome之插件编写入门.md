@@ -20,7 +20,7 @@ chrome插件没有严格的项目结构要求，最低要求是有一个manifest
 
 在开发中，代码有任何改动，都必须重新加载插件，只需要在插件管理页面按下ctrl+r来加载就好了。
 
-
+#最简单的版本
 
 我们在hbuilder里新建一个web项目。
 
@@ -48,6 +48,106 @@ chrome插件没有严格的项目结构要求，最低要求是有一个manifest
 
 如果有改动，点击右下角的刷新图标就可以。
 
+当前的目录结构是这样：
+
+```
+λ ls
+img/  manifest.json
+```
+
+img目录下就放了一张icon.png。
+
+#加入popup
+
+现在可以加入一个popup.html文件，这个就是你单机右上角图标弹出的一个小窗口的内容。
+
+先写一个简单的。
+
+```
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>popup页面</title>
+		<meta http-equiv="content-type" content="text/html"/>
+		<style>
+			body {
+				font-family: "微软雅黑";
+				width:500px;
+				min-height: 100px;
+			}
+			a {
+				margin-right: 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>这是一个popup页面</h1>
+	</body>
+</html>
+```
+
+然后在manifest.json里加上配置。
+
+```
+"browser_action": {
+		"default_icon": "img/icon.png",
+		"default_title": "这是一个chrome插件demo",
+		"default_popup": "popup.html"
+	}
+```
+
+刷新一下，现在就可以看到单击图标的效果了。
+
+接下来做什么呢？
+
+加入background.html
+
+# background.html
+
+新建一个background.html文件。
+
+内容如下：
+
+```
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>background页面</title>
+		<meta http-equiv="content-type" content="text/html"/>
+		<style>
+			html,body {
+				height: 100%;
+				font-size: 16px;
+			}
+			body {
+				font-family: "微软雅黑";
+				margin: 0;
+				padding: 0;
+			}
+			.container {
+				width: 1024px;
+				margin: 0 auto;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>这是一个背景页</h1>
+		<div>
+			<a href="#" id="test_cors">跨域演示</a>
+			<a href="#" id="get_popup_title">获取popup页标题</a>
+		</div>
+		<script type="application/javascript" src="js/jquery-1.8.3.js"></script>
+		<script type="application/javascript" src="js/background.js"></script>
+	</body>
+</html>
+```
+
+这里引入了2个js文件。jquery的我们直接放进来。
+
+background.js，我们自己写。
+
 
 
 
@@ -57,3 +157,7 @@ chrome插件没有严格的项目结构要求，最低要求是有一个manifest
 1、Chrome扩展demo
 
 https://github.com/sxei/chrome-plugin-demo
+
+2、chrome插件开发之调试
+
+https://blog.csdn.net/qustdong/article/details/46046553
