@@ -61,6 +61,14 @@ avahi是什么？
 
 
 
+
+
+ 这样启动的时候，如果没有连接网线，会导致dhcpcd配置超时，启动失败,程序退出。
+
+
+
+1、当我们的客户机无法找到 DHCP服务器时，它将从 TCP/IP的 B类网段 169.254.0.0中挑选一个 IP地址作为自己的 IP地址，而继续每隔 5分钟尝试与 DHCP服务器进行通信。（这里的这个 B类地址被称为 APIPA，即自动分配私有 IP地址！）
+
 # 参考资料
 
 https://bbs.archlinux.org/viewtopic.php?id=103278
@@ -74,3 +82,7 @@ https://www.baidu.com/link?url=uszStiQ3oDsijAWyEKWVW3Up90wamA0lMAQc6EUp1YyNjI1Mi
 参数详解
 
 https://blog.csdn.net/haomcu/article/details/8446109
+
+dhcpcd 移植
+
+https://www.cnblogs.com/helloworldtoyou/p/5457504.html
