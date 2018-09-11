@@ -18,6 +18,12 @@ dbus能不能移植到嵌入式系统里？如何移植？
 
 
 
+dbus是一个为App之间通信的消息总线系统。用于进程间通信。
+
+采用了3层架构。
+
+
+
 
 
 # 参考资料
@@ -25,3 +31,11 @@ dbus能不能移植到嵌入式系统里？如何移植？
 1、DBus 入门与应用 －－ DBus 的 C 编程接口
 
 https://www.cnblogs.com/liyiwen/archive/2012/12/02/2798876.html
+
+2、官方文档
+
+https://dbus.freedesktop.org/doc/api/html/annotated.html
+
+3、和菜鸟一起学linux之DBUS基础学习记录
+
+https://blog.csdn.net/eastmoon502136/article/details/10044993
