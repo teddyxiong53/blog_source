@@ -8,6 +8,8 @@ tags:
 
 
 
+bluetooothct的入口代码是在bluez/client/main.c里。
+
 
 
 # 参考资料
@@ -15,3 +17,7 @@ tags:
 1、
 
 https://blog.csdn.net/gatieme/article/details/48751743
+
+2、蓝牙配置相关的文章
+
+https://blog.csdn.net/morixinguan/article/details/79197455
