@@ -85,6 +85,8 @@ error: 'shared_ptr' in namespace 'std' does not name a template type
 
 
 
+
+
 # 参考资料
 
 1、Cygwin、Msys、MinGW、Msys2的区别与联系(转)

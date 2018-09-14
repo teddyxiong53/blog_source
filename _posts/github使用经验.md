@@ -113,8 +113,20 @@ https://minhaskamal.github.io/DownGit/#/home?url=https:%2F%2Fgithub.com%2Ftxgcwm
 
 
 
+# tortoisegit提交要输入密码
+
+右键，进入设置，git的credential，选择manager - all windows users。
+
+保存。然后提交测试一下，不用再输入了。
+
+
+
 # 参考资料
 
 1、解决GitHub下载速度太慢的问题
 
 https://blog.csdn.net/qing666888/article/details/79123742
+
+2、TortoiseGit保存用户名和密码的方法
+
+https://www.cnblogs.com/sapho/p/6140331.html

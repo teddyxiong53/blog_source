@@ -136,6 +136,16 @@ taskkill /f /t /im nginx.exe
 
 
 
+# 查看退出码
+
+```
+echo %ERRORLEVEL%
+```
+
+相当于`echo $?`
+
+
+
 # 参考资料
 
 
