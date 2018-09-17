@@ -106,17 +106,28 @@ teddy@teddy-ubuntu:/usr/include/c++/5$ tree -L 1
 └── vector
 ```
 
-我们依次看看这些文件的内容。
 
-algorithm
+
+我再看mingw里的头文件。
+
+在这个目录下。
+
+C:\MinGW\include\c++\3.4.5
+
+
+
+#algorithm
+
+内容：
 
 ```
-#include <utility> // UK-300.
-#include <bits/stl_algobase.h>
-#include <bits/stl_algo.h>
-                               
-#ifdef _GLIBCXX_PARALLEL
-# include <parallel/algorithm>
-#endif
+包含了bits目录下的4个头文件：
+stl_algobase.h
+	大小30K。
+	包含c++config.h。
+	
+stl_construct.h
+stl_uninitialized.h
+stl_algo.h
 ```
 
