@@ -222,6 +222,18 @@ System logging utility
 (this version of syslogd ignores /etc/syslog.conf)
 ```
 
+指定syslog文件的大小。
+
+我用-s指定，并没有作用。看看syslog的代码，如何实现的。
+
+代码里看不出什么。但是我这样是可以看到生效的了。
+
+```
+SYSLOGD_ARGS="-n -O /data/messages -s 20 -S"
+```
+
+
+
 
 
 # 参考资料

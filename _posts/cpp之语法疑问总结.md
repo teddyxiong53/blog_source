@@ -268,6 +268,15 @@ https://blog.csdn.net/Xuebing_han/article/details/78143560?locationNum=9&fps=1
 
 
 
+# syslog打印<<重写的枚举
+
+```
+#include <sstream>
+std::ostringstream buf ;
+buf << cmd;
+syslog(LOG_INFO, "led state:%s", buf.str().c_str());
+```
+
 
 
 # 参考资料
