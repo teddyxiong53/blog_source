@@ -158,7 +158,50 @@ int basename_main(int argc, char **argv)
 
 
 
+# xfunc分析
+
+为什么需要这些xfunc？
+
+在代码的注释里有写，
+
+```
+当前的linker，即使有section垃圾收集器，如果某个模块用到了xxxprintf函数，就会导致整个printf都被引入进来。即使你并没有用到xxxprintf函数。
+
+```
+
+所有以x开头的函数，都会调用`bb_error_msg_and_die()`。
+
+调用者不需要自己去做检查了。x开头的函数只要返回，就是成功。
 
 
 
+# errno的处理
+
+因为busybox里没有多线程。所以可以用一个全局变量来做errno。而不用像glibc里那样用一个宏来做。
+
+```
+#if defined(__GLIBC__)
+/* glibc uses __errno_location() to get a ptr to errno */
+/* We can just memorize it once - no multithreading in busybox :) */
+extern int *const bb_errno;
+#undef errno
+#define errno (*bb_errno)
+#endif
+```
+
+而这个全局变量还是一个指针，指向了哪里呢？
+
+在lbb_prepare函数里。
+
+```
+(*(int **)&bb_errno) = __errno_location();
+```
+
+这个位置具体是哪里呢？
+
+
+
+# help信息的处理
+
+busybox的帮助信息写在每个组件的开头的注释里，会用脚本把这些内容提取出来，压缩，打包在二进制文件里，需要的时候解压显示。
 
