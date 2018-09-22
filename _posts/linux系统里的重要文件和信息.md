@@ -52,7 +52,12 @@ gitadmin:x:1001:
 ```
 
 #5. 用户登录信息记录
-有2个文件，utmp和wtmp。utmp记录当前登录到系统的用户有哪些。wtmp则是跟踪登录和注销事件 。
+有2个文件，utmp和wtmp。
+
+utmp记录当前登录到系统的用户有哪些。
+
+wtmp则是跟踪累计有哪些人登陆过系统。
+
 可以用cat /var/run/utmp 和cat /var/log/wtmp来查看内容。
 
 

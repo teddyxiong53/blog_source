@@ -1,5 +1,5 @@
 ---
-title: Linux之log使用方法
+title: Linux之syslog
 date: 2018-03-21 23:31:59
 tags:
 	- Linux

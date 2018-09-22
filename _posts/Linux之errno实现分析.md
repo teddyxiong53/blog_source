@@ -39,6 +39,18 @@ errno由os维护。下一次的错误会覆盖上一次的。
 
 
 
+在musl这个c库的实现里，是这样。
+
+```
+int *__errno_location(void)
+{
+	return &__pthread_self()->errno_val;
+}
+
+```
+
+
+
 # 参考资料
 
 1、errno（包含一些不成熟的分析）

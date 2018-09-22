@@ -97,3 +97,72 @@ teddy@teddy-ubuntu:~/work/test/c-test$ ./a.out ./
 create file:xx
 ```
 
+嵌入式编译，应该用sys/inotify.h。而不是linux/inotify.h。不然编译不过。
+
+
+
+只能监听目录，而不是文件。
+
+一个实用写法是这样。
+
+```
+int watch_inotify_events(int fd)
+{
+	int ret;
+	char event_buf[512] = {0};
+	struct inotify_event *event;
+	int event_pos = 0;
+	int event_size = 0;
+	//syslog(LOG_INFO, "watch before read");
+	ret = read(fd, event_buf, sizeof(event_buf));
+
+	//syslog(LOG_INFO, "watch after read");
+
+	while(ret >= sizeof(struct inotify_event)) {
+		event = (struct inotify_event *)(event_buf + event_pos);
+		if(event->len) {
+			syslog(LOG_INFO, "inotify event: %s", event->name);
+			if(event->mask & IN_CREATE) {
+				syslog(LOG_INFO, "create file:%s", event->name);
+				switch_debug(1, event->name);
+			} else if(event->mask & IN_DELETE) {
+				syslog(LOG_INFO,"delete file:%s", event->name);
+				switch_debug(0, event->name);
+			}
+		}
+		event_size = sizeof(struct inotify_event) + event->len;
+		ret -= event_size;
+		event_pos += event_size;
+	}
+	return 0;
+}
+
+void *debug_watch_file(void *arg)
+{
+	#define DEBUG_DIR "/data/doss/debug"
+	pthread_detach(pthread_self());
+	int watch_fd = inotify_init();
+	syslog(LOG_INFO, "watch fd:%d", watch_fd);
+	if(watch_fd < 0) {
+		syslog(LOG_ERR, "watch file init fail");
+		return NULL;
+	}
+	if(access(DEBUG_DIR, F_OK) != 0) {
+		mkdir(DEBUG_DIR, 0777);
+	}
+	int ret = inotify_add_watch(watch_fd, DEBUG_DIR, IN_CREATE | IN_DELETE);
+	if(ret < 0) {
+		syslog(LOG_ERR, "add watch fail");
+		return NULL;
+	}
+	while(1) {
+		watch_inotify_events(watch_fd);
+	}
+	return NULL;
+}
+```
+
+
+
+# 参考资料
+
