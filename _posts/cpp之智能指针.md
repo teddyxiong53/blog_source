@@ -126,3 +126,7 @@ unique_ptr为什么优于auto_ptr呢？
 1、C++智能指针简单剖析
 
 https://www.cnblogs.com/lanxuezaipiao/p/4132096.html
+
+2、智能指针shared_ptr与unique_ptr详解
+
+https://blog.csdn.net/weixin_36888577/article/details/80188414

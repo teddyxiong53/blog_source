@@ -40,3 +40,7 @@ c++之所以把NULL定义为整数0 。是为了重载机制。
 1、C++ 11 nullptr关键字
 
 https://www.cnblogs.com/DswCnblog/p/5629073.html
+
+2、史上最明白的 NULL、0、nullptr 区别分析
+
+https://www.cnblogs.com/porter/p/3611718.html

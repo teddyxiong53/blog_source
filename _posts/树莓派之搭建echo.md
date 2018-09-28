@@ -251,6 +251,10 @@ Release notes: Link
 
 
 
+我看看是否有现成的镜像可以直接安装体验的。
+
+
+
 # 参考资料
 
 1、Raspberry Pi Quick Start Guide。树莓派上搭建echo官方教程。
