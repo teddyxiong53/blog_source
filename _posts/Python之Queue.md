@@ -29,3 +29,20 @@ print 'xxxxxxxxxx'
 print myqueue.get(block=True,timeout=1)
 ```
 
+```
+import Queue
+q = Queue.Queue()
+for i in range(5):
+    q.put(i)
+
+while not q.empty():
+    print q.get()
+```
+
+
+
+# 参考资料
+
+1、python队列Queue
+
+http://www.cnblogs.com/itogo/p/5635629.html
