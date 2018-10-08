@@ -87,11 +87,15 @@ template <class T> class enable_shared_from_this;
 
 
 
+
+
 参考资料
 
 https://blog.csdn.net/caoshangpa/article/details/79392878
 
+C++中基类继承 enable_shared_from_this 之后派生类无法使用 shared_from_this() 的解决方法
 
+https://blog.csdn.net/u013745174/article/details/52900870
 
 # shared_ptr
 
@@ -175,6 +179,10 @@ Derived::~Derived()
 Base::~Base()
 finish
 ```
+
+# make_shared
+
+make_shared实际上可以看做为了完全封装new而给shared_ptr的一个factory。
 
 
 

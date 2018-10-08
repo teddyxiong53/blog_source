@@ -342,6 +342,25 @@ AlertStorageInterface
 
 AlertsCapabilityAgent
 
+层级关系。
+
+```
+AlertsCapabilityAgent 最高层级，被DefaultClient使用。
+	AlertScheduler
+```
+
+
+
+AlertScheduler初始化
+
+1、看m_alertStorage是否打开。没打开说明没有，就创建。
+
+2、获取当前时间戳。
+
+3、读取存储的闹钟。
+
+4、设置下一个闹钟的时间。
+
 
 
 
@@ -422,6 +441,14 @@ receiveDirectiveLocked
 
 
 
+
+# SQLiteDatabase封装情况
+
+对c代码的封装是在SQLiteUtils.cpp里做的。
+
+```
+include <sqlite3.h>
+```
 
 
 
