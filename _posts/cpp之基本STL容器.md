@@ -125,6 +125,26 @@ deque和vector基本相同，但是deque可以push_front，就在前面插入。
 
 
 
+# unsorted_map
+
+## 改
+
+insert。
+
+
+
+## 查
+
+[]操作符
+
+at
+
+find
+
+contains
+
+
+
 # 参考资料
 
 1、C++ STL基本容器使用

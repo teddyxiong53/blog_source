@@ -408,6 +408,20 @@ ContexInfo。
 3、time。
 ```
 
+闹钟状态变化时的回调过程。
+
+```
+Alert::onRendererStateChange
+```
+
+```
+AlertScheduler::setTimerForNextAlert
+	
+	AlertScheduler::onAlertReady 这个是
+```
+
+
+
 # 指令处理过程
 
 DirectiveSequencer，这里有个线程死循环。
