@@ -22,6 +22,16 @@ gstreamer是一个框架，用来构建流媒体应用。
 
 
 
+# 基础概念
+
+##GstAppSrc
+
+
+
+## GstElement
+
+
+
 # 参考资料
 
 1、百科。

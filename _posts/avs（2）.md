@@ -422,6 +422,24 @@ AlertScheduler::setTimerForNextAlert
 
 
 
+闹钟分类：
+
+总的是Alert
+
+下面分3种：
+
+1、alarm。
+
+2、timer。
+
+3、reminder。
+
+
+
+闹钟的声音，都提取成数组放在代码里了。
+
+
+
 # 指令处理过程
 
 DirectiveSequencer，这里有个线程死循环。
@@ -472,11 +490,115 @@ include <sqlite3.h>
 
 
 
+# 焦点管理
+
+焦点管理，就是为了解决多个Capability Agent争用同一个Speaker的问题。
+
+如果你有特别的需要，例如某个播报，不想被打断。怎么修改才能达到这个目的呢？
+
+例如一个支持Alexa的导航系统。这个你需要把导航播报放在最高优先级。
+
+播放歌曲，歌曲被闹钟打断后，闹钟停了后，歌曲要恢复播放。
+
+默认优先级给100、 200 这种值，就是在中间留下空隙给你扩展的。
+
+目前最高的是100，是对话的焦点。你可以用1到99的值，来做可以打断对话的焦点。
+
+焦点管理具体是如何起作用的呢？
 
 
 
 
 
+
+
+CustomerDataManager，抽象类。
+
+保证一个客户不会访问到另外一个客户的数据。
+
+子类是CustomerDataHandler。
+
+
+
+# 播放器分析
+
+6个播放器，分为两类：
+
+第一类3个。对话、音乐、闹钟。主要。
+
+第二类3个。铃声、蓝牙、通知。次要。
+
+每一个播放器对应一个gst实例。
+
+
+
+
+
+# 存储分析
+
+存储有5个：
+
+1、闹钟。
+
+2、消息。
+
+3、通知。
+
+4、设置。
+
+5、蓝牙。
+
+#唤醒时的调用过程
+
+```
+KittAiKeyWordDetector::detectionLoop()
+	notifyKeyWordObservers
+		KeywordObserver::onKeyWordDetected
+			m_client->notifyOfWakeWord
+				m_audioInputProcessor->recognize
+```
+
+
+
+# SharedDataStream
+
+一个writer，多个reader。
+
+AudioInputStream就是一个sds。
+
+
+
+# 唤醒词
+
+```
+AbstractKeywordDetector
+	KittAiKeyWordDetector
+	SensoryKeywordDetector
+```
+
+
+
+```
+SourceInterface
+	BaseStreamSource
+	
+```
+
+# 连接管理
+
+```
+AVSConnectionManagerInterface
+	AbstractAVSConnectionManager
+```
+
+
+
+```
+CBLAuthDelegate::init
+handleAuthorizationFlow 
+handleRequestingCodePair
+receiveCodePairResponse
+```
 
 
 
@@ -489,3 +611,11 @@ https://blog.csdn.net/weijun421122/article/details/44937259
 2、Amazon 智能音箱 AVS Device SDK 架构详解 （智能音箱的通用架构）
 
 https://www.wandianshenme.com/play/avs-device-sdk-architecture-overview/
+
+3、Modify Focus Manager
+
+https://developer.amazon.com/docs/alexa-voice-service/modify-focus-manager.html
+
+4、亚马逊Alexa Auto SDK示例SampleApp的集成开发
+
+https://blog.csdn.net/wangyongyao1989/article/details/81910204
