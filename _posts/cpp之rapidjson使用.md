@@ -192,9 +192,64 @@ Document。最重要的概念。代表了一个json文件。
 
 
 
+# 官网教程
+
+rapidjson是json解析器和生成器。
+
+特定：
+
+1、小而全。
+
+2、速度快。
+
+3、独立。不依赖STL。
+
+4、对内存友好。
+
+5、对Unicode友好。
 
 
-参考资料
+
+把一个json字符串解析到一个DOM（Document）。
+
+再把DOM转成json字符串。
+
+```
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+#include <iostream>
+
+int main()
+{
+	char *json = "{\"project\": \"rapidjson\", \"stars\":10}";
+	rapidjson::Document d;
+	d.Parse(json);
+	
+	rapidjson::Value& s = d["stars"];
+	s.SetInt(s.GetInt() + 1);
+	
+	rapidjson::StringBuffer buffer;
+	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+	d.Accept(writer);
+	std::cout << buffer.GetString() << std::endl;
+	return 0;
+}
+```
+
+
+
+API的分类：
+
+1、DOM API。上面我们看的都是这种。
+
+2、SAX API
+
+3、Schema API
+
+
+
+#参考资料
 
 1、官方教程
 

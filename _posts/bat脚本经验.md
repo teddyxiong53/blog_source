@@ -20,7 +20,7 @@ tags:
 
 定义变量是set a=“”
 
-注释：rem和双冒号都可以。
+**注释：rem和双冒号都可以。**
 
 不区分大小写。
 
@@ -38,6 +38,16 @@ pause
 exit
 
 这2个最常用的。
+
+转移字符是^ 。而不是类Unix里的反斜杠。
+
+```
+rem "check daemon existence"
+echo ps ^> /data/ps_info.log > cmd.txt 
+echo exit >> cmd.txt
+
+adb shell < cmd.txt
+```
 
 
 
