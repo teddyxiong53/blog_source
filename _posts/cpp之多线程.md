@@ -49,6 +49,123 @@ int main()
 
 
 
+#std::thread详解
+
+## 构造函数
+
+```
+//默认构造函数
+thread() noexcept; 
+//初始化构造函数
+template <class Fn, class... Args>
+explicit thread(Fn&& fn, Args&&... args);
+//拷贝构造函数
+被delete了。就是不可用被拷贝构造。
+//move构造函数
+thread(thread&& x) noexcept;
+```
+
+测试各种构造函数
+
+```
+
+#include <iostream>
+#include <thread>
+#include <chrono>
+
+void f1(int n){
+    for(int i=0 ;i<5; i++) {
+        std::cout << "thread " << n << " is executing\n";
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+}
+
+void f2(int& n) {
+    for(int i=0; i<5; i++) {
+        std::cout << "thread 2 is executing\n";
+        n++;
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+}
+
+int main ()
+{
+    int n = 0;
+    std::thread t1;
+    std::thread t2(f1, n+1);
+    std::thread t3(f2, std::ref(n));
+    std::thread t4(std::move(t3));
+
+    t2.join();
+    t4.join();
+    std::cout << "the value of n is: " << n << std::endl;
+}
+
+```
+
+
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/cpp/build$ ./test 
+thread 2 is executing
+thread 1 is executing
+thread 2 is executing
+thread 1 is executing
+thread 2 is executing
+thread 1 is executing
+thread 2 is executing
+thread 1 is executing
+thread 1 is executing
+thread 2 is executing
+the value of n is: 5
+```
+
+
+
+# std::mutex
+
+mutex头文件内容：
+
+4种mutex：
+
+1、mutex。
+
+2、recursive_mutex。递归mutex。
+
+3、time_mutex。定时mutex。
+
+4、recursive_timed_mutex。递归定时mutex。
+
+还有两个lock类。
+
+1、lock_guard。
+
+2、unique_lock。
+
+其他类型：
+
+1、once_flag。
+
+2、adopt_lock_t。
+
+3、defer_lock_t。
+
+4、try_to_lock_t。
+
+函数：
+
+1、try_lock。
+
+2、lock。
+
+3、call_once。
+
+## 构造函数
+
+不允许拷贝构造。不允许move拷贝。
+
+
+
 
 
 
@@ -61,5 +178,7 @@ int main()
 
 http://www.cnblogs.com/haippy/p/3235560.html
 
+2、当前标签: 多线程
 
+https://www.cnblogs.com/haippy/tag/%E5%A4%9A%E7%BA%BF%E7%A8%8B/
 
