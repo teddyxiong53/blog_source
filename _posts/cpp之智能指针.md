@@ -121,6 +121,44 @@ unique_ptr为什么优于auto_ptr呢？
 
 
 
+# 例子学习
+
+下面是我自己写的例子。
+
+```
+#include <iostream>
+#include <memory>
+
+class Test {
+public:
+	Test(int a) {
+		m_a = a;
+		std::cout << "Test Construct\n";
+	}
+	virtual ~Test() = default;
+	Test(const Test& t) {
+		m_a = t.m_a;
+		std::cout << "Test Copy Construct\n";
+	}
+	Test& operator=(Test&) = default;
+	int m_a;
+};
+
+class TestChild : public Test {
+	
+};
+
+int main()
+{
+	std::shared_ptr<Test> t1(new Test(1));//这种是对的。
+	//std::shared_ptr<Test> t1 = new Test(1);//这种会编译错误。
+	std::cout << "m_a: " << t1->m_a << std::endl;
+	
+}
+```
+
+
+
 # 参考资料
 
 1、C++智能指针简单剖析
