@@ -362,6 +362,346 @@ buildJsonEventString
 
 
 
+# 按下play后的执行过程
+
+```
+1、输入按键1，调用m_interactionManager->playbackPlay();
+2、在InteractionManager里，调用m_client->getPlaybackRouter()->playButtonPressed()。
+3、在PlaybackRouter里，调用observer->onButtonPressed(button);这个做的事情就是把button推入到一个队列里。
+4、从队列里取按键的有PlaybackController::onContextAvailable
+这里m_messageSender->sendMessage。把按键发送到服务器端。
+
+```
+
+
+
+# 消息路由如何工作的？
+
+1、在DefaultClient里构造的。
+
+```
+m_messageRouter = std::make_shared<acl::MessageRouter>(authDelegate, attachmentManager, transportFactory);
+```
+
+参数里的传输工厂是m_postConnectSynchronizerFactory。
+
+
+
+# ContextManager如何工作？
+
+主要就上一个线程updateStatesLoop。
+
+不断在更新状态。
+
+ContextManager::sendContextAndClearQueue
+
+里面会调用onContextAvailable
+
+
+
+# 测试网络连接的情况
+
+默认每5分钟测试一次，读取一个网页，查找里面的一个字符串。
+
+
+
+# 如何运行测试代码？
+
+在build目录下，make help看看。
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/avs/sdk-folder/sdk-build$ make help
+The following are some of the valid targets for this Makefile:
+... all (the default if no target is provided)
+... clean
+... depend
+... list_install_components
+... install
+... rebuild_cache
+... edit_cache
+... install/strip
+... unit
+... ContinuousSubmit
+... ContinuousCoverage
+... ContinuousTest
+... ContinuousBuild
+... ContinuousMemCheck
+... Nightly
+... NightlyTest
+... NightlyUpdate
+```
+
+我们就以TimerTest为例，进行测试看看。
+
+```
+make TimerTest
+```
+
+```
+lxiong@hlxiong-VirtualBox:~/work/avs/sdk-folder/sdk-build$ find -name TimerTest
+./AVSCommon/Utils/test/TimerTest
+hlxiong@hlxiong-VirtualBox:~/work/avs/sdk-folder/sdk-build$ ./AVSCommon/Utils/test/TimerTest
+2018-10-15 08:14:08.178 [  1] I sdkVersion: 1.7.1
+Running main() from gtest_main.cc
+[==========] Running 18 tests from 1 test case.
+[----------] Global test environment set-up.
+[----------] 18 tests from TimerTest
+[ RUN      ] TimerTest.singleShot
+[       OK ] TimerTest.singleShot (33 ms)
+[ RUN      ] TimerTest.multiShot
+[       OK ] TimerTest.multiShot (151 ms)
+[ RUN      ] TimerTest.multiShotWithDelay
+[       OK ] TimerTest.multiShotWithDelay (166 ms)
+[ RUN      ] TimerTest.forever
+[       OK ] TimerTest.forever (150 ms)
+[ RUN      ] TimerTest.slowTaskLessThanPeriod
+[       OK ] TimerTest.slowTaskLessThanPeriod (256 ms)
+[ RUN      ] TimerTest.slowTaskGreaterThanPeriod
+[       OK ] TimerTest.slowTaskGreaterThanPeriod (197 ms)
+[ RUN      ] TimerTest.slowTaskGreaterThanTwoPeriods
+[       OK ] TimerTest.slowTaskGreaterThanTwoPeriods (200 ms)
+[ RUN      ] TimerTest.endToStartPeriod
+[       OK ] TimerTest.endToStartPeriod (387 ms)
+[ RUN      ] TimerTest.stopSingleShotBeforeTask
+[       OK ] TimerTest.stopSingleShotBeforeTask (30 ms)
+[ RUN      ] TimerTest.stopSingleShotDuringTask
+[       OK ] TimerTest.stopSingleShotDuringTask (62 ms)
+[ RUN      ] TimerTest.stopSingleShotAfterTask
+[       OK ] TimerTest.stopSingleShotAfterTask (78 ms)
+[ RUN      ] TimerTest.stopMultiShot
+[       OK ] TimerTest.stopMultiShot (123 ms)
+[ RUN      ] TimerTest.startRunningBeforeTask
+2018-10-15 08:14:10.015 [  1] E Timer:startFailed:reason=timerAlreadyActive
+[       OK ] TimerTest.startRunningBeforeTask (31 ms)
+[ RUN      ] TimerTest.startRunningDuringTask
+2018-10-15 08:14:10.092 [  1] E Timer:startFailed:reason=timerAlreadyActive
+[       OK ] TimerTest.startRunningDuringTask (60 ms)
+[ RUN      ] TimerTest.startRunningAfterTask
+[       OK ] TimerTest.startRunningAfterTask (77 ms)
+[ RUN      ] TimerTest.deleteBeforeTask
+[       OK ] TimerTest.deleteBeforeTask (0 ms)
+[ RUN      ] TimerTest.deleteDuringTask
+[       OK ] TimerTest.deleteDuringTask (64 ms)
+[ RUN      ] TimerTest.startRunningAfterStopDuringTask
+[       OK ] TimerTest.startRunningAfterStopDuringTask (92 ms)
+[----------] 18 tests from TimerTest (2158 ms total)
+
+[----------] Global test environment tear-down
+[==========] 18 tests from 1 test case ran. (2160 ms total)
+[  PASSED  ] 18 tests.
+```
+
+
+
+
+
+# UIManager和UserInputManager
+
+这2个是不同的。
+
+UIManager里面主要就是各种打印。主要处理输出。如果有led灯什么的，也是需要在这里加。
+
+继承了一大堆的观察者类。
+
+然后还每个状态都定义了一个成员变量。
+
+
+
+UserInputManager主要是处理按键输入。按键输入的在这里加。
+
+InteractionManager
+
+这个主要是函数被UserInputManager调用，里面都是submit的方式来处理的。
+
+
+
+# 状态变化
+
+语音输入状态有：
+
+AudioInputProcessorObserverInterface
+
+1、idle。
+
+2、expecting_speech。
+
+3、recognizing。
+
+4、busy。
+
+语音输出状态：
+
+SpeechSynthesizerObserverInterface
+
+1、playing。
+
+2、finished。
+
+3、gaining_focus。
+
+4、losing_focus。
+
+呈现给用户的状态是DialogUXState：
+
+1、idle。
+
+2、listening。
+
+3、thinking。
+
+4、speaking。
+
+5、finished。
+
+
+
+avs的thinking时间是5秒，而dueros的是8秒。
+
+```
+DialogUXStateAggregator(std::chrono::milliseconds timeoutForThinkingToIdle = std::chrono::seconds{5});
+```
+
+
+
+# http
+
+这些类，都只有一个接口create。
+
+```
+HTTPContentFetcherInterfaceFactoryInterface
+	HTTPContentFetcherFactory：create调用下面的构造方法。
+		LibCurlHttpContentFetcher 这里就是实现了。
+			CurlEasyHandleWrapper
+```
+
+
+
+# HttpPut
+
+HttpPutInterface
+
+里面就一个doPut函数。
+
+HttpPut
+
+实现doPut函数。另外有一个CurlEasyHandleWrapper成员变量。
+
+# HttpPost
+
+HttpPostInterface
+
+3个doPost函数。
+
+HttpPost
+
+实现doPost。
+
+# HTTPResponse
+
+2个成员：一个long code，一个string的body。
+
+
+
+共用一个httpPut，httpPost则不是。
+
+
+
+# AttachmentManager
+
+AttachmentManagerInterface
+
+2个方法：
+
+createWriter
+
+createReader
+
+AttachmentManager
+
+
+
+很多的对象，内部都有一个循环。
+
+# AudioActivityTracker
+
+这个类是把焦点信息报告给avs服务器的。
+
+
+
+# 系统架构
+
+输入AIP
+
+输出speechSynthesizer
+
+播放器：m_playbackController
+
+m_audioPlayer
+
+闹钟
+
+m_alertsCapabilityAgent
+
+数据流：sds。
+
+
+
+# AudioProvider
+
+有3种：
+
+1、按一下按键的。
+
+2、按住按键的。
+
+3、唤醒词的。
+
+# AudioFormat
+
+1、枚举Encoding。lpcm和opus两种。
+
+2、枚举Layout。间隔和非间隔。
+
+3、枚举。Endianness。大端小端。
+
+4、几个成员变量。
+
+
+
+# sds
+
+这个主要是被各种模板嵌套，搞得非常复杂。
+
+但是还是要啃下来。
+
+
+
+# 焦点
+
+会获取焦点的模块有：
+
+1、闹钟。
+
+```
+void AlertsCapabilityAgent::acquireChannel() 
+```
+
+2、AIP。
+
+3、AudioPlayer。
+
+4、蓝牙播放器。
+
+5、语音输出。
+
+
+
+# 蓝牙是如何工作的？
+
+
+
+
+
 参考资料
 
 1、Understanding the Amazon Alexa APIs for In-Vehicle Use: Part II

@@ -159,6 +159,14 @@ int main()
 
 
 
+```
+auto t1 = std::make_shared<Test>(1);
+或者
+auto t1 = std::shared_ptr<Test>(new Test(1));
+```
+
+
+
 # 参考资料
 
 1、C++智能指针简单剖析
