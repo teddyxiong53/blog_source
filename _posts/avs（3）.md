@@ -696,6 +696,38 @@ void AlertsCapabilityAgent::acquireChannel()
 
 
 
+# AIP
+
+如何把输入的语音取出来的？
+
+以tap方式唤醒为例。
+
+调用到DefaultClient里的notifyOfTapToTalk
+
+```
+m_audioInputProcessor->recognize
+```
+
+
+
+#HTTP2Transport
+
+networkLoop
+
+这个主循环。要方式的数据，都放到队列，通过这个死循环来处理。
+
+HTTP2Stream
+
+HTTP2Transport
+
+HTTP2StreamPool
+
+
+
+# CurlMultiHandleWrapper
+
+
+
 # 蓝牙是如何工作的？
 
 
