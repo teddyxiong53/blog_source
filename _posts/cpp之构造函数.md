@@ -59,7 +59,55 @@ int main(int argc, char const *argv[])
 
 
 
+# 拷贝构造函数
 
+自己写的一个简单例子。
+
+```
+#include <iostream>
+
+class Test {
+public:
+	Test(int a) {
+		m_a = a;
+		std::cout << "Test Construct\n";
+	}
+	#if 1
+	Test(const Test& t) { //自定义的拷贝构造函数。
+		m_a = t.m_a;
+		std::cout << "Test Copy Construct\n";
+	}
+	#else
+	Test(Test&) = default;//使用编译器默认的拷贝构造函数。
+	#endif
+	Test& operator=(Test&) = default;
+	int m_a;
+};
+
+int main()
+{
+	Test t1(1);
+	Test t2 = t1;
+	std::cout << t2.m_a << std::endl;
+	
+}
+```
+
+
+
+# 子类如何调用父类构造函数？
+
+构造方法不能被继承。
+
+所以，在创建子类对象的时候，为了初始化从父类继承来的数据成员，需要调用父类的构造方法。
+
+使用的规则是：
+
+1、如果子类没有定义构造方法，调用父类的无参构造方法。
+
+2、如果子类定义了构造方法，无论子类是无参构造还是有参构造，都是先调用父类的无参构造函数。
+
+3、如果子类调用父类的有参构造方法，则需要用冒号的方式提供参数初始化。（是父类的构造函数要这么写）所以稳妥起见，是所有的初始化参数都这么写。
 
 
 
@@ -72,3 +120,7 @@ https://blog.csdn.net/baiyq369/article/details/54926983
 2、C++类成员冒号初始化以及构造函数内赋值
 
 https://blog.csdn.net/zj510/article/details/8135556
+
+3、C++调用父类的构造函数规则
+
+https://www.cnblogs.com/bonelee/p/5825885.html

@@ -81,6 +81,57 @@ type &&引用名= 右值表达式
 
 
 
+```
+#include <iostream>
+#include <memory>
+
+class Test {
+public:
+	Test() {
+		std::cout << "Test no param Construct\n";
+	}
+	Test(int a) : m_a(a){
+		//m_a = a;
+		std::cout << "Test param Construct\n";
+	}
+	virtual ~Test() = default;
+	Test(const Test& t) {
+		m_a = t.m_a;
+		std::cout << "Test Copy Construct\n";
+	}
+	Test& operator=(Test&) = default;
+	int m_a;
+};
+
+class TestChild : public Test {
+public:
+	TestChild(int a) {
+		std::cout << "TestChild param Construct\n";
+		
+	}
+};
+#if 0
+void func(std::unique_ptr<Test>& t)//加引用，和func(t1);一起用才能编译过。
+{
+	std::cout << "m_a: " << t->m_a << std::endl;
+}
+#else
+void func(std::unique_ptr<Test> t)//不加引用，只能跟func(std::move(t1));一起用。
+{
+	std::cout << "m_a: " << t->m_a << std::endl;
+}
+#endif
+int main()
+{
+
+	auto t1 = std::unique_ptr<Test>(new Test(1));
+	//func(std::move(t1));
+	func(t1);
+}
+```
+
+
+
 参考资料
 
 1、C++11右值引用和std::move语句实例解析

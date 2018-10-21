@@ -234,3 +234,33 @@ v：verbose信息。
 
 目标的目录和目标的文件名。
 
+
+
+传递字符串定义。
+
+```
+COMMON_FLAGS = -D__GOME_VERSION__=\"$(GOME_VERSION)\" 
+```
+
+## .SUFFIXES
+
+这个是在buildroot的Makefile里看到的。
+
+在Makefile最前面写上：
+
+```
+.SUFFIXES:
+```
+
+这相当于把所有的后缀名规则都删掉。
+
+## $(MAKECMDGOALS)
+
+make xx
+
+xx就是$(MAKECMDGOALS)的值。
+
+## .NOTPARALLEL:
+
+禁止并行编译。
+
