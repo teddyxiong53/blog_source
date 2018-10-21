@@ -84,6 +84,45 @@ element = driver.find_element_by_xpath("//input[@id='passwd-id']")
 
 
 
+# 用法详解
+
+用淘宝作为测试网站。
+
+## 测试各种查找元素方法
+
+```
+from selenium import webdriver
+
+browser = webdriver.PhantomJS()
+
+browser.get("https://www.taobao.com")
+input_first = browser.find_element_by_id('q')
+input_second = browser.find_element_by_css_selector('#q')
+input_third = browser.find_element_by_xpath('//*[@id="q"]')
+print(input_first, input_second, input_third)
+
+browser.close()
+```
+
+
+
+```
+常用的查找方法 
+find_element_by_name 
+find_element_by_xpath 
+find_element_by_link_text 
+find_element_by_partial_link_text 
+find_element_by_tag_name 
+find_element_by_class_name 
+find_element_by_css_selector
+```
+
+
+
+
+
+
+
 # 参考资料
 
 1、使用Selenium和PhantomJS解析带JS的网页
@@ -101,10 +140,18 @@ https://blog.csdn.net/zpf_07/article/details/78030249
 
 http://selenium-python-zh.readthedocs.io/en/latest/navigating.html
 
-
+5、
 
 https://blog.csdn.net/liuchunming033/article/details/46789085
 
-查找页面元素的技巧。这个很有效，直接右键拷贝xpath。
+6、查找页面元素的技巧。这个很有效，直接右键拷贝xpath。
 
 https://blog.csdn.net/niedongri/article/details/70238142
+
+7、Selenium2+python自动化45-18种定位方法（find_elements）
+
+https://www.cnblogs.com/yoyoketang/p/6557421.html
+
+8、selenium用法详解
+
+https://www.cnblogs.com/themost/p/6900852.html
