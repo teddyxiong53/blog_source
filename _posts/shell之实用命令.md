@@ -166,3 +166,23 @@ echo $extension
 echo $filename
 ```
 
+## 定义字符串数组
+
+```
+#!/bin/sh
+
+str_arr=("aa" "bb" "cc" \
+	"dd"\
+	)
+
+str_arr_len=${#str_arr[@]}
+
+i=0
+while [[ $i -lt $str_arr_len ]]
+do
+	let i++
+done
+echo $i
+
+```
+

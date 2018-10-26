@@ -34,3 +34,28 @@ git reset hard
 git log -- xx.c
 ```
 
+## git remote命令
+
+1、查看远程的仓库情况。列出已经存在的远程分支。
+
+```
+git remote
+```
+
+后面加上-v，则得到更加详细的信息。
+
+
+
+git远程建立仓库。
+
+
+
+# 参考资料
+
+1、git命令之git remote的用法
+
+https://www.cnblogs.com/wuer888/p/7655856.html
+
+2、菜鸟教程
+
+http://www.runoob.com/git/git-branch.html

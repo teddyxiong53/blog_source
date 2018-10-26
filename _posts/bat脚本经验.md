@@ -156,6 +156,30 @@ echo %ERRORLEVEL%
 
 
 
+# sleep
+
+bat居然都没有现成的sleep可以调用。
+
+我看了一圈，最简单的方式是用vbs来做。
+
+新建一个sleep.vbs文件。里面内容。以ms为单位的。
+
+```
+WScript.sleep 1000
+```
+
+然后在bat脚本里调用。
+
+```
+Wscript sleep.vbs
+```
+
+
+
+# 定义函数
+
+
+
 # 参考资料
 
 
