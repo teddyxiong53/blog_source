@@ -39,3 +39,11 @@ V2rayN无法独立运行，需要下载V2ray原版文件，将其解压到相同
 地址在这里。
 
 https://github.com/v2ray/v2ray-core/releases
+
+
+
+# 参考资料
+
+1、V2RayN 使用教程
+
+https://v2ray66.com/post/8/
