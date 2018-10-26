@@ -63,7 +63,7 @@ autoreconf -i
 automake
 autoconf
 ./configure
-make
+make -j4
 sudo make install
 ```
 
@@ -75,7 +75,7 @@ wget http://curl.haxx.se/download/curl-7.54.0.tar.bz2
 tar -xvjf curl-7.54.0.tar.bz2
 cd curl-7.54.0
 ./configure --with-nghttp2=/usr/local --with-ssl
-make
+make -j4
 sudo make install
 sudo ldconfig  
 ```
@@ -429,6 +429,12 @@ https://amazon.com/us/code' and enter the code: AKL66X
 ```
 
 接下来可以在树莓派上来做了。
+
+另外，还有一个limited的问题。
+
+这个是因为要在secure profile哪里，选择other platform，把client id填入，然后点击generate，生成一个新的client id，把新生成的，写到json配置里，然后启动就好了。
+
+如果之前出错了的。那么就把cbl那个db文件删掉就好了。
 
 
 
