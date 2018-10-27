@@ -121,7 +121,7 @@ max log size
 #======================= Global Settings =======================
 
 [global]
-    workgroup = WORKGROUP
+    workgroup = XHL_WORK
     server string = this is ubuntu samba server
     log file = /var/log/samba/log.%m
     max log size = 1000
@@ -147,4 +147,14 @@ max log size
 ```
 
 开始一直报用户密码不对。后面发现是因为我没有`sudo smbpasswd -a pi`导致的。
+
+我的家庭网络的工作组是XHL_WORK。所有计算设备都加入到这个组里。
+
+所以windows映射盘的时候，需要在填写用户名的时候，加上：
+
+```
+XHL_WORK\teddy
+```
+
+这样来登陆才行。
 
