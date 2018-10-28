@@ -8,6 +8,16 @@ tags:
 
 
 
+# yield和return有什么区别？
+
+yield比较懒，要next推一下才动一下。
+
+yield一般跟循环一起用。
+
+
+
+
+
 先看一个简单的例子：
 
 ```
@@ -92,3 +102,10 @@ next z 3
 Process finished with exit code 0
 ```
 
+
+
+# 参考资料
+
+1、python-复盘-yield & return区别
+
+https://www.jianshu.com/p/a3383b144eb6

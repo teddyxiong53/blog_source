@@ -10,7 +10,7 @@ tags:
 
 官方帮助信息在这：https://cmusphinx.github.io/wiki/tutorial/
 
-# 1. 叮当里如何使用的sphinx
+#  叮当里如何使用的sphinx
 
 sphinx是一个stt引擎。
 

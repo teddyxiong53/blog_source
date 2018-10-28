@@ -105,6 +105,16 @@ sdk下新建speaker.py。这个是用来调节音量的。
 
 新建speech_recognizer.py。
 
+2018年10月28日13:39:24
+
+再看system.py。
+
+这个主要就是报告非活动时间的。
+
+到这里，dueros_core.py里聚合的主要的其他类都写了。
+
+现在我们回到dueros_core.py。
+
 
 
 

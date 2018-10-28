@@ -16,6 +16,8 @@ Python的queue有3种：
 
 3、优先级的。Queue.PriorityQueue。
 
+支持多个生产者和多个消费者。
+
 
 
 简单的例子：
