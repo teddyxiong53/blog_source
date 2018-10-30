@@ -25,3 +25,20 @@ trusted-host=mirrors.aliyun.com
 
 填入上面的内容。
 
+可以同时配置多个源。
+
+```
+teddy@teddy-ThinkPad-SL410:~$ cat ~/.pip/pip.conf 
+[global]
+index-url=http://pypi.douban.com/simple
+extra-index-url=http://mirrors.aliyun.com/pypi/simple/
+extra-index-url=https://pypi.tuna.tsinghua.edu.cn/simple/
+extra-index-url=http://pypi.mirrors.ustc.edu.cn/simple/
+
+[install]
+trusted-host=pypi.douban.com
+trusted-host=mirrors.aliyun.com
+trusted-host=pypi.tuna.tsinghua.edu.cn
+trusted-host=pypi.mirrors.ustc.edu.cn
+```
+

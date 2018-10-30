@@ -79,9 +79,6 @@ sslocal -c /etc/shadowsocks/config.json
 ```
 socksParentProxy = "localhost:1080"
 socksProxyType = socks5
-logFile = /var/log/polipo
-logLevel = 4
-
 ```
 
 6、启动polipo服务。
