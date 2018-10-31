@@ -451,8 +451,41 @@ bind: Address already in use
 
 
 
+make savedefconfig这个是很有用的。
+
+```
+make savedefconfig
+cp defconfig configs/<boardname>_defconfig
+```
+
+Once you have a known working configuration, run `make savedefconfig`. This will generate a minimal `defconfig` file at the root of the Buildroot source tree. Move this file into the `configs/` directory, and rename it `<boardname>_defconfig`. 
+
+The recommended place to store this defconfig is `configs/<boardname>_defconfig`. If you follow this recommendation, the configuration will be listed in `make help` and can be set again by running `make <boardname>_defconfig`. 
+
+
+
+从实际操作来看。
+
+
+
 参考资料
 
 1、HOWTO: Use BuildRoot to create a Linux image for QEMU
 
 http://www.osadl.org/Use-BuildRoot-to-create-a-Linux-image-fo.buildroot-qemu.0.html
+
+2、My 6 tips for working with Buildroot
+
+https://www.viatech.com/en/2015/06/buildroot/
+
+3、
+
+https://www.cnblogs.com/tfanalysis/p/3643308.html
+
+4、buildroot架构
+
+https://hugh712.gitbooks.io/buildroot/content/default-path.html
+
+5、buildroot里增加自己的包。
+
+http://www.mamicode.com/info-detail-2460329.html

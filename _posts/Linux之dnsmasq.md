@@ -157,6 +157,14 @@ server：这些就是真的全球dns的解析了。相当于中转了一下。
 
 
 
+# dnsmasq和dhcpcd的关系
+
+dnsmasq是服务器，负责分配动态地址的。
+
+dhcpcd是客户端。是用来获取动态地址的。
+
+
+
 # 参考资料
 
 1、DNSmasq介绍
