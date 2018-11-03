@@ -84,7 +84,12 @@ nc -v -n 127.0.0.1 12345 > get_server_info.txt
 
 
 
+交叉编译的在板端执行结果总是不符合预期。
 
 
 
 
+
+看这个，是要改一点c语言宏配置的。
+
+http://ele7enxxh.com/Compile-Netcat-For-Android.html

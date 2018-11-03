@@ -116,6 +116,10 @@ alias hp="http_proxy=http://localhost:8123"
 hp curl www.google.com
 ```
 
+不用这么麻烦，直接export就好了。
+
+
+
 # 换一种思路
 
 思路就是：虚拟机通过pc机运行的ssr，pc为虚拟机提供代理服务。
