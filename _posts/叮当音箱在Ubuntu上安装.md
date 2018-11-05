@@ -384,11 +384,211 @@ python dingdang.py --local
 
 先到这里吧。
 
+#继续做
+
+2018年11月4日11:03:17
+
+还是把百度的想办法调通。有问题解决问题。
+
+```
+2018-11-04 11:06:53,018 tts.py[line:486]         CRITICAL Token request failed with response: u'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">\n<html><head>\n<title>Proxy error: 504 Connect to openapi.baidu.com:80 failed: Connection refused.</title>\n</head><body>\n<h1>504 Connect to openapi.baidu.com:80 failed: Connection refused</h1>\n<p>The following error occurred while trying to access <strong>http://openapi.baidu.com/oauth/2.0/token?client_secret=97UrqLeyNXhjtLeqL5XNPxYvAEQsGb7S&amp;grant_type=client_credentials&amp;client_id=wNqEyF2KysMTiOcSt3HEZYhcvb0hjriX</strong>:<br><br>\n<strong>504 Connect to openapi.baidu.com:80 failed: Connection refused</strong></p>\n<hr>Generated Sun, 04 Nov 2018 11:06:52 CST by Polipo on <em>teddy-ThinkPad-SL410:8123</em>.\n</body></html>\r\n'
+Traceback (most recent call last):
+  File "/home/teddy/work/dingdang/dingdang/client/tts.py", line 480, in get_token
+    r.raise_for_status()
+```
+
+看了下最新的叮当音箱代码，百度这里的确有改动。先看看是怎么改的。看是否需要合入新的改动。
+
+最好还是在新的代码上跑。但是引入了树莓派相关的东西，看看怎么关闭树莓派相关的东西。
+
+```
+    import RPi.GPIO as GPIO
+ImportError: No module named RPi.GPIO
+```
+
+是这个文件用到了。client/drivers/pixels.py
+
+还比较好改。把相关代码注释掉就好了。就涉及2个文件。
+
+现在可以运行了。
+
+我都用阿里的stt和tts。但是还是识别不到。
+
+我把stt缓存sphinx的看看能不能转文字先。
 
 
 
+```
+teddy@teddy-ThinkPad-SL410:~/work/dingdang/dingdang-new$ python dingdang.py 
+No handlers could be found for logger "client.vocabcompiler"
+/usr/local/lib/python2.7/dist-packages/pydub/utils.py:165: RuntimeWarning: Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work
+  warn("Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work", RuntimeWarning)
+```
+
+安装ffmpeg。再看。
+
+```
+2018-11-04 11:33:43,954 vocabcompiler.py[line:163] INFO: Starting compilation...
+2018-11-04 11:33:43,954 vocabcompiler.py[line:168] ERROR: Fatal compilation Error occured, cleaning up...
+Traceback (most recent call last):
+  File "/home/teddy/work/dingdang/dingdang-new/client/vocabcompiler.py", line 165, in compile
+    self._compile_vocabulary(phrases)
+  File "/home/teddy/work/dingdang/dingdang-new/client/vocabcompiler.py", line 271, in _compile_vocabulary
+    vocabulary = self._compile_languagemodel(text, self.languagemodel_file)
+  File "/home/teddy/work/dingdang/dingdang-new/client/vocabcompiler.py", line 292, in _compile_languagemodel
+    cmuclmtk.text2vocab(text, vocab_file)
+NameError: global name 'cmuclmtk' is not defined
+2018-11-04 11:33:43,956 dingdang.py[line:136] ERROR: Error occured!
+Traceback (most recent call last):
+  File "dingdang.py", line 134, in <module>
+    app = Dingdang()
+  File "dingdang.py", line 61, in __init__
+```
+
+这样升级一些，就可以运行了。
+
+```
+sudo pip install --upgrade cmuclmtk
+```
+
+唤醒后，还是报错。
+
+```
+  File "/home/teddy/work/dingdang/dingdang-new/client/plugins/Chatting.py", line 46, in isValid
+    return any(word in text for word in [u"闲聊", u"聊天", u"不聊了"])
+  File "/home/teddy/work/dingdang/dingdang-new/client/plugins/Chatting.py", line 46, in <genexpr>
+    return any(word in text for word in [u"闲聊", u"聊天", u"不聊了"])
+TypeError: argument of type 'NoneType' is not iterable
+2018-11-04 11:39:56,075 base.py[line:194] INFO: Scheduler has been shut down
+```
+
+我把这个插件里的isValid函数改一下。运行，其他文件又报类似错误。
+
+````
+    if not plugin.isValid(text):
+  File "/home/teddy/work/dingdang/dingdang-new/client/plugins/CleanCache.py", line 35, in isValid
+    return any(word in text.lower() for word in ["清除缓存", u"清空缓存", u"清缓存"])
+  File "/home/teddy/work/dingdang/dingdang-new/client/plugins/CleanCache.py", line 35, in <genexpr>
+    return any(word in text.lower() for word in ["清除缓存", u"清空缓存", u"清缓存"])
+AttributeError: 'NoneType' object has no attribute 'lower'
+````
+
+我看关键还是没有识别到任何文字导致的。
+
+我用之前pyaudio的测试代码测试了一下，发现这些问题点：
+
+1、channel设置为1，则声音不对，被加快了。设置为2，则是正常的。
+
+2、exception_on_overflow=False 这个参数带上，不是是True还是False，一定报错。去掉则正常。
+
+改了这2点，现在可以正常运行了。但是识别语音很大问题。基本识别不出来。
+
+```
+2018-11-04 11:55:39,098 stt.py[line:510] INFO: 阿里云语音识别到了: 嗯啊。嗯
+2018-11-04 11:55:39,457 mic.py[line:351] INFO: 机器人说：在干嘛呢？
+```
+
+还是要把channel改回1，才能正常识别。
+
+```
+2018-11-04 11:57:06,240 stt.py[line:510] INFO: 阿里云语音识别到了: 现在几点钟
+2018-11-04 11:57:25,977 mic.py[line:351] INFO: 机器人说：2018年11月04日 星期日 上午 11:57
+```
+
+现在正常交互没有问题了。
+
+开始一个个把插件键入进去看看。
+
+BaiduFM。进入是说“百度音乐”，退出是“退出”。
+
+Chatting。这个有问题。会卡住。
+
+Dictionary。这个也有问题。
+
+```
+2018-11-04 12:16:50,583 stt.py[line:510] INFO: 阿里云语音识别到了: 成语亡羊补牢
+2018-11-04 12:16:51,044 mic.py[line:351] INFO: 机器人说：成语亡羊补牢有误 请重试
+```
 
 
+
+Direction
+
+```
+2018-11-04 12:18:10,966 stt.py[line:510] INFO: 阿里云语音识别到了: 怎样去深圳北站？
+2018-11-04 12:18:11,325 mic.py[line:351] INFO: 机器人说：要走了啊。
+```
+
+```
+2018-11-04 12:18:59,810 stt.py[line:510] INFO: 阿里云语音识别到了: 网络地址
+2018-11-04 12:18:59,812 mic.py[line:351] INFO: 机器人说：192.168.0.9完毕
+```
+
+```
+2018-11-04 12:19:32,066 stt.py[line:510] INFO: 阿里云语音识别到了: 天气
+2018-11-04 12:19:32,067 mic.py[line:351] INFO: 机器人说：天气插件配置有误，插件使用失败
+```
+
+```
+2018-11-04 12:20:10,772 stt.py[line:510] INFO: 阿里云语音识别到了: 微博热门
+2018-11-04 12:20:14,359 mic.py[line:351] INFO: 机器人说：悄悄告诉你，热门是可以买的哟。
+```
+
+```
+2018-11-04 12:20:52,859 stt.py[line:510] INFO: 阿里云语音识别到了: 召唤女神
+2018-11-04 12:20:52,860 mic.py[line:351] INFO: 机器人说：小冰配置错误，暂无法使用
+```
+
+```
+2018-11-04 12:21:17,947 stt.py[line:510] INFO: 阿里云语音识别到了: 你好的翻译是什么？
+2018-11-04 12:21:17,948 mic.py[line:351] INFO: 机器人说：有道翻译插件配置有误，插件使用失败
+```
+
+
+
+可以看到，不少的插件，是需要配置的。我们从有道翻译入手。
+
+https://github.com/dingdang-robot/dingdang-contrib/wiki/YouDaoFanYi
+
+这里是配置方法。
+
+申请入口在这里。http://ai.youdao.com/
+
+取名为dingdang-fanyi。把appid和Appkey记录下来。
+
+```
+2018-11-04 12:41:49,393 stt.py[line:510] INFO: 阿里云语音识别到了: 翻译你多大了？
+2018-11-04 12:41:49,394 YouDaoFanYi.py[line:67] INFO: sentence: 你多大了？
+2018-11-04 12:41:49,637 mic.py[line:351] INFO: 机器人说：你多大了？的翻译是How old are you?
+```
+
+```
+2018-11-04 12:42:58,306 stt.py[line:510] INFO: 阿里云语音识别到了: 树莓派状态
+2018-11-04 12:42:58,336 mic.py[line:351] INFO: 机器人说：处理器温度48.0度,内存使用百分之18,存储使用百分之8
+```
+
+配置一下新闻的。
+
+用的是这里的新闻。
+
+https://www.juhe.cn/docs/api/id/235
+
+这个还要认证，太麻烦了。暂时不弄。 
+
+看看路况的。
+
+是用高德地图的接口的。
+
+注册也很麻烦。暂时不弄了。
+
+配置todo。
+
+```
+todo:
+    file_path: '/home/pi/todo.txt' # 自定义备忘地址
+```
+
+发现yaml的很不好的地方，就是tab在yaml文件里会有问题。
 
 
 
