@@ -98,3 +98,9 @@ static unsigned int m_nextStreamId;
 
 attachmentManager参数，是从DefaultClient里构造的。
 
+
+
+
+
+是靠libcurl打开http2的option来做的。
+

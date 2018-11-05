@@ -342,11 +342,12 @@ AlertStorageInterface
 
 AlertsCapabilityAgent
 
-层级关系。
+层级关系。主要就是这3个。
 
 ```
 AlertsCapabilityAgent 最高层级，被DefaultClient使用。
 	AlertScheduler
+		Alert
 ```
 
 
@@ -437,6 +438,77 @@ AlertScheduler::setTimerForNextAlert
 
 
 闹钟的声音，都提取成数组放在代码里了。
+
+
+
+一个CapabilityAgent应该拥有的成员有：
+
+1、sendMessage的能力，所以要持有MessageSenderInterface
+
+2、发送消息，需要授权发送者，所以需要持有CertifiedSender
+
+3、管理焦点的能力。所以需要持有FocusManagerInterface。这个是上层传递下来的，整个系统共用一个。
+
+4、管理上下文的能力，所以持有ContextManagerInterface。这个是上层传递下来的，整个系统共用一个。
+
+5、能力配置。CapabilityConfiguration
+
+6、为了有异步处理能力，持有一个Executor。
+
+都是通过AVSConnectionManager::sendMessage来发送消息的。
+
+
+
+看看设置闹钟的过程：
+
+```
+bool AlertsCapabilityAgent::handleSetAlert
+	收到后，马上就开始调度闹钟了。m_alertScheduler.scheduleAlert
+		setTimerForNextAlertLocked 开启定时器。
+			m_scheduledAlertTimer.start  
+				AlertScheduler::onAlertReady  这个就是闹钟工作的原动力。
+					notifyObserver 开始通知观察者。
+						AlertScheduler的观察者就是AlertsCapabilityAgent
+							ready的处理方式就是acquireChannel();获取channel。
+								然后就导致焦点变化。
+								setChannelFocus
+									然后通知焦点的观察者。焦点的观察者有哪些呢？
+						
+```
+
+```
+AlertsCapabilityAgent::executeOnFocusChanged
+	m_alertScheduler.updateFocus
+		notifyObserver
+			m_observer->onAlertStateChange 这个又回到AlertsCapabilityAgent
+				sendEvent(ALERT_STARTED_EVENT_NAME, alertToken, true);
+            	 updateContextManager();
+```
+
+
+
+没有找到焦点的观察者。
+
+这个真奇怪。
+
+CapabilityAgent继承了ChannelObserverInterface，这里面有onFocusChanged
+
+知道怎么注册焦点观察者的了。
+
+```
+void AlertsCapabilityAgent::acquireChannel() {
+    ACSDK_DEBUG9(LX("acquireChannel"));
+    m_focusManager->acquireChannel(FocusManagerInterface::ALERTS_CHANNEL_NAME, shared_from_this(), NAMESPACE);//这里注册的。
+}
+```
+
+```
+void FocusManager::acquireChannelHelper(
+	// Set the new observer.
+    channelToAcquire->setObserver(channelObserver);
+```
+
+
 
 
 
