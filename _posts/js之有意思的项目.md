@@ -10,9 +10,21 @@ tags:
 
 JavaScript是很实用的语言，现在找找有意思的项目来学习。
 
-video.js
+#网页播放器
+
+##video.js
 
 https://github.com/videojs/video.js
+
+这个属于比较复杂的。
+
+## hivideo
+
+这个是比较简单的。
+
+https://github.com/heavis/hivideo
+
+可以直接跑起来。
 
 
 
