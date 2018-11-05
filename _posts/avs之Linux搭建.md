@@ -223,7 +223,8 @@ Rebuild with the cmake parameter -DCMAKE_BUILD_TYPE=DEBUG to enable debug logs.
 修改编译命令如下：
 
 ```
-cd ${AVS_HOME}/sdk-folder/sdk-build && cmake ${AVS_HOME}/sdk-folder/sdk-source/avs-device-sdk -DSENSORY_KEY_WORD_DETECTOR=OFF -DGSTREAMER_MEDIA_PLAYER=ON -DPORTAUDIO=ON -DPORTAUDIO_LIB_PATH=${AVS_HOME}/sdk-folder/third-party/portaudio/lib/.libs/libportaudio.a -DPORTAUDIO_INCLUDE_DIR=${AVS_HOME}/sdk-folder/third-party/portaudio/include -DCMAKE_BUILD_TYPE=DEBUG && make -j4
+export AVS_HOME=/home/hlxiong/work/avs
+cd ${AVS_HOME}/sdk-folder/sdk-build && cmake ${AVS_HOME}/sdk-folder/sdk-source/avs-device-sdk -DSENSORY_KEY_WORD_DETECTOR=OFF -DGSTREAMER_MEDIA_PLAYER=ON -DPORTAUDIO=ON -DPORTAUDIO_LIB_PATH=${AVS_HOME}/sdk-folder/third-party/portaudio/lib/.libs/libportaudio.a -DPORTAUDIO_INCLUDE_DIR=${AVS_HOME}/sdk-folder/third-party/portaudio/include -DCMAKE_BUILD_TYPE=DEBUG && make SampleApp -j4
 ```
 
 编译运行，打印就很详细了。

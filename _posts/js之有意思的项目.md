@@ -10,7 +10,9 @@ tags:
 
 JavaScript是很实用的语言，现在找找有意思的项目来学习。
 
+video.js
 
+https://github.com/videojs/video.js
 
 
 
