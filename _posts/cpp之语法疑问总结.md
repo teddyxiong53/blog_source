@@ -277,6 +277,10 @@ buf << cmd;
 syslog(LOG_INFO, "led state:%s", buf.str().c_str());
 ```
 
+# 函数的位置
+
+函数可以不在类里面，而是直接在空间里面。
+
 
 
 # 参考资料

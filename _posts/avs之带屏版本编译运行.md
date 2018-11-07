@@ -137,6 +137,51 @@ npm config set https-proxy
 
 然后再试。就可以了。还要注意换成淘宝的源。
 
+```
+npm config set registry https://registry.npm.taobao.org
+```
+
+
+
+```
+sudo ln -s /usr/bin/nodejs /usr/bin/node
+```
+
+出错。要更新nodejs的版本。
+
+```
+SyntaxError: Block-scoped declarations (let, const, function, class) not yet supported outside strict mode
+```
+
+```
+sudo npm cache clean -f
+sudo npm install -g n
+sudo n stable
+```
+
+不行。
+
+用这个方法更新试一下。
+
+https://blog.csdn.net/u010064206/article/details/76714208
+
+各种方法都试了，都不行。我用源代码的方式进行安装。
+
+```
+/home/teddy/nodejs/node-v9.9.0-linux-x86
+```
+
+```
+sudo ln /home/teddy/nodejs/node-v9.9.0-linux-x86/bin/node /usr/local/bin/node
+sudo ln /home/teddy/nodejs/node-v9.9.0-linux-x86/bin/npm /usr/local/bin/npm
+```
+
+32位系统现在确实很难弄了。
+
+
+
+
+
 websocketpp是做什么的？
 
 

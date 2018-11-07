@@ -67,6 +67,22 @@ int main()
 
 
 
+在基于libcurl的程序里，主要采用回调的方式来工作。
+
+用户在启动传输之前，设置好各种参数和回调函数。
+
+在满足调节时，自动调用回调函数来完成任务。
+
+curl_global_init是一定要调用的。
+
+curl_easy_init和curl_easy_cleanup是分配和释放内存的。
+
+curl_easy_setopt和curl_easy_perform是主要的工作函数。
+
+curl_easy_getinfo用来获取返回值。
+
+
+
 # 参考资料
 
 1、使用libcurl下载文件小例
@@ -76,3 +92,11 @@ https://www.cnblogs.com/rainbow70626/p/7618378.html
 2、libcurl下载文件
 
 https://www.cnblogs.com/meteoric_cry/p/3681546.html
+
+3、官网示例合集
+
+https://curl.haxx.se/libcurl/c/example.html
+
+4、Curl使用（一）
+
+https://blog.csdn.net/yujunan/article/details/8713176

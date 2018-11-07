@@ -62,6 +62,10 @@ crw-rw-r--    1 root     root       10,  63 Jan 20 03:50 /dev/rfkill
 
 
 
+在buildroot里的位置是，system tools -- util linux。
+
+
+
 # 参考资料
 
 1、在 Linux 下使用 rfkill 软开关蓝牙及无线功能 

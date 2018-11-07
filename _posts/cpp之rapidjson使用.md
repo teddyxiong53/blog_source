@@ -249,6 +249,22 @@ API的分类：
 
 
 
+在调用构造函数后，得到的Value 或者Document，默认是null的。
+
+需要使用SetXxx函数来设置类型，或者进行赋值操作。
+
+```
+Document d;
+d.SetObject();
+
+或者
+Value v;
+v.SetInt(10);//等价于v = 10;
+
+```
+
+
+
 #参考资料
 
 1、官方教程

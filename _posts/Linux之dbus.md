@@ -24,6 +24,12 @@ dbus是一个为App之间通信的消息总线系统。用于进程间通信。
 
 
 
+buildroot里，可以选配dbus的支持。
+
+在hardware handling下面。
+
+
+
 
 
 # 参考资料
