@@ -114,5 +114,25 @@ void cjson_test_write()
 
 
 
+我看的是这个很轻量级的版本。
 
+https://github.com/RT-Thread-packages/cJSON/archive/v1.0.2.zip
+
+代码不多。
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/study/cJSON-1.0.2$ tree
+.
+└── cJSON-1.0.2
+    ├── cJSON.c
+    ├── cJSON.h
+    ├── cJSON_port.c
+    ├── cJSON_util.c
+    ├── cJSON_util.h
+    ├── LICENSE
+    ├── README.md
+    └── SConscript
+```
+
+这个是rt-thread专用的。
 

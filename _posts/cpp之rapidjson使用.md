@@ -188,7 +188,37 @@ int main()
 
 # 相关概念
 
-Document。最重要的概念。代表了一个json文件。
+Document。最重要的概念。代表了一个json文件。不是，是代表了一个完整的json对象。
+
+
+
+# 分配器
+
+这个搞得复杂。其实根本没有必要。都是用的这个，就是malloc和free在做。
+
+```
+class CrtAllocator {
+public:
+    static const bool kNeedFree = true;
+    void* Malloc(size_t size) { 
+        if (size) //  behavior of malloc(0) is implementation defined.
+            return std::malloc(size);
+        else
+            return NULL; // standardize to returning NULL.
+    }
+    void* Realloc(void* originalPtr, size_t originalSize, size_t newSize) {
+        (void)originalSize;
+        if (newSize == 0) {
+            std::free(originalPtr);
+            return NULL;
+        }
+        return std::realloc(originalPtr, newSize);
+    }
+    static void Free(void *ptr) { std::free(ptr); }
+};
+```
+
+还有内存池的方式的。可能是用来在分配进行使用的场合吧。避免出现内存碎片。
 
 
 

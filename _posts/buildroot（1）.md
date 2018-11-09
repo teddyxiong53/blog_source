@@ -468,6 +468,12 @@ The recommended place to store this defconfig is `configs/<boardname>_defconfig`
 
 
 
+```
+qemu-system-i386 -M pc -kernel output/images/bzImage -drive file=output/images/rootfs.ext2,if=virtio,format=raw -append "root=/dev/vda" -net nic,model=virtio -net user -nographic
+```
+
+
+
 参考资料
 
 1、HOWTO: Use BuildRoot to create a Linux image for QEMU

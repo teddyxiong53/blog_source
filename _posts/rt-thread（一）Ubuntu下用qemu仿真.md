@@ -285,3 +285,15 @@ file system initialization done!
 
 
 
+# 我在另外一台电脑搭建的环境
+
+boot的命令应该写成这样才能运行。
+
+```
+sudo qemu-system-arm -M vexpress-a9  -kernel rt-thread/bsp/qemu-vexpress-a9//rtthread.elf -sd ./sd0   -nographic 
+```
+
+否则会报错。当前版本的qemu是2.5.0的。
+
+先不管。
+
