@@ -145,6 +145,19 @@ contains
 
 
 
+# set
+
+看set里是否有某个元素。
+
+```
+std::set<int> myset;
+myset.count(1);//查看这个set里1这个元素的个数，如果为0，说明不存在。
+```
+
+
+
+
+
 # 参考资料
 
 1、C++ STL基本容器使用

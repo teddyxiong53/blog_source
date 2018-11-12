@@ -52,6 +52,16 @@ gstreamer的主要用途就是做播放器。
 
 
 
+# 基本c代码
+
+需要包含一个头文件gst/gst.h就好了。
+
+这个头文件就是包含了所有的其他头文件。
+
+
+
+
+
 # 参考资料
 
 1、百科。
@@ -69,3 +79,8 @@ https://blog.csdn.net/ds1130071727/article/details/78492566?locationNum=9&fps=1
 4、gstreamer插件指南
 
 https://blog.csdn.net/sinat_28502203/article/details/46010485
+
+5、《gstreamer应用程序开发手册》
+
+这本书可以帮助理解很多概念的东西。
+

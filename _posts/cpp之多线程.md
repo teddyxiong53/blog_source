@@ -168,6 +168,23 @@ mutex头文件内容：
 
 
 
+# condition_variable
+
+返回是这样的类型：
+
+```
+enum class cv_status {
+    no_timeout,
+    timeout   
+};
+```
+
+0表示正常返回，1表示超时。
+
+wait_for函数，里面的lambda表达式，要返回true，函数才算是满足条件。
+
+
+
 
 
 # 参考资料

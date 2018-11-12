@@ -122,3 +122,35 @@ const static int MAX_STREAMS = 10;
 std::vector<std::shared_ptr<HTTP2Stream>> m_pool;
 ```
 
+
+
+ping是新建了一个stream，收到回复后，销毁stream。
+
+是一个get请求。
+
+
+
+libcurl的东西，都是一次性的。
+
+用完就销毁的。
+
+
+
+每5分钟ping一次，ping的超时是30秒。
+
+
+
+directive的，也是一个get stream。
+
+url是：https://avs.alexa.com/v201607207/directives
+
+建立连接的超时时间的60秒。
+
+
+
+event是post出去的。
+
+
+
+一个消息请求，可以添加一个附件reader。
+

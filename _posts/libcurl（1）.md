@@ -83,6 +83,10 @@ curl_easy_getinfo用来获取返回值。
 
 
 
+multi接口是对easy接口的封装，可以实现同时并发访问多个url。
+
+
+
 # 参考资料
 
 1、使用libcurl下载文件小例
@@ -100,3 +104,7 @@ https://curl.haxx.se/libcurl/c/example.html
 4、Curl使用（一）
 
 https://blog.csdn.net/yujunan/article/details/8713176
+
+5、c语言libcurl库的异步用法
+
+https://www.cnblogs.com/zhaoyl/p/4001151.html
