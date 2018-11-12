@@ -306,7 +306,176 @@ Date:   Mon Nov 5 11:40:50 2018 +0800
     first commit
 ```
 
+#config子命令
 
+查看config。我觉得应该是后面的同名的覆盖前面的同名的。例如username。
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/git/xxx$ git config -l
+user.email=xionghanliang@dossav.com
+user.name=xionghanliang
+color.ui=auto
+core.repositoryformatversion=0
+core.filemode=true
+core.bare=false
+core.logallrefupdates=true
+user.name=xhl
+user.email=xhl@xxx.com
+remote.xxx.url=git@127.0.0.1:/home/hlxiong/work2/git_server/xxx
+remote.xxx.fetch=+refs/heads/*:refs/remotes/xxx/*
+branch.master.remote=xxx
+branch.master.merge=refs/heads/master
+```
+
+看看当前的git目录内容。
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/git/xxx/.git$ tree
+.
+├── branches
+├── COMMIT_EDITMSG 这里放的就是每次提交写的内容。
+├── config 这个就是配置信息。
+├── description
+├── HEAD
+├── hooks
+│   ├── applypatch-msg.sample
+│   ├── commit-msg.sample
+│   ├── post-update.sample
+│   ├── pre-applypatch.sample
+│   ├── pre-commit.sample
+│   ├── prepare-commit-msg.sample
+│   ├── pre-push.sample
+│   ├── pre-rebase.sample
+│   └── update.sample
+├── index
+├── info
+│   └── exclude
+├── logs
+│   ├── HEAD
+│   └── refs
+│       ├── heads
+│       │   └── master
+│       ├── remotes
+│       │   └── xxx
+│       │       └── master
+│       └── stash
+├── objects
+│   ├── 3a
+│   │   └── 292d056756b06f7c143a9991732dcf7381bdca
+│   ├── 60
+│   │   └── 67a1855fd68c4f3f6d85b7a0425c0a63f77dd1
+│   ├── 6a
+│   │   └── 4992154d916e13f9f1e936b1adb2e4911ae593
+│   ├── 81
+│   │   └── e827e83bb185f51cb34d35efe207908f012566
+│   ├── b5
+│   │   └── 4a995f6e8d75c146cd47fe649e10f61d14fdcd
+│   ├── be
+│   │   └── 2acc8b760274da8c0e81eec263fcb5e51a5724
+│   ├── c2
+│   │   └── 18bd2155e3ee3e7284b3583817c9db2f510b86
+│   ├── cb
+│   │   └── 02db2d6a678c119d6c6b5ec807ac2914675af2
+│   ├── e6
+│   │   └── 9de29bb2d1d6434b8b29ae775ad8c2e48c5391
+│   ├── info
+│   └── pack
+├── ORIG_HEAD
+└── refs
+    ├── heads
+    │   └── master
+    ├── remotes
+    │   └── xxx
+    │       └── master
+    ├── stash
+    └── tags
+```
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/git/xxx/.git$ cat config 
+[core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        logallrefupdates = true
+[user]
+        name = xhl
+        email = xhl@xxx.com
+[remote "xxx"]
+        url = git@127.0.0.1:/home/hlxiong/work2/git_server/xxx
+        fetch = +refs/heads/*:refs/remotes/xxx/*
+[branch "master"]
+        remote = xxx
+        merge = refs/heads/master
+```
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/git/xxx/.git$ cat HEAD 
+ref: refs/heads/master
+```
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/git/xxx/.git$ cat ORIG_HEAD 
+b54a995f6e8d75c146cd47fe649e10f61d14fdcd
+hlxiong@hlxiong-VirtualBox:~/work/test/git/xxx/.git$ git log
+commit b54a995f6e8d75c146cd47fe649e10f61d14fdcd
+Author: xhl <xhl@xxx.com>
+Date:   Mon Nov 5 11:40:50 2018 +0800
+
+    first commit
+```
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/git/xxx/.git/logs$ ls
+HEAD  refs
+hlxiong@hlxiong-VirtualBox:~/work/test/git/xxx/.git/logs$ cat HEAD 
+0000000000000000000000000000000000000000 b54a995f6e8d75c146cd47fe649e10f61d14fdcd xhl <xhl@xxx.com> 1541389250 +0800    commit (initial): first commit
+```
+
+
+
+# cheat git
+
+用cheat工具看到的信息。一条条分析。
+
+新建一个f2.c， stash表示隐藏。
+
+```
+git add --all
+```
+
+
+
+```
+git stash save "new f2.c, stash it"
+```
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/git/xxx$ git stash list
+stash@{0}: On master: new f2.c, stash it
+```
+
+这样修改的内容，就不会被提交到服务器。
+
+可以取消隐藏。
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/git/xxx$ git stash apply stash@{0}
+位于分支 master
+您的分支与上游分支 'xxx/master' 一致。
+要提交的变更：
+  （使用 "git reset HEAD <文件>..." 以取消暂存）
+
+        新文件：   f2.c
+
+```
+
+清空本地改动。
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/git/xxx$ git reset --hard
+HEAD 现在位于 b54a995 first commit
+```
 
 
 

@@ -27,3 +27,7 @@ cpp的初始化有两种：
 1、c++类对象初始化方式总结
 
 https://blog.csdn.net/caoyan_12727/article/details/52469065
+
+2、C++11列表初始化
+
+https://blog.csdn.net/K346K346/article/details/55194246

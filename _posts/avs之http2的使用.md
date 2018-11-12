@@ -104,3 +104,21 @@ attachmentManager参数，是从DefaultClient里构造的。
 
 是靠libcurl打开http2的option来做的。
 
+# 往外发送的流程
+
+```
+m_streamPool.createPostStream(url, authToken, request, m_messageConsumer);
+```
+
+stream poll里，最多10个。
+
+```
+const static int MAX_STREAMS = 10;
+```
+
+这个poll的概念是这样实现的，是一个vector。
+
+```
+std::vector<std::shared_ptr<HTTP2Stream>> m_pool;
+```
+
