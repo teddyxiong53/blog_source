@@ -87,6 +87,35 @@ multi接口是对easy接口的封装，可以实现同时并发访问多个url�
 
 
 
+# 源码编译
+
+直接configure之后make就好了。
+
+example在docs目录下，进去make就好了。
+
+把所有例子按照顺序看一遍。
+
+10-at-a-time
+
+这个是同时下载多个文件。测试multi接口的。
+
+chkspeed
+
+这个是用下载的方式进行测速的。
+
+
+
+看看post方式跟httpbin.org交互的情况。
+
+post json的方式需要设置这个才行。
+
+```
+curl_slist *plist = curl_slist_append(NULL,   "Content-Type:application/json;charset=UTF-8");  
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, plist);  
+```
+
+
+
 # 参考资料
 
 1、使用libcurl下载文件小例
