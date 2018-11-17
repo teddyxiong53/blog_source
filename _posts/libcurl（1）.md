@@ -116,6 +116,56 @@ curl_slist *plist = curl_slist_append(NULL,   "Content-Type:application/json;cha
 
 
 
+我对内存泄露是比较担心的，所以我不想频繁分配然后再销毁。
+
+所以我要创建一个handle长时间不销毁。
+
+
+
+curl_global_init这个里面基本没做什么，多次调用也没有关系。
+
+而且可以不调用，因为curl_easy_init里会检查，发现没有调用过curl_global_init，会自己调用一次。
+
+核心数据结构：Curl_easy。
+
+会组成双向链表。
+
+结构体内部还是比较复杂的。不细看了。
+
+
+
+我现在比较关系的是，post或者get请求得到的内容，放在什么位置，多次调用会不会导致多次重复分配导致内存泄露？
+
+默认是直接打印出来的，如果你想要保存，就设置WRITEFUNCTION和WRITEDATA这2个选项。
+
+```
+		std::stringstream out;
+        void* curl = curl_easy_init();
+        // 设置URL
+        curl_easy_setopt(curl, CURLOPT_URL, "http://172.21.1.121:4000/api/officeZone1/tempHum/allDevices/last");
+        // 设置接收数据的处理函数和存放变量
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &out);
+```
+
+实现的回调函数类似这样：
+
+```
+size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
+    string data((const char*) ptr, (size_t) size * nmemb);
+    *((stringstream*) stream) << data << endl;
+    return size * nmemb;
+}
+```
+
+碰到一个问题，就是返回这个。是因为我直接把string传递给curl了。应该用c_str()来传递。
+
+```
+curl_easy_perform() failed: Couldn't resolve host name
+```
+
+
+
 # 参考资料
 
 1、使用libcurl下载文件小例

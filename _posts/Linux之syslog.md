@@ -234,6 +234,8 @@ SYSLOGD_ARGS="-n -O /data/messages -s 20 -S"
 
 
 
+从实际使用看，会限制每一行的长度，是900字节。
+
 
 
 # 参考资料

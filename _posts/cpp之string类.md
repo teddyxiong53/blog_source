@@ -156,9 +156,9 @@ s1.compare( s2);
 
 ```
 string s1  = "aaa";
-	string s2 = "aaa";
-	cout << (s1==s2) << endl;
-	cout << s1.compare(s2) << endl;
+string s2 = "aaa";
+cout << (s1==s2) << endl;
+cout << s1.compare(s2) << endl;
 ```
 
 9、尺寸。
@@ -208,6 +208,32 @@ String::~String(void)
 }
 ```
 
+# int和string的相互转化
+
+int转string：
+
+```
+std::string str = std::to_string(11);
+```
+
+
+
+# 怎样像sprintf一样操作？
+
+用ostringstream来做。
+
+```
+#include <sstream>
+
+std::ostringstream buffer;
+buffer<<"cplusplus.me"<<"_"<<2016<<"_"<<1;
+string str = buffer.str();
+```
+
+
+
+
+
 
 
 # 参考资料
@@ -218,3 +244,10 @@ String::~String(void)
 
 https://www.cnblogs.com/danielStudy/p/7127564.html
 
+3、C++中int与string的相互转换
+
+https://blog.csdn.net/u010510020/article/details/73799996
+
+4、std::string formatting like sprintf
+
+https://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
