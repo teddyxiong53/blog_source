@@ -84,3 +84,8 @@ https://blog.csdn.net/sinat_28502203/article/details/46010485
 
 这本书可以帮助理解很多概念的东西。
 
+6、GStreamer基础教程02——GStreamer概念
+
+这个系列教程不错。
+
+http://www.voidcn.com/article/p-zxhurjoy-h.html

@@ -104,7 +104,77 @@ glib和glibc是2个东西。glib主要是给gnome用的。
 
 
 
+看看GObject的定义。
+
+```
+struct  _GObject
+{
+  GTypeInstance  g_type_instance;
+  
+  /*< private >*/
+  volatile guint ref_count;
+  GData         *qdata;
+};
+```
+
+GTypeClass
+
+GType：这个就是ulong的。
+
+
+
+这一套对象系统，靠的就是在最前面包含父类的方式实现继承。
+
+
+
+# 基本使用方法
+
+glib由5个部分组成：
+
+1、基础类型。
+
+2、对核心应用的支持。
+
+3、实用功能。
+
+4、数据类型。
+
+5、对象系统。
+
+编译一个最简单的使用glib的程序。
+
+这个需要加入一些目录。所以写一个Makefile来做。
+
+```
+.PHONY: all clean
+INCLUDE := -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
+	-L/usr/lib/x86_64-linux-gnu -lgobject-2.0 -lgthread-2.0 
+	
+CFLAGS := -g -Wall -O3  $(INCLUDE)
+all:
+	gcc test.c $(CFLAGS)
+```
+
+```
+#include <glib.h>
+
+int main()
+{
+	gint i = 0;
+	
+}
+```
+
+现在加入事件循环、内存操作、线程这3种功能。
+
+
+
+
+
 
 
 # 参考资料
 
+1、浅析GLib
+
+https://www.ibm.com/developerworks/cn/linux/l-glib/index.html
