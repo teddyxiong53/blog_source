@@ -166,6 +166,53 @@ curl_easy_perform() failed: Couldn't resolve host name
 
 
 
+# multi的用法
+
+涉及的结构体是：CURLM。
+
+```
+CURLM *cm;
+cm = curl_multi_init();
+curl_multi_setopt(cm, CURLMOPT_MAXCONNECTS, 10);
+for (int i=0; i<URL_NUM; i++) {
+    CURL *hdl = curl_easy_init();
+    //xxx
+    curl_multi_add_handle(cm, hdl);
+}
+int ret = -1;
+fd_set rset, wset, eset;
+long timeout;
+int max_fd;
+struct timeval tv;
+while(ret ) {
+    curl_multi_perform(cm, &ret);
+    if(ret) {
+        FD_ZERO(&rset);
+        FD_ZERO(&wset);
+        FD_ZERO(&eset);
+        if(curl_multi_fdset(cm, &rset, &wset, &eset, &max_fd)) {
+            return -1;
+        }
+        if(curl_multi_timeout(cm, &timeout)) {
+            return -1;
+        }
+        if(timeout == -1) {
+            timeout = 100;
+        }
+        if(max_fd == -1) {
+            sleep(timeout/100);
+        } else {
+            
+        }
+        
+    }
+}
+```
+
+
+
+
+
 # 参考资料
 
 1、使用libcurl下载文件小例

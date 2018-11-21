@@ -143,6 +143,107 @@ void MediaPlayer::handleSetIStreamSource
 
 
 
+InProcessSDS
+
+这个的含义是，在一个进程里的SDS数据。
+
+SDS只有一个生产者，多个消费者。
+
+目前消费者限制为10个。
+
+
+
+靠的还是PortAudio。
+
+PortAudioMicrophoneWrapper
+
+跟sds是这样关联起来的。
+
+```
+std::shared_ptr<alexaClientSDK::sampleApp::PortAudioMicrophoneWrapper> micWrapper =
+        alexaClientSDK::sampleApp::PortAudioMicrophoneWrapper::create(sharedDataStream);
+```
+
+在PortAudioCallback里，进行的write操作。
+
+
+
+对这里，可以简单理解为一个数组，writer往里面写，reader从里面读。
+
+只不过是机制相当于数组要完善健壮一些。
+
+目前是没有看到reader进行read操作。
+
+有3个地方调用了read函数。
+
+```
+1、gboolean AttachmentReaderSource::handleReadData() {
+2、ESP里。这个不看。
+3、std::size_t InProcessAttachmentReader::read(
+```
+
+handleReadData只有一个地方调用了。靠的是g_idle_add来做的。
+
+```
+gboolean BaseStreamSource::onReadData(gpointer pointer) {
+    return static_cast<BaseStreamSource*>(pointer)->handleReadData();
+}
+```
+
+在这里调用的。
+
+```
+void BaseStreamSource::installOnReadDataHandler() {
+```
+
+
+
+IStreamSource这个是对std::istream的包装，是处理音频文件的。
+
+跟音频输入没有关系。
+
+只被这一个地方调用。
+
+```
+void MediaPlayer::handleSetIStreamSource(
+```
+
+
+
+关于remote的判断。
+
+```
+/**
+     * Indicates whether a source is local or remote from the perspective of the MediaPlayer (e.g. playing out of the
+     * SDS is local, playing a URL is remote).
+     *
+     * @return A boolean indicating whether the source is from a remote or local source
+     */
+    virtual bool isPlaybackRemote() const = 0;
+```
+
+
+
+```
+RequireShutdown
+	SourceInterface
+		BaseStreamSource
+			IStreamSource：这个就直接给MediaPlayer用了。
+				
+```
+
+
+
+AudioItem
+
+是一个struct，里面嵌套了struct，没有函数。
+
+只有AudioPlayer用到了。
+
+```
+std::deque<AudioItem> m_audioItems;
+```
+
 
 
 参考资料

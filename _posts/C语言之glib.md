@@ -148,7 +148,7 @@ glib由5个部分组成：
 ```
 .PHONY: all clean
 INCLUDE := -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
-	-L/usr/lib/x86_64-linux-gnu -lgobject-2.0 -lgthread-2.0 
+	-L/usr/lib/x86_64-linux-gnu -lgobject-2.0 -lgthread-2.0 -lglib-2.0
 	
 CFLAGS := -g -Wall -O3  $(INCLUDE)
 all:
@@ -167,9 +167,99 @@ int main()
 
 现在加入事件循环、内存操作、线程这3种功能。
 
+```
+#include <glib.h>
+
+GMutex *mutex = NULL;
+static gboolean t1_end = FALSE;
+static gboolean t2_end = FALSE;
+struct _Arg {
+	GMainLoop *loop;
+	gint max;
+};
+typedef struct _Arg Arg;
+
+void run_1(Arg *arg)
+{
+	int i;
+	for(i=0;i<arg->max;i++) {
+		if(g_mutex_trylock(mutex) == FALSE) {
+			g_print("run_2 lock the mutex\n");
+			g_mutex_unlock(mutex);
+		} else {
+			g_usleep(10);
+		}
+	}
+	t1_end = TRUE;
+}
+void run_2(Arg *arg)
+{
+	int i;
+	for(i=0; i<arg->max; i++) {
+		if(g_mutex_trylock(mutex) == FALSE) {
+			g_print("run_1 lock the mutex\n");
+			g_mutex_unlock(mutex);
+		} else {
+			g_usleep(10);
+		}
+	}
+	t2_end = TRUE;
+}
+
+void run_3(Arg * arg)
+{
+	for(;;) {
+		if(t1_end && t2_end) {
+			g_main_loop_quit(arg->loop);
+			break;
+		} else {
+			g_usleep(10);
+		}
+	}
+}
+int main()
+{
+	GMainLoop *main_loop;
+	Arg *arg;
+	if(!g_thread_supported()) {
+		g_thread_init(NULL);
+	}
+	main_loop = g_main_loop_new(NULL, FALSE);
+	arg = g_new(Arg, 1);
+	arg->loop = main_loop;
+	arg->max = 11;
+	mutex = g_mutex_new();
+	g_thread_create(run_1, arg, TRUE, NULL);
+	g_thread_create(run_2, arg, TRUE, NULL);
+	g_thread_create(run_3, arg, TRUE, NULL);
+	
+	g_main_loop_run(main_loop);
+	g_print("run_3 has exited\n");
+	g_mutex_free(mutex);
+	g_free(arg);
+	
+}
+```
 
 
 
+# 实用功能
+
+glib包含了近20种实用功能。从简单的字符串处理到xml解析。
+
+现在我们看看随机数和计时的。
+
+
+
+# 实现异步
+
+g_idle_add，添加一个空闲时执行的任务。
+
+是被main_loop执行的。
+
+gtk就是通过这些方式来刷新屏幕的。
+
+串行化对ui的操作。
 
 
 
@@ -178,3 +268,7 @@ int main()
 1、浅析GLib
 
 https://www.ibm.com/developerworks/cn/linux/l-glib/index.html
+
+2、glib中的signal不是异步的，使用g_idle_add实现异步
+
+https://blog.csdn.net/fingding/article/details/6866263
