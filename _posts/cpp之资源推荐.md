@@ -19,3 +19,7 @@ cppreference网站使用的在线c++编译器。
 
 https://en.cppreference.com/
 
+#资源集合
+
+https://github.com/jobbole/awesome-cpp-cn
+
