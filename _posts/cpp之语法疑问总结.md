@@ -283,6 +283,12 @@ syslog(LOG_INFO, "led state:%s", buf.str().c_str());
 
 
 
+# rhs和lhs是什么意思
+
+rhs是Right Hand Side的意思。
+
+
+
 # 参考资料
 
 1、C++类成员冒号初始化以及构造函数内赋值

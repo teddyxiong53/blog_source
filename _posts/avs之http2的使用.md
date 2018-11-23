@@ -180,7 +180,7 @@ bool HTTP2Transport::isEventStream(std::shared_ptr<HTTP2Stream> stream) {
 
 由此可以看到，系统里是有3种http2 stream的。
 
-1、媒体流。
+1、指令。就是downchannel。
 
 2、event。
 
@@ -260,4 +260,30 @@ m_capabilitiesDelegate = alexaClientSDK::capabilitiesDelegate::CapabilitiesDeleg
 ```
 publishCapabilities这个函数里是唯一用到的地方。
 ```
+
+
+
+看定义的HttpResponse内容。
+
+```
+struct HTTPResponse {
+public:
+    HTTPResponse();
+    long code;
+    std::string body;
+    std::string serialize();
+};
+```
+
+
+
+把url的内容写入到stream里。应该是音乐就这么处理的。
+
+```
+bool UrlContentToAttachmentConverter::writeUrlContentIntoStream(std::string url) {
+```
+
+被onPlaylistEntryParsed这个函数调用了。
+
+目前至少看到对播放列表文件m3u格式进行了解析。
 
