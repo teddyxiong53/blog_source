@@ -79,8 +79,14 @@ httpd.serve_forever()
 
 
 
+
+
 # 参考资料
 
 1、WSGI接口
 
 https://www.liaoxuefeng.com/wiki/001374738125095c955c1e6d8bb493182103fac9270762a000/001386832689740b04430a98f614b6da89da2157ea3efe2000
+
+2、Flask的核心机制！关于请求处理流程和上下文
+
+https://www.jianshu.com/p/2a2407f66438

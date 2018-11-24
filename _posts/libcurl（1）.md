@@ -103,7 +103,7 @@ chkspeed
 
 这个是用下载的方式进行测速的。
 
-
+#post方式
 
 看看post方式跟httpbin.org交互的情况。
 
@@ -211,6 +211,8 @@ while(ret ) {
 
 
 
+# get请求
+
 
 
 # 参考资料
@@ -234,3 +236,7 @@ https://blog.csdn.net/yujunan/article/details/8713176
 5、c语言libcurl库的异步用法
 
 https://www.cnblogs.com/zhaoyl/p/4001151.html
+
+6、libcurl基本知识、post、get请求 -- libcurl
+
+https://blog.csdn.net/cy_cai/article/details/41941161
