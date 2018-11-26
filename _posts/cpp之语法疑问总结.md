@@ -289,6 +289,26 @@ rhs是Right Hand Side的意思。
 
 
 
+# make_shared
+
+下面的写法都是对的。
+
+```
+//class Test : public std::enable_shared_from_this<Test>{
+class Test {
+public:
+	int a;
+};
+int main()
+{
+	std::shared_ptr<Test> t1 = std::make_shared<Test>();
+	std::shared_ptr<Test> t2 = std::shared_ptr<Test>(new Test());
+	return 0;
+}
+```
+
+
+
 # 参考资料
 
 1、C++类成员冒号初始化以及构造函数内赋值
