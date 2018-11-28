@@ -8,7 +8,7 @@ tags:
 
 
 
-bluetooothct的入口代码是在bluez/client/main.c里。
+bluetooothctl的入口代码是在bluez/client/main.c里。
 
 
 
