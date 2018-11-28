@@ -124,5 +124,7 @@ self._decoder.end_utt()
 result = self._decoder.get_hyp()
 ```
 
+# pocketsphinx命令行工具使用
+
 
 
