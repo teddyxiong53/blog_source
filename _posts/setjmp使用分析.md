@@ -7,11 +7,10 @@ tags:
 ---
 
 
+
 # 为什么会有setjmp的存在？
 
 C语言的前辈是汇编，在汇编里，程序员是想怎么跳转就怎么跳转。但是到了C语言里，goto只能在函数内部打转。如果我就是想从一个函数跳到另外一个函数，怎么办？setjmp就是干这个的。
-
-
 
 
 
@@ -127,3 +126,64 @@ f1 error proc
 ```
 
 
+
+# setjmp.h头文件
+
+这个头文件里定义3个东西：
+
+1、setjmp
+
+2、longjmp
+
+3、jmp_buf类型。这个会绕过正常的调用返回规则。
+
+setjmp这种机制，为C语言里任意进行跳转留下了活动空间。
+
+看看musl里的定义是怎样的，针对arm平台的。
+
+```
+typedef unsigned long long __jmp_buf[32];//放32个寄存器。
+typedef struct __jmp_buf_tag {
+	__jmp_buf __jb;
+	unsigned long __fl;
+	unsigned long __ss[128/sizeof(long)];
+} jmp_buf[1];
+```
+
+
+
+```
+#include <setjmp.h>
+#include <stdio.h>
+
+int main()
+{
+	jmp_buf env;
+	int i;
+	i = setjmp(env);
+	printf("i=%d\n", i);
+	if(i!=0) {
+		return 0;
+	}
+	longjmp(env, 10);
+	printf("xxxx\n");
+}
+```
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/c-test$ ./a.out 
+i=0
+i=10
+```
+
+
+
+# 参考资料
+
+1、C 标准库 - < setjmp.h >
+
+http://wiki.jikexueyuan.com/project/c/c-standard-library-setjmp-h.html
+
+2、C 语言中 setjmp 和 longjmp
+
+http://www.cnblogs.com/hazir/p/c_setjmp_longjmp.html
