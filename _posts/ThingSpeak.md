@@ -16,8 +16,17 @@ ThingSpeak是matlab的开发公司MathWorks开发的一个开源的物联网云�
 
 
 
+我们先到官网上试用一下，看看是什么效果，熟悉之后，再自己搭建环境。
+
+密码至少要一个大写字母的。
+
+
+
 # 参考资料
 
 1、ThingSpeak本地部署
 
 https://blog.csdn.net/elainejaney/article/details/78632508
+
+
+
