@@ -230,3 +230,10 @@ Import("env")
 
 跟Export对应。这个是导出变量的。
 
+
+
+# 参考资料
+
+1、scons使用
+
+https://www.cnblogs.com/blueoverflow/p/4913766.html
