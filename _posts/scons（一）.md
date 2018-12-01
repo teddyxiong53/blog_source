@@ -232,8 +232,83 @@ Import("env")
 
 
 
+File和Dir的用法
+
+```
+import pdb
+import SCons
+#pdb.set_trace()
+
+env = Environment(CC="gcc",     CCFLAGS="-g")
+#env.Program("foo.c")
+
+print Dir(".").path
+print Dir(".").abspath
+print Dir("#").path
+print Dir("#.").path
+print File("foo.c").srcnode().path
+```
+
+输出：
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/scons$ scons -Q
+/home/hlxiong/work/test/scons
+/home/hlxiong/work/test/scons
+/home/hlxiong/work/test/scons
+/home/hlxiong/work/test/scons
+foo.c
+scons: `.' is up to date.
+```
+
+Dir('#')表示源代码的顶层目录。
+
+
+
+添加自定义选项。
+
+```
+import pdb
+import SCons
+#pdb.set_trace()
+
+env = Environment(CC="gcc",     CCFLAGS="-g")
+#env.Program("foo.c")
+
+AddOption("--copy", dest="copy", action="store_true", 
+		default=False,
+		help="copy rt-thread dir to local"
+	)
+print GetOption("copy")
+```
+
+你可以这样查看这个添加的内容。
+
+```
+scons --help
+```
+
+```
+Local Options:
+  --copy                      copy rt-thread dir to local
+```
+
+执行：
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/scons$ scons --copy -Q
+True
+scons: `.' is up to date.
+```
+
+
+
 # 参考资料
 
 1、scons使用
 
 https://www.cnblogs.com/blueoverflow/p/4913766.html
+
+2、官方手册
+
+https://scons.org/doc/production/HTML/scons-man.html
