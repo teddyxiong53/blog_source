@@ -543,6 +543,109 @@ device.c里又用到thread的东西，所以还是回去先把thread的函数实
 
 先把用到的thread相关函数暂时不调用。还是调用吧。先留空实现。
 
+2018年12月3日20:52:46
+
+回到rt_hw_board_init。
+
+目前这个函数写完了。
+
+回到rtthread_startup函数。
+
+下一个函数是rt_show_version。我就打印一下版本号。
+
+我觉得可以进行一次编译了。先看看能不能把版本号打印出来。
+
+现在报错。
+
+```
+scons: Reading SConscript files ...
+AttributeError: 'NoneType' object has no attribute 'extend':
+  File "/home/teddy/work/myrtt/rt-thread/bsp/qemu-vexpress-a9/SConstruct", line 26:
+    objs = PrepareBuilding(env, RTT_ROOT, has_libcpu=True)
+  File "/home/teddy/work/myrtt/rt-thread/tools/building.py", line 167:
+    objs.extend(SConscript(Rtt_Root + "/src/SConscript", variant_dir=kernel_vdir+"/src", duplicate=0))
+```
+
+因为我很多地方SConscript都没有写呢。
+
+目前只有qemu目录下有一个SConscript，而且还是空的。
+
+写上内容。
+
+把qemu目录下的子目录也都写上。
+
+现在编译出错。一时还查不出问题在哪里。
+
+我看看我之前写的scons_template里的。
+
+```
+teddy@teddy-ubuntu:~/work/myrtt$ make build
+scons  -C rt-thread/bsp/qemu-vexpress-a9/ --verbose
+scons: Entering directory `/home/teddy/work/myrtt/rt-thread/bsp/qemu-vexpress-a9'
+scons: Reading SConscript files ...
+TypeError: can only concatenate list (not "NoneType") to list:
+  File "/home/teddy/work/myrtt/rt-thread/bsp/qemu-vexpress-a9/SConstruct", line 26:
+    objs = PrepareBuilding(env, RTT_ROOT, has_libcpu=True)
+  File "/home/teddy/work/myrtt/rt-thread/tools/building.py", line 167:
+    objs = SConscript("SConscript", variant_dir=bsp_vdir, duplicate=0)
+```
+
+为什么会返回None呢？
+
+找到问题了。是我之前，把DefineGroup没有写完。
+
+```
+def DefineGroup(name, src, depend, **parameters):
+	global Env
+	if not GetDepend(depend):
+		return []
+```
+
+只写了这么点导致的 。
+
+把这个函数写完，已经依赖的MergeGroup写完。现在编译是C语言的错误了。
+
+```
+/home/teddy/work/myrtt/rt-thread/include/rtdef.h:216:18: error: field 'thread_timer' has incomplete type
+  struct rt_timer thread_timer;
+```
+
+需要定义rt_timer。
+
+增加armv7.h，放在bsp/qemu/cpu目录下。
+
+另外，那个has_libcpu的含义是：bsp目录下有cpu目录。这样就可以不用链接libcpu下的东西 了。
+
+irq.c文件里定义rt_interrupt_nest。
+
+需要继续写device的open函数。
+
+需要在bsp/qemu/cpu下增加trap.c。有些汇编里调用到这里面的函数。
+
+是定义各个异常处理函数。
+
+我先都留空。
+
+7个函数，irq和fiq的要实现。
+
+2018年12月3日22:50:03
+
+现在编译出来了。但是运行没有任何反应。
+
+我的串口驱动还没有加上。
+
+另外发现我有些函数写了但是没有调用。
+
+在bsp/qemu/drivers下面新增serial.c和serial.h文件。
+
+uart和Serial的关系：
+
+uart偏硬件，是处理寄存器的。
+
+serial偏软件，是处理各种结构体的。
+
+
+
 
 
 
