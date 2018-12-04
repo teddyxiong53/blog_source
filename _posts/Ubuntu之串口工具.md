@@ -43,3 +43,7 @@ ttyUSB0是root用户才能访问的。
 1、Minicom 使用初步
 
 https://www.cnblogs.com/pied/archive/2012/04/10/2441021.html
+
+2、/dev/ttyUSB0 permission denied　解决办法：永久有可操作权限
+
+https://blog.csdn.net/w383117613/article/details/44216653
