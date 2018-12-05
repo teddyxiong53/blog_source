@@ -644,6 +644,57 @@ uart偏硬件，是处理寄存器的。
 
 serial偏软件，是处理各种结构体的。
 
+2018年12月5日21:37:57
+
+继续写。
+
+现在编译报错。
+
+rt_device_write还没有实现。
+
+需要开始引入rt_set_errno。errno这个东西需要好好注意一下。
+
+我先暂时这样实现。
+
+```
+void rt_set_errno(rt_err_t error)
+{
+	__rt_errno = error;
+}
+```
+
+继续编译，还是报错。需要引入cp15_gcc.S文件。
+
+现在编译过了，运行还是没有任何反应。
+
+因为我的serial.c还没有写完呢。
+
+现在需要引入components/drivers/serial/seiral.c文件了。
+
+目前我的components目录里还没有文件呢。
+
+现在需要先把Kconfig写一下。先加上这一行。
+
+```
+source "$RTT_DIR/components/drivers/Kconfig"
+```
+
+我当前Kconfig，可以留空文件。
+
+因为我当前写的C代码，都是需要编译的，不依赖配置来进行开关。
+
+然后需要引入rt_completion类型了。
+
+现在实现rt_malloc了。在mem.c里。
+
+鉴于这个项目会有很多的提交，为了方便追溯提交记录，我要把这个项目从c_code目录里挪出去，单独做一个repo。
+
+rt_memset，先实现简单版本的。
+
+
+
+
+
 
 
 
