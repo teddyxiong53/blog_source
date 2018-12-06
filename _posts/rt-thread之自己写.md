@@ -691,11 +691,200 @@ source "$RTT_DIR/components/drivers/Kconfig"
 
 rt_memset，先实现简单版本的。
 
+2018年12月6日20:37:07
+
+现在碰到同名文件问题。
+
+有2个serial.h头文件。
+
+现在编译qemu目录下的drivers/serial.c的时候，包含的serial.h是components目录下的了。
+
+展开的编译命令是：
+
+```
+arm-none-eabi-gcc -o build/drivers/serial.o -c -march=armv7-a -marm -msoft-float -Wall -g -gdwarf-2 -O0 -I. -Icpu -Idrivers -I/home/teddy/work/myrtt/rt-thread/include -I/home/teddy/work/myrtt/rt-thread/components/drivers/include -I/home/teddy/work/myrtt/rt-thread/components/drivers/include drivers/serial.c
+```
+
+不是，包含的还是本目录下的，但是有个宏定义找不到。
+
+是需要在rtdevice.h里，包含“drivers/serial.h"。
+
+现在新的问题是，components目录下的serial.c编译的时候，包含不到qemu下面的那个。
+
+导致结构体的定义找不到。
+
+现在在rtdevice.h里，包含的drivers/serial.h，就是components下面这个。
+
+scons怎么把目录加入到-I查找路径的？
+
+现在的问题来源是什么？会不会是我的Python里写的有问题？
+
+我把qemu下面那个改名为bsp_serial.h。这样解决了。
+
+现在运行还是没有任何反应。
+
+用单步调试的方式，加入make debug这个目标。
+
+```
+debug:
+	sudo $(BOOT_CMD) -gdb tcp::1234 -S
+```
+
+一个shell窗口，执行make debug。
+
+另外开一个shell窗口。输入：
+
+```
+teddy@teddy-ubuntu:~/work/myrtt$ arm-none-eabi-gdb ./rt-thread/bsp/qemu-vexpress-a9/rtthread.elf 
+```
+
+然后在gdb里输入：
+
+```
+ target remote :1234
+ b _reset
+ c  只能用c来执行，remote的方式不支持r。
+```
 
 
 
+从单步的情况看，在start_gcc.S的bss清理这里就出现了问题了。
+
+```
+_reset () at cpu/start_gcc.S:48
+48          mov     r0,#0                   /* get a zero                       */
+(gdb) 
+49          ldr     r1,=__bss_start         /* bss start                        */
+(gdb) 
+50          ldr     r2,=__bss_end           /* bss end                          */
+(gdb) 
+
+```
 
 
+
+但是我按下ctrl +C，会看到这个。
+
+```
+^C
+Program received signal SIGINT, Interrupt.
+rt_strncmp (cs=0xfffffff4 "", ct=0x60003511 "art", count=8)
+    at /home/teddy/work/myrtt/rt-thread/src/kservice.c:165
+165     {
+(gdb) 
+```
+
+我把断点下在rtthread_startup函数上，可以执行到。
+
+现在看看heap的初始化。
+
+```
+(gdb) p begin_addr 
+$1 = (void *) 0x60003cd0
+(gdb) p end_addr 
+$2 = (void *) 0x60800000
+```
+
+现在可以看到是卡死在rt_device_find函数里了。
+
+我知道了。我配置的是uart，而实际应该是uart0。所以找不到设备。
+
+```
+Breakpoint 1, rt_strncmp (cs=0xfffffff4 "", ct=0x60003510 "uart", count=8)
+    at /home/teddy/work/myrtt/rt-thread/src/kservice.c:166
+166             register signed char __res = 0;
+```
+
+继续运行，还是卡死。
+
+现在看到是没有调用到INIT_BOARD_EXPORT(rt_hw_uart_init);这个函数。
+
+因为我把这里关闭了导致的。
+
+```
+void rt_components_board_init()
+{
+#if 1
+	const init_fn_t *fn_ptr;
+	for(fn_ptr=&__rt_init_rti_board_start; fn_ptr<&__rt_init_rti_board_end; fn_ptr++) {
+		(*fn_ptr)();
+	}
+#endif
+}
+```
+
+我打开，发现还是找不到设备。
+
+单步调试，发现错得离谱。
+
+```
+(gdb) p *information 
+$3 = {type = RT_Object_Class_Thread, object_list = {next = 0x0, prev = 0x0},
+  object_size = 0}
+```
+
+怎么会是RT_Object_Class_Thread这个呢？
+
+发现问题了，是我之前偷懒，没有写完这个导致的。
+
+```
+static struct rt_object_information rt_object_container[RT_Object_Class_Unknown] = {
+	{
+		RT_Object_Class_Thread, 
+		_OBJ_CONTAINER_LIST_INIT(RT_Object_Class_Thread),
+		sizeof(struct rt_thread)			
+	},
+	{
+		RT_Object_Class_Semaphore, 
+		_OBJ_CONTAINER_LIST_INIT(RT_Object_Class_Semaphore),
+		sizeof(struct rt_semaphore)			
+	},
+};
+```
+
+这么一来，就索性把需要的结构体都定义了。
+
+再运行，现在可以运行到当前的最后一行了。
+
+```
+rtthread_startup () at /home/teddy/work/myrtt/rt-thread/src/components.c:37
+37              }
+(gdb) 
+```
+
+但是打印没有出来。
+
+进一步调试，发现这里是NULL的。
+
+```
+if(_console_device == RT_NULL) {
+```
+
+问题还是在rt_device_find的时候，没有找到。
+
+找到问题了，是我这里第三个参数没有加进来。name
+
+```
+rt_object_init(&(dev->parent), RT_Object_Class_Device, name);
+	dev->flag = flags;
+```
+
+但是改了，还是不能打印出来。
+
+是有个地方我条件写错了。
+
+```
+		rx_fifo = (struct rt_serial_rx_fifo *)rt_malloc(sizeof(struct rt_serial_rx_fifo) + serial->config.bufsz);
+		if(!rx_fifo) {//这里我开始忘了加！了。
+			return -RT_ENOMEM;
+		}
+```
+
+改了这里，现在打印可以出来了。
+
+2018年12月6日22:38:39
+
+今天终于有实质进展了。找到了好的调试手段，而且打印也出来了。
 
 
 
