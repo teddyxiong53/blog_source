@@ -3,7 +3,7 @@ title: ama（1）
 date: 2018-11-27 17:50:35
 tags:
 	- 智能音箱
-
+typora-root-url: ..\
 ---
 
 
@@ -38,8 +38,53 @@ ama是Amazon Mobile Accessory的缩写。是智能音箱的衍生产品。
 
 
 
-参考资料
+# AMA要求的蓝牙规格
+
+1、蓝牙4.2以上。
+
+2、标准的配对，授权，连接码，加密。
+
+3、支持spp、A2DP、HFP、SDP、RFCOMM，SCO
+
+# AMA的编码支持
+
+支持：
+
+1、opus。
+
+2、mSBC。
+
+# AMA的构成
+
+由3个部分构成：
+
+1、手机app。亚马逊官网提供一个。
+
+2、一个第三方厂家的音箱（或者耳机等）。
+
+3、第三方厂家的手机app。
+
+框图是这样的：
+
+![](/images/AMA框图.png)
+
+
+
+使用步骤是：
+
+1、用oem厂家的app，通过ble跟音箱配对。
+
+2、亚马逊app通过SDP（Service Discovery Protocol）通过经典蓝牙连接到音箱。
+
+3、
+
+#参考资料
 
 1、小米官网
 
 https://www.mi.com/sound-carry/specs/
+
+2、亚马逊官网资料
+
+https://developer.amazon.com/zh/docs/ama-kit/alexa-mobile-accessory-kit-overview.html
+
