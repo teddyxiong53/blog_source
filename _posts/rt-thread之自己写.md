@@ -888,6 +888,384 @@ rt_object_init(&(dev->parent), RT_Object_Class_Device, name);
 
 
 
+# 12月7日
+
+接下来，把线程部分的写完。
+
+目前还只是一个空文件src/thread.c。
+
+thread里用到了timer。timer则比较独立且简单。可以先写。
+
+新建src/timer.c。
+
+新建src/scheduler.c。
+
+我先只写静态的线程创建。
+
+新增bsp/qemu/cpu/stack.c。里面就一个函数rt_hw_stack_init。
+
+新增了目录，下面都要增加一个SConscript，不然不会被编译进来的。
+
+现在运行会卡到这里。
+
+```
+0x60003f80 in _serial_int_tx (serial=0x60004a50, data=0x60153ef5 "", 
+    length=1609260551)
+    at /home/teddy/work/myrtt/rt-thread/components/drivers/serial/serial.c:118
+118                             rt_completion_wait(&(tx->completion), RT_WAITING_FOREVER);
+```
+
+所以我现在要把completion里的函数都实现先。
+
+增加src/clock.c文件。
+
+现在系统的tick系统还没有呢。
+
+所以说当前调度就是根本不可能。
+
+加上tick中断这些。
+
+
+
+# 12月8日
+
+继续写，定时中断的加上，现在还是卡在rt_completion_wait。
+
+看来这个条件是不满足了，所以一直在等。
+
+好像问题是在于，当前没有使能发送中断。
+
+发送一般是用查询的方式。
+
+所以改一下。
+
+现在还是有问题。为什么这个size这么大呢？
+
+```
+Breakpoint 1, rt_serial_write (dev=0x600052f8, pos=0, buffer=0x60005b58, 
+    size=1610633976)
+```
+
+是我rt_kprintf调用的时候，忘了传递length参数了。
+
+现在打印没有乱码了。但是线程main函数没有调用到。
+
+idle线程还没有，调度器也没有start呢。都加上。
+
+增加idle.c文件。在src目录下。
+
+现在完全是跑飞了。
+
+单步看看。
+
+现在的问题应该是在线程和调度器这2个文件里。
+
+通过单步发现，目前我只有一个idle线程，一开始调度，为什么就调用了rt_thread_exit呢？
+
+导致idle线程都不见了。
+
+```
+(gdb) p highest_ready_priority
+$6 = -1
+```
+
+这个是非法的了。导致现在没有线程可以调度。
+
+我怀疑是entry跟exit错位了，为什么会导致这种错位呢？
+
+就是我在rt_hw_stack_init，多写了一次--stk导致的。
+
+改了。现在可以了。
+
+2018年12月8日15:05:12
+
+现在主线程也可以跑起来了。
+
+
+
+接下来，把ipc的写一些。先把sem和mutex的写完。
+
+内存分配的需要先完善一下，现在free都还没有实现。
+
+默认的内存管理模块是从lwip那里弄过来的。
+
+看当前rt-thread的ipc，基本都是用FIFO的方式进行队列处理的。这种也简单。我就只实现这个。
+
+需要加上delay函数。
+
+现在把main函数这样修改。
+
+```
+int main(void)
+{
+	int i = 0;
+	while(1) {
+		rt_kprintf("main thread, count:%d \n", i++);
+		rt_thread_delay(100);
+	}
+	
+}
+```
+
+并不能循环打印。
+
+只打印了一次。
+
+现在的问题就是，线程sleep之后，就切不回来了。
+
+看看定时中断调度那里是否在起作用？
+
+发现一个问题，就是我没有把这句加上，导致没有调用。
+
+```
+INIT_BOARD_EXPORT(rt_hw_timer_init);
+```
+
+但是加上还是一样的问题。
+
+是我还忘了把硬件定时器的中断使能。现在打开。可以了。
+
+现在测试一下sem的。
+
+然后测试一下malloc和free的。
+
+没有问题再往下走。不然后面问题可能会越来越难查。
+
+我当前的接口都是尽量在用静态的，动态的那些还没有去实现。
+
+还有打印函数。
+
+目前看是正常的。
+
+我的下一个目标是把finsh加进去。
+
+所以从这个角度出发，看看需要什么，就加什么。
+
+先加目录。
+
+components/finsh目录。里面新建SConscript文件。
+
+msh的我先不实现。
+
+先这么写。
+
+```
+Import('rtconfig')
+
+from building import *
+
+cwd = GetCurrentDir()
+src = Split("""
+shell.c
+symbol.c
+cmd.c
+"""
+)
+
+fsh_src = Split('''
+finsh_compiler.c
+finsh_error.c
+'''
+)
+
+CPPPATH = [cwd]
+
+LINKFLAGS = ''
+
+src = src + fsh_src
+
+group = DefineGroup('finsh', src, depend=[''], CPPPATH=CPPPATH, LINKFLAGS=LINKFLAGS)
+
+Return('group')
+```
+
+先把这5个c文件新建，都给空的。
+
+看看从哪个开始写。
+
+从shell.c开始写，这个是入口文件。
+
+发现不能只写finsh。因为默认进的就是msh。而且msh是更加符合使用习惯的那个。
+
+反而是可以只实现msh。
+
+我就先只实现msh。
+
+有个这样的宏。FINSH_USING_MSH_ONLY
+
+说明只实现msh是可行的。
+
+只需要这6个文件就可以了。
+
+```
+src = Split("""
+shell.c
+symbol.c
+cmd.c
+"""
+)
+
+msh_src = Split('''
+msh.c
+msh_cmd.c
+msh_file.c
+'''
+)
+```
+
+而且我不打开FINSH_USING_SYMTAB这个。所以就可以让程序变得更加好理解。
+
+先不管历史命令的。
+
+原则就是用最少的代码实现shell功能。
+
+现在发现shell的初始化函数没有被调用到。
+
+现在需要把初始化的过程打印一下。
+
+把RT_DEBUG_INIT这个宏的相关代码加进来。
+
+才注意到components.c里有2个初始化函数。
+
+一个是rt_components_board_init。这个调用比较早。
+
+一个是rt_components_init。这个是在main线程的main函数之前调用的。
+
+
+
+发现现在输入没有反应，是因为我的serial.c中断里没有处理indicate函数。
+
+加上，还是输入没有反应。
+
+看看参数值。
+
+```
+(gdb) p rx_fifo->put_index
+$2 = 0
+(gdb) p rx_fifo->get_index
+$3 = 24576
+(gdb) p serial->config.bufsz
+```
+
+get_index的不对劲。
+
+我单步可以看到确实正确收到输入的字符。
+
+例如我输入a再回车，确实收到2个字符，一个97，一个13 。
+
+但是处理不低。get_index和put_index都不对。
+
+是我这里写错了。
+
+```
+rx_fifo = (struct rt_serial_rx_fifo *)serial->serial_tx;//写成了tx的了。
+```
+
+现在输入回车有反应了。
+
+2018年12月8日18:32:37
+
+现在继续完善shell。
+
+2018年12月8日19:08:15
+
+现在可以进行msh命令解析执行了。
+
+shell的我暂时有个基本功能了。暂时不再输入了。
+
+现在要换个点了。
+
+我觉得文件系统的可以。先看看，可能还是需要先实现其他才能做这个。
+
+其实我是希望可以尽快把MicroPython的弄起来。
+
+现在其实也可以暂停一下，看看链接的map文件。
+
+当前链接的C库是标准的。
+
+```
+/usr/lib/gcc/arm-none-eabi/4.9.3/../../../arm-none-eabi/lib/armv7-ar/thumb/libc.a(lib_a-memset.o)
+                              build/cpu/interrupt.o (memset)
+/usr/lib/gcc/arm-none-eabi/4.9.3/../../../arm-none-eabi/lib/armv7-ar/thumb/libc.a(lib_a-strncmp.o)
+                              build/kernel/components/finsh/msh.o (strncmp)
+```
+
+还是把dfs实现。
+
+先只实现ramfs的。
+
+建立目录结构如下：
+
+```
+teddy@teddy-ubuntu:~/work/myrtt/rt-thread/components/dfs$ tree
+.
+├── filesystems
+│   ├── ramfs
+│   │   ├── dfs_ramfs.c
+│   │   ├── dfs_ramfs.h
+│   │   └── SConscript
+│   └── SConscript
+├── include
+├── Kconfig
+├── SConscript
+└── src
+```
+
+SConscript都写上。
+
+新建dfs/src/dfs.c。这个是入口文件。
+
+这个会用到mutex。我前面实现命令行，都还是只用到sem就够了。
+
+所以现在需要先实现mutex。
+
+mutex有修改线程优先级的行为，所以这一块的内容也要加进来。
+
+从struct stat发现一个我之前没有注意的东西。
+
+在rtdef.h里包含了rtlibc.h这个头文件。
+
+我一直没有创建这个头文件。这个头文件挺重要的。
+
+是在顶层include下的。然后这下面还有一个libc目录。是一起的。
+
+我现在就把这加进来。
+
+
+
+现在看看怎么把文件系统挂载进来，这个才是入口位置。从这个地方开始写，不然有点不知道从哪里继续。
+
+看看mount函数哪里有调用。
+
+
+
+在applications目录下新建一个mnt.c。里面就写一个mnt_init函数，放在初始化section自动调用。
+
+需要实现函数dfs_mount。
+
+```
+int mnt_init()
+{
+	//rt_thread_delay();
+	if(dfs_mount("ram0", "/", "ram", 0, 0) == 0) {
+		rt_kprintf("ramfs mount ok\n");
+	}
+	return 0;
+}
+
+INIT_ENV_EXPORT(mnt_init);
+```
+
+
+
+现在要到dfs_ramfs.c里去写了。
+
+ramfs要用到memheap.c。这个可以跟mem.c共存的。只要你不使能这个宏。RT_USING_MEMHEAP_AS_HEAP
+
+不知道这个的算法跟mem.c的有什么区别。
+
+
+
 
 
 
