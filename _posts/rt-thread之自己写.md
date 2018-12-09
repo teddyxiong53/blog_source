@@ -1266,7 +1266,189 @@ ramfs要用到memheap.c。这个可以跟mem.c共存的。只要你不使能这�
 
 
 
+# 12月9日
+
+memheap的代码一边写一边看吧。
+
+新建src/memheap.c。
+
+rt_memheap_init只被dfs_ramfs_create调用了。init是对于静态的内存的。所以可以不实现。
+
+我还是先看ramfs的。有用到memheap的接口再实现。
+
+ramfs的入口函数是dfs_ramfs_init。这里面就是注册了这种文件系统类型。
+
+接口是在初始化区域自动调用的。
+
+dfs_register还没有实现。先实现。
+
+现在需要用到memheap的malloc和free了。实现一下。
 
 
 
+我还是用完整的rt-thread调试一下，看看ramfs如何挂载进去。
+
+当前我这样做，会进这个错误分支的。
+
+```
+if (dfs_mount(NULL, "/", "ram", 0, 0) == 0)
+    {
+        rt_kprintf("file system initialization done!\n");
+    }
+```
+
+```
+    struct dfs_ramfs* ramfs;
+
+    if (data == NULL)
+        return -EIO;
+```
+
+https://www.rt-thread.org/qa/thread-7742-1-1.html
+
+这篇文章提到了一点关于ramfs的东西。
+
+这个是官方资料。
+
+https://www.rt-thread.org/document/site/rtthread-tutorial/qemu-network/filesystems/filesystems.pdf
+
+看到了，最后一个参数不能给0 啊。
+
+要这样：
+
+```
+dfs_mount(RT_NULL, "/", "ram", 0, dfs_ramfs_create(rt_malloc(1024), 1024));
+```
+
+操作可以这样：
+
+```
+msh />mkdir xx
+[ DFS]open failed
+msh />ls
+Directory /:
+msh />echo "abc" 1.txt
+msh />cat 1
+msh />cat 1.txt
+abcmsh />
+```
+
+所以，入口函数还是dfs_ramfs_create。
+
+先实现这个。
+
+```
+pool_size = 860, available_size = 812, max_used_size = 48
+```
+
+
+
+dfs_ramfs结构体大小是164字节。
+
+一个rt_memheap_item是24字节。6个指针。
+
+这块指针用得太多。我得按一个实例，把所有值都算一遍。
+
+```
+dfs_ramfs_create
+这个的参数，pool的起始地址是0x602ecd94（我就简写为cd94，大小是1024字节）。
+
+```
+
+这里实在是看不下去。先把memheap的代码直接拷贝过来，不要卡在这里了。
+
+2018年12月9日16:45:36
+
+现在文件系统加进去了。
+
+mount没有报错。
+
+现在需要增加目录相关的命令了。
+
+所以finsh需要完善。
+
+我只实现echo和cat。echo用来写入到文件，cat用来从文件读取出来。
+
+另外ls也实现一下吧。
+
+另外list_thread、list_sem、list_mutex也实现以下。
+
+list_thread加进来了，可以正常工作。
+
+目前就2个线程。
+
+```
+msh >list_thread
+thread pri  status         sp     stack size max used left tick  error
+------ ---  ------- ---------- ----------  ------  ---------- ---
+tshell  29  ready        0x00000008 0x00001000    10%   0x00000004 000
+tidle   31  ready        0x00000050 0x00000100    31%   0x00000011 000
+msh >
+```
+
+先看目录操作的命令吧。
+
+这些命令都是在msh_cmd.c。当前我的这个文件还是空的。
+
+cmd_ls。对应的实现在dfs_file.c里。
+
+目前我的这个文件还是空的。
+
+
+
+发现一个之前没有留意到的点。
+
+默认的系统命令，都是不带参数的。例如list_thread这些。
+
+
+
+msh_file.c，是用来执行脚本的。
+
+```
+ FSymTab        0x000000006000a0ac       0x18 build/kernel/components/finsh/cmd.o
+                0x000000006000a0ac                __fsym___cmd_hello
+                0x000000006000a0b4                __fsym___cmd_version
+                0x000000006000a0bc                __fsym___cmd_list_thread
+ FSymTab        0x000000006000a0c4        0x8 build/kernel/components/finsh/msh_cmd.o
+                0x000000006000a0c4                __fsym___cmd_ls
+```
+
+现在报ls找不到的问题。
+
+之前我对命令的解析，没有跳过`__cmd_`这个部分。
+
+现在发现问题是因为我没有用FINSH_FUNCTION_EXPORT来输出。
+
+cmd.c里的，必须用这2个来输出。
+
+```
+FINSH_FUNCTION_EXPORT(version, show RT-Thread version information);
+MSH_CMD_EXPORT(version, show RT-Thread version information);
+```
+
+不对，我感觉现在这一块有点乱了。
+
+理一下。
+
+```
+MSH_CMD_EXPORT(hello_func, say hello);
+```
+
+这一种，输出是这样：
+
+```
+ FSymTab        0x00000000601d7c54        0xc build/packages/hello-1.0.0/hello.o
+                0x00000000601d7c54                __fsym___cmd_hello_func
+```
+
+实际上还是封装了FINSH的。
+
+```
+#define MSH_CMD_EXPORT(command, desc)   \
+    FINSH_FUNCTION_EXPORT_CMD(command, __cmd_##command, desc)
+```
+
+2018年12月9日19:58:07
+
+这个暂停一下，过段时间再继续看。
 
