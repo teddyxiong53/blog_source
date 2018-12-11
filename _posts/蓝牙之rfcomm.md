@@ -38,7 +38,16 @@ struct sockaddr_rc {
 
 
 
-参考资料
+查看自己安装的bluez的版本。
+
+```
+teddy@teddy-ThinkPad-SL410:/etc/bluetooth$ dpkg -s bluez |grep ^Version
+Version: 5.37-0ubuntu5.1
+```
+
+
+
+#参考资料
 
 1、RFCOMM
 
@@ -47,3 +56,15 @@ https://www.cnblogs.com/fbli/p/5930383.html
 2、蓝牙RFCOMM剖析（一）
 
 https://blog.csdn.net/xiaoxiaopengbo/article/details/51446171
+
+3、Bluetooth RFCOMM介绍
+
+https://www.cnblogs.com/hzl6255/p/3811013.html
+
+4、如何查看Ubuntu 蓝牙bluez 软件版本
+
+https://blog.csdn.net/u014778332/article/details/50663887
+
+5、在Linux系统中使用蓝牙功能的基本方法
+
+https://www.cnblogs.com/askDing/p/5111405.html

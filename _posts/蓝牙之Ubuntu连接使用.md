@@ -14,10 +14,16 @@ typora-root-url: ..\
 
 
 
+使用bluez的时候，需要内核提供一系列的socket接口来操作蓝牙。
 
 
-参考资料
+
+#参考资料
 
 1、如何在Linux中设置蓝牙，方便文件传输、连接耳麦
 
 https://www.sysgeek.cn/linux-setup-bluetooth/
+
+2、Ubuntu系统(bluez)蓝牙调试
+
+https://blog.csdn.net/zjli321/article/details/52122447
