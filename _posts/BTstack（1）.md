@@ -170,6 +170,10 @@ WAV Writer: Written 5410 frames to wav file: avdtp_sink.wav
 
 这个例子的内容比较多。
 
+最后hci的发送，调用的是usb_send_packet。这个跟每个平台有关系了。
+
+最后调用libusb_submit_transfer。
+
 
 
 # 参考资料

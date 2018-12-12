@@ -40,8 +40,18 @@ tags:
 
 
 
+蓝牙当前一共有22种profile。
+
+
+
 参考资料
 
 1、树莓派之蓝牙编程
 
 https://blog.csdn.net/qq_25005909/article/details/77512903
+
+2、Linux下Bluez的编程实现
+
+这篇文章非常全面。
+
+https://www.cnblogs.com/chenbin7/archive/2012/10/16/2726510.html

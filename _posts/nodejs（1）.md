@@ -8,9 +8,17 @@ tags:
 
 
 
-nodejs升级到最新版本的方法。
+从man node的信息来看，nodejs是Server side JavaScript Runtime。
 
-https://www.centos.bz/2017/11/ubuntu%E5%AE%89%E8%A3%85nodejs%E5%B9%B6%E5%8D%87%E7%BA%A7%E5%88%B0%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC/
+是基于谷歌的一个c++的JavaScript引擎来写。
+
+我看百度有不少的demo都有node.js的版本。
+
+所以这个也算是一个快速搭建应用的一种方式。感觉挺有用的。所以花点时间学习一下。
+
+还是以菜鸟教程上的资料为主要学习材料。
+
+
 
 
 
