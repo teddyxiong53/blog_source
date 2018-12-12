@@ -109,7 +109,7 @@ def rfcommCon(addr,port):
         print '[-] RFCOMM port :' +str(port)+' closed'
  
 for port in range(1,30):
-    rfcommCon('FE:XX:XX:XX:XX:57',port)
+    rfcommCon('00:1A:7D:DA:71:13',port)
 ```
 
 
@@ -140,13 +140,60 @@ rfcomm客户端
 ```
 import bluetooth
 
-bd_addr = "01:23:34:67:89:ab"
+bd_addr = "00:1A:7D:DA:71:13 "
 port = 1
 sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
 sock.connect((bd_addr, port))
 sock.send("hello,bt")
 sock.close()
 ```
+
+把上面的程序在我的笔记本上运行。
+
+先安装pybluez。出错了。
+
+```
+    bluez/btmodule.h:5:33: fatal error: bluetooth/bluetooth.h: 没有那个文件或目录
+    compilation terminated.
+    error: command 'i686-linux-gnu-gcc' failed with exit status 1
+```
+
+需要安装这个。
+
+```
+sudo apt-get install libbluetooth-dev
+```
+
+现在server.py运行正常。
+
+但是client.py运行有问题。
+
+```
+bluetooth.btcommon.BluetoothError: (113, 'No route to host')
+```
+
+我的蓝牙地址就是本机的蓝牙地址。
+
+sudo运行也是一样的错误。
+
+
+
+https://bluez-users.narkive.com/6Yl3DOn6/rfcomm-gives-no-route-to-host
+
+这里有个回答说，
+
+```
+you can't connect to yourself. This is not possible with Bluetooth.
+
+src = 00:80:37:25:B7:DB	(hci0)
+dst = 00:80:37:25:B7:DB (rfcomm0)
+```
+
+蓝牙不能连接到自己？
+
+
+
+rfcomm的端口号是1到30 。
 
 
 
@@ -183,3 +230,7 @@ https://blog.csdn.net/u012611644/article/details/79411369
 8、Communicating with RFCOMM
 
 https://people.csail.mit.edu/albert/bluez-intro/x232.html
+
+9、
+
+http://pages.iu.edu/~rwisman/c490/html/pythonandbluetooth.htm

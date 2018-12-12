@@ -28,7 +28,23 @@ npm install xxx -g
 
 
 
-参考资料
+我当前刚刚安装。
+
+查看安装的全局模块。没有。
+
+```
+teddy@teddy-ubuntu:~/work/nodejs$ npm list -g
+/usr/local/lib
+└── (empty)
+```
+
+
+
+一个模块，配置文件是package.json文件。
+
+
+
+#参考资料
 
 1、NPM 使用介绍
 

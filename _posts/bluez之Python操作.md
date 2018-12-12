@@ -123,6 +123,113 @@ bluepy.btle.BTLEException: Failed to connect to peripheral 00:1A:7D:DA:71:13, ad
 
 
 
+# 查看我的手机
+
+```
+import bluetooth
+
+target_name = "xhl_bt"
+target_address = None
+
+nearby_devices = bluetooth.discover_devices()
+
+for bdaddr in nearby_devices:
+    if target_name == bluetooth.lookup_name( bdaddr ):
+        target_address = bdaddr
+        break
+
+if target_address is not None:
+    print "found target bluetooth device with address ", target_address
+else:
+    print "could not find target bluetooth device nearby"
+```
+
+
+
+查看我的手机是否在附近。
+
+```
+teddy@teddy-ThinkPad-SL410:~/work/bt$ python test.py 
+could not find target bluetooth device nearby
+teddy@teddy-ThinkPad-SL410:~/work/bt$ python test.py 
+found target bluetooth device with address  B4:0B:44:F4:16:8D
+```
+
+这里用到的函数就是discover_devices。
+
+
+
+#socket编程
+
+pybluez支持两种socket对象：rfcomm和L2CAP 。
+
+我不能实验成功。因为我只有一个蓝牙设备。蓝牙不能自己连自己。
+
+具体见文章，socket的建立和连接方法是跟tcpip的类似的。
+
+# SDP协议操作
+
+做一个sdp的server。
+
+这么写：
+
+```
+import bluetooth
+
+server_sock=bluetooth.BluetoothSocket( bluetooth.RFCOMM )
+
+port = bluetooth.get_available_port( bluetooth.RFCOMM )
+server_sock.bind(("",port))
+server_sock.listen(1)
+print "listening on port %d" % port
+
+uuid = "1e0ca4ea-299d-4335-93eb-27fcfe7fa848"
+bluetooth.advertise_service( server_sock, "FooBar Service", uuid )
+
+client_sock,address = server_sock.accept()
+print "Accepted connection from ",address
+
+data = client_sock.recv(1024)
+print "received [%s]" % data
+
+client_sock.close()
+server_sock.close()
+```
+
+运行有问题。
+
+```
+teddy@teddy-ThinkPad-SL410:~/work/bt$ python test.py 
+Traceback (most recent call last):
+  File "test.py", line 7, in <module>
+    port = bluetooth.get_available_port( bluetooth.RFCOMM )
+AttributeError: 'module' object has no attribute 'get_available_port'
+```
+
+网上找了一下，说是get_available_port过时了。用bind到port0来替代。
+
+还是不行，还有说需要让bluetoothd用兼容模式运行。
+
+修改/etc/systemd/system/下面的蓝牙的文件，在bluetoothd后面加上-C。表示兼容模式运行。
+
+然后重启蓝牙服务。
+
+```
+teddy@teddy-ThinkPad-SL410:~$ sudo systemctl restart bluetooth.service
+Warning: bluetooth.service changed on disk. Run 'systemctl daemon-reload' to reload units.
+teddy@teddy-ThinkPad-SL410:~$ sudo systemctl daemon-reload
+```
+
+还需要添加Profile。
+
+````
+sudo sdptool add SP
+````
+
+但是做了这些，还是不行。
+
+
+
 # 参考资料
 
 1、Linux 端蓝牙调试
@@ -132,3 +239,7 @@ https://blog.csdn.net/qq_18150497/article/details/51989161
 2、from bluepy import btle
 
 https://github.com/IanHarvey/bluepy/issues/197
+
+3、MIT系列文章
+
+https://people.csail.mit.edu/albert/bluez-intro/x264.html
