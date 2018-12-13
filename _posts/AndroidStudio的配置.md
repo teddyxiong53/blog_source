@@ -103,4 +103,9 @@ distributionUrl=http://localhost/gradle-3.3-all.zip
 Error:A problem occurred configuring project ':CordovaLib'. > Failed to find Build Tools revision 26.0.2
 ```
 
-看意思好像是
+
+
+# 更新AS后，点击类不能跳转
+
+重新建立项目就可以了。
+
