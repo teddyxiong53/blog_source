@@ -39,6 +39,14 @@ Service Name: OBEX Object Push
 
 
 
+在我的树莓派上安装obexfs。
+
+```
+sudo apt-get install obexfs
+```
+
+
+
 # 参考资料
 
 1、sdptool 设备服务查找命令使用
