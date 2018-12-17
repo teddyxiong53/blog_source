@@ -226,6 +226,87 @@ const buf4 = Buffer.from([1,2,3]);
 
 ## 从Buffer读取
 
+使用buf.toString函数。
+
+```
+
+```
+
+# Stream
+
+Stream是一个抽象接口。
+
+Node中很多对象实现了这个接口。
+
+Stream有4种类型：
+
+1、Readable。
+
+2、Writable。
+
+3、Duplex。可读写。
+
+4、Transform。操作被写入数据，然后读出结果。
+
+所有Stream对象都是EventEmitter的实例。常用的事件有：
+
+1、data。当有数据可读时触发。
+
+2、end。没有更多数据可读时触发。
+
+3、error。读写过程出错时触发。
+
+4、finish。数据写入完成时触发。
+
+##读取流
+
+```
+var fs = require("fs");
+var data = '';
+
+var readerStream = fs.createReadStream("input.txt");
+
+readerStream.setEncoding("UTF8");
+readerStream.on('data', function(chunk) {
+	data += chunk;
+});
+
+readerStream.on('end', function() {
+	console.log(data);
+});
+
+readerStream.on('error', function(err) {
+	console.log(err,stack);
+});
+
+console.log("end of code");
+
+```
+
+## 写入流
+
+## 管道流
+
+## 链式流
+
+
+
+# 模块系统
+
+文件和模块是一一对应的。
+
+也就是说，一个node.js文件就是一个模块。
+
+对应的2个对象是：
+
+1、exports。模块公开的接口。
+
+2、require。从外部获取一个模块的接口。
+
+
+
+
+
 
 
 
@@ -236,7 +317,9 @@ const buf4 = Buffer.from([1,2,3]);
 
 1、node.js教程
 
-http://www.runoob.com/nodej
+http://www.runoob.com/nodejs
+
+
 
 
 
