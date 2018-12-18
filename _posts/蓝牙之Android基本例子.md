@@ -22,11 +22,18 @@ Configuration 'compile' in project ':Application' is deprecated. Use 'implementa
 
 
 
+这里有个ble的例子。
+
+https://github.com/kaka10xiaobang/BlueToothBLE
+
+
+
 # 参考资料
 
 1、Android 蓝牙开发之搜索、配对、连接、通信大全
 
 https://blog.csdn.net/qq_25827845/article/details/52997523
 
-2、
+2、蓝牙BLE（BlueTooth BLE）入门及爬坑指南
 
+https://www.jianshu.com/p/d991f0fdec63

@@ -16,6 +16,14 @@ GATT是在蓝牙连接的基础上，收发很短小的数据段的规范。这�
 
 要讨论GATT，需要先看看GAP的概念。
 
+GAP是所有蓝牙设备都必须有的。
+
+GATT是ble设备特有的。
+
+GATT有服务端和客户端这2种角色。
+
+
+
 #GAP
 
 GAP是Generic Access Profile的缩写。
@@ -66,9 +74,35 @@ GATT是独占的。ble设备连接后，就停止广播了。其他设备就看�
 
 
 
+#HRP
+
+以HRP这个为例，心率profile。
+
+文档20页左右。描述还比较简单。
+
+## 配置
+
+定义了2个角色：sensor和collector。
+
+sensor相当于server，collector相当于client。
+
+这个只能在ble传输层上走。
 
 
 
+
+
+GATT层是真正传输数据所在的层。
+
+一个GATT 服务器通过一个属性表的表格来组织数据。
+
+一个属性包括：
+
+1、句柄。属性在GATT表里的索引。
+
+2、uuid（类型）
+
+3、值。
 
 
 
@@ -77,3 +111,11 @@ GATT是独占的。ble设备连接后，就停止广播了。其他设备就看�
 1、GATT Profile 简介
 
 https://www.race604.com/gatt-profile-intro/
+
+2、gatt官网profile列表
+
+https://www.bluetooth.com/specifications/gatt
+
+3、通用属性配置文件（GATT）及其服务，特性与属性介绍
+
+http://blog.chinaunix.net/uid-21411227-id-5750680.html
