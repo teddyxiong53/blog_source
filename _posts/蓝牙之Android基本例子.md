@@ -37,3 +37,11 @@ https://blog.csdn.net/qq_25827845/article/details/52997523
 2、蓝牙BLE（BlueTooth BLE）入门及爬坑指南
 
 https://www.jianshu.com/p/d991f0fdec63
+
+3、Android经典蓝牙开发简介
+
+https://www.jianshu.com/p/fc46c154eb77
+
+4、官方手册
+
+https://developer.android.com/reference/android/bluetooth/package-summary

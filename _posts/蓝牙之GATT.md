@@ -106,6 +106,8 @@ GATT层是真正传输数据所在的层。
 
 
 
+
+
 # 参考资料
 
 1、GATT Profile 简介
@@ -119,3 +121,7 @@ https://www.bluetooth.com/specifications/gatt
 3、通用属性配置文件（GATT）及其服务，特性与属性介绍
 
 http://blog.chinaunix.net/uid-21411227-id-5750680.html
+
+4、BLE GATT 介绍
+
+https://www.cnblogs.com/smart-mutouren/p/5937990.html

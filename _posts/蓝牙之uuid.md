@@ -91,6 +91,24 @@ service和characteristic都需要用uuid来进行标识。
 
 
 
+在开发中我们需要获取设备的UUID字段，可以询问硬件工程师，也可以通过蓝牙测试工具查看service UUID 和
+
+characteristic UUID。
+
+
+
+# 定义uuid
+
+可以自定义uuid。有什么约束吗？
+
+按格式来就行了。
+
+service的uuid。可以理解为tcp协议栈里的端口号。
+
+例如80默认是提供http服务的，但是你只要客户端和服务端约定好，用其他的端口号也完全没有问题。
+
+
+
 # 常用的uuid
 
 我们只看16bit的。
@@ -112,6 +130,10 @@ var uuids = {
 ```
 
 
+
+# uuid换算
+
+128位的和16位、32位的可以有公式进行换算。
 
 
 
@@ -140,3 +162,12 @@ https://blog.csdn.net/qq_15003505/article/details/75315049
 6、
 
 https://blog.csdn.net/andry05/article/details/81118383
+
+7、蓝牙UUID及其128位换算
+
+https://blog.csdn.net/zhangjs0322/article/details/39048509
+
+8、【BLE-CC2640】CC2640之使用自定义128bit的UUID
+
+http://www.voidcn.com/article/p-vuyeyimy-eo.html
+
