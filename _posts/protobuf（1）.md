@@ -184,6 +184,10 @@ print p.name
 
 
 
+# nodejs版本使用
+
+
+
 参考资料
 
 1、更小、更快、更简单Google ProtoBuf 跨语言通信协议
@@ -197,3 +201,7 @@ https://www.jianshu.com/p/7de98349cadd
 3、protobuf-c的使用（一）构建
 
 https://blog.csdn.net/kid_2412/article/details/52275582
+
+4、在NodeJS中玩转Protocol Buffer
+
+https://blog.csdn.net/zhulin2609/article/details/50977107

@@ -1,5 +1,5 @@
 ---
-title: dma（一）
+title: dma（1）
 date: 2018-02-28 10:56:38
 tags:
 	- dma

@@ -22,6 +22,14 @@ GATT是ble设备特有的。
 
 GATT有服务端和客户端这2种角色。
 
+ATT协议为所有基于ble link的应用提供了一个底层的框架。
+
+ATT协议对应GATT profile。
+
+GATT profile定义地更加具体。
+
+1、一组通用的att类型。例如primary service（基础服务）、secondary service（二级服务）。
+
 
 
 #GAP
@@ -125,3 +133,9 @@ http://blog.chinaunix.net/uid-21411227-id-5750680.html
 4、BLE GATT 介绍
 
 https://www.cnblogs.com/smart-mutouren/p/5937990.html
+
+5、Bluetooth GATT Profile Spec 解读
+
+这个非常好。
+
+https://blog.csdn.net/utadalight/article/details/80057032

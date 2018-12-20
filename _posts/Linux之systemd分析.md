@@ -14,6 +14,14 @@ typora-root-url: ..\
 
 但是现在经常碰到跟systemd相关的东西，所以有必须进行一个系统深入的了解。
 
+
+
+service命令是System V的。
+
+systemctl是systemd的。
+
+
+
 # 简介
 
 systemd是新一代的linux下的init程序。

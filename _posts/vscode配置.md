@@ -39,6 +39,36 @@ F1：可以搜索各种东西。很好。
 
 在user settings里，勾选useSystemClipboard。
 
+# 打开空白显示
+
+我习惯看到空格和tab键。
+
+在user setting里搜索whitespace。就可以看到，勾选就好了。
+
+
+
+# 配置文件的位置
+
+C:\Users\Administrator\AppData\Roaming\Code\User
+
+我的当前是这样：
+
+```
+{
+    "workbench.colorTheme": "Default Light+",
+    "editor.minimap.enabled": false,
+    "vim.insertModeKeyBindings": [
+     {
+         "before": ["j", "j"],
+         "after": ["<esc>"]
+     }
+    ],
+    "vim.useSystemClipboard": true,
+    "files.trimTrailingWhitespace": true,
+    "editor.renderWhitespace": "all"
+}
+```
+
 
 
 # 参考资料
