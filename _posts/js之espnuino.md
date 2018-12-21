@@ -19,3 +19,7 @@ espnuino是一个为单片机设计的JavaScript解释器。类似于MicroPython
 1、Espruino 
 
 https://baike.baidu.com/item/Espruino/13134511?fr=aladdin
+
+2、Espruino on ESP8266 WiFi
+
+https://www.espruino.com/EspruinoESP8266

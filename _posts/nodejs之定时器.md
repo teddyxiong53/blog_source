@@ -8,4 +8,10 @@ tags:
 
 
 
+定时器不必通过require来引入，是模拟了浏览器里的JavaScript函数，是全局的。
+
+
+
+参考资料
+
 https://nodejs.org/zh-cn/docs/guides/timers-in-node/
