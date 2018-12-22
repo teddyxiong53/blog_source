@@ -111,6 +111,24 @@ const win = new BrowserWindow();
 
 
 
+# 分发应用
+
+1、先到这里下载打包的electron执行文件。
+
+2、解压后，在resources目录下，新建app目录。把你写的html文件、js文件、json文件都放在app目录下。
+
+然后双击electron.exe运行就好了。
+
+上面说的是手动打包的方式。
+
+我感觉有点不正常。
+
+菜单栏没有出来。
+
+可以用工具打包。
+
+
+
 
 
 

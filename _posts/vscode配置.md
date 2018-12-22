@@ -49,7 +49,7 @@ F1：可以搜索各种东西。很好。
 
 # 配置文件的位置
 
-C:\Users\Administrator\AppData\Roaming\Code\User
+C:\Users\Administrator\AppData\Roaming\Code\User\settings.json
 
 我的当前是这样：
 
@@ -69,6 +69,32 @@ C:\Users\Administrator\AppData\Roaming\Code\User
 }
 ```
 
+# nodejs补全
+
+搜索插件node.js，安装第一个就好了。
+
+
+
+# 安装PlatformIO插件
+
+这样开发esp8266就很方便了。
+
+
+
+#配置调试html
+
+搜索安装debugger for chrome
+
+
+
+# workspace概念
+
+在当前目录，右键，选择vscode打开目录。
+
+如果进行了某些配置，会在当前目录下生成.vscode目录。里面放了一些配置。
+
+典型的是有tasks.json、launch.json这2个文件。
+
 
 
 # 参考资料
@@ -80,3 +106,7 @@ https://stackoverflow.com/questions/37777417/how-to-use-vim-key-bindings-with-vi
 2、How to use clipboard for Vim in VSCode
 
 https://codeyarns.com/2018/04/26/how-to-use-clipboard-for-vim-in-vscode/
+
+3、vscode调试html页面，及配置说明
+
+https://www.cnblogs.com/codeww/p/7667543.html
