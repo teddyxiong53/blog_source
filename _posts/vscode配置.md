@@ -97,6 +97,18 @@ C:\Users\Administrator\AppData\Roaming\Code\User\settings.json
 
 
 
+# C语言自动补全
+
+我一般都是在windows下工作。
+
+但是我的开发是需要linux的。
+
+vscode，在linux下，是可以很方便地进行stdio.h这些头文件及函数名进行补全的。
+
+我觉得把linux的头文件拷贝到windows，然后把目录加入到vscode的索引目录下，应该是可以做到的。
+
+
+
 # 参考资料
 
 1、
