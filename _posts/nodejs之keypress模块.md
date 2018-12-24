@@ -55,6 +55,22 @@ got key:  { name: 'c',
 
 
 
+keypress这个模块本身也值得学习。很简单。
+
+就一个文件。
+
+```
+D:\work\test\node_modules\keypress
+λ  tree
+.
+├── README.md
+├── index.js
+├── package.json
+└── test.js
+```
+
+
+
 # 参考资料
 
 https://www.npmjs.com/package/keypress

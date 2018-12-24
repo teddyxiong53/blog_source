@@ -1,5 +1,5 @@
 ---
-title: nodejs之EventLoop
+title: nodejs之事件循环
 date: 2018-12-21 09:30:17
 tags:
 	- nodejs
@@ -29,4 +29,6 @@ nodejs启动时，它就初始化了EventLoop，处理输入的脚本文件。
 
 参考资料
 
-https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/
+1、Node.js 事件循环
+
+http://www.runoob.com/nodejs/nodejs-event-loop.html
