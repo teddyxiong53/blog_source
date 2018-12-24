@@ -273,3 +273,10 @@ catch举例：
 
 
 
+# 参考资料
+
+1、菜鸟教程
+
+2、w3cschool
+
+https://www.w3cschool.cn/javascript/

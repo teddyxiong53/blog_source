@@ -188,17 +188,138 @@ console.log(cube.sayVolume())
 
 
 
+# 基本语法
+
+ts和es5和es6的关系是：
+
+```
+ts > es6 > es5
+```
+
+## 基本数据类型
+
+```
+boolean
+number
+string
+array
+enum
+any
+void
+```
+
+## 接口
+
+为什么需要接口呢？
+
+```
+function calculate({x=0, y=0} : pointer2d) {
+
+}
+
+function calculate2({x=0, y=0, z=0}: pointer3d ) {
+
+}
+
+interface pointer2d {
+    x: number
+    y: number
+}
+interface pointer3d extends pointer2d {
+    z: number
+}
+```
+
+接口的其他玩法。
+
+1、可选属性。
+
+```
+interface SquareConfig {
+    color?: string //用？来表示可选属性
+    width?: number
+}
+
+function createSquare(config: SquareConfig): {color: string, area: number} {
+    var newSquare = {color: 'red', area: 100}
+    if(config.color) {
+        newSquare.color = config.color
+    }
+    if(config.width) {
+        newSquare.area = config.width*config.width
+    }
+    return newSquare
+}
+
+var mySquare = createSquare({color:'green'})
+var mySquare2 = createSquare({width:20})
+
+console.log(mySquare)
+console.log(mySquare2)
+```
+
+2、函数类型的接口。
+
+```
+interface SearchFunc {
+    (source: string, subString: string): boolean
+}
+
+var mySearch: SearchFunc
+
+mySearch = function(source: string, subString: string):boolean {
+    var result = source.search(subString)
+    if(result == -1) {
+        return false
+    } else {
+        return true
+    }
+}
+var result: boolean = mySearch("test", "te")
+console.log(result)
+```
+
+3、数组类型。
+
+```
+interface StringArray {
+    [index: number]: string
+}
+
+var myArray : StringArray
+myArray = ['allen', 'bob']
+
+console.log(myArray['0'])
+console.log(myArray['1'])
+```
+
+4、类类型。
+
+```
+
+```
+
+5、继承接口。
 
 
-参考资料
+
+
+
+#参考资料
 
 1、TypeScript 入门教程
 
 http://www.runoob.com/w3cnote/getting-started-with-typescript.html
 
+2、typescript语法
 
+https://www.cnblogs.com/lyy-2016/p/8532309.html
 
+3、TypeScript的基本语法（一）
 
+https://blog.csdn.net/chaoyangsun/article/details/80295604
 
+4、TypeScript 教程
 
+https://www.w3cschool.cn/typescript/
 
