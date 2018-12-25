@@ -39,8 +39,24 @@ vscode里可以搜索semantic ui，可以找到相关的插件，提高开发效
 
 
 
-参考资料
+# 安装
+
+```
+npm install semantic-ui --save
+```
+
+安装不成功。
+
+
+
+
+
+#参考资料
 
 1、semantic UI 基本思路和框架
 
 https://www.cnblogs.com/dangguangming/p/7695789.html
+
+2、官网教程
+
+https://semantic-ui.com/introduction/getting-started.html
