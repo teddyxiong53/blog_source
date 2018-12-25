@@ -56,6 +56,46 @@ https://code.jquery.com/jquery-3.3.1.js
 
 我们把这个文件保存到本地就好了。
 
+代码有1万行。
+
+
+
+# 基本测试代码
+
+下面的测试都在这个基础上改。
+
+```
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test</title>
+    <script src="./jquery-3.3.1.js">
+
+    </script>
+    <script>
+        $(document).ready(function() {
+            //add your code here
+            alert("hello jquery")
+        })
+    </script>
+
+</head>
+<body>
+
+</body>
+</html>
+```
+
+目录结构：
+
+```
+D:\work\test\jquery
+λ  tree
+.
+├── jquery-3.3.1.js
+└── test.html
+```
+
 
 
 # jQuery语法
