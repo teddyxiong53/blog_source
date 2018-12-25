@@ -216,6 +216,31 @@ function sleep(ms) {
 
 
 
+# promise的用法
+
+## Promise.all
+
+```
+var promise1 = Promise.resolve(3)
+var promise2 = 42
+var promise3 = new Promise(function(resolve, reject) {
+	setTimeout(resolve, 100, 'foo')
+})
+
+Promise.all([promise1, promise2, promise3]).then(function(values) {
+	console.log(values)
+})
+
+```
+
+得到的结果是：
+
+```
+Array [3, 42, "foo"]
+```
+
+
+
 参考资料
 
 1、node.js异步控制流程 回调，事件，promise和async/await

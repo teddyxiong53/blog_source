@@ -533,6 +533,58 @@ name、passwd、avatar、gender、bio。
 
 
 
+
+
+# 运行测试
+
+我其实没有耐心写了。
+
+把代码下载下来，放在Ubuntu下。
+
+1、安装mongodb。
+
+2、npm install
+
+3、node index.js
+
+运行正常。
+
+可以支持用markdown写文章。
+
+
+
+````
+admin   (empty)
+local   0.078GB
+myblog  0.078GB
+> use myblog
+switched to db myblog
+> show collections
+comments
+posts
+sessions
+system.indexes
+users
+> db.comments.find()
+{ "_id" : ObjectId("5c218a3525cfd259e504ca5a"), "author" : ObjectId("5c218a1325cfd259e504ca58"), "postId" : ObjectId("5c218a2725cfd259e504ca59"), "content" : "111111111" }
+> db.sessions.find()
+{ "_id" : "xHDJJsZcJbhABTpgHubY6V3yfNJQ5hET", "session" : "{\"cookie\":{\"originalMaxAge\":2591999999,\"expires\":\"2019-01-24T01:37:11.930Z\",\"httpOnly\":true,\"path\":\"/\"},\"flash\":{}}", "expires" : ISODate("2019-01-24T01:37:11.930Z") }
+{ "_id" : "mKXj8T9z9pIIQhd-1DKphEnGhirCgcwB", "session" : "{\"cookie\":{\"originalMaxAge\":2592000000,\"expires\":\"2019-01-24T01:39:54.849Z\",\"httpOnly\":true,\"path\":\"/\"},\"flash\":{},\"user\":{\"name\":\"aaa\",\"gender\":\"m\",\"bio\":\"aaa\",\"avatar\":\"upload_1762e241d233c7c19d5abb62d9d12c80.png\",\"_id\":\"5c218a1325cfd259e504ca58\"}}", "expires" : ISODate("2019-01-24T01:39:54.849Z") }
+> db.system.indexes.find()
+{ "v" : 1, "key" : { "_id" : 1 }, "name" : "_id_", "ns" : "myblog.sessions" }
+{ "v" : 1, "key" : { "expires" : 1 }, "name" : "expires_1", "ns" : "myblog.sessions", "expireAfterSeconds" : 0 }
+{ "v" : 1, "key" : { "_id" : 1 }, "name" : "_id_", "ns" : "myblog.users" }
+{ "v" : 1, "unique" : true, "key" : { "name" : 1 }, "name" : "name_1", "ns" : "myblog.users" }
+{ "v" : 1, "key" : { "_id" : 1 }, "name" : "_id_", "ns" : "myblog.comments" }
+{ "v" : 1, "key" : { "postId" : 1, "_id" : 1 }, "name" : "postId_1__id_1", "ns" : "myblog.comments" }
+{ "v" : 1, "key" : { "_id" : 1 }, "name" : "_id_", "ns" : "myblog.posts" }
+{ "v" : 1, "key" : { "author" : 1, "_id" : -1 }, "name" : "author_1__id_-1", "ns" : "myblog.posts" }
+> db.users.find()
+{ "_id" : ObjectId("5c218a1325cfd259e504ca58"), "name" : "aaa", "password" : "061985f321210a2d6ef6d39dd66e73b8da2f29c5", "gender" : "m", "bio" : "aaa", "avatar" : "upload_1762e241d233c7c19d5abb62d9d12c80.png" }
+````
+
+
+
 # 参考资料
 
 1、N-blog

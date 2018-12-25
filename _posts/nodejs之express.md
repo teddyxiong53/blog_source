@@ -20,6 +20,22 @@ express 是一个web应用框架。用来快速搭建一个网站的。
 
 
 
+# app.get和app.use区别
+
+看N-blog的代码，看到有的时候用app.get，有的用app.use。
+
+有什么规律？
+
+app.get相当于app.use的get方法版本。
+
+一般在很简单的时候用。
+
+
+
+参考资料：
+
+https://blog.csdn.net/wthfeng/article/details/53366169
+
 # 参考资料
 
 1、Node.js Express 框架

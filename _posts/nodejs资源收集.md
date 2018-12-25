@@ -22,6 +22,10 @@ http://javascript.ruanyifeng.com/nodejs/packagejson.html
 
 
 
+#Mozilla的语法
+
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects
+
 # N-blog
 
 node.js写的一个博客程序。
