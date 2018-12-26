@@ -46,3 +46,21 @@ http://nqdeng.github.io/7-days-nodejs/
 
 https://github.com/bailicangdu/node-elm
 
+
+
+#如何正确的学习Node.js
+
+cnode网站可以多看看。
+
+https://cnodejs.org/topic/5ab3166be7b166bb7b9eccf7
+
+
+
+#cnode网站源码
+
+https://github.com/cnodejs/nodeclub
+
+
+
+#《nodejs in action》
+

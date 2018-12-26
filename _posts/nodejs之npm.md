@@ -74,6 +74,10 @@ npm config delete proxy
 
 
 
+自带了帮助文档，在这里。都是markdown写的。
+
+D:\nodejs\node_modules\npm\doc
+
 #参考资料
 
 1、NPM 使用介绍

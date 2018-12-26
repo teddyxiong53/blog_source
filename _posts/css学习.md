@@ -67,9 +67,32 @@ css可以写在单独的文件里，也可以在html文件里写。
 
 
 
+id选择器和class选择器
 
+如果你要给html元素使用css，就需要指定id和class这2个属性。
+
+id是每个元素唯一，class则是可以多个一样，是为一组。
+
+id用井号，class用的是点号。
+
+
+
+如何插入css呢？
+
+有三种方式：
+
+1、内联。
+
+2、内部。
+
+3、外部。
+
+优先级1高于2高于3 。
 
 
 
 # 参考资料
 
+1、
+
+http://www.runoob.com/css/css-intro.html

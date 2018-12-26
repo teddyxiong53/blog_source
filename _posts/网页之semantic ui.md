@@ -49,6 +49,10 @@ npm install semantic-ui --save
 
 
 
+https://semantic-ui.com/examples/theming.html
+
+这里有示例，可以学习一下。
+
 
 
 #参考资料
