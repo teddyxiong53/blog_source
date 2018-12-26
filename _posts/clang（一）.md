@@ -54,6 +54,18 @@ llvm的作者现在就在Apple工作。该作者也是Swift语言的主导设计
 
 
 
+# 安装使用
+
+本来不打算用的。
+
+但是学习uwebsocket这个的时候，发现这个居然是clang编译的。
+
+那就安装吧。
+
+```
+ sudo apt-get install clang
+```
+
 
 
 # 参考资料

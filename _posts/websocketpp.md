@@ -42,6 +42,14 @@ http://docs.websocketpp.org/
 
 
 
+# uwebsocket
+
+这个用clang编译，估计是苹果下做的。
+
+而且c++标准特别新。要c++17的。
+
+
+
 参考资料
 
 1、百度百科
@@ -51,3 +59,7 @@ https://baike.baidu.com/item/WebSocket/1953845?fr=aladdin
 2、WebSocket 教程
 
 http://www.ruanyifeng.com/blog/2017/05/websocket.html
+
+3、一个轻量级的websocket实现
+
+https://github.com/uNetworking/uWebSockets
