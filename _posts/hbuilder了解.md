@@ -42,3 +42,26 @@ DCloud面向HTML5行业分别推出了开发工具HBuilder、手机强化引擎5
 
 
 
+
+
+看默认生成的helloH5+ 的代码。
+
+plus是什么？
+
+https://ask.dcloud.net.cn/article/165
+
+plus是5+Runtime的内部对象。
+
+5+Runtime是dcloud开发的一个运行时。
+
+http://www.dcloud.io/runtime.html
+
+
+
+基本看懂了。写简单应用应该可以。
+
+
+
+这个文档值得看。
+
+https://ask.dcloud.net.cn/docs/
