@@ -18,3 +18,8 @@ http://www.cnblogs.com/lhb25/archive/2013/01/06/jquery-image-carousel-effect.htm
 
 https://github.com/chokcoco/jQuery-
 
+
+
+#《锋利的jQuery》
+
+还是要看书才能深入理解。
