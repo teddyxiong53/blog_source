@@ -89,6 +89,62 @@ module.exports = function() {
 
 
 
+#我的思考
+
+可以统一用第二种方式。
+
+第二种方式，确实也有两种情况。
+
+1、输出对象。
+
+2、输出类。
+
+输出对象的情况。
+
+config.js
+
+```
+module.exports = {
+    name : "xhl"
+};
+```
+
+test.js
+
+```
+cfg = require("config.js");
+console.log(cfg.name);
+```
+
+输出类的情况。
+
+myclass.js
+
+```
+class MyClass {
+    
+}
+module.exports = MyClass;
+```
+
+test.js
+
+```
+MyClass = require("myclass");
+myClass = new MyClass();
+```
+
+还可以在一个文件导出多个符号。
+
+```
+module.exports.func1 = func1;
+module.exports.func2 = func2;
+```
+
+
+
+
+
 参考资料
 
 1、Node.js模块系统

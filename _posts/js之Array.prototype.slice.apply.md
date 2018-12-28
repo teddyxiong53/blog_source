@@ -86,6 +86,38 @@ D:\work\test
 
 
 
+
+
+# 简单例子
+
+```
+class MyClass {
+    constructor() {
+        this._buffers = Array.prototype.slice.call(arguments).filter(function() {
+            return true;
+        });
+    }
+}
+
+
+var c1 = new MyClass(1,2);
+console.log(typeof c1._buffers);
+console.log(c1._buffers);
+
+var c2 = new MyClass("abc");
+console.log(c2._buffers);
+```
+
+输出：
+
+```
+object
+[ 1, 2 ]
+[ 'abc' ]
+```
+
+
+
 # 参考资料
 
 1、理解 JavaScript 中的 Array.prototype.slice.apply(arguments)

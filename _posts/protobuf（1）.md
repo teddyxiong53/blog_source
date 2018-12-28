@@ -186,6 +186,102 @@ print p.name
 
 # nodejs版本使用
 
+需要nodejs10.14版本才能编译通过。
+
+高了低了都有问题。
+
+person.proto文件
+
+```
+package tutorial;
+
+message Person
+{
+	required string name = 1;
+	required int32 age = 2;
+	optional string email = 3;
+}
+```
+
+xhl_test.js
+
+```
+const protobuf = require("protobufjs");
+protobuf.load("./person.proto").then((root)=> {
+    person = root.lookupType("Person");
+    console.log(person);
+});
+```
+
+打印的一部分内容是：
+
+```
+Type {
+  options: undefined,
+  name: 'Person',
+  parent:
+   Namespace {
+     options: undefined,
+     name: 'tutorial',
+     parent:
+      Root {
+        options: undefined,
+        name: '',
+        parent: null,
+        resolved: false,
+        comment: null,
+        filename: null,
+        nested: [Object],
+        _nestedArray: [Array],
+        deferred: [],
+        files: [Array] },
+     resolved: false,
+     comment: null,
+     filename: null,
+     nested: { Person: [Circular] },
+     _nestedArray: null,
+     Person: [Circular] },
+  resolved: false,
+  comment: null,
+  filename: 'person.proto',
+  nested: undefined,
+  _nestedArray: [],
+  fields:
+   { name:
+      Field {
+        options: undefined,
+        name: 'name',
+        parent: [Circular],
+        resolved: false,
+        comment: null,
+        filename: 'person.proto',
+        rule: 'required',
+        type: 'string',
+        id: 1,
+        extend: undefined,
+        required: true,
+        optional: false,
+        repeated: false,
+        map: false,
+        message: [Circular],
+        partOf: null,
+        typeDefault: null,
+        defaultValue: null,
+        long: false,
+        bytes: false,
+        resolvedType: null,
+        extensionField: null,
+        declaringField: null,
+        _packed: null },
+     age:
+```
+
+可以看出，里面是需要用person.fields['name']这样才能访问我需要的内容。
+
+但是还是不对。
+
+
+
 
 
 参考资料

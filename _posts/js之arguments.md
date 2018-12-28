@@ -40,3 +40,25 @@ console.log(add(10));
 
 
 
+再看例子。
+
+```
+class MyClass {
+    constructor() {
+        console.log(arguments);
+    }
+}
+
+var c1 = new MyClass();
+var c2 = new MyClass("c2");
+var c3 = new MyClass(1,2);
+```
+
+运行：
+
+```
+[Arguments] {}
+[Arguments] { '0': 'c2' }
+[Arguments] { '0': 1, '1': 2 }
+```
+
