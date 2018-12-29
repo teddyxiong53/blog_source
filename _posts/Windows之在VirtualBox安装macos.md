@@ -12,3 +12,33 @@ tags:
 
 现在看看用VirtualBox安装怎么样。
 
+参考这个来做。也是别人安装好的vmdk文件。
+
+https://www.youtube.com/watch?v=6PEp7p4cnzg&t=77s
+
+
+
+镜像下载地址在这：http://www.briteccomputers.co.uk/forum/showthread.php?tid=4516
+
+创建虚拟机，名字就叫MacOS。磁盘选择解压的vmdk文件。
+
+先执行这些命令：
+
+```
+cd "C:\Program Files\Oracle\VirtualBox\"
+VBoxManage.exe modifyvm "MacOS" --cpuidset 00000001 000106e5 00100800 0098e3fd bfebfbff
+VBoxManage setextradata "MacOS" "VBoxInternal/Devices/efi/0/Config/DmiSystemProduct" "iMac11,3"
+VBoxManage setextradata "MacOS" "VBoxInternal/Devices/efi/0/Config/DmiSystemVersion" "1.0"
+VBoxManage setextradata "MacOS" "VBoxInternal/Devices/efi/0/Config/DmiBoardProduct" "Iloveapple"
+VBoxManage setextradata "MacOS" "VBoxInternal/Devices/smc/0/Config/DeviceKey" "ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc"
+VBoxManage setextradata "MacOS" "VBoxInternal/Devices/smc/0/Config/GetKeyFromRealSMC" 1 
+```
+
+然后启动虚拟机。
+
+进入到苹果的设置界面。
+
+设置好账号。
+
+然后安装辅助工具。
+
