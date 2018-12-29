@@ -46,6 +46,22 @@ console.log(Point.para);
 
 
 
+# 关于class的static函数
+
+```
+class MyClass {
+    static func1() {
+        console.log("func1");
+    }
+    static func2() {
+        MyClass.func1();//这里必须加上MyClass。否则报错。
+    }
+}
+MyClass.func2();
+```
+
+
+
 参考资料
 
 1、NodeJs中类定义及类使用

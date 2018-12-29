@@ -22,7 +22,49 @@ message AwesomeMessage {
 }
 ```
 
+```
+const protobuf = require("protobufjs");
+protobuf.load("awesome.proto", function(err, root) {
+    if(err) {
+        throw err;
+    }
+    var AwesomeMessage = root.lookupType("awesomepackage.AwesomeMessage");
+    var payload = {awesomeField: "AwesomeString"};
+    var errMsg = AwesomeMessage.verify(payload);
+    if(errMsg) {
+        throw Error(errMsg);
+    }
+    var message = AwesomeMessage.create(payload);
+    var buffer = AwesomeMessage.encode(message).finish();
+    //do something with buffer
+    //...
+    console.log(buffer);
+    var message = AwesomeMessage.decode(buffer);
 
+    var object = AwesomeMessage.toObject(message, {
+        longs: String,
+        enums: String,
+        bytes: String,
+    });
+    console.log(object);
+});
+```
+
+运行效果：
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/protobuf$ node test.js 
+<Buffer 0a 0d 41 77 65 73 6f 6d 65 53 74 72 69 6e 67>
+{ awesomeField: 'AwesomeString' }
+```
+
+
+
+参考资料
+
+1、
+
+https://www.cnblogs.com/wuyuchao/p/9229877.html
 
 
 

@@ -32,6 +32,18 @@ https://www.jb51.net/books/594495.html
 
 
 
-
+#awesome
 
 https://github.com/brookshi/awesome-typescript-projects
+
+
+
+# 阮一峰
+
+https://github.com/xcatliu/typescript-tutorial
+
+
+
+# ts实现的设计模式
+
+https://github.com/torokmark/design_patterns_in_typescript

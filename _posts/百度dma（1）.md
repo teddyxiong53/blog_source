@@ -120,6 +120,165 @@ sudo chmod 777 /var/run/sdp
 
 
 
+现在我从其他地方找到一条可行的获取device info的命令。
+
+```
+10,00,05,08,14,12,01,32,
+```
+
+把这个用16进制，从蓝牙spp串口工具发送到板端。
+
+板端有反应。
+
+```
+pi@raspberrypi:~/work/node/dma/dma_protocol-master/demo_perpheral_js$ sudo node index-rfcomm.js 
+listen started { uuid: '51DBA109-5BA9-4981-96B7-6AFE132093DE', channel: 2 }
+Client: B4:0B:44:F4:16:8D connected!
+write version header: <Buffer@0x2ceb578 fe 04 01 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00>
+write length: 20  all: 60
+Received data from client:  <Buffer@0x2d0fab0 10 00 05 08 14 12 01 32>
+buffer size: 8
+{ headerLength: 3,
+  version: 1,
+  streamId: 0,
+  reserveBits: 0,
+  payloadLength: 5 }
+onWriteRequest dmaMessage: { command: 'GET_DEVICE_INFORMATION',
+  requestId: '2',
+  sign2: '',
+  rand2: '' }
+delete all length:  8
+send dma message: { command: 'GET_DEVICE_INFORMATION_ACK',
+  requestId: '2',
+  sign2: '',
+  rand2: '',
+  response: 
+   { errorCode: 'SUCCESS',
+     deviceInformation: 
+      { supportedTransports: [Array],
+        supportedAudioFormats: [Array],
+        serialNumber: 'ble_test_wp20_sn',
+        name: 'xhl_rpi',
+        deviceType: 'HEADPHONE',
+        manufacturer: 'baidu',
+        model: 'xhl_rpi',
+        firmwareVersion: '1.0',
+        softwareVersion: '1.0',
+        initiatorType: 'TAP',
+        productId: '1udLzmTG2KGmKGmPkwZZe1gm',
+        classicBluetoothMac: '50:1A:A5:CB:D9:F0',
+        disableHeartBeat: true,
+        enableAdvancedSecurity: false,
+        supportFm: false,
+        otaVersion: '',
+        noA2dp: false,
+        noAtCommand: false,
+        supportBlePair: false },
+     payload: 'deviceInformation' },
+  payload: 'response' }
+Received data from client:  <Buffer@0x2d0fab0 10 00 05 08 14 12 01 32>
+buffer size: 8
+{ headerLength: 3,
+  version: 1,
+  streamId: 0,
+  reserveBits: 0,
+  payloadLength: 5 }
+onWriteRequest dmaMessage: { command: 'GET_DEVICE_INFORMATION',
+  requestId: '2',
+  sign2: '',
+  rand2: '' }
+delete all length:  8
+send dma message: { command: 'GET_DEVICE_INFORMATION_ACK',
+  requestId: '2',
+  sign2: '',
+  rand2: '',
+  response: 
+   { errorCode: 'SUCCESS',
+     deviceInformation: 
+      { supportedTransports: [Array],
+        supportedAudioFormats: [Array],
+        serialNumber: 'ble_test_wp20_sn',
+        name: 'xhl_rpi',
+        deviceType: 'HEADPHONE',
+        manufacturer: 'baidu',
+        model: 'xhl_rpi',
+        firmwareVersion: '1.0',
+        softwareVersion: '1.0',
+        initiatorType: 'TAP',
+        productId: '1udLzmTG2KGmKGmPkwZZe1gm',
+        classicBluetoothMac: '50:1A:A5:CB:D9:F0',
+        disableHeartBeat: true,
+        enableAdvancedSecurity: false,
+        supportFm: false,
+        otaVersion: '',
+        noA2dp: false,
+        noAtCommand: false,
+        supportBlePair: false },
+     payload: 'deviceInformation' },
+  payload: 'response' }
+Received data from client:  <Buffer@0x2d0fab0 10 00 05 08 14 12 01 32>
+buffer size: 8
+{ headerLength: 3,
+  version: 1,
+  streamId: 0,
+  reserveBits: 0,
+  payloadLength: 5 }
+onWriteRequest dmaMessage: { command: 'GET_DEVICE_INFORMATION',
+  requestId: '2',
+  sign2: '',
+  rand2: '' }
+delete all length:  8
+send dma message: { command: 'GET_DEVICE_INFORMATION_ACK',
+  requestId: '2',
+  sign2: '',
+  rand2: '',
+  response: 
+   { errorCode: 'SUCCESS',
+     deviceInformation: 
+      { supportedTransports: [Array],
+        supportedAudioFormats: [Array],
+        serialNumber: 'ble_test_wp20_sn',
+        name: 'xhl_rpi',
+        deviceType: 'HEADPHONE',
+        manufacturer: 'baidu',
+        model: 'xhl_rpi',
+        firmwareVersion: '1.0',
+        softwareVersion: '1.0',
+        initiatorType: 'TAP',
+        productId: '1udLzmTG2KGmKGmPkwZZe1gm',
+        classicBluetoothMac: '50:1A:A5:CB:D9:F0',
+        disableHeartBeat: true,
+        enableAdvancedSecurity: false,
+        supportFm: false,
+        otaVersion: '',
+        noA2dp: false,
+        noAtCommand: false,
+        supportBlePair: false },
+     payload: 'deviceInformation' },
+  payload: 'response' }
+(node:25884) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+write length: 134  all: 194
+write length: 268  all: 462
+```
+
+
+
+nodejs版本可以学习的点：
+
+```
+opus_recorder目录
+	1、buffermanager.js。基础文件的写法。Buffer的操作。
+	2、recorder.js。function定义类，prototype定义。子进程产生和pipe。模块main函数。
+base_channel.js：继承。方法override。
+config.js：配置文件写法。
+dma.js：静态方法定义。protobuf使用。
+dma_recorder.js：没有使用。但是可以看里面的Promise串联用法。
+index.js：ble用法。
+index-rfcomm.js	：spp用方法。	
+```
+
+
+
 参考资料
 
 1、Unified Remote: Bluetooth: Could not connect to SDP
