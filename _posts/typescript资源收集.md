@@ -47,3 +47,10 @@ https://github.com/xcatliu/typescript-tutorial
 # ts实现的设计模式
 
 https://github.com/torokmark/design_patterns_in_typescript
+
+
+
+#gitbook
+
+https://m.runoob.com/manual/gitbook/TypeScript/_book/doc/handbook/Triple-Slash%20Directives.html
+

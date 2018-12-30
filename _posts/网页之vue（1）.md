@@ -47,5 +47,26 @@ vue只关注视图层。
 
 
 
+web库和web框架的区别
+
+jQuery就是库。核心是dom操作。jQuery只是简化了这个操作。
+
+vue就是框架。你按照框架要求填写代码。
+
+vue是MVVM模式的应用。
+
+在vue里，你关注的核心是数据，不要再去操作dom了。
+
+
+
+
+
+参考资料
+
+1、
+
 http://www.runoob.com/vue2/vue-directory-structure.html
 
+2、Vue学习看这篇就够
+
+https://juejin.im/entry/5a54b747518825734216c3df
