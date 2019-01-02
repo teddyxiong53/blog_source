@@ -16,3 +16,9 @@ sfc /scannow
 
 但是当前不能解决我的问题。
 
+
+
+```
+themeservice.dll themeui.dll uxtheme.dll 
+```
+

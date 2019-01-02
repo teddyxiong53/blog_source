@@ -67,6 +67,10 @@ sudo apt-get install git gcc cmake build-essential
 
 
 
+我安装samba一直不行。
+
+事实证明，跟太新的版本，要付出代价的。删掉这个版本，回到Ubuntu16.04的。自己安装xfce桌面。
+
 
 
 
