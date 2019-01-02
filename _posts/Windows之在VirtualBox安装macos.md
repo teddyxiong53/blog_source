@@ -25,7 +25,7 @@ https://www.youtube.com/watch?v=6PEp7p4cnzg&t=77s
 先执行这些命令：
 
 ```
-cd "C:\Program Files\Oracle\VirtualBox\"
+cd "d:\Program Files\Oracle\VirtualBox\"
 VBoxManage.exe modifyvm "MacOS" --cpuidset 00000001 000106e5 00100800 0098e3fd bfebfbff
 VBoxManage setextradata "MacOS" "VBoxInternal/Devices/efi/0/Config/DmiSystemProduct" "iMac11,3"
 VBoxManage setextradata "MacOS" "VBoxInternal/Devices/efi/0/Config/DmiSystemVersion" "1.0"
@@ -41,4 +41,16 @@ VBoxManage setextradata "MacOS" "VBoxInternal/Devices/smc/0/Config/GetKeyFromRea
 设置好账号。
 
 然后安装辅助工具。
+
+通过双击pkg文件进行安装。
+
+安装后，关闭虚拟机。输入下面的命令：
+
+```
+cd "d:\Program Files\Oracle\VirtualBox"
+VBoxManage modifyvm "MacOS" --firmware efi
+VBoxManage setextradata "MacOS" VBoxInternal2/EfiGraphicsResolution 1920x1080 
+```
+
+再启动 虚拟机。这样就可以切换到1080P的显示了。
 
