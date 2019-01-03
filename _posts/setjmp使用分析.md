@@ -15,11 +15,23 @@ C语言的前辈是汇编，在汇编里，程序员是想怎么跳转就怎么�
 
 
 setjmp是C语言里处理exception的标准方案。
+
 C语言里的运行控制模型，是一个基于栈结构的指令执行序列，是一个call/return的过程。
+
 而setjmp/longjmp是另外一种形式的call/return。
+
 return是以C语言关键字的方式提供，setmp和longjmp是以库的方式提供，它们提供了2套平行的运行流控制方式。
+
 setjmp可以用来模拟coroutine。但是不是很好用。
+
+setjmp和longjmp是互补的两个函数。
+
+在信号处理机制里，进程在收到信号时，会从原来的系统调用直接返回，而不是等到该调用结束。
+
+这种进程突然改变上下文的情况，就是使用setjmp和longjmp
+
 C++里的异常处理就是通过封装了setjmp和longjmp来实现的。
+
 一个简单的演示程序如下。
 
 ```
@@ -187,3 +199,7 @@ http://wiki.jikexueyuan.com/project/c/c-standard-library-setjmp-h.html
 2、C 语言中 setjmp 和 longjmp
 
 http://www.cnblogs.com/hazir/p/c_setjmp_longjmp.html
+
+3、setjmp.h
+
+https://zh.wikipedia.org/wiki/Setjmp.h

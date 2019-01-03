@@ -281,6 +281,14 @@ qemu-system-arm -M vexpress-a9 -smp 1 -m 256 -kernel output/images/zImage -dtb o
 
 根据readme.txt内容修改：增加-nographic，去掉-serial stdio。
 
+如果是在图形界面下运行，可以按原样来做
+
+```
+qemu-system-arm -M vexpress-a9 -smp 1 -m 256 -kernel output/images/zImage -dtb output/images/vexpress-v2p-ca9.dtb -drive file=output/images/rootfs.ext2,if=sd,format=raw -append "console=ttyAMA0,115200 root=/dev/mmcblk0"  -net nic,model=lan9118 -net user -serial stdio
+```
+
+
+
 运行：用户是root，密码是空。
 
 ```
