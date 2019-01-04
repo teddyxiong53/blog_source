@@ -774,3 +774,10 @@ super是用来解决多重继承的问题的。
 
 将元素打包成一个个的元组。
 
+
+
+参考资料
+
+1、
+
+http://www.runoob.com/python/python-built-in-functions.html

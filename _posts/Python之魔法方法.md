@@ -112,3 +112,46 @@ print p.age
 
 `__getattr__, __setattr__, __delattr__, __get__, __set__ , __delete__, __getattribute__`。
 
+
+
+
+
+我自己新建一个类，空的。看看有哪些属性。
+
+```
+>>> class MyClass():
+...     pass
+... 
+>>> dir(MyClass)
+['__doc__', '__module__']
+>>> print MyClass.__doc__
+None
+>>> print MyClass.__module__
+__main__
+>>> help(MyClass)
+Help on class MyClass in module __main__:
+
+class MyClass
+```
+
+新建一个继承了object的class。
+
+```
+>>> class MyClass2(object):
+...     pass
+... 
+>>> dir(MyClass2)
+['__class__', '__delattr__', '__dict__', '__doc__', '__format__', '__getattribute__', '__hash__', '__init__', '__module__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__']
+>>> help(MyClass2)
+Help on class MyClass2 in module __main__:
+
+class MyClass2(__builtin__.object)
+ |  Data descriptors defined here:
+ |  
+ |  __dict__
+ |      dictionary for instance variables (if defined)
+ |  
+ |  __weakref__
+ |      list of weak references to the object (if defined)
+```
+
