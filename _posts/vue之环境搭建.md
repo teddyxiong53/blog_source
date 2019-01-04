@@ -14,7 +14,37 @@ tags:
 
 都在linux下做。这样环境会比较干净。
 
-我的是xubuntu18.04的。刚刚安装的，顺便把linux的开发环境搭建过程写成脚本。后续再搭建也会比较方便。
+全新安装一个kubuntu16.40的。
+
+```
+npm install -g vue-cli 
+```
+
+新建项目。
+
+```
+vue init webpack vue-demo
+```
+
+运行：
+
+```
+npm run dev
+```
+
+
+
+```
+http://localhost:8080
+```
+
+
+
+#参考资料
+
+1、手把手教你搭建 vue 环境
+
+https://segmentfault.com/a/1190000008922234
 
 
 
