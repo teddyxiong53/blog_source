@@ -129,6 +129,14 @@ const win = new BrowserWindow();
 
 
 
+注意：
+
+最好全局安装，这样就可以避免每次都要安装一次的麻烦。
+
+```
+npm install -g electron
+```
+
 
 
 

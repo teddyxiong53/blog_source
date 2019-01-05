@@ -17,3 +17,20 @@ https://webfe.kujiale.com/build-electron-app-gulp-workflow/
 这篇教程很好。
 
 https://halfrost.com/vue_electron/
+
+
+
+
+
+https://github.com/sindresorhus/awesome-electron
+
+
+
+例子集合：演示api的用法。把这个要完全掌握。
+
+https://github.com/hokein/electron-sample-apps
+
+
+
+
+
