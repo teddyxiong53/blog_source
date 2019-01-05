@@ -13,6 +13,12 @@ tags:
 
 http://www.mydrivers.com/zhuanti/tianti/cpu/
 
+
+
+这个网站有详细介绍各自后缀的详细含义。
+
+https://www.intel.ca/content/www/ca/en/processors/processor-numbers.html
+
 参考资料
 
 1、怎么让小白理解intel处理器（CPU）的分类？

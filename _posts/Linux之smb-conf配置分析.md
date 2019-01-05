@@ -146,7 +146,9 @@ max log size
     writeable = yes
 ```
 
-开始一直报用户密码不对。后面发现是因为我没有`sudo smbpasswd -a pi`导致的。
+开始一直报用户密码不对。
+
+**后面发现是因为我没有`sudo smbpasswd -a pi`导致的。这一步要注意。**
 
 我的家庭网络的工作组是XHL_WORK。所有计算设备都加入到这个组里。
 
