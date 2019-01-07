@@ -19,7 +19,13 @@ tags:
 
 4、需要注册。
 
+有中文站点。
 
+https://leetcode-cn.com/problemset/all/
+
+我现在按照顺序来刷。
+
+默认用c++来做吧。
 
 # 2.先看一个简单的例子
 
@@ -138,13 +144,7 @@ print twoSum(numbers, target)
 
 
 
-有中文站点。
 
-https://leetcode-cn.com/problemset/all/
-
-我现在按照顺序来刷。
-
-默认用c++来做吧。
 
 
 

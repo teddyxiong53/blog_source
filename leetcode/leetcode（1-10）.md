@@ -48,6 +48,85 @@ int main(int argc, char const *argv[])
 
 这个没有一个好的答案。不管。
 
+我自己写了一个，还不能正常工作。
+
+```
+#include <stdio.h>
+#include <unistd.h>
+
+struct ListNode {
+    int val;
+    struct ListNode *next;
+};
+
+int list_len(struct ListNode *list) {
+    int i = 0;
+    while(list) {
+        i++;
+        list = list->next;
+    }
+    return i;
+}
+struct ListNode *add(struct ListNode *l1, struct ListNode* l2) {
+    int len1 = list_len(l1);
+    int len2 = list_len(l2);
+    int len = len1>len2? len1 : len2;
+    struct ListNode *p = malloc(len*sizeof(struct ListNode));
+    memset(p, 0, len*sizeof(struct ListNode));
+    struct ListNode *p1, *p2;
+    p1 = l1;
+    p2 = l2;
+    int over = 0;
+    while(p1 && p2) {
+        p->val = (p1->val + p2->val)%10 + over ;
+        if(p1->val + p2->val > 10) {
+            over = 1;
+        } else {
+            over = 0;
+        }
+
+        p->next = (struct ListNode *)((unsigned char *) p + sizeof(struct ListNode));
+        p = p->next;
+        p1 = p1->next;
+        p2 = p2->next;
+    }
+    return p;
+}
+
+
+int main(int argc, char const *argv[])
+{
+    struct ListNode l1_0, l1_1, l1_2;
+    printf("input 3 number :\n");
+    scanf("%d %d %d", &l1_0.val, &l1_1.val, &l1_2.val);
+    l1_0.next = &l1_1;
+    l1_1.next = &l1_2;
+    l1_2.next = NULL;
+    struct ListNode *l1 = &l1_0;
+
+    printf("input other 3 number: \n");
+    struct ListNode l2_0, l2_1, l2_2;
+    scanf("%d %d %d", &l2_0.val, &l2_1.val, &l2_2.val);
+    l2_0.next = &l2_1;
+    l2_1.next = &l2_2;
+    l2_2.next = NULL;
+    struct ListNode *l2 = &l2_0;
+
+    struct ListNode *sum = add(l1, l2);
+    while(sum) {
+        printf("%d", sum->val);
+        sum = sum->next;
+    }
+    printf("\n");
+    free(sum);
+    return 0;
+}
+
+
+```
+
+
+
 # 3. 从一个字符串里取最长的没有重复字符的子串
 
 新建一个java文件Test.java。写入下面的内容：
