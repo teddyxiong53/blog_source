@@ -129,6 +129,42 @@ int main(int argc, char const *argv[])
 
 # 3. 从一个字符串里取最长的没有重复字符的子串
 
+我自己写了一个，是错的。
+
+```
+int lengthOfLongestSubstring(char *str) {
+    int i,j;
+    int len = 0;
+    int max_len = 0;
+    for(i=0; i<strlen(str)-1; i++) {
+        char cur_char = str[i];
+        for(j=i+1; str[j]!='\0'; j++) {
+            if(cur_char == str[j]) {
+                printf("cur_char:%c, j:%d\n", cur_char, j);
+                break;
+            }
+        }
+        len = j-i;
+        if(len > max_len) {
+            printf("len:%d\n", len);
+            max_len = len;
+        }
+
+    }
+    return max_len;
+}
+
+int main(int argc, char const *argv[])
+{
+    char *str1 = "abcabcbb";
+    printf("max len:%d\n", lengthOfLongestSubstring(str1));
+    return 0;
+}
+
+```
+
+
+
 新建一个java文件Test.java。写入下面的内容：
 
 ```
