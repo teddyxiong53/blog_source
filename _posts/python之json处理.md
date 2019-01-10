@@ -28,6 +28,71 @@ hlxiong@hlxiong-VirtualBox:~/work/test/python$ python test.py
 
 
 
+实用代码：
+
+```
+from __future__ import with_statement, print_function
+
+import sys
+import ctypes.util
+import ctypes
+from ctypes import c_void_p, c_int, c_long, byref, c_char_p, create_string_buffer
+import json
+def _decode_list(data):
+    rv = []
+    for item in data:
+        if hasattr(item, "encode"):
+            item = item.encode("utf-8")
+        elif isinstance(item, list):
+            item = item._decode_list(item)
+        elif isinstance(item, dict):
+            item = item._decode_dict(item)
+        rv.append(item)
+    return rv
+
+
+def _decode_dict(data):
+    rv = {}
+    for key,value in data.items():
+        if hasattr(value, "encode"):
+            value = value.encode("utf-8")
+        elif isinstance(value, list):
+            value = _decode_list(value)
+        elif isinstance(value, dict):
+            value = _decode_dict(value)
+        rv[key] = value
+    return rv
+
+def parse_json_in_str(data):
+    return json.loads(data, object_hook=_decode_dict)
+
+test_json_str = str("""
+{
+    "name": "allen",
+    "age": 20,
+    "habits": ["basketball", "football"],
+    "company": {
+        "name": "apple",
+        "location": "usa"
+    }
+}
+""")
+if __name__ == "__main__":
+    #check_python()
+    #print( find_library(['c'], 'strcpy', 'libc'))
+    print(parse_json_in_str(test_json_str))
+    j = parse_json_in_str(test_json_str)
+    print(j['company']['location'])
+```
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/python$ python xhl_utils.py 
+{u'age': 20, u'habits': ['basketball', 'football'], u'company': {u'name': 'apple', u'location': 'usa'}, u'name': 'allen'}
+usa
+```
+
+
+
 参考资料
 
 1、Python JSON
