@@ -66,3 +66,103 @@ CNAME记录使用比A记录更加方便。推荐用CNAME记录。
 
 
 
+
+
+相关的命令有：
+
+```
+host
+dig：替代nslookup的。好用些。
+nslookup
+
+```
+
+相关文件：
+
+```
+
+```
+
+
+
+```
+hlxiong@hlxiong-VirtualBox:~$ nslookup 127.0.0.1
+Server:         127.0.0.1
+Address:        127.0.0.1#53
+
+1.0.0.127.in-addr.arpa  name = localhost.
+
+hlxiong@hlxiong-VirtualBox:~$ nslookup 8.8.8.8
+Server:         127.0.0.1
+Address:        127.0.0.1#53
+
+Non-authoritative answer:
+8.8.8.8.in-addr.arpa    name = google-public-dns-a.google.com.
+
+Authoritative answers can be found from:
+```
+
+
+
+用dig命令查看。
+
+```
+hlxiong@hlxiong-VirtualBox:~$ dig
+
+; <<>> DiG 9.10.3-P4-Ubuntu <<>>
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 60294
+;; flags: qr rd ra; QUERY: 1, ANSWER: 13, AUTHORITY: 0, ADDITIONAL: 3
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4000
+;; QUESTION SECTION:
+;.                              IN      NS
+
+;; ANSWER SECTION:
+.                       367839  IN      NS      f.root-servers.net.
+.                       367839  IN      NS      k.root-servers.net.
+.                       367839  IN      NS      b.root-servers.net.
+.                       367839  IN      NS      l.root-servers.net.
+.                       367839  IN      NS      e.root-servers.net.
+.                       367839  IN      NS      a.root-servers.net.
+.                       367839  IN      NS      d.root-servers.net.
+.                       367839  IN      NS      h.root-servers.net.
+.                       367839  IN      NS      m.root-servers.net.
+.                       367839  IN      NS      c.root-servers.net.
+.                       367839  IN      NS      i.root-servers.net.
+.                       367839  IN      NS      g.root-servers.net.
+.                       367839  IN      NS      j.root-servers.net.
+
+;; ADDITIONAL SECTION:
+d.root-servers.net.     604212  IN      AAAA    2001:500:2d::d
+c.root-servers.net.     604513  IN      AAAA    2001:500:2::c
+
+;; Query time: 8 msec
+;; SERVER: 127.0.0.1#53(127.0.0.1)
+;; WHEN: Fri Jan 11 11:11:51 CST 2019
+;; MSG SIZE  rcvd: 295
+```
+
+
+
+
+
+域名系统也类似通讯录。大家记不住电话号码，就把电话号码跟名字对应起来。根据名字来查找。
+
+
+
+参考资料
+
+1、Linux 如何查看修改DNS配置
+
+http://www.cnblogs.com/kerrycode/p/5407635.html
+
+2、
+
+http://www.jackxiang.com/post/7038/
+
+3、DNS协议详解及报文格式分析
+
+https://blog.csdn.net/tianxuhong/article/details/74922454

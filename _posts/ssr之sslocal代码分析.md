@@ -20,8 +20,43 @@ tags:
 7、pwd模块用法。
 8、lru cache实现。
 9、构造函数里调用其他函数。
-
+10、替换标准库的函数，打补丁。
+	patch_socket
+11、读取解析一个文件的内容。
+	hosts和resolv.conf
+12、
 ````
+
+
+
+lru cache是存放dns记录的。
+
+
+
+可以到/usr/local/lib/python2.7/dist-packages/shadowsocks这个目录下，运行有测试函数的文件。
+
+例如运行asyncdns.py。
+
+```
+hlxiong@hlxiong-VirtualBox:/usr/local/lib/python2.7/dist-packages/shadowsocks$ python asyncdns.py
+None invalid hostname: invalid.@!#$%^&$@.hostname
+None invalid hostname: tooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooolong.hostname
+None invalid hostname: tooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooolong.hostname
+('google.com', '172.217.27.142') None
+('google.com', '172.217.27.142') None
+('example.com', '93.184.216.34') None
+('www.facebook.com', '31.13.64.49') None
+('ns2.google.com', '216.239.34.10') None
+('ipv6.google.com', '2404:6800:4012:1::200e') None
+```
+
+
+
+分析一个场景：
+
+在浏览器里访问www.google.com的时候，这个过程是怎么实现的？
+
+或者简单点，在命令行里ping www.google.com的时候，怎么处理的？
 
 
 
@@ -66,4 +101,129 @@ def compat_chr(d):
         return _chr(d)
     return bytes([d])
 ```
+
+
+
+sslocal这个脚本是在哪里写的呢？
+
+是在debian目录下。
+
+```
+#!/usr/bin/python
+# EASY-INSTALL-ENTRY-SCRIPT: 'shadowsocks==2.8.2','console_scripts','sslocal'
+__requires__ = 'shadowsocks==2.8.2'
+import re
+import sys
+from pkg_resources import load_entry_point
+
+if __name__ == '__main__':
+    sys.argv[0] = re.sub(r'(-script\.pyw?|\.exe)?$', '', sys.argv[0])
+    sys.exit(
+        load_entry_point('shadowsocks==2.8.2', 'console_scripts', 'sslocal')()
+    )
+```
+
+在setup.py里有这样写，应该就是setuptools生成的。
+
+```
+    entry_points="""
+    [console_scripts]
+    sslocal = shadowsocks.local:main
+    ssserver = shadowsocks.server:main
+    """,
+```
+
+
+
+2.8.2版本还是完全正常可用的。
+
+我这样执行：
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/ssr/shadowsocks-master/shadowsocks$ python local.py -c /etc/shadowsocks/config.json
+INFO: loading config from /etc/shadowsocks/config.json
+2019-01-11 16:08:07 INFO     loading libcrypto from libcrypto.so.1.0.0
+2019-01-11 16:08:07 INFO     starting local at 127.0.0.1:1080
+2019-01-11 16:08:34 INFO     connecting www.google.com:80 from 127.0.0.1:33226
+```
+
+另外一个shell窗口，
+
+```
+wget www.google.com
+```
+
+可以正常工作。
+
+所以可以在这个代码上加调试信息。
+
+也不用加，执行时，加上-v选项就好了。
+
+还是访问谷歌首页看看。
+
+```
+^Chlxiong@hlxiong-VirtualBox:~/work/test/ssr/shadowsocks-master/shadowsocks$ python local.py -c /etc/shadowsocks/config.json -v
+INFO: loading config from /etc/shadowsocks/config.json
+2019-01-11 16:12:03 INFO     loading libcrypto from libcrypto.so.1.0.0
+2019-01-11 16:12:03 INFO     starting local at 127.0.0.1:1080
+2019-01-11 16:12:03 DEBUG    using event model: epoll
+2019-01-11 16:12:32 DEBUG    accept
+2019-01-11 16:12:32 DEBUG    chosen server: 144.34.xxx.xx:xx
+2019-01-11 16:12:32 INFO     connecting www.google.com:80 from 127.0.0.1:33236
+```
+
+当前Linux上没有做任何的区分，即使访问百度，也都统一经过了ssr。
+
+过了大概一分钟，就会销毁。
+
+```
+2019-01-11 16:16:54 INFO     connecting www.baidu.com:80 from 127.0.0.1:33242
+2019-01-11 16:17:39 DEBUG    destroy: www.baidu.com:80
+2019-01-11 16:17:39 DEBUG    destroying remote
+2019-01-11 16:17:39 DEBUG    destroying local
+```
+
+关键是状态机的切换。
+
+看tcprelay.py里，
+
+```
+_handle_dns_resolved
+# as sslocal:
+# stage 0 SOCKS hello received from local, send hello to local
+# stage 1 addr received from local, query DNS for remote
+# stage 2 UDP assoc
+# stage 3 DNS resolved, connect to remote
+# stage 4 still connecting, more data from local received
+# stage 5 remote connected, piping local and remote
+```
+
+在_on_local_read
+
+```
+elif is_local and self._stage == STAGE_INIT:
+            # TODO check auth method
+            self._write_to_sock(b'\x05\00', self._local_sock)
+            self._stage = STAGE_ADDR
+            return
+```
+
+```
+handle_event
+	_on_local_read
+```
+
+首先是local sock，收到了wget发来的信息。
+
+
+
+总体上，还是一个网络server的架构。
+
+先监听一个socket，接收连接，处理消息。
+
+基于select机制。
+
+
+
+
 

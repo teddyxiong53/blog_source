@@ -12,6 +12,10 @@ tags:
 
 基础是socks5协议。
 
+协议的rfc文档在这里。不长，只有7页。
+
+https://www.ietf.org/rfc/rfc1928.txt
+
 socks5是tcp/ip层的网络代理协议。
 
 建立连接。
@@ -122,3 +126,10 @@ https://github.com/linw1995/lightsocks-python
 1、你也能写个 Shadowsocks
 
 https://segmentfault.com/a/1190000011862912
+
+2、Shadowsocks 源码分析——协议与结构
+
+这篇文章特别好，值得认真研究。
+
+https://loggerhead.me/posts/shadowsocks-yuan-ma-fen-xi-xie-yi-yu-jie-gou.html
+
