@@ -50,7 +50,7 @@ TOML是一种新的配置文件，跟ini、json这些是一个类型的东西。
 
 支持开发环境和正式环境的区别。默认提供default和development区分。
 
-提供版本锁支持。村委Pipfile.lock。
+提供版本锁支持。Pipfile.lock。
 
 click是Flask作者写的库。
 

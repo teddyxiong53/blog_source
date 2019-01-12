@@ -3,8 +3,13 @@ title: python之select用法
 date: 2019-01-09 17:59:22
 tags:		
 	- python
-
 ---
+
+
+
+
+
+从实际看，python里的select，r/w/e，都是socket对象，而不是像C语言里的是fd。
 
 
 

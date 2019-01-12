@@ -24,8 +24,101 @@ tags:
 	patch_socket
 11、读取解析一个文件的内容。
 	hosts和resolv.conf
-12、
+12、errno获取和判断。
 ````
+
+测试方法可以改成这样：
+
+sslocal和ssserver都跑在localhost上。就wget www.baidu.com。
+
+服务器端
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/ssr/shadowsocks-master/shadowsocks$ python ./server.py -c config.json -v
+INFO: loading config from config.json
+2019-01-12 13:37:16 WARNING  warning: server set to listen on localhost:2333, are you sure?
+2019-01-12 13:37:16 INFO     loading libcrypto from libcrypto.so.1.0.0
+2019-01-12 13:37:16 INFO     starting server at localhost:2333
+2019-01-12 13:37:16 DEBUG    server sock fd:3
+2019-01-12 13:37:16 DEBUG    using event model: epoll
+2019-01-12 13:37:26 DEBUG    tcprelay _sweep_timeout
+2019-01-12 13:37:36 DEBUG    tcprelay _sweep_timeout
+2019-01-12 13:37:46 DEBUG    tcprelay _sweep_timeout
+2019-01-12 13:37:47 DEBUG    event:1, fd:3
+2019-01-12 13:37:47 DEBUG    accept
+2019-01-12 13:37:47 DEBUG    client address:('127.0.0.1', 38646)
+2019-01-12 13:37:47 DEBUG    event:1, fd:8
+2019-01-12 13:37:47 DEBUG    sock == self._local_sock
+2019-01-12 13:37:47 DEBUG    _on_local_read
+2019-01-12 13:37:47 DEBUG    local read len:173
+2019-01-12 13:37:47 INFO     connecting www.baidu.com:80 from 127.0.0.1:38646
+2019-01-12 13:37:47 DEBUG    resolve :www.baidu.com
+2019-01-12 13:37:47 DEBUG    resolving www.baidu.com with type 1 using server 127.0.0.1
+2019-01-12 13:37:47 DEBUG    ./../shadowsocks/asyncdns.pyc handle_event 356
+2019-01-12 13:37:47 DEBUG    remote_addr:14.215.177.39, remote_port:80
+2019-01-12 13:37:47 DEBUG    event:4, fd:9
+2019-01-12 13:37:47 DEBUG    sock == self._remote_sock
+2019-01-12 13:37:47 DEBUG    _on_remote_write
+2019-01-12 13:37:47 DEBUG    write to sock, len:140
+2019-01-12 13:37:47 DEBUG    event:1, fd:9
+2019-01-12 13:37:47 DEBUG    sock == self._remote_sock
+2019-01-12 13:37:47 DEBUG    _on_remote_read
+2019-01-12 13:37:47 DEBUG    write to sock, len:2797
+2019-01-12 13:37:57 DEBUG    tcprelay _sweep_timeout
+2019-01-12 13:38:00 DEBUG    event:1, fd:8
+2019-01-12 13:38:00 DEBUG    sock == self._local_sock
+2019-01-12 13:38:00 DEBUG    _on_local_read
+2019-01-12 13:38:00 DEBUG    local read len:0
+2019-01-12 13:38:00 DEBUG    destroy: www.baidu.com:80
+2019-01-12 13:38:00 DEBUG    destroying remote
+```
+
+客户端：
+
+```
+^Chlxiong@hlxiong-VirtualBox:~/work/test/ssr/shadowsocks-master/shadowsocks$ python local.py -c ./config.json -v
+INFO: loading config from ./config.json
+2019-01-12 13:37:32 WARNING  warning: server set to listen on localhost:2333, are you sure?
+2019-01-12 13:37:32 INFO     loading libcrypto from libcrypto.so.1.0.0
+2019-01-12 13:37:32 INFO     starting local at 127.0.0.1:1080
+2019-01-12 13:37:32 DEBUG    server sock fd:3
+2019-01-12 13:37:32 DEBUG    using event model: epoll
+2019-01-12 13:37:42 DEBUG    tcprelay _sweep_timeout
+2019-01-12 13:37:47 DEBUG    event:1, fd:3
+2019-01-12 13:37:47 DEBUG    accept
+2019-01-12 13:37:47 DEBUG    client address:('127.0.0.1', 33476)
+2019-01-12 13:37:47 DEBUG    chosen server: localhost:2333
+2019-01-12 13:37:47 DEBUG    event:1, fd:8
+2019-01-12 13:37:47 DEBUG    sock == self._local_sock
+2019-01-12 13:37:47 DEBUG    _on_local_read
+2019-01-12 13:37:47 DEBUG    local read len:3
+2019-01-12 13:37:47 DEBUG    write to sock, len:2
+2019-01-12 13:37:47 DEBUG    event:1, fd:8
+2019-01-12 13:37:47 DEBUG    sock == self._local_sock
+2019-01-12 13:37:47 DEBUG    _on_local_read
+2019-01-12 13:37:47 DEBUG    local read len:20
+2019-01-12 13:37:47 DEBUG    cmd:1
+2019-01-12 13:37:47 INFO     connecting www.baidu.com:80 from 127.0.0.1:33476
+2019-01-12 13:37:47 DEBUG    write to sock, len:10
+2019-01-12 13:37:47 DEBUG    resolve :localhost
+2019-01-12 13:37:47 DEBUG    hit hosts: localhost
+2019-01-12 13:37:47 DEBUG    remote_addr:127.0.0.1, remote_port:2333
+2019-01-12 13:37:47 DEBUG    event:1, fd:8
+2019-01-12 13:37:47 DEBUG    sock == self._local_sock
+2019-01-12 13:37:47 DEBUG    _on_local_read
+2019-01-12 13:37:47 DEBUG    local read len:140
+2019-01-12 13:37:47 DEBUG    event:4, fd:9
+2019-01-12 13:37:47 DEBUG    sock == self._remote_sock
+2019-01-12 13:37:47 DEBUG    _on_remote_write
+2019-01-12 13:37:47 DEBUG    write to sock, len:173
+2019-01-12 13:37:47 DEBUG    event:1, fd:9
+2019-01-12 13:37:47 DEBUG    sock == self._remote_sock
+2019-01-12 13:37:47 DEBUG    _on_remote_read
+2019-01-12 13:37:47 DEBUG    write to sock, len:2781
+2019-01-12 13:37:57 DEBUG    tcprelay _sweep_timeout
+```
+
+
 
 
 

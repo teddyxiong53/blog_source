@@ -50,6 +50,11 @@ q：long long
 
 Q：unsigned long long
 
+```
+>：大端
+<：小端。
+```
+
 
 
 # 参考资料

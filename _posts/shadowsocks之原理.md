@@ -119,6 +119,53 @@ https://github.com/linw1995/lightsocks-python
 
 
 
+使用io多路复用，而不是多线程，这样对资源的占用更少。
+
+
+
+ssr设计上采用了reactor模式。
+
+每一个tcp连接，分配一个TCPRelayHandler进行处理，类似多线程里，分配一个线程来处理一样。
+
+
+
+sslocal+ssserver才是一个完整的sock5服务器，被拆分开来，主要是为了加密绕过gfw。
+
+整个协议都是在sslocal端实现的，
+
+
+
+sslocal端不会做dns的。
+
+是ssserver做的dns。
+
+不是，还是需要的，只是我当前配置的vps的是ip地址，所以直接走这个分支了。
+
+```
+elif common.is_ip(hostname):
+            callback((hostname, hostname), None)
+```
+
+sslocal也就只需要做这一次就够了。
+
+后面的域名都是发给ssserver去处理的。
+
+对于sslocal，on_local_write不会被调用到的。
+
+对于ssserver，也没有看到调用on_local_write。
+
+
+
+server的_on_remote_write，是把请求发出去。
+
+server的_on_remote_read，是把网页内容收进来。
+
+
+
+跟服务器配置的端口，有哪些交互？
+
+服务器端收到的第一个消息，是什么？
+
 
 
 参考资料
@@ -129,7 +176,14 @@ https://segmentfault.com/a/1190000011862912
 
 2、Shadowsocks 源码分析——协议与结构
 
-这篇文章特别好，值得认真研究。
+这篇文章特别好，值得认真研究。这个文章的作者实现了rust版本的ssr。
 
 https://loggerhead.me/posts/shadowsocks-yuan-ma-fen-xi-xie-yi-yu-jie-gou.html
 
+tcprelay分析
+
+https://loggerhead.me/posts/shadowsocks-yuan-ma-fen-xi-tcp-dai-li.html
+
+超时机制分析
+
+https://loggerhead.me/posts/shadowsocks-yuan-ma-fen-xi-chao-shi-chu-li.html
