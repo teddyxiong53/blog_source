@@ -344,6 +344,10 @@ xhl example pkg main.py execute
 
 
 
+我把代码放在这里了：
+
+https://github.com/teddyxiong53/Python/tree/master/basic/xhl_example_pkg
+
 # 参考资料
 
 1、Packaging Python Projects

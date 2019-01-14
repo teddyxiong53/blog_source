@@ -119,6 +119,34 @@ vscode，在linux下，是可以很方便地进行stdio.h这些头文件及函�
 
 
 
+# 配置python3环境
+
+1、头部写上
+
+```
+#!/usr/bin/env python3
+```
+
+2、用python3语法写代码。
+
+```
+def func() ->int:
+    return 1
+print(func())
+```
+
+pylint提示出错。
+
+3、把鼠标移动到错误上，根据提示安装python3的pylint。安装好后，reload一下vscode就好了。
+
+在windows上，我的python环境都是靠anaconda来安装的。
+
+安装了python2.7和python3.6的。
+
+还是写python3语法的文件，出错，在左下角点击选择python版本就好了。
+
+
+
 # 参考资料
 
 1、
