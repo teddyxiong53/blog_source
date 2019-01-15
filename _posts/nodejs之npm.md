@@ -78,6 +78,36 @@ npm config delete proxy
 
 D:\nodejs\node_modules\npm\doc
 
+
+
+还是需要把规律摸清楚。
+
+这样自己可以随时知道怎么做，不要总是查文档。
+
+```
+npm -h
+```
+
+这样可以看到哪些子命令。
+
+```
+npm config -h
+```
+
+可以看到config支持哪些子命令。
+
+```
+npm config list --json
+```
+
+这样可以看到所有的配置。
+
+就知道配置怎么写怎么删除怎么改了。
+
+.npmrc文件。是执行npm命令时会先执行的。
+
+
+
 #参考资料
 
 1、NPM 使用介绍

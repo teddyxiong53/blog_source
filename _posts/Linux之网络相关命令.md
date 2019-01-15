@@ -33,6 +33,7 @@ tags:
 流量相关：
 	iftop
 	nethogs
+	nload：这个不错。
 连通性及响应速度：
 	ping
 	traceroute

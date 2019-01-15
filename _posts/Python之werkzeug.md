@@ -59,6 +59,36 @@ if __name__ == '__main__':
 
 
 
+# local模块
+
+werkzeug的local模块，跟python的标准库的thread.local是类似的。
+
+但是功能更多。
+
+为什么需要自己增强local模块呢？
+
+因为python里处理并发可以用协程，一个线程里可以包含多个协程。
+
+可以用一个协程处理一个请求，那么在一个线程里就会有多个请求，
+
+用thread.local无法很好地处理这种情况。
+
+werkzeug自己写的local模块，实现了4个类：
+
+1、Local。
+
+2、LocalStack。
+
+3、LocalProxy。
+
+4、LocalManager。
+
+
+
+在flask里，重要的变量都是LocalStack和LocalProxy的，所以需要弄清楚用法。
+
+
+
 # 参考资料
 
 1、
@@ -72,3 +102,7 @@ http://werkzeug-docs-cn.readthedocs.io/zh_CN/latest/
 3、Python 工具包 werkzeug 初探
 
 http://python.jobbole.com/84765/
+
+4、Werkzeug库——local模块
+
+http://python.jobbole.com/87738/
