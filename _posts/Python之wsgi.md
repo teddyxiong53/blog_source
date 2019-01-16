@@ -79,6 +79,14 @@ httpd.serve_forever()
 
 
 
+wsgi里一个非常重要的概念，就是每个python web应用都是一个可调用的对象。
+
+在flask里，就是app=Flask(name)得到的app。
+
+wsgi就是定义web容器和app的通信规则的。
+
+我们的flask真正使用的时候，还需要部署到web容器里去。这个web容器需要支持wsgi。
+
 
 
 # 参考资料

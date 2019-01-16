@@ -71,6 +71,8 @@ Ctrl系列快捷键功能在计算机图形界面出现之前的命令行界面�
 
 上官网下载。apple store里的不是。
 
+怎么设置为默认英文，因为我经常是在命令里。默认中文很麻烦。
+
 
 
 # 配置brew源
@@ -101,6 +103,14 @@ capslock键的功能是这样：
 
 # 安装虚拟机
 
+算了，放弃了。我的需求不大。空间也不太够。
+
+
+
+# 必备软件列表
+
+
+
 
 
 
@@ -112,6 +122,77 @@ https://www.isofts.org/
 这个网站很好。很多软件。
 
 以后主要就从这里下载了。
+
+# 电脑管家
+
+腾讯出了柠檬电脑管家。
+
+不过也只能清理一下垃圾。
+
+先安装。
+
+# sudo不要输入密码
+
+```
+sudo vi /etc/sudoers
+```
+
+把这句修改：
+
+```
+#%admin ALL=(ALL) ALL 修改为：
+%admin ALL=(ALL) NOPASSWD: NOPASSWD: ALL
+```
+
+
+
+# 命令行和Linux兼容
+
+现在默认是不兼容的。用起来很别扭。
+
+```
+brew install coreutils
+```
+
+在~/.bash_profile里加上这一行。
+
+```
+export PATH="$(brew --prefix coreutils)/libexec/gnubin:/usr/local/bin:$PATH"
+```
+
+现在基本工具的就工作正常了。
+
+然后安装其他的基本工具。
+
+```
+brew install binutils
+brew install diffutils
+brew install ed --default-names
+brew install findutils --with-default-names
+brew install gawk
+brew install gnu-indent --with-default-names
+brew install gnu-sed --with-default-names
+brew install gnu-tar --with-default-names
+brew install gnu-which --with-default-names
+brew install gnutls
+brew install grep --with-default-names
+brew install gzip
+brew install screen
+brew install watch
+brew install wdiff --with-gettext
+brew install wget
+brew install bash
+brew install emacs
+brew install gdb  # gdb requires further actions to make it work. See `brew info gdb`.
+brew install gpatch
+brew install m4
+brew install make
+brew install nano
+```
+
+放到脚本里，一次执行。
+
+
 
 
 
@@ -132,3 +213,7 @@ https://www.zhihu.com/question/19814844
 4、
 
 https://bbs.feng.com/read-htm-tid-11683407.html
+
+5、macOS安装GNU命令行工具
+
+https://blog.csdn.net/orangleliu/article/details/47357339
