@@ -9,7 +9,7 @@ tags:
 
 
 
-cheatsheet
+#cheatsheet
 
 这个就一个文件。可以。
 
@@ -26,3 +26,12 @@ https://media.readthedocs.org/pdf/pysheeet/latest/pysheeet.pdf
 
 
 https://github.com/search?q=cheatsheet+python
+
+
+
+# 书籍
+
+##《流畅的Python》
+
+进阶书籍
+
