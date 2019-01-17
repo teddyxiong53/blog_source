@@ -20,5 +20,45 @@ emqtt怎么知道连上来的client是同一个呢？
 
 
 
+自己写一遍。
+
+先简单实现pub功能。系统里安装了mosquitto。
+
+启动mosquitto。
+
+```
+sudo mosquitto -v
+```
+
+启动mosquitto订阅。
+
+```
+mosquitto -t "hello"
+```
+
+执行./client/pub。发现失败了。
+
+```
+1547703060: New connection from 127.0.0.1 on port 1883.
+1547703060: Invalid protocol "" in CONNECT from 127.0.0.1.
+1547703060: Socket error on client <unknown>, disconnecting.
+```
+
+是我写得有问题，用原始的libemqtt的pub是可以的。
+
+是我的connect函数里写得有问题。
+
+https://github.com/teddyxiong53/c_code/tree/master/mymqtt
+
+另外，libemqtt的select用得不太对。我改了。
+
+现在pub一个消息可以正常了。
+
+pub的写完了。正常。
+
+现在开始写sub的。
+
+
+
 #参考资料
 
