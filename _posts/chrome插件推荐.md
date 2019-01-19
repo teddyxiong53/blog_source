@@ -34,7 +34,50 @@ crx文件直接拖到chrome是进行下载操作。你需要先在浏览器输�
 
 但是这个只能在chrome浏览器才能生效。搜狗浏览器用的chrome内核太老了。
 
-## sourcegraph for github
+不用了。
 
-跟上面的差不多。功能要弱一点。
+## octotree
 
+树状浏览github的源代码。
+
+还可以好用。这个可以用。
+
+
+
+## awesome autocomplete for github
+
+可以提高在线搜索的效率。
+
+##octomate
+
+可以很方便地进行部分文件下载。
+
+确实不错。
+
+
+
+# 开发相关
+
+1、掘金插件。还可以。把推荐你关注的技术信息给你。
+
+2、builtwith technology profiler。可以看出一个网站用了哪些技术栈。
+
+
+
+书签侧边栏
+
+
+
+# 其他
+
+1、imagus。在图片上悬停3秒，图片就会显示原图。
+
+
+
+
+
+# 参考资料
+
+1、如何将 Chrome 变成开发利器，开发者们在用这些插件
+
+https://div.io/topic/1774
