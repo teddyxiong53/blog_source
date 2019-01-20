@@ -34,6 +34,76 @@ jQuery可以做什么？
 
 
 
+jQuery的意义是什么？为什么需要jQuery？
+
+现在又为什么不再需要了？
+
+
+
+jQuery的设计宗旨是：用更少的代码做更多的事情。
+
+jQuery封装了常用的功能代码，优化了html文档参照，事件处理，动画设计和ajax交互。
+
+
+
+jQuery的核心特性可以总结为：
+
+1、具有独特的链式语法。
+
+2、短小清晰的多功能接口。
+
+3、具有高效的css选择器。
+
+4、拥有便捷的插件机制和丰富的插件。
+
+5、兼容主流浏览器。
+
+
+
+jQuery的具体作用：
+
+1、取得页面里的元素。不用js库，自己写代码遍历dom，需要写很多行的代码。
+
+2、修改界面的外观。浏览器支持的css标准不同的时候，写css代码就很烦人。jQuery帮我们解决了这种问题。
+
+3、改变页面的内容。
+
+4、响应用户的界面操作。
+
+5、为页面添加动态效果。
+
+6、ajax。
+
+
+
+jQuery的发展历史：
+
+1、2005年8月，John Resig提议改进Prototype里的Behavior库。于是他在博客上发表了自己的想法，并用3个简单的例子做了流程说明。
+
+（Prototype这个库，已经退出历史舞台了。被jQuery完全取代了。）
+
+这篇博客在业内引起了广泛关注。
+
+2、2006年1月14日，John以jQuery发布了自己的程序库。
+
+3、8月份，jQuery有了第一个稳定版本。已经开始支持css选择符、事件处理和ajax提交。
+
+4、微软、诺基亚等大公司也参与了进来。
+
+
+
+工作原理
+
+jQuery的模块分为3部分：
+
+1、入口模块。
+
+2、底层支持模块。
+
+3、功能模块。
+
+
+
 # 怎样安装
 
 要在你的网页里加入jQuery，有两种方式：
@@ -226,3 +296,11 @@ https://www.runoob.com/jquery/jquery-selectors.html
 2、jQuery UI。
 
 http://www.runoob.com/jqueryui/api-easings.html
+
+3、jQuery的具体作用
+
+https://blog.csdn.net/qq_15016387/article/details/82378054
+
+4、Prototype这个JS库的现状如何？
+
+https://www.zhihu.com/question/21165560
