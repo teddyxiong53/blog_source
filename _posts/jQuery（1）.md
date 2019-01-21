@@ -285,6 +285,81 @@ unload
 
 
 
+# 和普通js代码对比
+
+jQuery能做的。普通js代码也可以做到。只是麻烦一点。
+
+怎么个麻烦法呢？
+
+我们看看对比。
+
+加载dom
+
+```
+//普通js
+function my_onload() {
+	console.log("xx");
+}
+window.onload = my_onload;
+```
+
+```
+//jquery
+$(document).ready() {
+    
+}
+```
+
+获取id
+
+```
+//普通js
+document.getElementByID("xx");
+```
+
+```
+//jquery
+$("#xx")
+```
+
+获取class
+
+```
+//普通js
+无法获取
+```
+
+```
+//jQuery
+$(".xx")
+```
+
+后去tagName
+
+```
+//普通js
+document.getElementByTagName("xx");
+//jquery
+$("xx")
+```
+
+创建对象并加入到文档里。
+
+```
+//普通js
+var para = document.createElement("p");
+document.body.appendElement(para);
+```
+
+```
+//jquery
+$("p").append('<p>xxx</>');
+```
+
+
+
+
+
 
 
 # 参考资料
@@ -304,3 +379,7 @@ https://blog.csdn.net/qq_15016387/article/details/82378054
 4、Prototype这个JS库的现状如何？
 
 https://www.zhihu.com/question/21165560
+
+5、jquery和javascript的区别(常用方法比较)
+
+https://blog.csdn.net/yyy183833/article/details/52413357
