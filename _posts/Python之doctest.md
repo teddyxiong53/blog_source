@@ -10,6 +10,14 @@ tags:
 
 doctest的用途是对于在函数的注释里写了测试的情况，进行测试。
 
+doctest有两种使用方式：
+
+1、写在python代码文件里。
+
+2、单独写一个文件。
+
+
+
 一个简单例子：
 
 ```
@@ -51,3 +59,10 @@ Test passed.
 Process finished with exit code 0
 ```
 
+
+
+参考资料
+
+1、
+
+http://liuchunming033.github.io/posts/2016/06/13/python-doctest.html
