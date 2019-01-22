@@ -15,3 +15,8 @@ http://www.ituring.com.cn/book/1421
 2、看sxei的demo
 
 https://github.com/sxei/chrome-plugin-demo
+
+3、switchy-sharp 
+
+直接把crx文件解压就可以了。
+

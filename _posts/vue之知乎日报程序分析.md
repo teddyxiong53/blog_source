@@ -98,3 +98,29 @@ tags:
 20 directories, 62 files
 ```
 
+
+
+需要sudo npm start才能运行，因为要使用80端口，所以需要sudo权限。
+
+直接访问：http://localhost就可以了。
+
+运行后，可以看到的可以实现自适应的效果。
+
+看package.json里，npm start对应的命令是：
+
+```
+"start": "cd server && node app",
+```
+
+所以，入口文件是server/app.js。
+
+还用到了express。所以先把express单独学习一下。
+
+学完express了。继续。
+
+src目录下的才是写的代码，server目录下的是webpack生成的。不具备可读性。
+
+
+
+
+

@@ -1,11 +1,17 @@
 ---
-title: 网页之semantic ui
+title: css之盒模型
 date: 2018-12-24 10:38:27
 tags:
-	- 网页
+	- css
 ---
 
 
+
+从外到内：
+
+margin、border、padding。
+
+记忆方法：mbp。MacBook Pro的缩写。
 
 
 
