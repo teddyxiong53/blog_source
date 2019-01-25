@@ -95,3 +95,49 @@ message ListFilesRequest {
 
 
 
+
+
+转化规则：
+
+1、首先转化enum的。会先把所有的enum生成出来，不管enum写在哪个位置。
+
+proto文件这样写。
+
+```
+enum XX {
+    A_0;
+    A_1;
+}
+```
+
+得到对应的C代码：
+
+```
+typedef _XX {
+    XX_A_0,
+    XX_A_1
+} XX;
+#define _XX_MIN XX_A_0
+#define _XX_MAX XX_A_1
+#define _XX_ARRAYSIZE ((XX)XX_A_1 + 1)
+```
+
+2、然后是struct的。对应proto里的类型是message。
+
+安装依赖关系，先把被依赖的生成。
+
+空的这样生成：
+
+```
+message BlePairCommand{
+}
+生成
+/* Struct definitions */
+typedef struct _BlePairCommand {
+    char dummy_field;
+/* @@protoc_insertion_point(struct:BlePairCommand) */
+} BlePairCommand;
+```
+
+string类型对应pb_callback_t。
+
