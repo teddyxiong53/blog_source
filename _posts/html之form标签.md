@@ -8,17 +8,19 @@ tags:
 
 
 
+用来向服务器传输数据。
+
 ```
 action
 method
 	get
 	post
 target：在哪里打开action url
-	_blank
-	_self
-	_parent
-	_top
-	framename
+	_blank：在新的窗口打开。
+	_self：默认，在相同的框架里打开，例如当前标签。
+	_parent：在父框架集里打开。
+	_top：在整个窗口打开。
+	framename：在指定的框架里打开。
 ```
 
 

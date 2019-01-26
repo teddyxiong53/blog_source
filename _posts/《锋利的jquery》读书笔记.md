@@ -474,7 +474,180 @@ $().ready() {
 
 # 第7章 插件的使用和写法
 
+插件也叫扩展，是一种遵循一定规范的api写出来的程序。
+
+jquery的易扩展性，吸引了全球的开发者来给它写插件。
+
+插件可以从这个地方下载：http://plugins.jquery.com
+
+不过现在看官网上的写法，是推荐用nodejs的方式来进行下载安装了。
+
+## validation
+
+最经常使用js的地方就是表单的验证。
+
+jquery为这种场景，有一个插件：Validation。
+
+特点如下：
+
+```
+1、内置验证规则。
+2、自定义验证规则。
+3、简单强大的验证信息提示。
+4、实时验证。
+```
+
+
+
+##Form插件
+
 
 
 # 第8章 用jquery打造个性网站
+
+是一个购物网站。
+
+我提交在这里：https://github.com/teddyxiong53/front_end/tree/master/jane_shop
+
+目录结构：
+
+```
+detail.html  images/  index.html  scripts/  styles/
+```
+
+index.html结构：
+
+1、头部。放log。
+
+2、导航栏。
+
+3、内容。
+
+对应3个div。
+
+```
+<body>
+    <div id="header"></div>
+    <div id="navigation"></div>
+    <div id="content"></div>
+</body>
+```
+
+
+
+然后是写css。
+
+```
+base.css 
+header.css
+nav.css
+```
+
+然后新建一个main.css。
+
+```
+@import url("base.css");
+@import url("header.css");
+@import url("nav.css");
+```
+
+在index.html里加上一行：
+
+```
+<link rel="stylesheet" href="./styles/main.css">
+```
+
+然后开始写base.css。
+
+然后把网站的header部分写出来了。
+
+然后就是写导航部分。
+
+都是靠css来实现悬停展开列表的效果的。
+
+下面看content部分的。
+
+这部分分为左边和右边两部分。
+
+新增index.css文件。
+
+左边有2个模块，一个是最新动态，一个是产品分类。
+
+完成了。
+
+右侧有分为上下2个部分：滚动广告、新品上市。
+
+现在index.html就写完了。
+
+效果出来了。
+
+现在需要设计detail.html的。
+
+我们先跳过。
+
+接下来是看脚本部分的。
+
+在开始编写代码之前，我们需要先明确，需要实现哪些功能。
+
+```
+1、网页换肤。
+2、导航效果。
+3、左侧模块展开和关闭。
+4、左边最新动态的滚动显示。
+5、
+```
+
+## 换肤
+
+新建文件changeSkin.js。
+
+需要依赖jquery.cookie.js插件。是用来保存当前皮肤的。
+
+这个比较简单，就是修改颜色。
+
+替换css文件的做法。
+
+## 导航
+
+
+
+
+
+# css文件分析
+
+我看css文件里，有不少的不理解的地方，一个个啃下来。
+
+```
+word-wrap: break-word; 一般是对于连字符的地方，才把一个单词断开写到下一行。这个设置后，就可以随意。
+word-break: break-all; 这些的对亚洲文字和欧美文字的不同情况处理的。
+```
+
+```
+background
+background-color区别
+background除了可以设置颜色，还可以设置图片。所以background包含了background-color。
+no-repeat就是针对尺寸不过的实时，是否多张图片。
+```
+
+```
+font: 12px/1.6em;
+这种写法是什么意思？
+1.6em表示行高是字体的1.6倍。
+```
+
+```
+text-decoration
+就是上中下这几种划线装饰。
+```
+
+```
+border的属性
+3个，
+宽度、风格（实线虚线）、颜色。
+```
+
+```
+font-weight: 700;
+等价于bold。加粗。
+```
 
