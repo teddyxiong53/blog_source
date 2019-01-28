@@ -19,3 +19,6 @@ sudo dpkg-reconfigure keyboard-configuration
 ```
 
 安装步骤一步步做就好了。
+
+但是还是不行。重启一下看看。
+
