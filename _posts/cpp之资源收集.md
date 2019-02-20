@@ -23,3 +23,14 @@ https://en.cppreference.com/
 
 https://github.com/jobbole/awesome-cpp-cn
 
+
+
+
+
+# 图书
+
+《C++ 工程实践经验谈第2季》
+
+陈硕写的。muduo的作者。
+
+https://code.google.com/archive/p/chenshuo/downloads
