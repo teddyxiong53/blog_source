@@ -34,3 +34,8 @@ https://github.com/jobbole/awesome-cpp-cn
 陈硕写的。muduo的作者。
 
 https://code.google.com/archive/p/chenshuo/downloads
+
+《Linux多线程服务器端编程：使用muduo C++网络库》
+
+陈硕的书写得都比较实用，又有深度。先把他的书看懂。
+
