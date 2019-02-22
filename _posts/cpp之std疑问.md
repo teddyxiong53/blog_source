@@ -73,6 +73,8 @@ https://blog.csdn.net/nirendao/article/details/50890486
 
 实际上是一个模板类。在头文件memory里。
 
+就是把this指针也变成一个shared_ptr。就这么简单。
+
 原型是：
 
 ```

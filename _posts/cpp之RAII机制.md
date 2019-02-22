@@ -16,6 +16,24 @@ cpp标准保证任何情况下，已构造的对象最终会销毁。也就是�
 
 
 
+RAII是一种思路。
+
+这种就是RAII 的一种应用。
+
+```
+class MutexLockGuard: nocopyable {
+public:
+	MutexLockGuard(MutexLock& mutex): mutex_(mutex) {
+		mutex_.lock();
+	}
+	~MutexLockGuard() {//注意这里是在析构函数里进行解锁的。这个技巧很好。
+		mutex_unlock();
+	}
+private:
+	MutexLock& mutex_;
+};
+```
+
 
 
 参考资料

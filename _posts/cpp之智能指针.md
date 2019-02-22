@@ -167,6 +167,102 @@ auto t1 = std::shared_ptr<Test>(new Test(1));
 
 
 
+# weak_ptr和shared_ptr区别
+
+weak_ptr是为了解决shared_ptr在某些场景下存在的问题而出现的。
+
+2个类之间，指针进行互相引用。
+
+```
+#include <iostream>
+#include <memory>
+
+class B;
+class A {
+public:
+	~A() {
+		std::cout << "A destruct\n";
+	}
+	std::shared_ptr<B> m_pB;
+};
+
+class B {
+public:
+	~B() {
+		std::cout << "B destruct\n";
+
+	}
+	std::shared_ptr<A> m_pA;
+};
+
+int main()
+{
+	std::shared_ptr<A> pA(new A);
+	std::shared_ptr<B> pB(new B);
+	std::cout << "pA use count: " << pA.use_count() << std::endl;
+	std::cout << "pB use count: " << pB.use_count() << std::endl;
+}
+```
+
+上面的的例子，可以正常调用到析构函数。
+
+我们把测试程序改一下。
+
+```
+int main()
+{
+	std::shared_ptr<A> pA(new A);
+	std::shared_ptr<B> pB(new B);
+	std::cout << "pA use count: " << pA.use_count() << std::endl;
+	std::cout << "pB use count: " << pB.use_count() << std::endl;
+	pA->m_pB = pB;
+	std::cout << "pA use count: " << pA.use_count() << std::endl;
+	std::cout << "pB use count: " << pB.use_count() << std::endl;
+	pB->m_pA = pA;
+	std::cout << "pA use count: " << pA.use_count() << std::endl;
+	std::cout << "pB use count: " << pB.use_count() << std::endl;
+}
+```
+
+```
+pA use count: 1
+pB use count: 1
+pA use count: 1
+pB use count: 2
+pA use count: 2
+pB use count: 2
+```
+
+如果用weak_ptr，就可以解决这种问题。
+
+只需把class B的改成weak_ptr的就可以打破这种循环。
+
+```
+class B {
+public:
+	~B() {
+		std::cout << "B destruct\n";
+
+	}
+	std::weak_ptr<A> m_pA;//改这一行就可以了。
+};
+```
+
+
+
+```
+pA use count: 1
+pB use count: 1
+pA use count: 1
+pB use count: 2
+pA use count: 1
+pB use count: 2
+A destruct
+B destruct
+```
+
+
+
 # 参考资料
 
 1、C++智能指针简单剖析
@@ -176,3 +272,7 @@ https://www.cnblogs.com/lanxuezaipiao/p/4132096.html
 2、智能指针shared_ptr与unique_ptr详解
 
 https://blog.csdn.net/weixin_36888577/article/details/80188414
+
+3、
+
+https://blog.csdn.net/game_fengzi/article/details/21528185

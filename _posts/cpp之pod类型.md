@@ -17,17 +17,37 @@ POD，是Plain Old Data的缩写。中文翻译为：平凡的老旧的数据格
 
 POD的内涵是什么？
 
+在c++03里，是这样要求的：
+
+```
 1、没有虚函数，没有虚继承。
+2、可以被静态初始化。
+```
 
-就类型C语言里的struct。
+就类似C语言里的struct。而且不能有成员函数。
+
+加了成员函数，即使内存布局仍然跟C语言是兼容的，但是也不再是一个POD了。
+
+c++11放宽了这种限制。
+
+把POD分为两种：
+
+```
+1、平凡的Trivial。
+2、标准布局standard-layout。
+```
+
+一个平凡的类型可以用memcpy来进行复制。
+
+平凡的类型，它的生命周期开始于空间被分配时，而不是构造函数完成时。
 
 
 
-Trivial平凡类型。
 
 
 
-平凡类型的定义
+
+
 
 
 
@@ -40,3 +60,7 @@ https://blog.csdn.net/aqtata/article/details/35618709
 2、C++11中的POD和Trivial
 
 https://blog.csdn.net/dashuniuniu/article/details/50042341
+
+3、
+
+https://zh.wikipedia.org/wiki/C%2B%2B11
