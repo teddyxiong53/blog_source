@@ -125,6 +125,22 @@ int main(int argc, char const *argv[])
 
 
 
+# 一个特殊用法
+
+看muduo的代码，看到这样写模板。
+
+```
+template<int SIZE>
+class FixedBuffer : noncopyable
+{
+```
+
+实际使用是这样用：
+
+```
+FixedBuffer<100> buffer;
+```
+
 
 
 # 参考资料
@@ -132,3 +148,8 @@ int main(int argc, char const *argv[])
 1、C++中模板使用详解
 
 https://www.cnblogs.com/sevenyuan/p/3154346.html
+
+2、What does template <unsigned int N> mean?
+
+https://stackoverflow.com/questions/499106/what-does-template-unsigned-int-n-mean
+
