@@ -496,3 +496,20 @@ rotate的条件一般是2个：文件大小、时间。
 
 而现在的Linux有了timerfd，我们可以用和处理io事件相同的方式来处理定时。代码的一致性更好。
 
+```
+s00
+	这个只有EventLoop这个文件。
+	直接在loop函数里调用poll函数。
+s01
+	增加了Channel和Looper这2个文件。
+	这2个类被EventLoop包含使用。
+	EventLoop的loop函数，调用Looper的loop函数，Looper的loop函数里才调用poll函数。
+	Channel被EventLoop和Looper都使用了。
+	Poller是对io多路复用机制的封装。
+	到这里，Reactor模式的基本类都有了。
+s02
+	这个加入了定时器的。
+	在Linux没有加入timerfd之前，一般是通过设置select和poll的超时时间来做定时处理的。
+	
+```
+

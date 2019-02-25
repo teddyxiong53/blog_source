@@ -263,6 +263,23 @@ B destruct
 
 
 
+# 智能指针跟裸指针相互转化
+
+普通指针转化成智能智能：
+
+```
+int *iPtr = new int(42);
+shared_ptr<int> p(iPtr);
+```
+
+智能指针转普通指针。
+
+```
+int *pI = p.get();
+```
+
+
+
 # 参考资料
 
 1、C++智能指针简单剖析
@@ -276,3 +293,11 @@ https://blog.csdn.net/weixin_36888577/article/details/80188414
 3、
 
 https://blog.csdn.net/game_fengzi/article/details/21528185
+
+4、普通指针到智能指针的转换
+
+https://blog.csdn.net/seamanj/article/details/50507470
+
+5、使用 C++11 智能指针时要避开的 10 大错误
+
+http://blog.jobbole.com/104666/
