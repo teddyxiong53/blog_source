@@ -39,3 +39,17 @@ https://code.google.com/archive/p/chenshuo/downloads
 
 陈硕的书写得都比较实用，又有深度。先把他的书看懂。
 
+《c++编程惯用法》
+
+
+
+c++开源代码
+
+很多都推荐SGI 的STL实现。说这个代码质量很高，适合阅读。
+
+webrtc
+
+qt
+
+
+
