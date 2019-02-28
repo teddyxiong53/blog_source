@@ -58,3 +58,14 @@ muduo的设计目标用途是公司内部的分布式系统。
 
 
 muduo里的大部分类都是noncopyable。
+
+
+
+我通过对recipes代码的编写。对muduo的基本类都有一些了解了。
+
+现在看examples里的例子。
+
+看看muduo可以怎样实际应用。
+
+
+
