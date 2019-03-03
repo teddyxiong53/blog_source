@@ -129,11 +129,64 @@ teddy@ubuntu:~/work/test/vue/todoapp/src$ tree
 
 我们在app用户界面上看到的很多数据都是来自状态对象。
 
-src/store.js里写。
+src/store.js里写。默认有个架子了。我们往里面填内容就好了。
+
+```
+import Vue from 'vue'
+import Vuex from 'vuex'
+
+Vue.use(Vuex)
+const defaultTodo = [
+  {id:1, subject:"eating"},
+  {id:2, subject:"loving"},
+  {id:3, subject: "preying"},
+]
+function indexById(todos, id) {
+  for(var i=0; i<todos.length; i++) {
+    if(id == todos[i].id) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+import axios from 'axios'
+
+export default new Vuex.Store({
+  state: {
+    msg: "Todo App",
+    todos: defaultTodo
+  },
+  mutations: {
+    add(state, subject) {
+      var todo = {id:subject, subject:subject}
+      state.todos.push(todo);
+    },
+    remove(state, id) {
+      state.todos.splice(indexById(state.todos, id), 1);
+    },
+    reload(state) {
+      state.todos = defaultTodo
+    }
+  },
+  actions: {
+    add: (context, link) => {
+      context.commit("add", link)
+    },
+    remove: (context, link) => {
+      context.commit("remove", link)
+    },
+    reload: (context) => {
+      context.commit("reload")
+    }
+  }
+})
 
 ```
 
-```
+有时候，对数据的修改可能是比较耗时的，因此为了避免阻塞主线程，我们也提供了异步方法，就是commit。
+
+然后，我们修改src/views/home.vue文件。
 
 
 

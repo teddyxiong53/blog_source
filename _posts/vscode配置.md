@@ -151,6 +151,22 @@ pylint提示出错。
 
 https://blog.csdn.net/Lean_on_Me/article/details/84552487
 
+
+
+# vue文件增加html补全
+
+只需要在json配置文件里加上这个：
+
+```
+"files.associations": {
+        "*.vue": "html"
+    }
+```
+
+
+
+
+
 # 参考资料
 
 1、
