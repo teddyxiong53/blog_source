@@ -64,9 +64,9 @@ STL给我们提供了四种智能指针：
 
 2、unique_ptr。
 
-3、shared_ptr。
+3、shared_ptr。引用计数型的智能指针。当引用计数变为0的时候才销毁。
 
-4、weak_ptr。
+4、weak_ptr。也是引用计数型的，但是不增加对象的引用次数。
 
 
 

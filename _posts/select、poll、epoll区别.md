@@ -27,7 +27,13 @@ epoll则是对select和poll的改进。没有了上面的缺点。
 
 
 
-# poll的使用方法
+
+
+select，相对于把一张bit表跟一个fd绑定起来。就看bit表里哪个bit置位了没有。
+
+
+
+
 
 
 
