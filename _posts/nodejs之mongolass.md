@@ -69,6 +69,8 @@ User.insertOne({name: 'allen', age: 'xxx'})//这里给错误数据。
 
 
 
+是n-blog的作者写的。此人是石墨文档的。
+
 
 
 参考资料
@@ -76,3 +78,7 @@ User.insertOne({name: 'allen', age: 'xxx'})//这里给错误数据。
 1、Mongolass——一个类 mongoose 的 MongoDB 驱动库
 
 https://cnodejs.org/topic/56e01c7a255ed94c6e4c2724
+
+2、
+
+https://zhuanlan.zhihu.com/p/24308524

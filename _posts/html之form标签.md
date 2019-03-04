@@ -25,8 +25,18 @@ target：在哪里打开action url
 
 
 
+怎么带上额外的信息呢？
+
+有些信息没有在input里。
+
+
+
 参考资料
 
 1、
 
 http://www.w3school.com.cn/tags/tag_form.asp
+
+2、How to add additional fields to form before submit?
+
+https://stackoverflow.com/questions/17809056/how-to-add-additional-fields-to-form-before-submit

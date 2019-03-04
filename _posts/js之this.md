@@ -145,6 +145,35 @@ call是不定长参数。apply参数是一个数组。
 
 
 
+# 我的理解
+
+我现在用jquery写一个投票网站。
+
+关于this，就碰到了不少的问题。
+
+我做实验，得到这些结论：
+
+在浏览器里：
+
+```
+1、在script里，任何函数外面，this表示的是window。在普通函数里，也是window。
+2、在$(document).ready(function() {里。是document。
+3、在这里：$('input[type=radio]').each(function() {
+        console.log(this)
+        表示就是一个个的input。
+```
+
+
+
+在nodejs里。
+
+```
+this默认是global。
+
+```
+
+
+
 
 
 参考资料

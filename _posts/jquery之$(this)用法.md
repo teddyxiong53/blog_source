@@ -15,6 +15,13 @@ $(this)得到的是一个jquery对象。
 
 用来把当前对象转成一个jquery对象。
 
+```
+console.log("this:",this)
+console.log("$(this)", $(this))
+```
+
+表示的都是同一个radio元素。
+
 
 
 # 参考资料

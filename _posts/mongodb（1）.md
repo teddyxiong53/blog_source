@@ -50,8 +50,16 @@ config
 
 
 
+为什么需要mongodb？跟mysql的不同是什么？
+
+
+
 参考资料
 
 1、什么是MongoDB ?
 
 http://www.runoob.com/mongodb/mongodb-intro.html
+
+2、
+
+https://www.cnblogs.com/caihuafeng/p/5494336.html
