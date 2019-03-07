@@ -141,3 +141,90 @@ typedef struct _BlePairCommand {
 
 string类型对应pb_callback_t。
 
+
+
+# 对string类型的处理
+
+分为两种情况，一种是指定了长度的，一种是没有指定长度的。
+
+```
+required string name = 1;
+生成的代码是：
+pb_callback_t name;
+
+required string name = 1 [(nanopb).max_size = 40];
+生成的代码是：
+char name[40];
+```
+
+还有二维数组的。
+
+```
+repeated string name = 1 [(nanopb).max_size = 40, (nanopb).max_count = 5];
+生成：
+size_t name_count;
+char name[5][40];
+```
+
+
+
+nanopb可以跟标准版的protoc程序进行配合。
+
+先用protoc生成pb文件。在用nanopb_generator.py把pb文件生成c文件和h文件。
+
+就用ama的试一下，看看效果。
+
+```
+user@host:~$ protoc -omessage.pb message.proto
+user@host:~$ python ../generator/nanopb_generator.py message.pb
+Writing to message.h and message.c
+user@host:~$
+```
+
+我看Makefile了，默认就是需要依赖protoc的。
+
+```
+protoc --plugin=protoc-gen-nanopb=/home/hlxiong/work/tools/nanopb/nanopb-master/generator/protoc-gen-nanopb --nanopb_out=. ./ama.proto
+```
+
+
+
+是可以分成多个文件，但是还不如我自己手动先拼成一个的。
+
+我把所有的proto文件，按照顺序拼成ama.proto文件。
+
+所有的options文件，拼成ama.options文件。
+
+可以生成数组形式的。
+
+```
+typedef PB_BYTES_ARRAY_T(64) ConnectionDetails_identifier_t;
+typedef struct _ConnectionDetails {
+    ConnectionDetails_identifier_t identifier;
+/* @@protoc_insertion_point(struct:ConnectionDetails) */
+} ConnectionDetails;
+```
+
+
+
+
+
+
+
+
+
+
+
+参考资料
+
+1、nanopb关于string类型的处理
+
+https://www.jianshu.com/p/cad578f48e0a
+
+2、nanopb文档，很好很详细。
+
+https://jpa.kapsi.fi/nanopb/docs/concepts.html#compiling-proto-files-for-nanopb
+
+3、Discrepancy of max_size between string and bytes types
+
+https://github.com/nanopb/nanopb/issues/107
