@@ -30,6 +30,20 @@ GATT profile定义地更加具体。
 
 1、一组通用的att类型。例如primary service（基础服务）、secondary service（二级服务）。
 
+# GATT和ATT是什么关系？
+
+蓝牙4.0引入了2个核心协议：GATT和ATT。
+
+GATT是Generic ATTribute protocol。
+
+ATT是ATTribute protocol。
+
+GATT基于ATT。
+
+所有的ble profile一定是基于GATT。
+
+也就是说所有的ble服务都是用ATT作为应用协议。
+
 
 
 #GAP
@@ -139,3 +153,21 @@ https://www.cnblogs.com/smart-mutouren/p/5937990.html
 这个非常好。
 
 https://blog.csdn.net/utadalight/article/details/80057032
+
+6、蓝牙低功耗profile：ATT和GATT
+
+https://blog.csdn.net/bxqs001/article/details/37967145
+
+7、BLE协议--ATT、GATT
+
+https://www.jianshu.com/p/d5e65cbb6b73
+
+8、BLE安全入门及实战（1）
+
+蓝牙的安全问题，的确值得关注。
+
+https://www.secpulse.com/archives/75756.html
+
+9、实战智能门锁
+
+https://zhuanlan.zhihu.com/p/30393145
