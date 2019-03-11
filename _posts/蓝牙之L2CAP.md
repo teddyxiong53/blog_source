@@ -3,7 +3,7 @@ title: 蓝牙之L2CAP
 date: 2018-12-11 20:53:44
 tags:
 	- 蓝牙
-typora-root-url: ..\
+typora-root-url: ../
 ---
 
 
@@ -54,13 +54,35 @@ chn id可能取值：
 
 
 
+每一个通道都可以进行flow control和重传。
+
+
+
 # 模式
 
-有两种模式：
+有5种模式：
 
-1、SM模式。Streaming Mode。
+1、基础模式。
 
-2、ERTM模式。增强重传模式。
+2、flow control模式。
+
+3、重传模式。
+
+4、ERTM模式。增强重传模式。
+
+5、SM模式。Streaming Mode。
+
+
+
+有三种连接类型：
+
+```
+1、面向连接，采用基本的L2CAP模式。
+2、无连接，采用基本L2CAP模式。
+3、面向连接，采用流控模式。
+```
+
+
 
 # L2CAP提供的功能
 
@@ -99,3 +121,7 @@ https://blog.csdn.net/XiaoXiaoPengBo/article/details/51364483
 3、Bluetooth L2CAP介绍
 
 https://www.cnblogs.com/hzl6255/p/3801732.html
+
+4、
+
+http://blog.sina.com.cn/s/blog_69b5d2a50101ehpv.html
