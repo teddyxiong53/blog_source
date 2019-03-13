@@ -92,6 +92,20 @@ event的结构：
 
 
 
+hci cmd的payload长度是32字节，或者64字节。
+
+hci event的header的长度是2字节。event payload长度是255字节。
+
+hci acl的payload长度是1695字节。
+
+hci 的in buffer长度，就用1695这个。因为这个是可能的最长的包。
+
+hci 的out buffer也是。
+
+
+
+
+
 # 参考资料
 
 1、HCI层数据包格式
