@@ -14,7 +14,7 @@ tags:
 # mongo
 > help
 > show dbs
-> user myblog
+> use myblog
 > show collections 查看有哪些表。
 > db.users.find() 查看表里的内容。
 > db.dropDatabase() 删除这个数据库。

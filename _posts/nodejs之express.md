@@ -373,6 +373,55 @@ app.get相当于app.use的get方法版本。
 
 
 
+# 官网资料学习
+
+安装生成器。
+
+```
+npm install express-generator -g
+```
+
+这样会得到express命令。
+
+执行效果是这样，得到这样的目录结构。可以直接运行。
+
+```
+hlxiong@hlxiong-VirtualBox ~/work/test/node $ tree
+.
+├── app.js
+├── bin
+│   └── www
+├── package.json
+├── public
+│   ├── images
+│   ├── javascripts
+│   └── stylesheets
+│       └── style.css
+├── routes
+│   ├── index.js
+│   └── users.js
+└── views
+    ├── error.jade
+    ├── index.jade
+    └── layout.jade
+```
+
+运行：
+
+```
+hlxiong@hlxiong-VirtualBox ~/work/test/node $ npm start     
+
+> node@0.0.0 start /home/hlxiong/work/test/node
+> node ./bin/www
+
+GET / 200 648.894 ms - 170
+GET /stylesheets/style.css 200 16.330 ms - 111
+GET /favicon.ico 404 32.348 ms - 1102
+GET /favicon.ico 404 21.055 ms - 1102
+```
+
+访问127.0.0.1:3000就可以了。
+
 
 
 # 参考资料

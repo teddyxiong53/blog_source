@@ -7,7 +7,15 @@ tags:
 
 
 
+用bodyParser就可以了。
 
+```
+var app = express()
+app.use(bodyParser.urlencoded({extended: true}))
+
+app.post("/vote", function(req, res, next) {
+    console.log("name:", req.body.name)
+```
 
 
 
