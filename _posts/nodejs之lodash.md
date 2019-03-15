@@ -31,6 +31,42 @@ lodash用一个下划线来表示，就像jquery用$来表示一样。这样用�
 
 
 
+引入lodash的方法
+
+前端：
+
+```
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
+```
+
+nodejs：
+
+```
+var _ = require("lodash")
+```
+
+
+
+可以被ES6语法取代的lodash功能有下面这些。
+
+```
+> [1,2,3].map(n=>n*2)
+[ 2, 4, 6 ]
+> [1,2,3].reduce((total,n)=>total+n)
+6
+> [1,2,3].filter(n=> n<=2)
+[ 1, 2 ]
+```
+
+```
+> const [head,...tail] = [1,2,3]
+undefined
+> head
+1
+> tail
+[ 2, 3 ]
+```
+
 
 
 参考资料
@@ -42,3 +78,7 @@ https://www.jianshu.com/p/d46abfa4ddc9
 2、
 
 https://www.zhihu.com/topic/20029773/hot
+
+3、可以使用ES6取代的10个Lodash特性
+
+https://www.w3cplus.com/javascript/lodash-features-replace-es6.html
