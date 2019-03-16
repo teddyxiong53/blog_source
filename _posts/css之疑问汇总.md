@@ -8,7 +8,22 @@ tags:
 
 
 
-# css里#和.的区别
+CSS常用的属性设置。
+
+```
+w/h：宽高
+mbp：margin一般指定为1px auto这样。border一般是solid 1px 。padding一般是0 
+background
+color
+float
+font
+list-style
+
+```
+
+
+
+##css里#和.的区别
 
 `#`开头的表示是id选择器。
 
@@ -22,12 +37,32 @@ https://zhidao.baidu.com/question/494266092870561772.html
 
 
 
+## color和background-color的区别
+
+color字体颜色。
+
+https://zhidao.baidu.com/question/536936160.html
 
 
 
+## background属性和background-color属性
 
-````
+background是一个简写法。
+
+可以设置这些东西：
+
+```
+background-color
+background-position
+-size
+-repeat
+-origin
+-clip
+-attachment
+-image
+```
+
+建议使用background。而不分开写。
 
 
-````
 

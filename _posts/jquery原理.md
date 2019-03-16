@@ -206,3 +206,7 @@ for(var i=0; i<j_dom.length; i++) {
 1、JQuery原理介绍及学习方法
 
 https://segmentfault.com/a/1190000003926465
+
+2、js菜鸟进阶-jQuery源码分析(1)-基本架构
+
+https://www.cnblogs.com/hrw3c/p/5304849.html
