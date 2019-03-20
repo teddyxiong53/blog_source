@@ -83,12 +83,198 @@ struct epoll_event {
   epoll_data_t data;
 };
 函数有3个：
-int epoll_create(int);
-int epoll_ctl(int, int, int, struct  epoll_event *);
-int epoll_wait(int, struct epoll_event, int, int);
+int epoll_create(int size);//这个size参数实际上没有用了。
+int epoll_ctl(int epfd, int op, int fd, struct  epoll_event * event);
+	//epfd是epoll_create得到的。
+	//op是EPOLL_CTL_ADD/DEL/MOD 3个之一。
+	//fd是要监听的fd。例如listen_fd。
+	//event，前面先定义一个structepoll_event。把epfd注册过去，并且设置电平触发等方式先。
+int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);
+	//events：是要监听的所有事件。
+	返回值是就绪的事件个数。
 ```
 
 
+
+# epoll的水平触发和边沿触发
+
+简单来说，水平触发，只要还有数据，就会一直触发事件给监听进程。
+
+而边沿触发，只有在数据的量发生增加或者减少变化时，才触发一次。
+
+这个可以参考硬件中断的电平触发和边沿触发来理解。
+
+```
+#include <unistd.h>
+#include <stdio.h>
+#include <sys/epoll.h>
+
+int main()
+{
+    int epfd, nfds;
+    struct epoll_event event;
+    struct epoll_event events[5];
+    epfd = epoll_create(1);
+    event.data.fd = STDIN_FILENO;
+    event.events = EPOLLIN | EPOLLET;
+    epoll_ctl(epfd, EPOLL_CTL_ADD, STDIN_FILENO, &event);
+    while(1) {
+        nfds = epoll_wait(epfd, events, 5, -1);
+        int i;
+        for(i=0; i<nfds; i++) {
+            if(events[i].data.fd == STDIN_FILENO) {
+                printf("hello world\n");
+            }
+        }
+    }
+}
+```
+
+这个例子的效果是：
+
+输入字符，按下回车，会打印hello world。
+
+监听了STDIN的情况。是边沿触发的。
+
+我们如果把上面的代码这一行：
+
+```
+event.events = EPOLLIN | EPOLLET;
+```
+
+修改为：
+
+```
+event.events = EPOLLIN；
+```
+
+那么输入字符回车后，会一直打印hello world。这个是电平触发的。
+
+
+
+select和poll都只支持电平触发。
+
+epoll默认也是电平触发。
+
+要用边沿触发，需要设置EPOLLET。
+
+
+
+# 实际例子
+
+实现一个echo服务器。测试就用nc来做客户端。
+
+```
+#include <unistd.h>
+#include <stdio.h>
+#include <sys/epoll.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <fcntl.h>
+
+#define MAXEPOLL 100
+#define MAXLINE 1024
+
+int main()
+{
+    struct sockaddr_in server_addr = {0};
+    struct sockaddr_in client_addr = {0};
+    struct epoll_event ev = {0};
+    struct epoll_event evs[MAXEPOLL] = {0};
+
+    socklen_t len = sizeof(struct sockaddr_in);
+
+    int listen_fd;
+    int conn_fd;
+    int epoll_fd;
+    int nread;
+    int cur_fds;
+    int wait_fds;
+    int i;
+    char buf[MAXLINE];
+    listen_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if(listen_fd < 0) {
+        perror("socket create fail");
+        goto err1;
+    }
+    fcntl(listen_fd, F_SETFL, fcntl(listen_fd, F_GETFL, 0)|O_NONBLOCK);
+    int ret;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    server_addr.sin_port = htons(8888);
+    ret = bind(listen_fd, (struct sockaddr *)&server_addr, len);
+    if(ret < 0) {
+        perror("bind fail");
+        goto err2;
+    }
+    ret = listen(listen_fd, 10);
+    if(ret < 0) {
+        perror("listen fail");
+        goto err2;
+    }
+    epoll_fd = epoll_create(MAXEPOLL);
+    if(epoll_fd < 0) {
+        perror("epoll_create fail");
+        goto err2;
+    }
+    ev.events = EPOLLIN | EPOLLET;
+    ev.data.fd = listen_fd;
+    ret = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, listen_fd, &ev);
+    if(ret < 0) {
+        perror("epoll_ctl fail");
+        goto err3;
+    }
+    cur_fds = 1;
+    while(1) {
+        wait_fds = epoll_wait(epoll_fd, evs, cur_fds, -1);
+        if(wait_fds < 0) {
+            perror("epoll_wait fail");
+            goto err3;
+        }
+        for(i=0; i<wait_fds; i++) {
+            if(evs[i].data.fd == listen_fd) {
+                //new connection comes
+                conn_fd = accept(listen_fd, (struct sockaddr *)&client_addr, &len);
+                if(conn_fd < 0) {
+                    perror("accept fail");
+                    goto err3;
+                }
+                printf("get new connection from client\n");
+                ev.data.fd = conn_fd;
+                ev.events = EPOLLIN | EPOLLET;
+                ret = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, conn_fd, &ev);
+                if(ret < 0) {
+                    perror("epoll_ctl fail ");
+                    goto err3;
+                }
+                cur_fds ++;
+                continue;
+            }
+            nread = read(evs[i].data.fd, buf, MAXLINE);
+            if(nread < 0) {
+                perror("read fail" );
+                epoll_ctl(epoll_fd, EPOLL_CTL_DEL, evs[i].data.fd, &ev);
+                close(evs[i].data.fd);
+                cur_fds --;
+                continue; //这个不是严重错误，不需要退出。
+            }
+            write(evs[i].data.fd, buf, nread);
+        }
+    }
+    close(listen_fd);
+    close(epoll_fd);
+    return 0;
+err4:
+    close(conn_fd);
+err3:
+    close(epoll_fd);
+err2:
+    close(listen_fd);
+err1:
+    printf("some error happens");
+    return -1;
+}
+```
 
 
 
@@ -101,3 +287,15 @@ https://www.cnblogs.com/zengzy/p/5115679.html
 2、Linux多路复用之select/poll/epoll实现原理及优缺点对比
 
 https://blog.csdn.net/xiaofei0859/article/details/53202273
+
+3、epoll 水平触发与边缘触发
+
+https://blog.csdn.net/lihao21/article/details/67631516
+
+4、I/O多路复用之水平触发和边沿触发模式
+
+https://blog.csdn.net/fengxinlinux/article/details/75331567
+
+5、【Linux学习】epoll详解
+
+https://blog.csdn.net/xiajun07061225/article/details/9250579
