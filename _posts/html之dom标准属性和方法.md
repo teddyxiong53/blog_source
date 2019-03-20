@@ -42,6 +42,8 @@ attributes
 
 作用是设置或者返回accessKey。
 
+设置快捷键。
+
 举例：
 
 ```
@@ -66,6 +68,32 @@ attributes
 </body>
 </html>
 ```
+
+##addEventListener
+
+动态添加事件。
+
+```
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+</head>
+<body onload="accessKey()">
+    <button id="myBtn">点我</button>
+    <p id="demo"></p>
+    <script>
+        document.getElementById('myBtn').addEventListener("click", function() {
+            document.getElementById("demo").innerHTML = "xxxxx";
+        });
+    </script>
+</body>
+</html>
+```
+
+## appendChild
+
+为节点的子节点列表的末尾添加新的子节点。
 
 
 
