@@ -65,6 +65,10 @@ muduo是使用readv函数结合栈上空间来解决的。
 
 
 
+muduo的Buffer设计参考了Netty的ChannelBuffer和libevent的evbuffer。
+
+
+
 参考资料
 
 1、Muduo 设计与实现之一：Buffer 类的设计
