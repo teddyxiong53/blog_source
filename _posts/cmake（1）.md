@@ -12,6 +12,10 @@ tags:
 
 cmake是一个跨平台的编译工具。
 
+是跨平台的Makefile生成工具。
+
+
+
 可以用简单的语句来描述所有平台的编译。
 
 可以输出各种Makefile和project文件。
@@ -171,16 +175,245 @@ set_target_properties
 
 
 
+```
+enable_testing
+	这个是做什么？
+	只需要在最上层目录的CMakeLists.txt里设置一次就好了。
+```
+
+
+
+list命令和set命令比较
+
+
+
+命令不区分大小写。
+
+变量名区分大小写。
+
+我尽量做到这样：
+
+变量名用大写。命令都用小写。
+
+
+
+# 常用命令
+
+```
+list(APPEND ..)
+	往变量里追加值。
+string(REPLACE ";" " " CMAKE_CXX_FLAGS "${CXX_FLAGS}")
+	
+find_pacage(Boost REQURIED)
+	效果是生成一个变量：${Boost_INCLUDE_DIRS}
+find_path(MYPATH stdio.h) 这样的效果是：MYPATH的之变为stdio.h所在的路径名。
+类似的是，
+find_library(MYLIB c)
+message(${MYLIB})
+得到是是：/usr/lib/x86_64-linux-gnu/libc.so
+
+set(CMAKE_BUILD_TYPE release)
+string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE) #BUILD_TYPE是输出的变量名。
+message(${BUILD_TYPE})
+
+install(TARGETS muduo_base DESTINATION lib)
+这个对应的是：
+./build/release-cpp11/lib/libmuduo_base.a
+
+file命令
+
+```
+
+
+
+##include命令
+
+主要用来载入CMakeLists.txt文件，或者cmake模块。
+
+例如：
+
+```
+include(CheckFunctionExists) #这个是一个cmake模块。
+```
+
+
+
+
+
+#cmake脚本语言
+
+```
+1、#表示注释。
+2、命令可以没有参数、有参数、多行参数。
+	命令格式：cmd(arg)
+3、变量分为两种：cmake预定义的，和自定义的。
+	定义变量，用set命令。set(key value)
+	message(value) 用来打印调试。
+	引用变量是${var}
+	set(x 3) # x= "3"
+	set(y 1) # y="1"
+	message(x y) # display
+	所有的变量值都是字符串类型的。
+	字符串可以计算为bool值。
+	例如，在if和while里。
+	"false","off","no"这些值被解释为false。
+	变量有两种设置方式：
+	1、用set。
+	2、在命令行里cmake -DXX=YY这样。
+4、逻辑运行。and not or。
+
+```
+
+
+
+最简单的CMakeLists.txt文件。
+
+```
+message(hello)
+```
+
+执行是：cmake ./。
+
+为了让文件显得不那么乱。我们新建这样的目录。
+
+```
+build  CMakeLists.txt  src
+```
+
+```
+hlxiong@hlxiong-VirtualBox ~/work/test/cmake/src $ tree    
+.
+├── exe
+│   └── main.cpp
+└── lib
+    ├── foo.cpp
+    └── foo.hpp
+```
+
+执行：
+
+```
+cd build
+cmake ../
+```
+
+这样生成的文件，都在build目录下。
+
+随时可以删掉build目录。
+
+定义变量看看：
+
+```
+set(x 3)
+set(y 1)
+message(x y)
+message(${x}${y})
+```
+
+注意，引用变量是${}，而不是Makefile里的小括号。
+
+
+
+```
+set(x 3 2)
+message(${x})
+```
+
+这样得到的是“32”。
+
+```
+set(x hello world !)
+message(${x})
+```
+
+这样得到是是“helloworld!”。效果是空格被去掉了。
+
+可以用foreach来遍历变量值。
+
+```
+set(x hello world !)
+foreach(val ${x})
+    message(${val})
+endforeach()
+```
+
+多个目录。
+
+```
+add_subdirectory(lib)
+add_subdirectory(exe)
+```
+
+lib、exe目录下也要有CMakeLists.txt文件。
+
+
+
+# cmake预定义变量
+
+基本变量
+
+就是路径、文件、行数。
+
+```
+message(${PROJECT_SOURCE_DIR})
+message(${PROJECT_BINARY_DIR})
+message(${CMAKE_CURRENT_SOURCE_DIR})
+
+message(${CMAKE_CURRENT_LIST_FILE})
+message(${CMAKE_CURRENT_LIST_LINE})
+
+message(${PROJECT_NAME})
+```
+
+开关选项
+
+```
+message(${BUILD_SHARED_LIBS})
+message(${CMAKE_C_FLAGS})
+message(${CMAKE_CXX_FLAGS})
+message(${CMAKE_C_COMPILER})
+message(${CMAKE_CXX_COMPILER})
+message(${CMAKE_BUILD_TYPE})
+```
+
+
+
+变量的
+
+
+
 # 参考资料
+
+1、
 
 https://blog.csdn.net/dabenxiong666/article/details/53998998
 
+2、
+
 https://blog.csdn.net/gg_18826075157/article/details/72780431
 
-
+3、
 
 https://www.cnblogs.com/lidabo/p/7359422.html
 
-CMake 指定目标的链接选项
+4、CMake 指定目标的链接选项
 
 https://blog.csdn.net/icbm/article/details/53390467
+
+5、What does enable_testing() do in cmake?
+
+https://stackoverflow.com/questions/50468620/what-does-enable-testing-do-in-cmake
+
+6、CMake--List用法
+
+https://www.cnblogs.com/narjaja/p/8343765.html
+
+7、
+
+https://github.com/mortennobel/CMake-Cheatsheet/blob/master/CMake_Cheatsheet.pdf
+
+8、CMake 手册详解（二十二）
+
+这个系列很好。
+
+https://www.cnblogs.com/coderfenghc/archive/2012/10/20/2712806.html

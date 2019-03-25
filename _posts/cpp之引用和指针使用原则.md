@@ -77,6 +77,38 @@ string(string&& other) {
 
 
 
+# 类的成员变量是引用类型
+
+看muduo的代码，看到MutexLockGuard的定义里：
+
+```
+ private:
+
+  MutexLock& mutex_;
+```
+
+为什么这个类的成员变量，是引用类型？
+
+如果有类的成员变量是引用类型，那么有这些需要注意的：
+
+```
+1、必须明确提供构造函数，不能用默认的构造函数。
+2、构造函数的参数类型要是引用类型。
+3、初始化必须在初始化列表里完成。
+```
+
+这种使用方式，在UML里，就是对应聚合方式。（普通成员变量的方式，就是组合了）
+
+还可以有指针的方式来做聚合。
+
+
+
+使用聚合的主要原因是：
+
+外层对象不拥有内层对象。它们的生命周期不应该被绑定到一起。
+
+
+
 
 
 # 参考资料
@@ -88,3 +120,11 @@ https://blog.csdn.net/hao5335156/article/details/53893714
 2、c++中&和&&引用工作原理的区别？
 
 https://zhidao.baidu.com/question/426629663273398972.html
+
+3、C/C++ - 类中成员变量是引用
+
+https://blog.csdn.net/lazyq7/article/details/48186291
+
+4、Reference member variables as class members
+
+https://stackoverflow.com/questions/12387239/reference-member-variables-as-class-members/25845843
