@@ -54,3 +54,7 @@ https://zhuanlan.zhihu.com/p/24883553
 4、opus格式真的比aac要好吗？
 
 https://www.zhihu.com/question/55194135
+
+5、Opus Recommended Settings
+
+https://wiki.xiph.org/index.php?title=Opus_Recommended_Settings&mobileaction=toggle_view_desktop

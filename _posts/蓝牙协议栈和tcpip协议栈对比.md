@@ -33,3 +33,7 @@ HCI
 1、蓝牙协议与普通网络协议的对比
 
 https://blog.csdn.net/aotony_1988/article/details/52489173
+
+2、蓝牙协议与普通网络协议的对比
+
+http://www.voidcn.com/article/p-mjysjvfb-vc.html
