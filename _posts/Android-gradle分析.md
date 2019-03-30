@@ -77,3 +77,23 @@ dependencies {
 
 3、jcenter是目前应用最广的第三方gradle仓库。
 
+
+
+
+
+gradle构建过程分为3个阶段：
+
+```
+1、初始化阶段。
+2、配置阶段。
+3、执行阶段。
+
+```
+
+
+
+参考资料
+
+1、打通Android Gradle编译过程的任督二脉
+
+https://cloud.tencent.com/developer/article/1032349
