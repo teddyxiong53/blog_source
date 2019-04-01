@@ -2,16 +2,17 @@
 title: Android Handler
 date: 2017-07-14 21:12:00
 tags:
-
 	- Android
 
 ---
+
+
 
 Handler在Android里的主要用途是接受子线程发来的数据，并用收到的数据配合main线程（UI线程）更新UI。
 
 # 1. Handler为什么要存在？
 
-当一个应用启动时，Android会首先开启一个main线程（UI线程），main线程的职责是管理各个ui控件，进行事件分发。例如，你点击一个button，Android会分发事件到button上来，来响应你的操作。如果你接下来的操作是很耗时的，你就不能放在main线程里来做，这样严重影响使用体验，当main线程阻塞超过5s时，Android就会弹窗提示你是否关闭。所以这些耗时的操作，就需要另外创建线程去做，但是，Android的main线程不是线程安全的，刷新节目的工作只能由main线程来完成。
+当一个应用启动时，Android会首先开启一个main线程（UI线程），main线程的职责是管理各个ui控件，进行事件分发。例如，你点击一个button，Android会分发事件到button上来，来响应你的操作。如果你接下来的操作是很耗时的，你就不能放在main线程里来做，这样严重影响使用体验，当main线程阻塞超过5s时，Android就会弹窗提示你是否关闭。所以这些耗时的操作，就需要另外创建线程去做，但是，Android的main线程不是线程安全的，刷新界面的工作只能由main线程来完成。
 
 这个时候，就引入了handler这个东西。Handler运行在主线程里，它和子线程通过Message来传递数据。
 
@@ -94,3 +95,8 @@ public MyHandlerActivity extends Activity {
 
 
 
+参考资料
+
+1、Android中Looper的架构设计与赏析
+
+https://blog.csdn.net/codeyanbao/article/details/82320407
