@@ -8,7 +8,7 @@ tags:
 
 
 
-#openjdk是谁开发的？
+openjdk是谁开发的？
 
 是Sun公司开发的开源版本。完全自由。
 
@@ -34,6 +34,40 @@ openjdk不包含Deployment（部署）功能。
 
 openjdk只包含最精简的jdk。
 
+从这里下载源代码
+
+http://hg.openjdk.java.net/jdk8/jdk8/jdk/archive/tip.zip
+
+代码目录，主要在src/share目录下。
+
+```
+back
+	不知道是什么。
+bin
+	bin工具代码。
+classes
+	java源代码。
+demo
+	demo程序。
+instrument
+	？
+javavm
+	？
+lib
+	？
+native
+	java对应类的C底层。
+	例如String.java对应的String.c。
+npt
+	？
+sample
+	？
+transport
+	？
+```
+
+jvm的入口是在bin/java.c里。
+
 
 
 # 参考资料
@@ -45,3 +79,11 @@ https://zh.wikipedia.org/zh-hans/OpenJDK
 2、openJdk和sun Jdk区别和安装
 
 https://blog.csdn.net/lpjishu/article/details/53260099
+
+3、openJDK源码分析
+
+https://blog.csdn.net/anhuidelinger/article/details/14044853
+
+4、JVM源码—教你傻瓜式编译openjdk7
+
+http://www.importnew.com/23031.html
