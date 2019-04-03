@@ -24,6 +24,8 @@ super.wait();
 
 这3个方法，是为了配合syncronized关键字的工作的。
 
+这个就是为了实现java里的对象锁。
+
 
 
 参考资料
@@ -35,3 +37,7 @@ https://www.cnblogs.com/xwdreamer/archive/2012/05/12/2496843.html
 2、Java线程同步 （synchronized wait notify）
 
 https://blog.csdn.net/weizhaozhe/article/details/3922647
+
+3、Java线程锁，synchronized、wait、notify详解
+
+http://www.cnblogs.com/LeeScofiled/p/7225562.html

@@ -70,6 +70,22 @@ jvm的入口是在bin/java.c里。
 
 
 
+选重要的类看：
+
+```
+lang包
+    Object
+    Thread
+    String
+util
+	Arrays：全部是静态方法。
+	ArrayList：数组方式实现的动态。
+	List
+	
+```
+
+
+
 # 参考资料
 
 1、维基百科
