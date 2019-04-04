@@ -97,3 +97,7 @@ gradle构建过程分为3个阶段：
 1、打通Android Gradle编译过程的任督二脉
 
 https://cloud.tencent.com/developer/article/1032349
+
+2、AndroidStudio下的build.gradle文件分析
+
+https://blog.csdn.net/qq_39312230/article/details/80314810

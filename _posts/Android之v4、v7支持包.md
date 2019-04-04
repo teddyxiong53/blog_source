@@ -90,3 +90,7 @@ https://juejin.im/entry/57e8d525bf22ec00587a5848
 2、android support v4支持包要点分析，api介绍
 
 https://www.jianshu.com/p/d36a1e5bf246
+
+3、支持库
+
+https://developer.android.com/topic/libraries/support-library

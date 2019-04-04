@@ -77,6 +77,46 @@ projects和tasks是gradle里最重要的2个概念。
 
 这个跟ant是一样的。
 
+
+
+在Android Studio出来之前，大家都是用eclipse进行Android开发。
+
+eclipse里的构建项目的工具是ant。
+
+而在j2ee开发里，大家都是用maven来做构建。maven可以从网上的仓库给你拉取jar包。
+
+
+
+gradle就是融合了ant和maven的功能。
+
+
+
+在一个Android工程里，一般有3个.gradle文件。
+
+一个build.gradle在顶层目录，是负责整个工程的构建的。
+
+还有一个在
+
+```
+./app/build.gradle
+./settings.gradle
+./build.gradle
+```
+
+settings.gradle，里面一般就是一句话：
+
+```
+include ':app'
+```
+
+如果你的工程还包括库文件。那么可能是这样：
+
+```
+include ':app',':library'
+```
+
+
+
 #HelloWorld
 
 新建一个build.gradle文件。
@@ -230,3 +270,7 @@ http://wiki.jikexueyuan.com/project/gradle/
 2、Ubuntu环境安装Gradle
 
 https://blog.csdn.net/tanlon_0308/article/details/40423707
+
+3、Ant,Maven与Gradle的概念的理解
+
+https://blog.csdn.net/wwlwwy89/article/details/71641378
