@@ -81,6 +81,21 @@ fragment
 
 
 
+# v4包api
+
+```
+注解
+	
+接口
+
+类
+	很多的类的名字都是XXCompat这个格式。
+异常
+	
+```
+
+
+
 参考资料
 
 1、Android Support Library 的前世今生
@@ -94,3 +109,7 @@ https://www.jianshu.com/p/d36a1e5bf246
 3、支持库
 
 https://developer.android.com/topic/libraries/support-library
+
+4、android.support.v4.app
+
+https://developer.android.com/reference/android/support/v4/app/package-summary

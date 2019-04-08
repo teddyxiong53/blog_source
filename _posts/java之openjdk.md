@@ -86,6 +86,12 @@ util
 
 
 
+## openjdk能够用在生产环境吗
+
+可以。大公司基本都是用openjdk自己改的。
+
+
+
 # 参考资料
 
 1、维基百科
@@ -103,3 +109,7 @@ https://blog.csdn.net/anhuidelinger/article/details/14044853
 4、JVM源码—教你傻瓜式编译openjdk7
 
 http://www.importnew.com/23031.html
+
+5、OpenJDK 能用于生产环境吗？
+
+https://www.zhihu.com/question/21371451

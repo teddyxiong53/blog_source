@@ -19,3 +19,23 @@ https://guoxiaoxing.gitbooks.io/android-open-source-project-analysis/content/
 
 https://blog.csdn.net/crazy1235/article/details/56087721
 
+这个simple系列的app不错。都可以学习一下。
+
+https://www.simplemobiletools.com/
+
+```
+gallery
+calendar
+file manager
+draw
+contacts
+notes
+music player
+flash light 手电筒
+calculator
+clock
+app Launcher
+camera
+
+```
+
