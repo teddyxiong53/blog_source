@@ -24,7 +24,7 @@ int * twoSum(int *sums, int numSize, int target)
     for(i=0; i<numSize-1; i++) {
         for(j=i+1; j<numSize; j++) {
             if(a[i]+a[j] == target) {
-                printf("[%d,%d]\n", i,j );
+                //printf("[%d,%d]\n", i,j );
                 return NULL;
             }
         }

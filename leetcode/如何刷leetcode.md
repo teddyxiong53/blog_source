@@ -146,5 +146,18 @@ print twoSum(numbers, target)
 
 
 
+这里有代码。
+
+https://github.com/pezy/LeetCode
+
+安装后，在vscode左侧有一个图标，点击进去。
+
+会让你输入用户名和密码进行登陆，然后就可以在vscode里看题目做题目了。
 
 
+
+参考资料
+
+1、无需打开浏览器！使用VScode刷LeetCode.
+
+https://blog.csdn.net/OCEANtroye/article/details/82811790

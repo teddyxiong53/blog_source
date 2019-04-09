@@ -36,6 +36,17 @@ calculator
 clock
 app Launcher
 camera
-
 ```
+
+但是这些都是用kotlin写的。
+
+我只是业余写着玩的。实在没有太多精力再去学kotlin了。
+
+
+
+这里有官方示例。代码都托管在github上的。
+
+https://developer.android.com/samples
+
+蓝牙相关的有3个示例，搜索Bluetooth就可以搜索出来。看一下。
 

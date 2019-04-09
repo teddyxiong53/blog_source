@@ -137,6 +137,37 @@ var uuids = {
 
 
 
+sdp协议定义了128bit的uuid的16bit写法。
+
+base uuid
+
+```
+00000000-0000-1000-8000-00805F9B34FB
+```
+
+其他的uuid都是在这个上面改的。
+
+协议uuid
+
+```
+0001:SDP
+0002：RESERVED
+0003：RFCOMM
+0004：tcp
+0005：tcs-bin
+0006：tcs-at
+0007：att
+0008：obex
+0009：ip
+000a：ftp
+000c：http
+0017：avctp
+0019：avdtp
+0100：l2cap
+```
+
+
+
 # 参考资料
 
 1、对Android蓝牙UUID的理解
@@ -171,3 +202,8 @@ https://blog.csdn.net/zhangjs0322/article/details/39048509
 
 http://www.voidcn.com/article/p-vuyeyimy-eo.html
 
+9、Service Discovery
+
+这里对uuid写得很详细。
+
+https://www.bluetooth.com/specifications/assigned-numbers/service-discovery
