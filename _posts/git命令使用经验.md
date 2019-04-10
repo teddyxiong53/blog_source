@@ -22,6 +22,14 @@ tags:
 
 我觉得还是要下载多份，一份完全不动。只能用这种方式来做了。
 
+这样查看版本，比较清晰。
+
+```
+git log --pretty=oneline
+```
+
+
+
 ##放弃本地修改，强制更新
 
 ```
@@ -59,3 +67,7 @@ https://www.cnblogs.com/wuer888/p/7655856.html
 2、菜鸟教程
 
 http://www.runoob.com/git/git-branch.html
+
+3、
+
+https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/0013744142037508cf42e51debf49668810645e02887691000

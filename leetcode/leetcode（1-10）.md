@@ -10,6 +10,22 @@ tags:
 
 现在我要快速把leetcode刷一遍。每10题总结一篇文章。就按顺序来。如果暂时觉得不需要做的，先把位置空着。
 
+2019年4月10日17:41:55
+
+我现在重新开始做。
+
+题目尽量用这5种语言都做一遍：
+
+```
+c
+c++
+java
+js
+python
+```
+
+
+
 # 1. Two Sum
 
 两数之和。这个已经有一篇文章总结了。不难。
@@ -41,6 +57,90 @@ int main(int argc, char const *argv[])
 ```
 
 复杂度高了。
+
+c++版本。使用了map。
+
+```
+#include <vector>
+#include <unordered_map>
+#include <iostream>
+
+class Solution {
+public:
+    std::vector<int> twoSum(std::vector<int>& nums, int target) {
+        std::unordered_map<int, int> record;
+        for(int i=0; i != nums.size(); i++) {
+            auto found = record.find(nums[i]);
+            if(found != record.end()) {
+                return {found->second, i};
+            }
+            record.emplace(target-nums[i], i);
+        }
+        return {-1, -1};
+    }
+
+};
+
+int main()
+{
+    Solution s;
+    std::vector<int> nums = {2,7,11,15};
+    std::vector<int> result = s.twoSum(nums, 9);
+    for(std::vector<int>::iterator it=result.begin(); it != result.end(); it++) {
+        std::cout << *it << std::endl;
+    }
+}
+
+```
+
+参考资料
+
+https://github.com/pezy/LeetCode/blob/master/000.%20Two%20Sum/solution.h
+
+python版本。思路跟c++版本一样。
+
+```
+class Solution:
+    def twoSum(self, nums, target):
+        dic = {}
+        for index, num in enumerate(nums):
+            if num in dic:
+                return [dic[num], index]
+            dic[target-num] = index;
+        return dic
+
+nums = [2,7 ,11, 15]
+print Solution().twoSum(nums, 9)
+```
+
+java版本，思路还是map的思路。
+
+```
+import java.util.Map;
+import java.util.HashMap;
+import java.lang.Integer;
+import java.util.Arrays;
+
+public class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for(int i=0; i<nums.length; i++) {
+            int complement = target - nums[i];
+            if(map.containsKey(complement)) {
+                return new int[]{map.get(complement), i};
+            }
+            map.put(nums[i], i);
+        }
+        return new int[]{-1,-1};
+    }
+    public static void main(String[] args) {
+        int[] nums = {2,7,11,15};
+        Solution s = new Solution();
+        System.out.println(Arrays.toString(s.twoSum(nums, 9)));
+
+    }
+}
+```
 
 
 
