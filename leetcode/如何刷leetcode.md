@@ -156,6 +156,12 @@ https://github.com/pezy/LeetCode
 
 
 
+c++版本的，一般都有使用stl的库，就如同java版本，可以使用标准库一样。
+
+只有C语言，没有库可以用，只能用最原始的方式。
+
+
+
 参考资料
 
 1、无需打开浏览器！使用VScode刷LeetCode.

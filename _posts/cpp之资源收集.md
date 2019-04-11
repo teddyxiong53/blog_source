@@ -39,11 +39,21 @@ https://code.google.com/archive/p/chenshuo/downloads
 
 陈硕的书写得都比较实用，又有深度。先把他的书看懂。
 
-《c++编程惯用法》
+《深入应用C++11》
+
+祁宇。金山的程序员写的。写wps的。https://github.com/qicosmos
+
+《深入理解C++11》
+
+这个是IBM的编译器团队写的。
+
+《c++语言的设计和演化》
+
+作者：c++之父。
 
 
 
-c++开源代码
+#c++开源代码
 
 很多都推荐SGI 的STL实现。说这个代码质量很高，适合阅读。
 

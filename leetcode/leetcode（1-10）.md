@@ -146,82 +146,153 @@ public class Solution {
 
 # 2. 两个列表内容相加
 
+这个的本质，就是从地位往高位的加法运算。
+
+只是现在把低位写在前面了而已。按照加法的算法来做就好了。
+
 这个没有一个好的答案。不管。
 
-我自己写了一个，还不能正常工作。
+~~我自己写了一个，还不能正常工作。~~
+
+官方的java版本是这样：
 
 ```
-#include <stdio.h>
-#include <unistd.h>
+
+class ListNode {
+    int val;
+    ListNode next;
+    public ListNode(int x) {
+        this.val = x;
+        this.next = null;
+    }
+}
+public class Solution {
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode dummyHead = new ListNode(0);
+        ListNode p = l1, q = l2, curr = dummyHead;
+        int carry = 0;
+        while(p != null || q != null) {
+            int x = (p!=null) ? p.val : 0;
+            int y = (q!=null) ? q.val : 0;
+            int sum = carry + x+ y;
+            carry = sum /10;
+            curr.next = new ListNode(sum %10);
+            curr = curr.next;
+            if(p != null) {
+                p = p.next;
+            }
+            if(q != null) {
+                q = q.next;
+            }
+        }
+        if(carry > 0) {
+            curr.next = new ListNode(carry);
+        }
+        return dummyHead.next;
+    }
+    public static void main(String[] args) {
+        ListNode a_n1 = new ListNode(2);
+        ListNode a_n2 = new ListNode(4);
+        ListNode a_n3 = new ListNode(3);
+        a_n1.next = a_n2;
+        a_n2.next = a_n3;
+        a_n3.next = null;
+
+        ListNode b_n1 = new ListNode(5);
+        ListNode b_n2 = new ListNode(6);
+        ListNode b_n3 = new ListNode(4);
+        b_n1.next = b_n2;
+        b_n2.next = b_n3;
+        b_n3.next = null;
+
+        Solution s = new Solution();
+        ListNode result = s.addTwoNumbers(a_n1, b_n1);
+        while(result != null) {
+            System.out.print(result.val + " ");
+            result = result.next;
+        }
+        System.out.println();
+    }
+}
+```
+
+看看pezy的c++版本，借助了stl来做。很简洁。
+
+但是本质算法跟上面还是一样的。
+
+```
+#include <cstddef>
+#include <cstdlib>
 
 struct ListNode {
     int val;
-    struct ListNode *next;
+    ListNode *next;
+    ListNode(int x): val(x), next(NULL) {
+
+    }
 };
 
-int list_len(struct ListNode *list) {
-    int i = 0;
-    while(list) {
-        i++;
-        list = list->next;
-    }
-    return i;
-}
-struct ListNode *add(struct ListNode *l1, struct ListNode* l2) {
-    int len1 = list_len(l1);
-    int len2 = list_len(l2);
-    int len = len1>len2? len1 : len2;
-    struct ListNode *p = malloc(len*sizeof(struct ListNode));
-    memset(p, 0, len*sizeof(struct ListNode));
-    struct ListNode *p1, *p2;
-    p1 = l1;
-    p2 = l2;
-    int over = 0;
-    while(p1 && p2) {
-        p->val = (p1->val + p2->val)%10 + over ;
-        if(p1->val + p2->val > 10) {
-            over = 1;
-        } else {
-            over = 0;
+class Solution {
+public:
+    ListNode *addTwoNumbers(ListNode *l1, ListNode *l2) {
+        ListNode dummy(0), *tail = &dummy;
+        for(div_t sum{0, 0}; sum.quot || l1 || l2; tail=tail->next) {
+            if(l1) {
+                sum.quot += l1->val;
+                l1 = l1->next;
+            }
+            if(l2) {
+                sum.quot += l2->val;
+                l2 = l2->next;
+            }
+            sum = div(sum.quot, 10);
+            tail->next = new ListNode(sum.rem);
         }
-
-        p->next = (struct ListNode *)((unsigned char *) p + sizeof(struct ListNode));
-        p = p->next;
-        p1 = p1->next;
-        p2 = p2->next;
+        return dummy.next;
     }
-    return p;
-}
+};
+```
+
+python的divmod，达到的效果，跟c++里的div_t和div的效果一样。
+
+```
+class ListNode:
+    def __init__(self, x):
+        self.val = x
+        self.next = None
+
+class Solution:
+    def addTwoNumbers(self, l1, l2):
+        head = ListNode(0)
+        p = head
+        quot = 0
+        while l1 or l2 or quot != 0:
+            if l1:
+                quot += l1.val
+                l1 = l1.next
+            if l2:
+                quot += l2.val
+                l2 = l2.next
+            quot,rem = divmod(quot, 10)
+            p.next = ListNode(rem)
+            p = p.next
+        return head.next
 
 
-int main(int argc, char const *argv[])
-{
-    struct ListNode l1_0, l1_1, l1_2;
-    printf("input 3 number :\n");
-    scanf("%d %d %d", &l1_0.val, &l1_1.val, &l1_2.val);
-    l1_0.next = &l1_1;
-    l1_1.next = &l1_2;
-    l1_2.next = NULL;
-    struct ListNode *l1 = &l1_0;
+l1 = ListNode(2)
+l1.next = ListNode(4)
+l1.next.next = ListNode(3)
 
-    printf("input other 3 number: \n");
-    struct ListNode l2_0, l2_1, l2_2;
-    scanf("%d %d %d", &l2_0.val, &l2_1.val, &l2_2.val);
-    l2_0.next = &l2_1;
-    l2_1.next = &l2_2;
-    l2_2.next = NULL;
-    struct ListNode *l2 = &l2_0;
+l2 = ListNode(5)
+l2.next = ListNode(6)
+l2.next.next = ListNode(4)
 
-    struct ListNode *sum = add(l1, l2);
-    while(sum) {
-        printf("%d", sum->val);
-        sum = sum->next;
-    }
-    printf("\n");
-    free(sum);
-    return 0;
-}
 
+result = Solution().addTwoNumbers(l1, l2)
+
+while result != None:
+    print result.val
+    result = result.next
 
 ```
 

@@ -12,7 +12,7 @@ tags:
 
 1、可以修改对象的成员。
 
-2、传递引用比传递整个对象的效率高。
+2、传递引用比传递整个对象的效率高。可以避免不必要的构造和析构。
 
 
 
@@ -109,6 +109,16 @@ string(string&& other) {
 
 
 
+# 存在引用的引用吗？
+
+c++ primer里写着，因为引用不是一种数据类型，所以不存在引用的引用。
+
+你如果直接定义引用的引用，编译会报错。
+
+
+
+# 引用的折叠
+
 
 
 # 参考资料
@@ -128,3 +138,15 @@ https://blog.csdn.net/lazyq7/article/details/48186291
 4、Reference member variables as class members
 
 https://stackoverflow.com/questions/12387239/reference-member-variables-as-class-members/25845843
+
+5、为什么 C++ 有指针了还要引用？
+
+https://blog.csdn.net/a3192048/article/details/84621775
+
+6、C++ 是否能够定义引用的引用？
+
+https://www.zhihu.com/question/28023545
+
+7、Effective Modern C++ 条款28 理解引用折叠
+
+https://blog.csdn.net/big_yellow_duck/article/details/52433305

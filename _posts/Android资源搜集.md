@@ -50,3 +50,14 @@ https://developer.android.com/samples
 
 蓝牙相关的有3个示例，搜索Bluetooth就可以搜索出来。看一下。
 
+
+
+codekk，国内很有名的Android开源网站。
+
+http://p.codekk.com/
+
+
+
+这里是代码分析。
+
+http://a.codekk.com/
