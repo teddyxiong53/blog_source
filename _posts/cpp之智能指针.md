@@ -56,6 +56,18 @@ void func(string &str)
 
 
 
+有了智能指针，我们就可以认为c++也有了内存回收了。不用再担心内存泄露问题。
+
+delete这个关键字可以不再去用了。
+
+
+
+用java的写法来写智能指针的就对了。
+
+不用考虑释放内存的事情了。
+
+
+
 # 智能指针分类
 
 STL给我们提供了四种智能指针：
@@ -280,6 +292,24 @@ int *pI = p.get();
 
 
 
+# make_shared和shared_ptr区别
+
+```
+class A;
+std::shared_ptr<A> p1 = std::make_shared<A>();
+std::shared_ptr<A> p2 = std::shared_ptr(new A);
+```
+
+p1和p2的这2种定义方式，区别何在？
+
+make_shared只有一次内存分配，而shared_ptr有2次。
+
+所谓2次，一次是对象的内存，一次是控制块的内存。
+
+make_shared把这2个内存一次性分配了。
+
+
+
 # 参考资料
 
 1、C++智能指针简单剖析
@@ -301,3 +331,7 @@ https://blog.csdn.net/seamanj/article/details/50507470
 5、使用 C++11 智能指针时要避开的 10 大错误
 
 http://blog.jobbole.com/104666/
+
+6、make_shared和shared_ptr的区别
+
+https://blog.csdn.net/u013349653/article/details/51155675

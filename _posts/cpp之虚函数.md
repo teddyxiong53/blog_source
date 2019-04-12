@@ -185,6 +185,43 @@ public:
 
 
 
+纯虚函数是一种特殊的虚函数。
+
+就是基类里赋值为=0 。不实现，要求子类必须实现。就这么回事。
+
+
+
+虚函数，不是=0，而是有一个函数实现的。只是加了virtual进行修饰。
+
+既然普通虚函数，也有函数实现，那么虚函数，跟普通的成员函数区别何在呢？
+
+
+
+虚函数是c++的精髓。这句话怎么理解？
+
+虚函数是c++实现多态的基础。
+
+所谓多态，在代码上是这样的样子。
+
+```
+class Base {
+    virtual void func1() {
+        printf("base");
+    }
+}
+class Derived : public Base {
+    virtual void func1() {
+        printf("derived");
+    }
+}
+Base *p = new Derived();
+p->func1();//得到的是derived。
+```
+
+而不是virtual的函数，p调用，则是调用的base里的。
+
+
+
 
 
 # 参考资料
@@ -196,3 +233,23 @@ https://www.cnblogs.com/jin521/p/5602190.html
 2、在c++中，类的成员函数直接写成virtual bool good()=0；求大神解释一下后面
 
 https://zhidao.baidu.com/question/1540827235101011667.html
+
+3、虚函数和纯虚函数的区别
+
+https://blog.csdn.net/Hackbuteer1/article/details/7558868
+
+4、纯虚函数
+
+https://baike.baidu.com/item/%E7%BA%AF%E8%99%9A%E5%87%BD%E6%95%B0
+
+5、虚函数
+
+https://baike.baidu.com/item/%E8%99%9A%E5%87%BD%E6%95%B0
+
+6、虚函数与普通成员函数的区别
+
+https://blog.csdn.net/zxc024000/article/details/78784297
+
+7、C++虚函数表分析
+
+https://www.cnblogs.com/hushpa/p/5707475.html
