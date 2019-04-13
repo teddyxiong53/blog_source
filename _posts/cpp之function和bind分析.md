@@ -22,6 +22,10 @@ bind就是函数适配器。
 
 容器、迭代器、函数都有适配器。
 
+
+
+
+
 bind就是一个函数适配器。
 
 bind的一般形式是：
@@ -45,6 +49,153 @@ server_.setMessageCallback(
 
 
 
+在传统的c++程序里，事件回调是通过虚函数进行的。
+
+虚函数实现方式：
+
+```
+struct Button {
+	Button();
+	~Button();
+	virtual void OnClick() = 0;
+};
+
+struct MyButton: pulic Button {
+	virtual void OnClick() {
+		printf("click\n");
+	}
+};
+
+```
+
+function方式实现：
+
+```
+struct Button {
+	Button();
+	~Button();
+	void OnClick() {
+		m_func();
+	}
+	function<void()> m_func = []() {};
+};
+
+int main() {
+	Button a;
+	a.m_func = []() {
+		printf("click\n");
+	};
+	
+}
+```
+
+用function和bind的方式，一个明显优势，就是不用担心对象的生命周期了。
+
+
+
+bind作用：
+
+```
+1、把函数、成员函数、闭包转成function对象。
+2、将多元(N>1)函数转成一元函数或者(N-1)元函数。
+```
+
+
+
+#回调
+
+使用callback可以改善软件结构，提高软件的复用性。
+
+callback，主要用在框架上，把需要给客户自定义的，通过回调来调用，客户具体实现。
+
+先看C语言的版本，很简单。
+
+```
+#include <stdio.h>
+
+
+void callback(int a) {
+	printf("callback called with param:%d\n", a);
+}
+
+typedef void (*pfunc)(int a);
+
+void caller(pfunc p) {
+	(*p)(1);
+}
+
+int main()
+{
+	caller(&callback);
+}
+```
+
+但是引入面向对象后，事情就变得复杂了。
+
+如果回调函数是类的成员函数，怎么办？
+
+static的成员函数，跟C语言的还是一样，没有问题。
+
+但是非static的成员函数。就不同了。
+
+```
+#include <stdio.h>
+
+class CCallback {
+public:
+	void Func(int a) {
+		printf("member callback function\n");
+	}
+	
+};
+
+typedef void (CCallback::*pMemberFunc)(int);
+
+void Caller(pMemberFunc p) {
+	(*p)(1);
+} 
+
+int main()
+{
+	CCallback obj;
+	//Caller()
+}
+```
+
+这个编译是不能通过的。
+
+因为非static的成员函数，必须通过对象来访问。
+
+那我们就改进一下。
+
+```
+#include <stdio.h>
+
+class CCallback {
+public:
+	void Func(int a) {
+		printf("member callback function\n");
+	}
+	
+};
+
+typedef void (CCallback::*pMemberFunc)(int);
+
+void Caller(CCallback *pObj, pMemberFunc p) {
+	(pObj->*p)(1);
+} 
+
+int main()
+{
+	CCallback obj;
+	Caller(&obj, &CCallback::Func);
+}
+```
+
+这样可以编译运行了。
+
+
+
 
 
 保存自由函数。
@@ -62,6 +213,10 @@ int main()
 	func(1);
 }
 ```
+
+
+
+
 
 保存lambda表达式。
 
@@ -96,3 +251,19 @@ https://blog.csdn.net/Solstice/article/details/3066268
 4、C++拾遗--bind函数绑定
 
 https://blog.csdn.net/zhangxiangDavaid/article/details/43638747
+
+5、std::function与std::bind 函数指针
+
+https://blog.csdn.net/QQ575787460/article/details/8531397
+
+6、虚函数和 std::function 如何取舍？
+
+https://www.zhihu.com/question/27952064
+
+7、我写C++喜欢用继承有问题么？
+
+https://www.zhihu.com/question/264755585
+
+8、C++回调机制实现(转)
+
+https://www.cnblogs.com/qq78292959/archive/2012/10/10/2719155.html
