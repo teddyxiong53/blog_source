@@ -71,3 +71,20 @@ https://github.com/cnodejs/nodeclub
 #nodebb
 
 https://github.com/NodeBB/NodeBB
+
+
+
+
+
+有意思的nodejs项目
+
+tget
+
+下载种子的命令行工具。把js当脚本工具写。
+
+https://github.com/jeffjose/tget
+
+
+
+《深入浅出node.js》讲原理，《node.js开发实战》讲实战
+

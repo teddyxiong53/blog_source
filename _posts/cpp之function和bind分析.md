@@ -196,9 +196,22 @@ int main()
 
 
 
+# function可以保存的内容
+
+可以保存这些，把这些都封装成一个function对象。
+
+```
+1、普通函数。
+2、lambda表达式。
+3、函数指针。
+4、仿函数。重载()运算符。
+5、类成员函数。
+6、静态成员函数。
+```
 
 
-保存自由函数。
+
+##普通函数
 
 ```
 void printA(int a) {
@@ -218,7 +231,7 @@ int main()
 
 
 
-保存lambda表达式。
+##lambda表达式
 
 ```
 std::function<void()> func = []() {std::cout << "save lambda func\n";};
@@ -231,6 +244,32 @@ func();
 auto func = []() {std::cout << "save lambda func\n";};
 func();
 ```
+
+## 仿函数
+
+```
+class compare_class {
+public:
+	bool operator()(int a, int b) {
+        return a>b;
+	}
+};
+int main() 
+{
+    func = compare_class();
+    bool result = func(1,2);
+}
+```
+
+## 静态成员函数
+
+这个跟普通函数没有本质区别。
+
+
+
+## 成员函数
+
+这个需要借助bind函数，需要实例化对象。
 
 
 
@@ -267,3 +306,7 @@ https://www.zhihu.com/question/264755585
 8、C++回调机制实现(转)
 
 https://www.cnblogs.com/qq78292959/archive/2012/10/10/2719155.html
+
+9、std::function和std::bind详解
+
+https://blog.csdn.net/xiaoyink/article/details/79348806

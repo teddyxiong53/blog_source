@@ -22,6 +22,14 @@ cpp的初始化有两种：
 
 
 
+c++11统一了。
+
+````
+无论是类的变量，数组，stl的容器，类的构造，都统一使用{}。
+````
+
+
+
 参考资料
 
 1、c++类对象初始化方式总结
@@ -31,3 +39,7 @@ https://blog.csdn.net/caoyan_12727/article/details/52469065
 2、C++11列表初始化
 
 https://blog.csdn.net/K346K346/article/details/55194246
+
+3、C++ 11 新特性之统一初始化语法
+
+https://blog.csdn.net/wocacaaa/article/details/25784861
