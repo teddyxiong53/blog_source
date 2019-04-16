@@ -98,6 +98,52 @@ con.on("open", ()=> {
 
 
 
+mongodb是一个开源的nosql数据库，相比于mysql那样的关系型数据库，它显得更加轻巧灵活，非常适合在数据规模很大、事务性不强的场合下使用。
+
+同时它也是一个对象数据库。
+
+没有表、行的概念。
+
+也没有固定的模式和结构。
+
+所有的数据以文档的形式存储。文档的格式是json的。
+
+
+
+mongoose是什么？
+
+mongoose是mongodb的一个对象模型工具。
+
+基于node-mongodb-native开发的mongodb 的nodejs驱动。
+
+可以在异步环境下执行。
+
+同时也是一个针对mongodb操作的一个对象模型库。
+
+封装了mongodb对文档的增删改查等操作。
+
+让nodejs操作mongodb更加容易。
+
+网上很多的教程都跟最新的无法匹配了。所以最好还是参考官方教程。
+
+```
+var mongoose = require("mongoose");
+
+var db = mongoose.connect("mongodb://127.0.0.1:27017/db_helloworld");
+
+var db = mongoose.connection;
+
+db.on('error', function(error) {
+    console.log("connect fail");
+});
+
+db.once('open', function() {
+    console.log("connect ok");
+});
+```
+
+
+
 参考资料
 
 1、Mongoose学习参考文档——基础篇
@@ -111,3 +157,7 @@ https://www.villainhr.com/page/2016/05/11/%E6%B7%B1%E5%85%A5%E6%B5%85%E5%87%BAmo
 3、Connections
 
 https://mongoosejs.com/docs/connections.html
+
+4、mongoose入门
+
+http://i5ting.github.io/stuq-koa/koa-with-db/mongoose.html

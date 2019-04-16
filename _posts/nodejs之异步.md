@@ -246,3 +246,4 @@ Array [3, 42, "foo"]
 1、node.js异步控制流程 回调，事件，promise和async/await
 
 https://www.cnblogs.com/kazetotori/p/6043983.html
+

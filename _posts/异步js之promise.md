@@ -68,7 +68,65 @@ Promise.resolve().then(()=> {
 
 
 
+我通过vscode看看Promise的定义。
+
+只有2个方法。
+
+```
+interface Promise<T> {
+	then
+	catch
+}
+```
+
+#什么是Promise？
+
+一个Promise对象表示一个目前还不可用，但是在未来的某个时间点可以被解析的值。
+
+它允许你以同步的方式编写异步代码。
+
+Promise把之前嵌套的回调函数，用then穿起来了。
+
+代码看起来清晰多了。
+
+
+
+#Promise A规范
+
+Promise表示一个最终值。这个值有一个操作完成时返回。
+
+Promise有三种状态：
+
+```
+1、未完成。
+2、完成。
+3、失败。
+```
+
+Promise只能从从未完成转换到完成，或者从未完成转换到失败。
+
+这个转换只发生一次。
+
+Promise有一个then方法，这个方法接受3个函数做参数。
+
+```
+1、完成时的回调。
+2、失败时的回调。
+3、进度信息回调。
+```
+
+# Promise B规范
+
+
+
+
+
 参考资料
 
-1、
+1、理解 Promise 的工作原理
 
+https://blog.coding.net/blog/how-do-promises-work
+
+2、Promise详解与实现（Promise/A+规范）
+
+https://zhuanlan.zhihu.com/p/32913092

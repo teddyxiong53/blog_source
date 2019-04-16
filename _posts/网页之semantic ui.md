@@ -55,6 +55,99 @@ https://semantic-ui.com/examples/theming.html
 
 
 
+主要特性：
+
+```
+1、50个ui元素。
+2、3000个css变量。
+3、三层变量继承。
+4、自适应设计，支持em单位。
+5、使用友好的flexbox布局。
+```
+
+
+
+我们先写一个简单的例子。
+
+```
+<html>
+  <head>
+  </head>
+
+  <body>
+    <div>
+      Default
+    </div>
+
+    <div>
+      <div>
+        Item A
+      </div>
+      <div>
+        Item B
+      </div>
+      <div>
+        Item C
+      </div>
+    </div>
+  </body>
+</html>
+```
+
+这个原始效果很丑陋。
+
+我们看看怎么用semantic来改造它。
+
+首先，需要3个文件，semantic.min.js、semantic.min.css、jquery.min.js。从各自的官网下载这些文件。
+
+包含到文件头了。
+
+```
+<head>
+  <link href="./semantic.min.css" rel="stylesheet" type="text/css">
+  <script src="./jquery.min.js"></script>
+  <script src="./semantic.min.js"></script>
+</head>
+```
+
+改造如下，界面美观多了。
+
+```
+<html>
+
+<head>
+    <link href="./semantic.min.css" rel="stylesheet" type="text/css">
+    <script src="./jquery.min.js"></script>
+    <script src="./semantic.min.js"></script>
+</head>
+
+<body>
+    <div class="ui button">
+        Default
+    </div>
+
+    <div class="ui menu">
+        <div class="item">
+            Item A
+        </div>
+        <div class="item">
+            Item B
+        </div>
+        <div class="item">
+            Item C
+        </div>
+    </div>
+</body>
+
+</html>
+```
+
+
+
+可以用vscode里的semantic的插件来帮助编程。
+
+
+
 #参考资料
 
 1、semantic UI 基本思路和框架
@@ -64,3 +157,11 @@ https://www.cnblogs.com/dangguangming/p/7695789.html
 2、官网教程
 
 https://semantic-ui.com/introduction/getting-started.html
+
+3、Semantic UI：友好且功能强大的html框架
+
+http://hao.jobbole.com/semantic-ui/
+
+4、Semantic UI 怎么开始？
+
+https://www.zhihu.com/question/34698183
