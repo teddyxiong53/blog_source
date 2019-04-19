@@ -28,6 +28,33 @@ display设置为none，是元素不显示，而且位置也不存在了。
 
 
 
+display的显示包括两部分：
+
+1、外部行为。
+
+2、内部行为。
+
+外部行为包括：
+
+```
+block
+inline
+run-in
+```
+
+内部行为：
+
+```
+flow
+flow-root
+table
+flex
+grid
+ruby
+```
+
+
+
 参考资料
 
 1、
@@ -37,3 +64,7 @@ http://www.w3school.com.cn/css/pr_class_display.asp
 2、display:none;与visibility:hidden;的区别
 
 https://blog.csdn.net/henulwj/article/details/7765644
+
+3、display完整属性
+
+https://developer.mozilla.org/zh-CN/docs/Web/CSS/display
