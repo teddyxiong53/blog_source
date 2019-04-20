@@ -113,6 +113,39 @@ http://localhost/zend_test/index.php
 
 
 
+# Ubuntu下配置
+
+安装：
+
+```
+sudo apt-get install php-xdebug 
+```
+
+先不搞这么麻烦的。
+
+直接在php配置目录下的apache2目录下，把php.ini里，改两点：
+
+1、打开日志。
+
+```
+log_errors = On
+```
+
+
+
+2、指定日志文件。
+
+```
+error_log = /home/hlxiong/work/test/easyui/php_errors.log
+```
+
+然后就可以看到了。
+
+```
+hlxiong@hlxiong-VirtualBox ~/work/test/easyui $ tail -F ./php_errors.log             
+[20-Apr-2019 14:14:52 Asia/Chongqing] xxx
+```
+
 
 
 # 参考资料
@@ -124,3 +157,19 @@ https://blog.csdn.net/qi_ruihua/article/details/69282531
 2、PHP调试环境搭建：wampserver2.4+zend studio12.0.1+Xdebug
 
 https://blog.csdn.net/imxiangzi/article/details/46533811
+
+3、在chrome浏览器的console中调试php
+
+http://www.884358.com/php-console/
+
+4、
+
+https://blog.csdn.net/wyyl1/article/details/6528718
+
+5、PHP 程序员的调试技术
+
+https://www.ibm.com/developerworks/cn/opensource/os-debug/index.html
+
+6、日志-php-error错误日志查看
+
+https://blog.csdn.net/ty_hf/article/details/55505262

@@ -35,8 +35,33 @@ mysql -u root
 
 
 
+执行sql文件命令
+
+```
+mysql –uroot –p040253 users<users.sql
+```
+
+
+
+sql脚本文件里注释怎么写？
+
+```
+单行：--
+多行：/**/
+```
+
+
+
 # 参考资料
 
 1、解决linux-mysql Access denied for user 'root'@'localhost'
 
 https://blog.csdn.net/hhj724/article/details/73277506
+
+2、MySQL 数据库常用命令小结
+
+https://blog.csdn.net/ithomer/article/details/5131863
+
+3、Ubuntu下执行mysql的sql文件
+
+https://blog.csdn.net/Liucheng417/article/details/50902657
