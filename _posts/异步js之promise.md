@@ -121,6 +121,87 @@ Promise有一个then方法，这个方法接受3个函数做参数。
 
 
 
+我们在浏览器的console里，用这个查看一下：
+
+```
+console.dir(Promise)
+```
+
+可以看到：
+
+1、Promise是一个构造函数。
+
+2、自己有all、reject、resolve这些函数。
+
+3、它的原型有then、catch方法。
+
+新建app.js。
+
+里面写这些：
+
+```
+var p = new Promise(function(resolve, reject) {
+	setTimeout(function() {
+		console.log("执行完成");
+		resolve("随便什么数据");
+	}, 2000);
+});
+```
+
+执行：node app.js。
+
+```
+hlxiong@hlxiong-VirtualBox ~/work/test/node $ node app.js 
+执行完成
+```
+
+我们要注意，我们只是new了一个对象，并没有执行什么，为什么会运行呢？
+
+所以我们一般是这样用的。用函数把对象包起来。
+
+```
+function runAsync() {
+	var p = new Promise(function(resolve, reject) {
+		setTimeout(function() {
+			console.log("执行完成");
+			resolve("随便什么数据");
+		}, 2000);
+	});
+	return p;
+}
+
+runAsync();
+```
+
+我们看看包装后的函数。
+
+这样一个函数有什么用呢？
+
+我们包装的函数，返回了一个Promise对象。
+
+这个对象可以执行then和catch函数。
+
+```
+runAsync().then(function(data) {
+	console.log(data);
+});
+```
+
+运行效果是这样：
+
+```
+执行完成
+随便什么数据
+```
+
+then里可以取到resolve的参数。
+
+then达到的效果，跟普通的回调函数类型。
+
+但是写起来要清晰很多。
+
+
+
 参考资料
 
 1、理解 Promise 的工作原理
@@ -130,3 +211,7 @@ https://blog.coding.net/blog/how-do-promises-work
 2、Promise详解与实现（Promise/A+规范）
 
 https://zhuanlan.zhihu.com/p/32913092
+
+3、Promise对象是用来干嘛的?
+
+https://blog.csdn.net/Wbiokr/article/details/79490390

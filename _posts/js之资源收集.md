@@ -20,6 +20,12 @@ https://github.com/jobbole/awesome-javascript-cn
 
 http://www.runoob.com/js/js-examples.html
 
+ECMAScript 6 入门
+
+阮一峰写的。
+
+http://es6.ruanyifeng.com
+
 # 书籍
 
 《编写可维护的JavaScript》
