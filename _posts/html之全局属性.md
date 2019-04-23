@@ -94,3 +94,7 @@ en或者zn
 1、HTML的16个全局属性
 
 https://blog.csdn.net/long_ge_cool/article/details/50251215
+
+2、html属性参考
+
+https://developer.mozilla.org/zh-CN/docs/Web/HTML/Attributes
