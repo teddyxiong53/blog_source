@@ -26,6 +26,10 @@ ECMAScript 6 入门
 
 http://es6.ruanyifeng.com
 
+js常用函数，很好，很实用。
+
+https://www.kancloud.cn/ifeng/js100/622665
+
 # 书籍
 
 《编写可维护的JavaScript》
