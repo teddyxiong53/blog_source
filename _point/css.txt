@@ -1,0 +1,86 @@
+css属性列表
+属性组
+
+1、动画。
+2、背景。
+3、边框和轮廓。
+4、框。
+5、颜色。
+6、内容页的媒体属性。
+7、尺寸。
+8、盒子模型。
+9、字体。
+10、内容生成。
+11、网格。
+12、超链接。
+13、线框。
+14、列表。
+15、外边框。
+16、字母。
+17、多列。
+18、内边距。
+19、内页媒体。
+20、定位。
+21、分页。
+22、语音。
+23、表格。
+24、文本。
+25、2d和3d。
+26、过渡。
+27、用户界面。
+
+
+1、动画。
+	1、@keyframes。
+		定义一个动画。
+		<style>
+			div {
+				width: 100px;
+				height: 100px;
+				background: red;
+				position: relative;
+				animation: mymove 5s infinite;
+			}
+			@keyframes mymove{
+				from{top: 0px;}
+				to{top: 200px;}
+			}
+		</style>
+	2、animation。
+		复合属性。
+		包括名字、持续时间、过渡类型、延迟时间、循环次数、方向、填充模式、状态。
+	3、分解的属性。
+		animation-name：名字。
+		animation-duration：持续时间。
+		animation-time-function：
+			过渡类型。
+			linear。匀速运动。
+			ease：先慢再快再慢。
+			ease-in：缓慢开始。
+			ease-out：缓慢结束。
+			ease-in-out：
+		animation-delay
+		animation-iteration-count：
+			数组或者infinite（无数次）
+		animation-direction
+		animation-play-state
+		
+2、背景属性。
+	1、background。
+		总的属性。
+		background: 
+			bg-color 
+			bg-image 
+			position 
+			bg-repeat
+			bg-origin
+			bg-clip
+			bg-attachment
+			
+3、边框。
+	border
+
+
+参考资料
+1、
+https://www.w3cschool.cn/cssref/3ps212do.html
