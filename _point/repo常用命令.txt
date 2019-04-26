@@ -1,0 +1,60 @@
+1、查看帮助信息
+	repo help [cmd]
+	cmd包括：
+		abandon
+		branch
+		branches
+		checkout
+		cherry-pick
+		diff
+		diffmanifests
+		download
+		grep 
+		info
+		init
+		list
+		overview
+		prune
+		rebase
+		smartsync
+		stage
+		start
+		status
+		sync
+		upload
+2、init命令
+	可选参数
+	-q：quiet的意思。
+	-u URL：指定manifest的url。
+	-b VERSION：取对应的版本。
+	-p PLATFORM：指定平台，Linux、mac、win等。
+	-m：指定manifest的名字。是指保存到本地的文件名字。
+	--repo-url：repo仓库的远端地址。
+	--no-repo-verify ：不要验证代码。
+	--config-name：要求配置名字和邮箱。
+	
+	举例：
+	repo init -u https://github.com/yodaos-project/yodaos.git -m manifest.xml --repo-url=http://openai-corp.rokid.com/tools/repo --no-repo-verify
+	
+	
+	
+curl: (22) The requested URL returned error: 404 Not Found
+Server does not provide clone.bundle; ignoring.
+这个错误是没有关系的，不影响同步。
+
+repo init后的目录结构分析
+会在当前目录下，生成一个.repo目录。
+层次结构是这样：
+hlxiong@hlxiong-VirtualBox ~/work2/repo_test/.repo $ tree -L 1 
+.
+├── manifests
+├── manifests.git
+├── manifest.xml -> manifests/manifest.xml
+└── repo
+
+manifest目录内容就是https://github.com/yodaos-project/yodaos.git 里面的内容。
+manifests.git就是一个.git目录，可以看到版本信息。
+
+参考资料
+1、
+https://www.jianshu.com/p/58e5d4f9f9a9

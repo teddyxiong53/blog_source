@@ -1,0 +1,79 @@
+查看帮助的方法
+git help [cmd]
+
+cmd有：
+	1、开始一个工作区
+		clone
+		init
+	2、在当前变更上工作
+		add
+		mv 
+		reset：重置当前HEAD到指定状态。
+		rm
+	3、检查历史和状态
+		bisect
+		grep
+		log
+		show
+		status
+	4、扩展、标记和调校历史记录
+		branch
+		checkout
+		commit
+		diff
+		merge
+		rebase
+		tag
+	5、协同工作
+		fetch
+		pull
+		push
+初始化
+
+==========配置==================
+配置全局名字
+git config --global user.name "teddyxiong53"
+git config --global user.email "1073167306@qq.com"
+
+为特定的库配置用户信息
+cd your_repo_dir
+git config user.name "teddyxiong53"
+git config  user.email "1073167306@qq.com"
+
+===========修改==============
+放弃本地的所有修改
+git checkout HEAD
+取消暂存
+git reset HEAD
+
+========分支=============
+列出本地分支
+git branch
+查看远程分支
+git branch -r
+列出本地和远程分支
+git branch -a
+
+基于当前分支创建新的分支
+git branch xx
+
+检出一个分支
+git checkout xx
+
+
+=====历史========
+查看历史
+git log
+查看历史，并比较改动
+git log -p
+查看1条历史
+git log -1
+显示最近6个小时的提交
+git log --since="6 hours"
+显示两天之前的提交
+git log --before="2 days"
+显示历史，每个只占据一行
+git log --pretty=oneline
+显示改动行数统计
+git log --stat
+

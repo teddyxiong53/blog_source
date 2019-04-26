@@ -71,3 +71,7 @@ tags:
 1、WeUI for 小程序--使用教程
 
 https://blog.csdn.net/chq1988/article/details/73549027
+
+2、WeUI库说明
+
+https://www.vxzsk.com/50.html

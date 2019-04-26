@@ -1,0 +1,78 @@
+_ __ -
+有这三种连接符，有规律吗？
+
+跟title、bd、ft、hd这些时，前面都是2个下划线。
+
+.weui-cell__ft_in-access
+这个规律是什么？
+weui没得说。
+后面分4段：
+-cell：
+__ft：
+_in：
+-access：
+
+总的来说，双下划线还是比较少的。容易识别。
+关键在于双下划线和连字符的区别。
+我感觉是没有规律。
+
+文件大概1000行。
+微信另外还提供了一个example.css文件。
+大概500行。
+这个里面定义了page__hd这些。
+
+
+page
+	行高是1.6倍。
+	字体是系统字体。
+icon
+	垂直居中。
+	
+.weui-cells
+	相对定位。
+	margin-top：1.17
+	背景色：白色。
+	行高1.4
+	字体17px。
+	
+	
+
+.weui-cells__title
+	margin-top：0.7em
+	margin-bottom：0.3em
+	padding：左右都是15px。
+	颜色999
+	字体14px。
+	
+.weui-cell（这个是单数）
+	padding：10px 15px
+	相对定位。
+	内部是flex布局。
+	
+	
+.weui-form-preview
+.weui-select
+
+.weui-uploader
+.weui-article 
+.weui-msg
+.weui-flex
+.weui-btn
+.weui-agree
+
+.weui-footer
+.weui-grid 
+.weui-loading
+.weui-badge
+.weui-loadmore
+.weui-panel
+.weui-media-box
+.weui-progress
+.weui-navbar
+.weui-tab
+.weui-search-bar
+
+参考资料
+1、
+有需要就参考这里的吧。
+https://www.vxzsk.com/50.html

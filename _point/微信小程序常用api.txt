@@ -1,0 +1,86 @@
+微信小程序常用api
+
+########界面相关###############
+wx.showToast
+举例：
+	wx.showToast({
+      title: 'toast title',
+      icon: "success",//loading/ none
+      duration: 2000
+    })
+
+wx.showModal
+举例：
+wx.showModal({
+      title: '提示',
+      content: '这是一个模态弹窗',
+      success(res) {
+        if (res.confirm) {
+          console.log('用户点击确定')
+        } else if (res.cancel) {
+          console.log('用户点击取消')
+        }
+      }
+    })
+
+wx.showLoading
+举例：必须调用hideLoading才能隐藏。不会自动隐藏。
+wx.showLoading({
+      title: '加载中',
+    })
+    setTimeout(function() {
+      wx.hideLoading()
+    }, 2000)
+	
+wx.showActionSheet
+这个是弹出一个列表让你选择。
+举例：
+wx.showActionSheet({
+      itemList: ['aa', 'bb', 'cc'],
+      success(res) {
+        var str = 'select ' + res.tapIndex
+        wx.showToast({
+          title: str
+        })
+      },
+      fail(res) {
+        wx.showToast({
+          title: "select nothing"
+        })
+      }
+    })
+wxshowNavigationBarLoading
+举例：
+    wx.showNavigationBarLoading({
+      success: function() {
+        wx.showToast({
+          title: 'bar ok',
+        })
+      },
+      complete: function() {
+        wx.hideNavigationBarLoading();
+      }
+    })
+  }
+
+
+
+wx.onMemoryWarning
+
+
+按钮要在有合理输入的时候，才变成使能的。
+<button class='weui-button' type='primary' >页面主操作</button>
+<button class='weui-button' type='primary' disabled='true'>页面主操作disable</button>
+
+这段可以直接用。
+<view class='page__bd page__bd_spacing'>
+    <view class='weui-footer weui-footer_fixed-bottom'>
+      <view class='weui-footer__text'>Copyright 阜马驿站 2019</view>
+    </view>
+  </view>
+  
+  
+  
+button的这个属性：open-type="getUserInfo"
+https://blog.csdn.net/weixin_39602178/article/details/80295684
+

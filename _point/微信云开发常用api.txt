@@ -1,0 +1,36 @@
+连接数据库，读取信息并保存。
+async getGoodsList() {
+	const db = wx.cloud.database();
+	//await可以没有，但是用上会更好。
+	const result = await db.collection("goods").get({env:"xhl-test-xx"});
+	let data = result.data||[]
+	this.setData({
+		goods: data
+	})
+}
+
+
+async makeOrder(e) {
+	wx.showLoading({
+		title:"正在下单"
+	});
+	let id = e.target.dataset.goodid;
+	const {result} = await wx.cloud.Function({
+		name: 'pay',
+		data: {
+			type: "unifiedorder",
+			data; {
+				data: {
+					goodId: id
+				}
+			}
+		}
+	});
+	const data = result.data;
+	wx.hideLoading();
+	wx.navigateTo({
+		url: `pages/result/index?id=${data.out_trade_no}`
+	});
+}
+
+
