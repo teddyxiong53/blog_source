@@ -9,6 +9,7 @@ css属性列表
 6、内容页的媒体属性。
 7、尺寸。
 8、盒子模型。
+	flex弹性盒子。
 9、字体。
 10、内容生成。
 11、网格。
@@ -81,6 +82,70 @@ css属性列表
 	border
 
 
+flex弹性盒子。
+	flex：复合属性。
+		设置flex复合属性。
+		flex: 0 0 50%;
+	flex-grow：
+		设置比例。为数字。
+		div:nth-of-type(1) {flex-grow: 1;}
+	flex-shrink：
+		跟grow相反，这个表示收缩。
+	flex-basis
+		跟上面类似。不管。
+	flex-flow
+		这个也是一个复合属性。
+		是flex-direction和flex-wrap的复合。
+		举例：
+		flex-flow: row-reverse nowrap
+	align-content
+		取值为center、flex-start、flex-end这些。
+		必须要有多个子元素，才能起作用。
+		这个的不同在于，它是控制自己内部的东西。
+		content就是这个意思。
+		适用于多行的flex容器。
+		
+	align-items
+		定义flex容器内部的子元素在垂直方向上的对齐方式。
+		
+	justify-content
+		在flex横轴上的对齐方式。
+	align-self：
+		取值有：
+		center、baseline、flex-end、flex-start。
+		
+	实践情况：
+	justify-content: space-around;
+		这个在小程序里没有效果。
+		
+还可以设置display为inline-flex的。
+
+
+阴影效果
+box-shadow
+	10px 5px 5px red; 这个是右边和下边出现红色阴影效果。
+	3个数字依次是：
+	x offset 
+	y offset
+	阴影模糊半径。这个是有模糊效果的。
+	
+	60px -16px teal。
+	这个是上边和右边有灰色阴影的。
+	60px，相当于x轴方向，加了60px。
+	-16px，相当于向上偏移了16px。
+	
+	2px 2px 2px 1px rgba(0,0,0, 0.2)
+	x offset
+	y offset
+	阴影模糊半径。
+	阴影扩散半径。
+	这个阴影是半透明的。
+	
+	inset 5em 1em gold
+	inset表示阴影是向盒子内部的。
+	
+	
+	
 参考资料
 1、
 https://www.w3cschool.cn/cssref/3ps212do.html

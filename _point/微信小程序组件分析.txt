@@ -1,0 +1,341 @@
+微信官网文档示例代码可以直接点击打开微信开发者工具进行效果预览。
+
+
+视图容器
+	1、cover-image
+	2、cover-view
+	3、movable-area
+	4、scroll-view
+	5、swiper
+	6、swiper-item
+	7、view
+	我们只关注view和swiper。
+	
+基础内容
+	1、icon。
+	2、progress
+	3、rich-text。
+		了解就行。
+	4、text。
+		直接用就好了。属性没有什么特别的。
+		
+表单组件
+	1、button。很重要。
+	2、checkbox。
+	3、checkbox-group。
+		里面包含多个checkbox。
+	4、form。
+		
+	5、input
+		输入文字。
+	6、label。
+		用来改进表单组件的可用性。
+		没看懂具体用途。
+		不管。
+	7、picker。
+	8、picker-view。
+		嵌入到页面里的滚动选择器。
+		
+	9、radio
+	10、radio-group
+	
+	11、slider。
+		拖动调节。
+	12、switch
+		开关。
+	13、textarea。
+		
+导航
+	1、navigator。
+	
+媒体组件
+	1、image。
+		
+==================================
+view的属性
+	hover-class
+		string类型。默认是none。表示按下去的效果。
+	hover-stop-propagation
+		Boolean类型。默认false。
+		是否阻止本节点的祖先节点出现点击态。
+	hover-start-time
+		number类型。按住后多久出现点击态。
+		默认50ms。
+	hover-stop-time
+		number类型。手指松开后，多久保持点击态。
+		默认400ms。
+	一般都不设置这些。
+	
+icon的属性
+	type
+		string类型。
+		success、success_no_circle、
+		info、warn、waiting、
+		cancel、download、search、clear。
+	size：
+		默认是23px。
+	color：
+		颜色。
+		
+progress的属性
+	1、percent。百分比
+	2、show-info。
+		是否在进度条的右边显示百分比。
+	3、border-radius。
+		圆角大小。
+	4、font-size。
+		百分比字体大小。
+	5、stroke-width。
+		进度条线的宽度。
+	6、color。
+		进度条的颜色。
+	7、activeColor。
+		已选择的进度条颜色。
+	8、backgroundColor。
+		未选择的进度条的颜色。
+	9、active。
+		boolean。进度条从左到右的动画。
+	10、active-mode。
+		forwards：接着上次的位置播放。
+		backwards：从头播放。
+	11、bindactiveend。
+		回调。动画完成时的事件。
+		
+		
+rich-text属性
+	nodes
+		array或者string类型。默认值[]。
+		是html内容。
+	space。
+		显示连续空格。
+		可以取的值有：
+		ensp。
+		emsp。
+		nbsp。
+		
+text属性。
+	selectable。
+		boolean。是否可选。
+		space。显示连续空格。
+		decode。是否解码。
+		
+		
+button属性
+	1、size。
+		按钮的大小。
+		有两种：default和mini。
+	2、type。
+		按钮的样式。
+		有三种：primary（绿色）、default（白色）、warn（红色）
+	3、plain。
+		按钮是否镂空。
+	4、disabled。
+		是否禁用。
+	5、loading。
+		名称前是否带loading图标。
+	6、form-type。
+		用于form组件，会触发submit或者reset事件。
+		有两种：submit和reset。
+	7、open-type。
+		微信开放能力。
+	8、hover-class。
+		按钮按下去的样式。
+	9、lang。
+		返回给用户的信息的类型。
+		zh_CN：简体中文。
+		en：英文。
+	10、session-from。
+		回话来源，当open-type是contact时才有用。
+	11、send-message-title。
+		-path
+		-img
+		-card
+		一起的。
+	12、app-parameter。
+		打开app时，向app传递的消息。当open-type为launchApp时有效。
+	13、bindgetuserinfo
+		用户点击时，会返回获取到的用户信息。
+		open-type为getUserInfo时有效。
+	14、bindcontact。
+		open-type为contact时有用。
+		客服信息回调。
+	15、bindgetphonenumber。
+		获取用户手机号码。open-type为getPhoneNumber时有效。
+	16、binderror。
+		发生错误时回调。
+	17、bindopensetting。
+		当open-type为openSetting时有效。
+	18、bindlaunchapp。
+		打开app时回调，当open-type为launchApp时有效。
+
+		
+checkbox属性
+	1、value。
+	2、disabled。
+	3、checked。
+	4、color。
+	
+	
+form属性
+	1、report-submit。
+		boolean。是否返回formId用于发送模板消息。
+	2、report-submit-timeout。
+		number。等待一段时间确认formId是否生效。
+	3、bindsubmit。
+	4、bindreset。
+	
+	
+input属性
+	1、value。
+		输入框的初始值。
+	2、type。
+		有四种：
+			text
+			number
+			idcard：身份证输入。
+			digit：带小数点的数字键盘。
+	3、password。
+		boolean类型。
+	4、placeholder。
+	5、placeholder-style。
+	6、placeholder-class。
+	7、disabled。
+	8、maxlength。
+	9、cursor-spacing。
+		指定光标与键盘的距离。
+	10、focus。
+		boolean。获取焦点。
+	11、confirm-type。
+		设置键盘右下角的文字。只有type为text时有效。
+		有这些取值：
+		send：显示为发送。
+		search：显示为搜索。
+		next：显示为下一个。
+		go：显示为前往。
+		done；显示为完成。
+	12、confirm-hold。
+		按下确认后，键盘是否收起。
+	13、bindinput
+	14、bindfocus。
+	15、bindblur。
+	16、bindconfirm。
+	
+	
+picker属性
+	1、mode。根据mode不同，属性也不同。
+		取值为：
+		1、selector
+			普通选择器。默认这种。
+			属性：
+				range
+					array类型。
+				range-key
+					当range里面的元素是对象的时候，key表示对象的key值。
+				value：
+					number类型，就是第几个。
+				bindchange：
+					改变时的回调。
+					
+		2、multiSelector。
+			多列选择器。
+		3、time。
+			时间选择器。
+			属性：
+				value。
+					选择的时间。默认格式："hh:mm"
+				start
+				end
+					开始和结束的时间。
+				bindchange
+				
+		4、date。
+			日期选择器。
+			属性
+				value。"YYYY-MM-DD"
+				start
+				end
+				fields
+					选择的粒度。可以是year、month、day。
+					默认是day。
+				bindchange
+		5、region。
+			省市区选择器。
+			属性
+				value
+					array类型。
+				custom-item。
+				bindchange
+					
+	2、disabled。
+	3、bindcancel。
+	
+	
+slider属性
+	1、min。
+	2、max。
+		默认100.可以改。
+	3、step。
+		步进值。默认为1 。
+	4、disabled。
+	5、value。
+		当前值。
+	6、backgroundColor。
+		背景条的颜色。
+	7、show-value。
+		显示当前值。
+	8、bindchange。
+	9、bindchanging。
+	
+	
+	
+navigator属性
+	1、target。
+		在哪个目标打开，默认当前小程序。
+		self、miniProgram 这2个值。
+	2、url。
+		跳转到哪个页面。
+	3、open-type。
+		跳转方式。
+		navigate，跟wx.NavigateTo一样。
+		redirect。跟wx.redirectTo一样。
+		switchTab。对应wx.switchTab。
+		reLaunch。对应wx.reLannch。
+		navigateBack。对应wx.navigateBack。
+		exit。退出。只有target为miniProgram的时候有效果。
+	4、delta。
+		当open-type为navigateBack的时候，表示回退的层数。
+	5、app-id。
+		当target为miniProgram的时候，表示要打开的小程序的appId。
+	6、path。
+		当target为miniProgram的时候，打开的小程序的页面。为空表示打开首页。
+	7、extra-data。
+		object类型。
+		当target为miniProgram的时候，对方可以在onLaunch里拿到。
+	8、version。
+		默认值是release。要打开的小程序的版本。
+		取值有：
+		develop。
+		trial。
+		release。
+	9、bindsuccess。
+	10、bindfail。
+	11、bindcomplete。
+	
+	
+image属性
+	1、src。
+	2、mode。
+		1、scaleToFill。
+		2、aspectFit。
+		3、aspectFill。
+		4、widthFix。
+		
+	3、lazy-load。
+		懒加载。在快要靠近时才加载。
+		下拉的这种场景。
+	4、binderror。
+	5、bindload。
+	
+参考资料
+
+https://developers.weixin.qq.com/miniprogram/dev/component/

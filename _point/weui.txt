@@ -72,6 +72,20 @@ icon
 .weui-tab
 .weui-search-bar
 
+
+.page__title
+	文字左对齐。
+	字体20px。
+	font-weight 400
+	
+.page__desc
+	文字左对齐。
+	字体14px。
+	margin-top是5px。
+	
+.page__bd
+	这个没有单独存在的，都是在.page.home下面。
+	
 参考资料
 1、
 有需要就参考这里的吧。
