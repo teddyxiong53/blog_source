@@ -213,6 +213,223 @@ doIt();
 
 
 
+异步编程的方法，有这几种：
+
+1、回调函数。
+
+2、事件监听。
+
+3、发布订阅。
+
+4、Promise对象。
+
+
+
+什么是异步？
+
+异步就是把一个完整的任务分为两段，先执行第一段，然后执行其他任务，然后再回过头来执行任务的第二段。
+
+例如，读取文件就是一个典型的耗时的异步行为。
+
+我们用回调的方式来实现。
+
+```
+fs.readFile("1.txt", function(err, data) {
+    if(err) {
+        throw err;
+    }
+    console.log(data);
+})
+//继续执行其他任务。
+```
+
+开始读文件，是任务的第一段，读取完成，是任务的第二段。
+
+正是因为被拆成了两段，第一段跟第二段没法直接联系。
+
+所以nodejs约定了，回调函数的第一个参数是error对象，通过这个来把错误传递过来。
+
+
+
+回调函数本身没有什么问题。
+
+但是回调嵌套导致代码可读性变得很差。
+
+
+
+Promise就是为了解决回调地狱而出现的。
+
+Promise的问题是大量冗余。
+
+用这种方式写的代码，一眼看过去都是then。
+
+
+
+有没有更好的方式？
+
+协程是一种。
+
+协程有点像函数，又有点向线程。
+
+它的执行流程是这样：
+
+```
+1、协程A开始运行。
+2、协程A运行到一半，进入暂停，执行权转移到协程B。
+3、协程B运行一段时间后，把控制权交还给协程A。
+4、协程A继续运行。
+```
+
+
+
+读取文件的协程写法是这样：
+
+```
+function asyncJob() {
+	//其他代码
+    var f = yield readFile("1.txt");
+    //其他代码
+}
+```
+
+上面代码的关键就是yield关键字。
+
+它把任务分为了两段。
+
+
+
+Generator函数是协程在ES6的实现。
+
+最大的特点就是可以交出函数的执行权。就是暂停。
+
+一个简单的生成器函数是这样：
+
+```
+function *gen(x) {
+    var y = yield x + 2;
+    return y;
+}
+```
+
+我们看这个函数的特点：
+
+前面加了一个星号，来跟普通函数进行区别。
+
+怎么来用呢？这个函数返回的是一个遍历器g。我们对遍历器调用next就可以了。
+
+```
+g = gen(1)
+console.log(g.next())
+console.log(g.next())
+```
+
+输出是这样：
+
+```
+hlxiong@hlxiong-VirtualBox ~/work/test/node $ node app.js 
+{ value: 2, done: false }
+{ value: undefined, done: true }
+```
+
+因为里面只有一个yield，所以调用一次next之后，就没有了。
+
+如果有多个yield，就可以调用多次next。
+
+
+
+async是什么？
+
+async就是生成器函数的语法糖。
+
+我们还是先看生成器函数，依次读取2个文件。
+
+```
+var readFile = function(fileName) {
+    return new Promise(function(resolve, reject) {
+        fs.readFile(fileName, function(error, data) {
+            if(error) {
+                reject(error);
+            } else {
+                resolve(data);
+            }
+        })
+    })
+}
+
+var gen = function* () {
+    var f1= yield readFile("1.txt")
+    var f2 = yield readFile("2.txt")
+    console.log(f1.toString())
+    console.log(f2.toString())
+}
+var g= gen(1)
+console.log(g.next())
+console.log(g.next())
+```
+
+用async来实现，是这样的：
+
+```
+var asyncReadFile = async function() {
+    var f1 = await readFile("1.txt")
+    var f2 = await readFile("2.txt")
+}
+```
+
+区别是什么？
+
+就是
+
+1、把星号换成了async，
+
+2、把yield换成了await。
+
+
+
+async函数的优点
+
+1、内置执行器。只需要写一行就可以了。而生成器还需要用next调用。
+
+2、更好的语义。
+
+3、更广泛的适用性。
+
+
+
+```
+function sleep(n) {
+    var start = Date.now();
+    while(true) {
+        if(Date.now() - start > n*1000) {
+            break;
+        }
+    }
+}
+async function testAsync() {
+    console.log("first part");
+    await sleep(2);
+    console.log('second part')
+}
+
+console.log("begin")
+testAsync()
+console.log("end")
+```
+
+
+
+用西红柿炒鸡蛋的过程来理解异步。
+
+Promise相当于餐馆发给的等餐牌。你可以在未来某个时刻拼接这个拍照拿到你的食物。
+
+
+
+只有在async函数里，才能使用await。
+
+await后面跟的也是一个async函数。修改是等async函数返回了，才往下执行。
+
+
+
 
 
 参考资料
@@ -220,3 +437,11 @@ doIt();
 1、理解 JavaScript 的 async/await
 
 https://segmentfault.com/a/1190000007535316
+
+2、async 函数的含义和用法
+
+http://www.ruanyifeng.com/blog/2015/05/async.html
+
+3、JS魔法堂：深究JS异步编程模型
+
+https://www.cnblogs.com/fsjohnhuang/p/6109701.html

@@ -1,0 +1,21 @@
+
+数据流转情况
+1、小程序里，调用makeOrder。
+	把goodId和count传递到云函数端。
+	类型是unifiedorder。
+2、进入到云函数pay里面。
+	生成订单号。
+	生成total_fee。
+	构造了orderParam。
+	传递给库里的unifiedOrder
+3、unifiedOrder函数。
+	请求：requestWithoutCert
+	处理返回：processResponseXml
+	然后返回respObj
+
+上面流程的异步情况，值得分析。
+首先，按键调用的makeOrder这个函数是async的，所以按键就很快返回了。
+界面就可以继续响应其他的事件了。
+不是，我试了一下，其他按键没有反应，按道理也不应该有响应。
+
+
