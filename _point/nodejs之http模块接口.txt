@@ -1,0 +1,19 @@
+类层次关系
+http
+	Agent
+	ClientRequest
+	Server
+	ServerResponse
+	IncomingMessage
+	METHODS
+	STATUS_CODES
+	createServer
+	get
+	globalAgent
+	maxHeaderSize
+	request
+	
+实现的功能：
+	1、client。
+		可以做类似浏览器的client的功能。
+	2、server。

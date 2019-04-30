@@ -1,0 +1,141 @@
+Object的属性
+	就2个。
+	length：值为1.
+	prototype
+		用这个给Object添加原型。
+		
+Object的方法
+	assign()
+		const ret = Object.assign(dst, src1, src2 ...)
+		通过复制一个或者多个对象来创建一个新的对象。
+		ret的值跟dst的一样。
+	create()
+		const ret = Object.create(obj)
+		使用指定的原型对象和属性创建一个新的对象。
+		把obj当成原型，来创建一个对象。
+	defineProperty()
+		语法是：defineProperty(obj, 名字，属性描述)
+		描述符分为数据描述符和存取描述符。
+		所谓数据描述符，就是可以直接进行obj.a = 1;这样使用。
+		存取描述符，使用的时候，也是用obj.a = 1;这样。
+		就是同一个目的的两种实现方式。
+		不用管。我只记住数据描述符的就好了。
+		只能是二者之一。不能同时。
+		举例：
+		var o = {}
+		Object.defineProperty(o, "a", {
+			value: 10,
+			writeable: true,
+			enumerable: true,
+			configurable: true
+		});
+		存取描述符的写法：
+		var bValue;
+		Object.defineProperty(o, "b", {
+			get: function() {
+				return bValue;
+			},
+			set: function(newValue) {
+				bValue = newValue;
+			},
+			enumerable : true,
+			configurable: true
+		})
+	defineProperties()
+		同时指定多个属性。
+	entries()
+		返回的是二级数组。
+		数组的元素的键值对。
+		const obj = {
+			foo: "bar",
+			baz: 11
+		}
+		Object.entries(obj);
+		[ [ 'foo', 'bar' ], [ 'baz', 11 ] ]
+		
+	freeze()
+		冻结对象。这样对象就不能再增减属性。
+		也不能修改属性的值。
+		'use strict';//在严格模式下，
+		const obj1 = {
+			name: "xx"
+		}
+		const obj2 = Object.freeze(obj1)
+		obj2.name = "yy"//在严格模式下，这个会报错。
+		console.log(obj2.name)
+	getOwnPropertyDescriptor()
+		获取属性的描述符。
+		var obj = {
+			get foo() {
+				return 11;
+			}
+		}
+		des = Object.getOwnPropertyDescriptor(obj, "foo")
+		console.log(des);
+	getOwnPropertyNames()
+		返回的是属性名字数组。
+		如果对于数组，它的属性有点意思。
+		var arr = ["aa", "bb", "cc"]
+		var ret = Object.getOwnPropertyNames(arr)
+		console.log(ret);
+		输出：
+		[ '0', '1', '2', 'length' ]
+		可以看到数组的下标是它的属性。
+	getPrototypeOf()
+		获取原型。
+		var obj = {
+			name: "xx"
+		}
+		var ret = Object.getPrototypeOf(obj)
+		console.log(ret);
+		输出的是：{}
+	is()
+		判断是2个对象就是同一个对象。
+		也就是在同一个内存地址上的意思。
+		var obj1 = {a:1};
+		var obj2 = {a:1};
+		Object.is(obj1, obj2);//这个是false。
+		如果是2个字符串常量，则是相等的。
+		例如：
+		Object.is("foo", "foo");//这个是true。
+		
+	isExtensible()
+		看一个对象是否可以扩展。就是是否可以继续添加属性。
+		一个freeze过的对象就不可扩展了。
+		
+	isFrozen()
+		查看以对象是否已经被freeze了。
+	isSealed()
+		跟isFrozen差不多。
+	keys()
+		返回属性名字数组。
+		和getOwnPropertyNames的不同在于，keys返回的是可枚举部分的属性。
+		
+	preventExtensions()
+		跟freeze差不多。
+		
+	seal()
+		只是不允许添加属性。已有属性可以修改，这点跟freeze不同。
+		
+	values()
+		跟keys是一对。
+		
+		
+Object的原型对象
+Object.prototype
+属性
+	constructor
+	__proto__
+方法
+	hasOwnProperty()
+		查看是否拥有某个属性。
+	isPrototypeof()
+		查看指定对象是否在本对象的原型链中。
+	propertyIsEnumerable()
+		属性是否可以枚举。
+	toString()
+	toLocalString()
+	unwatch()
+	valueOf()
+	watch()
+

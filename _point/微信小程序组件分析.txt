@@ -1,6 +1,10 @@
 微信官网文档示例代码可以直接点击打开微信开发者工具进行效果预览。
 
 
+bindtap和catchtap的区别
+	bindtap事件会冒泡传递。
+	而catchtap则不会。父元素拿到了。就不会继续传递给子元素。
+	
 视图容器
 	1、cover-image
 	2、cover-view

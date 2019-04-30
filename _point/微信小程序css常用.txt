@@ -2,7 +2,11 @@
 	图片外框，分割线，用这个感觉还好。线的颜色是灰色，宽度也合适。
 	列表表，只加下边线就行。
 	
+	分割线。一般用这种就不错。
 	border-bottom: 1px solid #eee;
 	
 	font-size，用14px差不多。
+	
+	一般height跟line-height设置为一样。
+	
 	

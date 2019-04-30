@@ -1,0 +1,57 @@
+在引入TypedArray之前，js语言是没有一种用来操作二进制数据的机制的。
+所以nodejs只能自己加这种机制。
+就是Buffer了。
+一般用在tcp流、文件操作中。
+
+现在js语言引入了TypedArray。Buffer的底层就用这个来实现了。
+
+Buiffer的底层是ArrayBuffer。
+
+Buffer类在全局作用域里。
+不需要引入。直接用就好了。就跟setTimeout一样。
+
+先看例子。
+const buf1 = Buffer.alloc(10);
+console.log(buf1);
+
+输出是这样：
+<Buffer 00 00 00 00 00 00 00 00 00 00>
+
+可以看到，默认是填充了0 的。
+我们也可以指定填充数值。
+在第二个参数指定就好了。
+const buf1 = Buffer.alloc(10,1);
+console.log(buf1);
+
+有时候，我不希望对分配的这buffer进行清零操作。
+因为我们自己会一个个进行手动赋值的。
+清零会多消耗一点时间。
+怎么做？
+用allocUnsafe。
+看例子。
+const buf1 = Buffer.allocUnsafe(10);
+<Buffer 0e 00 00 00 06 02 00 00 06 00>
+内存里的值的确是随机的了。
+
+除了alloc，还有什么方法可以分配内存呢？
+用from。from函数的参数是任意的数据。
+我们可以给一个数组。
+const buf1 = Buffer.from([1,2,3])
+输出是：
+<Buffer 01 02 03>
+可以是字符串。
+const buf1 = Buffer.from("hello你好")
+<Buffer 68 65 6c 6c 6f e4 bd a0 e5 a5 bd>
+字符串默认是utf8编码的。我们也可以指定编码。
+const buf1 = Buffer.from("hello你好","latin1")
+<Buffer 68 65 6c 6c 6f 60 7d>
+
+Buffer构造函数
+	本来有不少，都被废弃了。推荐用alloc、from来进行创建。
+	
+
+Buffer之迭代器操作
+	可以用for-of进行迭代。
+	
+Buffer.poolSize
+	这个是预分配的Buffer的大小。默认是8K字节。

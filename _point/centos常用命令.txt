@@ -1,0 +1,38 @@
+centos我不怎么用。但是在生产环境还是以centos为主。
+所以常用命令要清楚。
+
+服务相关
+====================
+启动停止服务
+service httpd start/stop
+开机自动运行运行/禁用
+chkconfig httpd on/off
+
+软件源配置
+====================
+/etc/yum.conf
+
+
+安装软件相关
+====================
+从源下载安装
+yum install xx 
+安装本地安装包
+yum install xx.rpm
+卸载
+yum -e xx
+检查升级
+yum check-update
+升级软件包
+yum update
+更新
+yum upgrade
+
+软件包信息
+====================
+搜索
+yum search xx 
+查看已经安装的
+yum list installed
+
+

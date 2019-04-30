@@ -1,0 +1,62 @@
+
+什么是事件？
+	1、事件是View层到Controller层的通信方式。
+	2、把用户的行为反馈到Controller层进行处理。
+	3、事件可以绑定到View层的组件上。
+	4、事件对象可以携带额外信息，例如 id、dataset、touches。
+	
+
+事件的构成
+我们写一个按钮，在bindtap处理函数里打印参数e。
+得到：
+type:"tap",
+timeStamp:3736,
+changedTouches: {//是一个Array，里面只有一个对象元素
+	[0]: {
+		clientX: 187,
+		clientY: 35,
+		force: 1,
+		indentifier: 0,
+		pageX: 187,
+		pageY: 35
+	}
+},
+currentTarget: {
+	dataset: {
+		
+	},
+	id: "",
+	offsetLeft: 0,
+	offsetTop: 0,
+},
+detail: {
+	x: 187,
+	y: 35,
+},
+target: {
+	dataset: {
+	
+	},
+	id: "",
+	offsetLeft:0,
+	offsetTop: 0,
+},
+touches: {//也是一个Array，里面只有一个对象元素
+	[0]: {
+		//跟changedTouches里的一样。
+	}
+}
+	
+	
+事件分类
+	1、冒泡事件。冒泡是向父元素传递。
+	2、非冒泡事件。
+	
+冒泡事件：
+	1、touchstart。
+	2、touchmove
+	3、touchcancel。来电提醒、弹窗可以打断触摸。
+	4、touchend。
+	5、tap。就是单击。
+	6、longpress。超过350ms。
+	7、longtap。建议用longpress。
