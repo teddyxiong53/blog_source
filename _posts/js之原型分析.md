@@ -101,12 +101,19 @@ Husky.prototype = new Dog();
 
 
 
+
+
 参考资料
 
-1、一张图看透JavaScript原型关系：__proto__（对象原型）和prototype（函数原型）
+1、一张图看透JavaScript原型关系：`__proto__`（对象原型）和prototype（函数原型）
 
 https://blog.csdn.net/baidu_37107022/article/details/72461716
 
 2、三分钟看完JavaScript原型与原型链
 
 https://juejin.im/post/5a94c0de5188257a8929d837
+
+3、如何理解JavaScript的原型和原型链？
+
+http://web.jobbole.com/95606/
+
