@@ -119,7 +119,7 @@ teddy@teddy-ubuntu:~/work/openwrt/openwrt-master/bin/targets/brcm2708/bcm2708$ g
 -rw-r--r-- 1 teddy teddy 284M 4月  10 16:02 openwrt-brcm2708-bcm2708-rpi-ext4-sdcard.img
 ```
 
-我周期下载的lede的img文件是1.02G。确实大了很多。
+我之前下载的lede的img文件是1.02G。确实大了很多。
 
 2、我们用Win32DiskImager工具，把解压搭建镜像文件烧录到U盘里。
 
