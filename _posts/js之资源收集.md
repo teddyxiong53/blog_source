@@ -50,7 +50,9 @@ http://www.ituring.com.cn/article/123884
 
 是js开发者的圣经。
 
+《你不懂JS：this与对象原型》
 
+https://www.kancloud.cn/kancloud/you-dont-know-js-this-object-prototypes/516667
 
 这里有个书单
 
