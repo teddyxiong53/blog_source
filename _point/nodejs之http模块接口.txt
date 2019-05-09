@@ -17,3 +17,12 @@ http
 	1、client。
 		可以做类似浏览器的client的功能。
 	2、server。
+	
+	
+IncomingMessage
+	这个就是回调里的req。
+	继承了stream.Readable
+		这个的事件有：
+		end
+		data
+		close

@@ -1,0 +1,3 @@
+body-parser
+	作用是对post的请求body进行解析。
+	
