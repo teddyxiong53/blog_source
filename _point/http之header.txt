@@ -1,0 +1,195 @@
+通用header
+	Cache-Control
+		在请求里使用
+			可选值有：
+			no-cache：告诉（代理）服务器不要使用缓存。
+			no-store：不要保存到缓存文件。
+			max-age=xx：告诉服务器，客户端希望接收存在时间不大于xx秒的资源。
+			max-stale=[xx]：希望接收缓存时间不大于xx秒的资源。xx可以不带。
+			min-fresh=xx：在xx秒内被更新过的文件。
+			no-transform：希望接收没有被转化（例如压缩）过的资源。
+			only-if-cached：只希望获取缓存的内容。
+			cache-extension：自定义扩展值，服务端很可能不识别的。
+		在响应里使用
+			可选值有：
+			public：任何情况下都缓存改资源。
+			private[="field-name"]：表示返回内容只开放给部分用户做缓存。其他人不得缓存。
+			no-cache：
+			no-store：
+			no-transform
+			only-if-cached
+			must-revalidate：当前资源一定是向原服务器去验证请求的。
+			proxy-revalidate：跟must-revalidate类似，但是只能用于共享缓存。
+			max-age=xx
+			s-maxage=xx
+			cache-extension
+			
+		注意：
+		1、上面这些值可以自由组合。但是有有优先级。
+			no-store优先级最高。
+			
+	Connection
+		表示是否需要持久连接。
+		可能取值：
+		close：在请求结束后断开连接。
+		keep-alive：默认这个。
+	Date
+		表示创建报文的时间，就是当前的时间戳。
+		主要用来判断缓存的。
+		是格林威治时间。
+		Thu, 11 Jun 2015 10:18:49 GMT
+		这种格式的。
+	Pragma
+		也是缓存控制，被抛弃了。用Cache-Control替代了。
+		为了兼容，保留的。
+		同时出现Cache-Control和Pragma，以Pragma为准。
+	Trailer
+		说明在body字段后，会记录哪些header字段。
+		用来做分块传输编码时用。
+		举例：
+		Trailer: Expires
+		...body
+		Expires: Tue, 28 Sep 2004 23:59:59 GMT
+		
+	Transfer-Encoding
+		传输编码方式。
+		表示传输body的时候，使用的编码方式。
+		举例：
+		Transfer-Encoding: chunked
+		
+	Upgrade
+		检查是否可以使用更高版本的协议进行通信。
+	Via
+		追踪客户端和服务器之间的传输路径。
+		一般和trace方法一起用。
+		
+	Warning
+		警告一些与缓存有关的东西。
+		
+==================================================================
+请求header
+	Accept
+		告诉服务器，自己希望接收的文件类型。
+		格式type/subtext
+		例如：text/html
+		表示的含义：最好是html格式的，如果没有，text也行。
+		创建的组合
+		文本
+			text/plain, text/html, text/css
+			application/xhtml+xml
+		图片：
+			image/jpge, image/gif, image/png
+		视频
+			video/mpeg, video/quicktime
+		二进制
+			application/octet-stream, application/zip
+			
+	Accept-Charset
+		表示自己支持的字符集。
+		举例：
+		Accept-Charset: iso-8859-5, unicode-1-1; q=0.8
+	Accept-Encoding
+		表示自己可以支持的编码方式。
+		取值：
+			gzip
+			compress
+				是lzw压缩的。
+			deflate
+				zlib格式。
+			identify
+				不压缩。
+	Accept-Language
+		表示自己想要的语言。
+		如果服务器有对应的资源，就返回。
+		Accept-Language: en-us, en-gb;q=0.8, en;q=0.7
+		
+	Authorization
+		告诉服务器，自己的认证信息。
+		一般是在收到服务器回复401后，
+		把自己的认证信息填入
+		举例：
+		Authorization: Basic dWVub3NlbjpwYXNzd29yZA==
+		
+	Expect
+		举例：
+		Expect: 100-continue
+		表示收到100这个区间的状态码的时候，继续。
+		
+	From：
+		举例：
+		From: xx@xx.com
+		告诉网站，用户的邮件地址。
+		
+	Host
+		主机名，可以是ip地址。
+		
+	If-match
+		举例：
+		If-match: "123"
+		123表示资源对应的etag。etag表示实体标签。
+		只有实体标签匹配，才返回，否则返回412
+		
+	If-Modified-Since
+		只有资源符合这个修改时间，才返回成功。否则返回304 Not Modified。
+		
+	If-None-Match
+		跟If-Match相反。
+	
+	If-Range
+		这个跟Range配合使用。
+		GET /index.html HTTP/1.1
+		If-Range: "123" //这个是etag
+		Range: bytes=5001-10000
+		
+	If-Unmodified-Since
+		跟If-Modified-Since相反。
+		
+	Max-Forwards
+		最多被转发的次数。如果超过次数了，还没有请求到资源，则返回失败。
+		
+	Proxy-Authorization
+		举例：
+		Proxy-Authorization: Basic dWVub3NlbjpwYXNzd29yZA==
+		
+	Range：
+		Range: bytes=5001-10000
+		
+	Referer
+		表示是从哪里发来的。
+		
+	User-Agent
+		浏览器版本。
+		
+=========================================================
+响应header
+	Accept-Range
+		只有2种可能取值：
+		none
+		bytes：表示可以处理范围请求。
+	Age
+		告诉客户端，服务器在多久前创建了这个回复报文。
+	ETag
+		服务器会为每个资源分配一个ETag。一长串字符串。
+		ETag: "82e22293907ce725faf67773957acd12"
+		
+	Location
+		一般是配合30x，重定向到指定位置。
+		Location: http://www.usagidesign.jp/sample.html
+		
+	Proxy-Authenticate
+		举例：
+		Proxy-Authenticate: Basic realm="Usagidesign Auth"
+		
+	Retry-After：
+		告诉客户端，过几秒再试。
+		Retry-After: 120
+	Server
+		服务器软件版本。
+		Server: Apache/2.2.17 (Unix)
+	Vary
+		
+	WWW-Authenticate
+		WWW-Authenticate: Basic realm="Usagidesign Auth"
+		
+		
+

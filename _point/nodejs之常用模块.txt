@@ -17,4 +17,19 @@ querystring
 	做url查询参数的解析。
 	
 iconv-lite
+	nodejs默认不支持gbk编码。
+	这个可以帮我们支持。
+	iconv.decode(data, 'gbk')
+	
+	
+finalhandler
+	作为最后一步，来应答http请求。
+	finalhandler(req, res[,options])
+	
+safe-buffer
+	比默认的Buffer安全。
+	目标是替代这个Buffer。
+	
+content-disposition
+	这个是跟http header里的content-disposition有关的。
 	

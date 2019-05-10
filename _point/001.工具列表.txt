@@ -7,4 +7,6 @@ vscode插件
 
 网页工具
 	postman
-	
+		可以直接用chrome的插件。
+		没有必要专门安装软件。
+		
