@@ -1,0 +1,184 @@
+https://expressjs.com/zh-cn/api.html#express
+
+express的方法
+	通过express.xx的方式来使用。
+	json([options])
+		这个是内置的中间件方法。
+		解析带json payload的req。
+		是基于body-parser的。
+		有不少的方法，都从body-parser改成express内置了。
+		
+	static(root[,options])
+		
+	Router([options])
+		创建一个路由对象。
+		
+		
+app = express()
+
+app的属性
+	app.locals
+		app.set('title')
+		这样设置的内容，会出现在app.locals.settings里。
+	app.mountpath
+		是/
+		可以在一个文件里，创建多个app实例。
+		这个挂载路径就不同了。
+		没什么用，因为我们一般不会这么做。
+app的事件
+	mount
+	
+app的方法
+	all
+		相当于所有方法一个处理。app.all(function)等价于app.use(function(req,res){})
+		一般是这么用：
+		app.all('*', requireAuthentication);
+		app.all('*', loadUser);
+		app.all('/api/*', requireAuthentication);
+		
+	delete
+		使用http的delete方法。
+	disable
+		举例：
+		app.disable('trust proxy')
+		console.log(app.get('trust proxy'))
+	enable
+	enabled
+	engine
+		注册引擎。
+		一般这么用。
+		app.set('view engine', 'ejs')
+		app.engine('html', ejs.__express)
+		app.set('view engine', 'html')
+		表示把ejs的模板改为用html后缀的。这些写起来方便点。
+	get
+		跟set相对。
+		注意这个不是http方法get。2个函数名字一样，参数不同。
+		
+	listen
+		监听端口。
+		
+	METHOD
+		就是get/post这些方法。
+	param
+		举例：
+		app.param(['id', 'page'], function (req, res, next, value) {
+			console.log('CALLED ONLY ONCE, id: ', value);
+			next();
+		});
+
+		app.get('/user/:id/:page', function (req, res, next) {
+			console.log('although this matches: ', req.params.id, req.params.page);
+			next();
+		});
+
+		app.get('/user/:id/:page', function (req, res) {
+			console.log('and this matches too: ', req.params.id, req.params.page)
+			res.end();
+		});
+	path
+		返回路径。没啥用。
+	post
+		post方法。
+	put
+		put方法。
+	render
+		渲染模板。
+	route
+		
+	set
+		设置参数。
+	use
+		指定中间件。
+	
+req对象
+属性
+	req.app
+		持有上一层的引用。
+	req.baseUrl
+	req.body
+		当使用app.use(express.json())或者body-parser的json的时候， 才有body。
+		否则是undefined。
+	req.cookies
+		当你使用cookie-parser的时候，才有。
+	req.fresh
+		是true或者false。
+	req.hostname
+		
+	req.ip
+	req.ips
+	req.method
+	req.originalUrl
+	req.params
+	req.path
+	req.protocol
+	req.query
+		get从url里传递过了的参数，从这里取出。
+	req.route
+		route对象。
+	req.secure
+		https的时候，返回true。否则返回false。
+	req.signedCookies
+		当使用cookie-parser的时候才有。
+	req.stale
+		bool类型。
+	req.subdomains
+		二级域名。
+	req.xhr
+		bool类型。
+	
+方法
+	req.accepts(types)
+	req.acceptsCharsets
+	req.acceptsEncodings
+	req.acceptsLanguages
+	req.get
+	req.is
+	req.param
+	req.range
+	
+res对象
+属性
+	res.app
+	res.headersSent
+	res.locals
+方法
+	res.append
+		追加头部信息。
+	res.attachment
+		
+	res.cookie
+		增加cookie。
+		res.cookie('rememberme', '1', { expires: new Date(Date.now() + 900000), httpOnly: true });
+	res.clearCookie
+		清除cookie。
+	res.download
+		下载文件。
+	res.end
+	res.format
+	res.get
+	res.json
+		发送json格式的回复。很有用。
+	res.jsonp
+		
+	res.links
+	res.location
+	res.redirect
+	res.render
+	res.send
+	res.sendFile
+	res.sendStatus
+	res.set
+	res.status
+	res.type
+	res.vary
+	
+	
+路由对象
+属性
+	router.all
+	router.METHOD
+	router.param
+	router.route
+	router.use
+	

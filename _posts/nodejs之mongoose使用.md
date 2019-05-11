@@ -1,5 +1,5 @@
 ---
-title: nodejs之ejs学习
+title: nodejs之mongoose使用
 date: 2019-03-14 14:17:11
 tags:
 	- nodejs
@@ -31,69 +31,57 @@ Model和Entity都可以对数据库造成影响。但是Model比Entity更具有�
 
 
 
-最简单的连接的代码：
+# get started
 
 ```
-var mongoose = require('mongoose')
-var db = mongoose.connect("mongodb://localhost:27017/test")
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost/test', {useNewUrlParser: true});
 
-var con = mongoose.connection
+var db = mongoose.connection
 
-con.on("error", function(e) {
-    console.log("connect to mongodb fail")
-    console.log(e)
+db.on('error', function(err) {
+    console.log(err)
+})
+db.once('open', function() {
+    console.log('connected ok')
 })
 
-con.on("open", ()=> {
-    console.log("open mongodb ok")
+// 新建一个Schema
+var studentSchema = new mongoose.Schema({
+    name: String,
+    age: Number
 })
-```
+// 给Schema增加方法
+studentSchema.methods.study = function() {
+    console.log(this.name + " is studying")
+}
+// 新建一个Model
+var Student = mongoose.model('Student', studentSchema)
 
-
-
-完整一点的例子。
-
-```
-var mongoose = require('mongoose')
-var db = mongoose.connect("mongodb://localhost:27017/test")
-
-var con = mongoose.connection
-
-con.on("error", function(e) {
-    console.log("connect to mongodb fail")
-    console.log(e)
+// 新建一个Model实例
+var allen = new Student({
+    name: "allen",
+    age: 10
 })
-
-con.on("open", ()=> {
-    console.log("open mongodb ok")
-    //定义一个Schema
-    let Schema = mongoose.Schema({
-        category: String,
-        name: String
-    })
-    Schema.methods.eat = function() {
-        console.log("eat " + this.name)
+// 调用方法
+allen.study()
+// 保存
+allen.save(function(err, student) {
+    if(err) {
+        console.log("save error")
+        return
     }
-    //继承一个Schema
-    let Model = mongoose.model("fruit", Schema)
-    //生成一个document
-    let apple = new Model({
-        category: "apple",
-        name: "apple"
-    })
-    //存放数据
-    apple.save((err, apple)=> {
-        if(err) {
-            console.log(err);
-            return
-        }
-        apple.eat()
-        //查找数据
-        Model.find({name: "apple"}, (err, data)=> {
-            console.log(data)
-        })
-    })
+
 })
+// 查找所有的Student
+Student.find(function(err, students) {
+    if(err) {
+        console.log(err)
+        return
+    }
+    console.log(students)
+})
+
 ```
 
 
@@ -124,40 +112,40 @@ mongoose是mongodb的一个对象模型工具。
 
 让nodejs操作mongodb更加容易。
 
-网上很多的教程都跟最新的无法匹配了。所以最好还是参考官方教程。
 
-```
-var mongoose = require("mongoose");
 
-var db = mongoose.connect("mongodb://127.0.0.1:27017/db_helloworld");
+要掌握mongoose，还是需要花时间的。
 
-var db = mongoose.connection;
 
-db.on('error', function(error) {
-    console.log("connect fail");
-});
 
-db.once('open', function() {
-    console.log("connect ok");
-});
-```
+这个demo写得不错。
+
+https://github.com/IronPans/mongodb-pratice
+
+
+
+虚拟属性
+
+虚拟属性不存放在数据库里。
+
+只是在逻辑上存在。
+
+
+
+
 
 
 
 参考资料
 
-1、Mongoose学习参考文档——基础篇
+1、官网教程
 
-https://cnodejs.org/topic/504b4924e2b84515770103dd
+https://mongoosejs.com/docs/guide.html
 
-2、深入浅出mongoose
+2、mongoose中文文档
 
-https://www.villainhr.com/page/2016/05/11/%E6%B7%B1%E5%85%A5%E6%B5%85%E5%87%BAmongoose
+https://www.kancloud.cn/luponu/mongoose/870695
 
-3、Connections
+3、Mongoose开发实战-进阶篇
 
-https://mongoosejs.com/docs/connections.html
-
-4、mongoose入门
-
-http://i5ting.github.io/stuq-koa/koa-with-db/mongoose.html
+https://juejin.im/entry/5a0596c5f265da43163c89e4

@@ -1,3 +1,23 @@
 body-parser
 	作用是对post的请求body进行解析。
 	
+cookie-parser
+	
+express-session
+	
+cookie-session
+	这个是什么用途呢？
+	
+connect-flash
+	显示错误信息。
+	
+morgan
+	日志。
+	根据morgan好用一些。
+	
+winston
+	也是日志。
+	
+express-formidable
+	文件上传中间件。
+	

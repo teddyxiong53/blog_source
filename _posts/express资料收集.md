@@ -24,7 +24,11 @@ https://expressjs.com/en/api.html
 
 
 
+express实现的httpbin
 
+https://github.com/sheharyarn/httpbin-node
 
-https://github.com/yibingxiong/onlinetable
+只实现了一点点。
+
+看一下就好。使用了jade模板。
 

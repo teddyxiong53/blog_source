@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 代码在这里：https://github.com/expressjs/express
 
@@ -80,6 +80,76 @@ console.log(ret)
 [ 1, 2, 3, 4 ]
 [ 1, 2, [ 3, [ 4 ] ] ]
 ```
+
+
+
+req的内容有哪些？
+
+对象内容挺多的。
+
+重要的有
+
+```
+url: '/',
+method: 'GET',
+headers:
+baseUrl: '',
+originalUrl: '/',
+_parsedUrl:
+Url {
+    protocol: null,
+    slashes: null,
+    auth: null,
+    host: null,
+    port: null,
+    hostname: null,
+    hash: null,
+    search: null,
+    query: null,
+    pathname: '/',
+    path: '/',
+    href: '/',
+    _raw: '/' },
+params: {},
+query: {},
+```
+
+res跟req的差不多。
+
+而且他们互相持有对方的引用。
+
+res
+
+```
+locals
+
+```
+
+
+
+examples目录值得看看。
+
+
+
+默认的app.locals的内容
+
+```
+{ settings:
+   { 'x-powered-by': true,
+     etag: 'weak',
+     'etag fn': [Function: generateETag],
+     env: 'development',
+     'query parser': 'extended',
+     'query parser fn': [Function: parseExtendedQueryString],
+     'subdomain offset': 2,
+     'trust proxy': false,
+     'trust proxy fn': [Function: trustNone],
+     view: [Function: View],
+     views: '/home/hlxiong/work/test/express/test/views',
+     'jsonp callback name': 'callback' } }
+```
+
+
 
 
 
