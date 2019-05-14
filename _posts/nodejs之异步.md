@@ -241,9 +241,18 @@ Array [3, 42, "foo"]
 
 
 
+哪些场景需要用到异步控制流程？
+
+数据库就是一个典型的场景。
+
+
+
 参考资料
 
 1、node.js异步控制流程 回调，事件，promise和async/await
 
 https://www.cnblogs.com/kazetotori/p/6043983.html
 
+2、什么时候会用到异步流程控制
+
+https://i5ting.github.io/wechat-dev-with-nodejs/async/when.html

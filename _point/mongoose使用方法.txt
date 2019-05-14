@@ -1,2 +1,15 @@
 基于5.5.7版本的
 
+
+
+
+这个值得学习参考。
+https://github.com/IronPans/mongodb-pratice
+增删改查
+https://github.com/jrainlau/mongoose_crud
+
+文档
+https://mongoosedoc.top/docs/api.html#Model
+
+
+https://i5ting.github.io/wechat-dev-with-nodejs/db/mongoose.html

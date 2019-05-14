@@ -9,8 +9,11 @@ bluebird
 	一个第三方的Promise库。
 	网上说效率比原生的要高。
 	知道即可。
+	里面有个很好的功能，就是把非Promise转成Promise。
+	const Promise = require('bluebird')
+	var readFile = require("fs").readFile
+	var myAsyncReadFile = Promise.promisify(readFile)
 	
-
 body-parser
 	
 querystring

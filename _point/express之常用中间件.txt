@@ -19,5 +19,5 @@ winston
 	也是日志。
 	
 express-formidable
-	文件上传中间件。
+	表单解析，用了这个，才能拿到req.fields.name这样的东西。
 	

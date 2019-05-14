@@ -22,10 +22,6 @@ http://javascript.ruanyifeng.com/nodejs/packagejson.html
 
 
 
-#Mozilla的语法
-
-https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects
-
 # N-blog
 
 node.js写的一个博客程序。
@@ -62,7 +58,7 @@ https://github.com/cnodejs/nodeclub
 
 
 
-#《nodejs in action》
+
 
 
 
@@ -87,4 +83,10 @@ https://github.com/jeffjose/tget
 
 
 《深入浅出node.js》讲原理，《node.js开发实战》讲实战
+
+
+
+这个教程不错。
+
+https://i5ting.github.io/wechat-dev-with-nodejs/nodejs/api.html
 

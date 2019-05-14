@@ -132,7 +132,156 @@ https://github.com/IronPans/mongodb-pratice
 
 
 
+mongoose的一切都从Schema开始。
 
+一个Schema相当于对应数据库里的一张表。也就是一个collection。
+
+把Schema转成一个Model。
+
+```
+var User = mongoose.model('User', UserSchema)
+```
+
+
+
+# mongoose连接
+
+```
+connect函数
+可以接收一个callback作为参数，
+也使用Promise使用。
+```
+
+```
+mongoose.connect("mongodb://localhost/test", options, function(err) {
+
+})
+或者
+mongoose.connect("mongodb:/localhost/test", options).then(
+	()=> {
+	
+	},
+	(err)=> {
+	
+	}
+)
+```
+
+# Models
+
+Models从从Schema编译得到的构造函数。
+
+Models实例代表着数据库里的document。相当于一行实际的数据。
+
+## 创建一个数据，并保存到数据库
+
+可以用save，也可以用create。
+
+```
+var User = mongoose.model('User', userSchema)
+var allen = new User({
+    name: 'allen',
+    age: 10
+})
+allen.save(function(err) {
+    if(err) {
+        console.log("save error")
+        return
+    }
+    console.log("save ok")
+})
+
+
+User.create({
+    name: 'bob',
+    age: 11
+}, function(err, user) {
+    if(err) {
+        console.log("save fail")
+        return
+    }
+    console.log("save ok")
+    console.log(user)
+})
+```
+
+## 查找
+
+```
+User.find({name: 'allen'}).where('name').eq('bob').exec(console.log)
+```
+
+## 删除
+
+remove已经过时了。
+
+```
+collection.remove is deprecated. Use deleteOne, deleteMany, or bulkWrite instead.
+```
+
+
+
+```
+var User = mongoose.model('User', userSchema)
+User.remove({name: 'bob'}, function(err) {
+    if(err) {
+        console.log(err)
+    }
+   
+})
+```
+
+## 更新
+
+```
+//更新一条数据
+var User = mongoose.model('User', userSchema)
+User.findOneAndUpdate({name: 'allen'}, {name: 'bob'},{}, function(err) {
+    if(err) {
+        console.log(err)
+        return
+    }
+    console.log("update ok")
+})
+```
+
+
+
+# 插件
+
+怎么使用插件？
+
+插件是对Schema进行扩展的机制。
+
+例如，我们想要对所有的表，都添加最后修改这样的功能。
+
+借助插件，我们可以很容易做到。
+
+我们需要做的是：
+
+1、定义一个插件，
+
+2、然后应用到每个Schema就可以了。
+
+新建一个lastMod.js文件。
+
+对应代码在这里。
+
+https://github.com/teddyxiong53/nodejs_code/tree/master/mongoose_study/plugin_demo
+
+## 全局插件
+
+对mongoose执行plugin函数。
+
+这样后面所有的Schema就不需要分别去执行插入插件的行为了。
+
+```
+var mongoose = require("mongoose")
+mongoose.plugin(require("./lastMod"))
+var userSchema = new Schema({
+
+})
+```
 
 
 
@@ -149,3 +298,7 @@ https://www.kancloud.cn/luponu/mongoose/870695
 3、Mongoose开发实战-进阶篇
 
 https://juejin.im/entry/5a0596c5f265da43163c89e4
+
+4、使用express+mongoose对mongodb实现增删改查操作
+
+https://segmentfault.com/a/1190000004873740
