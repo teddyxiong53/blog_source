@@ -72,6 +72,12 @@ your url is: https://teddyxiong53.localtunnel.me
 
 
 
+```
+git clone https://github.com/localtunnel/server.git
+```
+
+
+
 
 
 参考资料

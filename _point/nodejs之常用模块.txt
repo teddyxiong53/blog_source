@@ -41,3 +41,6 @@ morgan
 	express的日志模块。
 	可以独立工作。
 	
+debug
+	打印调试信息的模块。
+	

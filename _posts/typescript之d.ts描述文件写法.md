@@ -18,6 +18,14 @@ d.ts的typescript描述文件，d是description的缩写。
 
 
 
+即使你只写js代码，d.ts也有用。
+
+大部分编辑器可以识别d.ts文件，给你一些智能提示。
+
+
+
+
+
 不同类型的代码库，需要编写不同形式的d.ts文件。
 
 目前总共有以下几种流行的代码库类型。
@@ -104,7 +112,59 @@ function getThing(): moment
 
 需要注意的是，ES6的模块只能导出一个对象，而一般的js还可以导出类或者函数。
 
+
+
+
+
+
+
+一个简单例子。
+
 ```
+// 声明一个变量
+declare var aaa: number | string
+// 声明一个常量
+declare const max: 200
+
+// 声明一个函数
+declare function getName(id: number|string): string
+
+// 同一个函数的不同参数版本
+declare function get(id:string|number): string
+declare function get(name: string, age:number): string
+
+// 参数可选
+declare function func(callback?:()=>void):string
+
+// 声明类
+declare class Student {
+    static maxAge: number //静态变量
+    static getMaxAge(): number //静态方法
+    constructor(name:string, age: number) //构造方法
+    getName(id: number): string 
+}
+
+// 声明一个namespace，注意里面就不要用declare了。
+// 可以内部嵌套namespace
+declare namespace XXX {
+    var id : number |string
+    function getName(id: number|string) : string
+    class Student {
+
+    }
+    namespace YYY {
+
+    }
+}
+
+// 模块化
+declare module "xxx" {
+    export let a: number
+    export function b(): number
+    export namespace c {
+        let cd: string
+    }
+}
 
 ```
 
@@ -119,3 +179,11 @@ https://www.jianshu.com/p/9b91aa120550
 2、官网文档
 
 https://www.typescriptlang.org/docs/handbook/declaration-files/templates/module-d-ts.html
+
+3、如何编写一个d.ts文件
+
+https://segmentfault.com/a/1190000009247663
+
+4、JavaScript 和 TypeScript 交叉口 —— 类型定义文件(*.d.ts)
+
+https://juejin.im/entry/5a001959f265da432c233f04

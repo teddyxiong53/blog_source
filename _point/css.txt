@@ -152,6 +152,14 @@ box-shadow
 	
 	
 	
+	
+vh
+vw
+	v代表的是viewport。
+	宽度是100vw。
+	高度是100vh。
+	其实就相当于百分比。
+	
 参考资料
 1、
 https://www.w3cschool.cn/cssref/3ps212do.html
