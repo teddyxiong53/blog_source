@@ -1,0 +1,54 @@
+Vue对象的属性
+	el
+	data
+	methods
+	
+
+文本插值
+绑定元素特征
+
+指令
+	指令都是v-开头的。表示vue提供的东西。
+	v-bind
+	v-if
+	v-for
+	v-on:click
+	v-model：输入和状态的双向绑定。
+		就是输入框里的内容和框外面的文本同步变化。
+	
+
+条件与循环
+	条件
+	v-if="flag"
+	flag = true
+	循环：
+	<ol>
+		<li v-for="t in todos">
+			{{t}}
+		</li>
+	</ol>
+
+数据不仅可以绑定到dom文本，还可以绑定到dom结构。
+vue还提供了一个强大的动画系统，可以帮我们更好地显示和隐藏元素。
+
+处理用户输入
+v-on
+	
+组件系统
+	组件是vue里的一个重要概念。
+	是一种抽象。
+	允许我们使用小型、独立、可复用的组件来构建复杂应用。
+	
+	一个组件的本质是拥有预定义选项的vue实例。
+	
+	注册一个组件很简单。
+	Vue.component('todo-item', {
+		props: ['todo']
+		template: '<li>{{todo.text}}</li>'
+	})
+	
+模板语法
+	vue使用了基于html的模板语法。
+	插值
+	
+	
