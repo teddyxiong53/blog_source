@@ -1,0 +1,9 @@
+speaker-test -t sine
+作用：
+	正弦波声音测试。
+speaker-test -t pink
+作用：
+	噪声播放测试。
+	
+
+

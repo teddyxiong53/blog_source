@@ -1,0 +1,27 @@
+
+
+make busybox-menuconfig
+make uclibc-menuconfig
+make linux-menuconfig
+make uboot-menuconfig
+
+
+
+make source
+作用：下载源代码
+
+make patch
+作用：打补丁
+
+make build
+作用：编译。
+
+make savedefconfig
+作用：相当于把.config保存成一个defconfig文件。
+	这个比手动cp要安全一些。
+	.config里有大量的注释内容。而defconfig里比较干净。
+	
+
+make xx
+作用：编译对应的包。
+	
