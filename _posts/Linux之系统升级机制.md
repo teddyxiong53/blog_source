@@ -120,7 +120,88 @@ info：
 
 
 
+升级方案需要
 
+```
+1、可以更新app，也需要可以更新内核和其他基础组件。
+2、要可以避免变砖。
+3、应该是原子的。要么成功，要么失败。不能存在第三种状态。这样就有不确定的风险。
+4、必须有验证签名机制。
+5、ota应该是通过安全通道。
+```
+
+怎么做升级方案？
+
+不要自己写，用成熟的开源方案。
+
+有这些：
+
+```
+1、swupdate。
+2、rauc。
+3、mender。
+4、ostree、libostree。
+5、swupd。
+```
+
+
+
+为什么不采用桌面系统的包管理的方式进行更新？
+
+因为不是原子的。会带来不可控的东西。
+
+所以只能通过镜像的方式进行更新。
+
+
+
+recovery的是ramfs，
+
+基于recovery的，比ab系统会省空间。
+
+Android直到N版本才引入ab系统的。之前也是基于recovery的。
+
+基于recovery的叫单拷贝方式。基于ab系统的叫双拷贝方式。
+
+单拷贝的分区情况：
+
+```
+|bootloader|recovery |normal| data|
+```
+
+
+
+单拷贝方式的缺点：
+
+```
+1、在更新期间，你什么也做不了。
+2、没法回退。
+```
+
+单拷贝的优点：
+
+```
+1、空间会少占用一点。
+2、经过多年考验，可靠。
+```
+
+
+
+双拷贝的分区
+
+```
+|bootloader| system a| system b| data |
+```
+
+双拷贝的优点：
+
+```
+1、升级用户可以没有感知。可以在后台升级。用户下次重启时切换到系统。
+2、可以做回退。
+```
+
+
+
+还有增量升级法。
 
 
 
@@ -140,26 +221,38 @@ https://blog.csdn.net/wireless_com/article/details/79548091
 
 https://blog.csdn.net/liwei16611/article/details/81051909
 
-可在线OTA升级的嵌入式系统设计方案
+4、可在线OTA升级的嵌入式系统设计方案
 
 https://blog.csdn.net/zhou_chenz/article/details/54917622
 
-基于Flask搭建Android应用OTA升级服务
+5、基于Flask搭建Android应用OTA升级服务
 
 https://blog.csdn.net/zjt19870816/article/details/80917529
 
-嵌入式定制常用的实时Linux改造方案
+6、嵌入式定制常用的实时Linux改造方案
 
 https://blog.csdn.net/qq_34003774/article/details/80591716
 
-260亿物联网终端，或将使OTA升级独成一个产业
+7、260亿物联网终端，或将使OTA升级独成一个产业
 
 http://www.sohu.com/a/214389286_472880
 
-OTA升级如何实现？全解共享单车OTA升级过程
+8、OTA升级如何实现？全解共享单车OTA升级过程
 
 https://www.sohu.com/a/231352656_100093632
 
-【迷你强的物联网】起始篇-简介与MQTT服务器【从零开始搭建自己的物联网系统】
+9、【迷你强的物联网】起始篇-简介与MQTT服务器【从零开始搭建自己的物联网系统】
 
 https://blog.csdn.net/relijin/article/details/73274739
+
+10、Updating Embedded Linux Devices: Update strategies
+
+https://mkrak.org/2018/01/10/updating-embedded-linux-devices-part1/
+
+11、
+
+https://elinux.org/images/3/31/Comparison_of_Linux_Software_Update_Technologies.pdf
+
+12、可在线OTA升级的嵌入式系统设计方案
+
+https://blog.csdn.net/zhou_chenz/article/details/54917622

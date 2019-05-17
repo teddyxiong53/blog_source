@@ -25,3 +25,7 @@ make savedefconfig
 make xx
 作用：编译对应的包。
 	
+make  allnopackageconfig
+作用：
+	编译最小系统。
+	
