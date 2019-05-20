@@ -59,8 +59,63 @@ git是一个可登陆用户吗？
 
 
 
+# 重新搭建
+
+git支持4种不同的传输协议。
+
+1、本地协议。
+
+2、https协议。
+
+3、ssh协议。
+
+4、git协议。
+
+
+
+## 本地协议
+
+这个是最简单的，一般是做测试用的。
+
+服务端：
+
+```
+sudo mkdir -p /git/repo
+sudo git init --bare /git/repo/test.git
+```
+
+客户端：
+
+```
+cd ~/work/test/git
+git clone /git/repo/test.git
+```
+
+然后我们可以进行正常的push和pull操作。
+
+```
+echo "aaa" > 1.txt
+git add .
+git commit -m "add 1.txt"
+sudo git push # 不加sudo，会push失败。因为没有权限。
+```
+
+## ssh方式
+
+```
+ git clone git@localhost:/home/git/repo/sample.git
+```
+
+也很简单。
+
+
+
 参考资料
 
 1、Git 服务器搭建
 
 http://www.runoob.com/git/git-server.html
+
+2、搭建自己的 Git 服务器
+
+https://www.aneasystone.com/archives/2018/12/build-your-own-git-server.html

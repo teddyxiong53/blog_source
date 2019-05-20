@@ -1,3 +1,39 @@
+repo init 
+repo sync
+
+repo status
+
+单独下载一个git仓库
+repo sync packages/apps/KeyguardSmartisan
+
+在修改代码前需要确保你的代码是基于服务器上最新版本
+git fetch -v smartisanos cts/ocean-mol-6.2.0-20180702 # 或者用 repo sync -n -c .
+
+git rebase smartisanos/cts/ocean-mol-6.2.0-20180702
+
+
+repo start 的实质就是对git checkout -b 的封装
+repo start 与 git checkout -b 的区别：
+
+repo start 是在清单文件设定的分支基础上创建新的分支
+
+git checkout -b 是在当前所在分支的基础上创建新的分支
+
+repo branches
+	查看分支情况。
+	
+repo checkout brancnName
+	切换到指定分支。
+	
+repo diff
+	查看工作区文件的变化。
+	
+repo status
+	该命令实际上是对git diff-index 和git diff-filse命令的封装，同时显示暂存区的状态和本地文件修改的状态
+	
+repo abandon branchName
+
+
 1、查看帮助信息
 	repo help [cmd]
 	cmd包括：
@@ -28,7 +64,7 @@
 	-u URL：指定manifest的url。
 	-b VERSION：取对应的版本。
 	-p PLATFORM：指定平台，Linux、mac、win等。
-	-m：指定manifest的名字。是指保存到本地的文件名字。
+	-m：指定manifest的名字。是指保存到本地的文件名字。不指定，就是default.xml。
 	--repo-url：repo仓库的远端地址。
 	--no-repo-verify ：不要验证代码。
 	--config-name：要求配置名字和邮箱。
