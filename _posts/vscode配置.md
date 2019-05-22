@@ -165,6 +165,18 @@ https://blog.csdn.net/Lean_on_Me/article/details/84552487
 
 
 
+# 调试c++程序
+
+很简单。
+
+插件之前安装好了。
+
+只需点击左边的debug图标。
+
+当前还没有配置debug。
+
+配置一下，然后在launch.json里写一下程序的相对路径就好了。
+
 
 
 # 参考资料
