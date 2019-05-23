@@ -165,6 +165,66 @@ https://blog.csdn.net/Lean_on_Me/article/details/84552487
 
 
 
+# 快速生成常用代码片段
+
+例如，vue的简单例子，经常使用。
+
+点击左下角，齿轮图标，选择用户代码片段。
+
+选中html.json文件。
+
+里面当前都是注释的内容，都删掉。
+
+粘贴下面的内容进去。
+
+```
+
+
+{"vue代码": {
+	"prefix": "ve",
+	"body": [
+	"<!DOCTYPE html>",
+	"",
+	"<html lang='en'>",
+	"<head>",
+		"\t<meta charset=\"UTF-8\">",
+		"\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">",
+		"\t<meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\">",
+		"\t<title>Document</title>",
+		"\t<script src=\"./node_modules/vue/dist/vue.min.js\"></script>",
+		"</head>",
+		"",
+		"<body>",
+		"\t<div id=\"app\">",
+	 
+		"\t</div>",
+	 
+	 
+		"\t<script>",
+		" \t\tvar vm = new Vue({",
+			"\t\t\tel : '#app',",     
+			"\t\t\tdata : {  }," ,         
+			"\t\t\tmethods : { }    "  ,   
+			"\t\t});",
+			"\t</script>",
+			"</body>",
+			"",
+			"</html>"
+		]
+		}
+	}
+```
+
+然后，我们在html文件里，输入ve，就会提示，我们直接回车，就会帮我们生成一大堆的代码。
+
+在这个上面继续做就很方便。
+
+
+
+# 直接在vscode里打开浏览器预览html
+
+安装open-in-browser这个插件。
+
 
 
 # 参考资料
@@ -180,3 +240,7 @@ https://codeyarns.com/2018/04/26/how-to-use-clipboard-for-vim-in-vscode/
 3、vscode调试html页面，及配置说明
 
 https://www.cnblogs.com/codeww/p/7667543.html
+
+4、VScode中Vue快速生成代码片段
+
+https://blog.csdn.net/qq_40428678/article/details/83781769
