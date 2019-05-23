@@ -24,6 +24,18 @@ enter_trigger_start.sh来运行。
 
 按一下回车键，就相当于唤醒了音箱。目前交互是正常的。
 
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/dueros/DuerOS-Python-Client$ cat ~/.dueros.json 
+{
+    "dueros-device-id": "EddyLiu-1d2dd765aa6642c9ad37370aa60e5c41", 
+    "access_token": "21.4692dd1f1564f744f874c5d5701094ba.2592000.1561097983.1711386190-10189374", 
+    "expiry": "Fri Jun 21 06:19:43 2019", 
+    "client_id": "5GFgMRfHOhIvI0B8AZB78nt676FeWA9n", 
+    "client_secret": "eq2eCNfbtOrGwdlA4vB1N1EaiwjBMu7i", 
+    "refresh_token": "22.f9f533a639fb4d311f628d6f8424c444.315360000.1873865983.1711386190-10189374"
+}
+```
+
 
 
 #代码分析

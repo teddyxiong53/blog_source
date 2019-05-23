@@ -1,0 +1,38 @@
+头文件
+	curl.h
+		就这一个就够了。
+		文件很长，有2000行。
+		
+数据结构
+	CURL
+		void，一般是CURL *，也就是void *这样用。
+		
+	curl_slist
+		单向链表。
+		
+	curl_httppost
+		主要用途？
+		上传文件用的？
+	curl_infotype
+		枚举。DATA_IN/DATA_OUT等等。
+		
+	CURLoption
+		枚举。是通过宏展开拼接起来的。
+		注意option的o是小写。
+	CURLcode
+		函数错误码。
+		CURLE_OK 这样。
+		注意code的c是小写。
+		
+函数
+	CURL *handle = curl_easy_init(void)
+		创建handle。
+	curl_easy_cleanup(handle)
+		销毁handle。
+	curl_easy_setopt(handle, option, value);
+		设置。
+		
+	curl_slist_free_all(curl_slist *l);
+		单链表资源释放。在销毁资源时做。
+		
+

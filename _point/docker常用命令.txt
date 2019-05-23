@@ -1,0 +1,5 @@
+
+查看日志
+sudo docker logs -f -t --tail 10 xxx
+xxx是容器的名字。
+

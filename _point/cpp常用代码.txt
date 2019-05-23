@@ -1,0 +1,15 @@
+std::string
+
+std::stringstream
+	跟string的区别，可以<<这样往里面加东西。非常直观方便。
+	通过.str()方法来转化成string。
+	头文件是<sstream>
+	
+std::vector
+std::pair
+
+
+
+std::ifstream
+std::ofstream
+

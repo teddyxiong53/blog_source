@@ -165,6 +165,7 @@ https://blog.csdn.net/Lean_on_Me/article/details/84552487
 
 
 
+
 # 快速生成常用代码片段
 
 例如，vue的简单例子，经常使用。
@@ -224,6 +225,19 @@ https://blog.csdn.net/Lean_on_Me/article/details/84552487
 # 直接在vscode里打开浏览器预览html
 
 安装open-in-browser这个插件。
+=======
+# 调试c++程序
+
+很简单。
+
+插件之前安装好了。
+
+只需点击左边的debug图标。
+
+当前还没有配置debug。
+
+配置一下，然后在launch.json里写一下程序的相对路径就好了。
+
 
 
 
