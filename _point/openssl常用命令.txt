@@ -1,0 +1,18 @@
+
+生成一个rsa私钥。根据提示输入密码。我们就输入123456
+openssl genrsa -des3 -out server.key 2048
+生成证书请求。要你输入密码，就输入上面的123456
+另外还提示了一堆的东西，全部回车就好了。
+openssl req -new -key server.key -out server.csr
+
+把server.key改一下名字，因为我们要进行加密，希望加密后的名字是server.key。
+cp server.key server.key.org
+
+对私钥进行加密。
+openssl rsa -in server.key.org -out server.key
+
+使用私钥和证书请求文件（csr文件）得到证书，证书其实就是公钥。
+openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
+
+然后就可以把公钥和私钥放到nginx里，配置好。这个就是单向的https就配好了。
+

@@ -24,6 +24,9 @@
 		CURLE_OK 这样。
 		注意code的c是小写。
 		
+	CURLFORMcode
+		表单相关函数返回值。
+		
 函数
 	CURL *handle = curl_easy_init(void)
 		创建handle。
@@ -34,5 +37,17 @@
 		
 	curl_slist_free_all(curl_slist *l);
 		单链表资源释放。在销毁资源时做。
+	curl_slist_append(curl_slist *l, char *data)
+		单链表增加节点。
+		
+	curl_formadd
+	
+	curl_easy_escape
+		urlEncode。
+		
+	curl_easy_getinfo
+		
+	curl_easy_perform
+		
 		
 

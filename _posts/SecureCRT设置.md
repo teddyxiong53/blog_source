@@ -16,10 +16,22 @@ Emulation选择VT100，勾选ANSI Color和use color scheme。
 
 ansi color不选的话，make menuconfig就会混乱。
 
-
+# 设置log格式
 
 ```
 d:\securecrt_log\[%S]-%M-%D-[%h-%m-%s].log
 [%h:%m:%s:%t]
+```
+
+# 直接发送文件
+
+可以直接把文件拖放到securecrt的窗口里进行发送。
+
+是使用zmodem等进行的。
+
+安装zmodem文件：
+
+```
+apt-get install lrzsz
 ```
 

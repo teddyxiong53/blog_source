@@ -1,5 +1,6 @@
+docker run -it image_name/container_id 
 
-查看日志
-sudo docker logs -f -t --tail 10 xxx
-xxx是容器的名字。
+docker logs -f -t --tail 10 xxx
+	查看日志
+	xxx是容器的名字。
 

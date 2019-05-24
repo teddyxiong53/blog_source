@@ -1,46 +1,4 @@
-看看有哪些第三方库常用。
-我根据自己在不同的项目里看到的，记录下来。
-
-mocha
-	测试框架。
-	同时支持异步和同步的测试。
+nginx -t
+	测试配置是否正确。
 	
-bluebird
-	一个第三方的Promise库。
-	网上说效率比原生的要高。
-	知道即可。
-	里面有个很好的功能，就是把非Promise转成Promise。
-	const Promise = require('bluebird')
-	var readFile = require("fs").readFile
-	var myAsyncReadFile = Promise.promisify(readFile)
-	
-body-parser
-	
-querystring
-	做url查询参数的解析。
-	
-iconv-lite
-	nodejs默认不支持gbk编码。
-	这个可以帮我们支持。
-	iconv.decode(data, 'gbk')
-	
-	
-finalhandler
-	作为最后一步，来应答http请求。
-	finalhandler(req, res[,options])
-	
-safe-buffer
-	比默认的Buffer安全。
-	目标是替代这个Buffer。
-	
-content-disposition
-	这个是跟http header里的content-disposition有关的。
-	
-	
-morgan
-	express的日志模块。
-	可以独立工作。
-	
-debug
-	打印调试信息的模块。
 	

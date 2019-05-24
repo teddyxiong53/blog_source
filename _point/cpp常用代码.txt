@@ -13,3 +13,10 @@ std::pair
 std::ifstream
 std::ofstream
 
+std::atomic<bool>
+
+std::thread
+
+std::atomic_flag
+
+std::promise

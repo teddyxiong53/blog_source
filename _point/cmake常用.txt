@@ -1,0 +1,5 @@
+
+根目录下，定义项目。
+project(dossos VERSION 1.0.0 LANGUAGE CXX)
+
+set()
