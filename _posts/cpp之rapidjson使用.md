@@ -6,6 +6,22 @@ tags:
 
 ---
 
+1
+
+rapidjson为了最大化性能，大量使用了浅拷贝，使用之前一定要了解清楚。
+
+另外，还有move语义。这个都是为了提高性能。
+
+```
+rapidjson::Value a(123);
+rapidjson::Value b(456);
+b = a;//效果是b变为123，a变成null
+```
+
+AddMember和PushBack也使用了move。
+
+
+
 
 
 rapidjson是只依赖头文件的。
@@ -310,3 +326,7 @@ https://blog.csdn.net/Vivid_110/article/details/53696077
 这篇文字特别好。很简单全面。
 
 https://blog.csdn.net/qq849635649/article/details/52678822
+
+4、rapidjson常见使用示例
+
+https://blog.csdn.net/Aquester/article/details/48736449

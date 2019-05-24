@@ -1,22 +1,294 @@
-std::string
 
-std::stringstream
-	跟string的区别，可以<<这样往里面加东西。非常直观方便。
-	通过.str()方法来转化成string。
-	头文件是<sstream>
+# 读取文件
+```
+	std::ifstream infile;
+	infile.open("../config.json");
+	if(infile.bad()) {
+		printf("open fail");
+		return -1;
+	} else {
+		printf("open ok");
+	}
+	std::string line;
+	std::string data;
+	while(getline(infile, line)) {
+		data += line;
+	}
+```
+
+
+
+尽量不要用带h的头文件。
+c标准库的，有c++的版本，在名字前面加上了c。
+
+```
+#include<cstdio>// 标准化后经过改造的C的标准库，所有的组件都放在了std中                
+#include<stdio.h>// 标准化以前C++中的C标准库     
+```
+
+# 头文件分布
+1、C库
+2、容器
+3、io
+4、多线程
+5、其他
+
+1、C库
+	<cassert>
+		里面就一个函数assert。
+	<ctype>
+		isalpha
+		isdigit
+		toupper
+		这些函数。
+	<cerrno>
+		就一个变量：
+		errno
+	<cfenv>
+		fegetenv
+	<cfloat>
+		没什么。
+	<cinttypes>
+		没什么。
+	<ciso646>
+		定义一些逻辑操作宏。
+		例如 and对应&&
+		
+	<climits>
+		INT_MAX这些宏。
+	<clocale>
+		setlocale函数。
+	<cmath>
+		sin、cos等函数。
+	<csetjmp>
+		
+	<csignal>
+	<cstdarg>
+	<cstdbool>
+	<cstddef>
+	<cstdint>
+	<cstdio>
+	<cstdlib>
+	<cstring>
+	<ctgmath>
+	<ctime>
+	<cuchar>
+	<cwchar>
+	<cwctype>
+2、容器
+	<array>
+		类：array
+			std::array<int,10> a{{1,2,3}}
+		方法：
+			元素访问：
+				a.at(1)
+				a[1]
+				a.front()
+				a.back()
+				a.data() 返回的是一个指针。
+			迭代器
+				begin()
+				cbegin()
+				rbegin()
+				对应的end
+			容量
+				a.empty() 是否为空
+				a.size() 
+				a.max_size()
+			操作
+				a.fill(5);//把所有空间都填入5 
+				a.swap(a2);//把二者的内容互换。
+		用法：
+			只能是固定长度的数组。所以一般很少用。
+			std::array<int,10> a{{1,2,3}};
+			for(auto i : a) {
+				std::cout << i << std::endl;
+			}
+			
+			std::sort(a.begin(), a.end());
+			
+	<deque>
+		类：
+			deque
+			std::deque<int> d = {1,2,3};
+		元素访问：	
+			d.at(1)
+			d[1]
+			d.front()
+			d.back()
+		迭代器
+			d.beign()/d.cbegin()/d.rbegin()
+		容量
+			d.empty()
+			d.size()
+			d.max_size()
+				这个值很大 。
+				4611686018427387903
+		修改器
+			增
+				insert
+					参数是迭代器和待插入的值。
+					std::deque<int>::iterator it = d.begin();
+					it = d.insert(it, 10);
+				push_back
+					d.push_back(20);
+				push_front
+					d.push_front(20);
+			删
+				clear()
+					size变成0 了。
+				erase
+					对应元素被删除，size减去1 。
+					std::deque<int>::iterator it = d.begin();
+					d.erase(it);
+					
+				pop_back()
+					d.pop_back()就可以了。最后一个元素被删除。
+				pop_front()
+					第一个元素被删除。
+			改
+				emplace
+					跟insert效果一样。
+					std::deque<int>::iterator it = d.begin();
+					d.emplace(it, 10);
+				emplace_back
+				resize(2)
+					把size调整为2.这样会自动把后面的元素删掉。
+				swap
+					d.swap(d2);
+	<forward_list>
+		跟C语言的单链表是一样的。
+		std::forward_list<int> l = {1,2,3};
+		元素访问：
+			front()
+				只有这一个函数。
+				l.front();
+		迭代器
+			before_begin()：指向第一个元素之前。
+				一般别用这个。
+			begin()：指向第一个元素。
+			cbegin()
+		容量
+			empty
+			max_size
+				是这么多：
+				1152921504606846975
+		修改器：
+			增：
+				insert_after
+					std::forward_list<int>::iterator it = l.begin();
+					l.insert_after(it,10);
+				push_front
+					l.push_front(20);
+				emplace_after
+					l.emplace_after(it,30);
+				emplace_front
+					l.emplace_front(40);
+			删：
+				clear
+					l.clear();
+					全部清空。size变为0 。
+				erase_after
+					l.erase_after(it);
+					1 2 3
+					会单独把2删掉。
+					
+			改
+				resize
+					l.resize(2);
+				swap
+		操作
+			merge
+				按道理应该要是升级排列好的，但是不排行也没事。
+				std::forward_list<int> l2 = {6,3,5};
+				l.merge(l2);
+			splice_after
+				从一个forward_list移动元素到另一个forward_list。
+			remove
+				l.remove(1);//删除值等于1的元素。
+			remove_if
+				l.remove_if([](int n){return n>2;});
+				删除满足条件：值大于2的元素。
+			reverse
+				l.reverse();
+			unique
+				l.unique();
+				删除连续且相等的元素。感觉没有什么用。
+			sort
+				l.sort();
+	<list>
+		双向链表。
+		
+	<map>
 	
-std::vector
-std::pair
-
-
-
-std::ifstream
-std::ofstream
-
-std::atomic<bool>
-
-std::thread
-
-std::atomic_flag
-
-std::promise
+	<queue>
+	<set>
+	<stack>
+	<unordered_map>
+	<unordered_set>
+	<vector>
+	
+3、io
+	<fstream>
+		继承关系
+		ios_base
+			basic_ios
+				basic_istream
+					basic_ifstream
+		ifstream自己的函数：
+			open
+			close
+			is_open
+			
+		继承自istream的函数
+			有格式输入：
+				>>
+			无格式输入：
+				get
+				getline
+				read
+			定位
+				tellg
+				seekg
+			杂项
+				sync
+		继承自ios的函数：
+			good
+			eof
+			fail
+			bad
+			
+	<ios>
+	<iosfwd>
+	<iostream>
+	<istream>
+	<ostream>
+	<sstream>
+	<streambuf>
+	
+4、多线程
+	<atomic>
+	condition_variable>
+	<future>
+	<mutex>
+	<thread>
+5、其他
+	<algorithm>
+	<chrono>
+	<exception>
+	<functional>
+	<initializer_list>
+	<iterator>
+	<limits>
+	<locale>
+	<memory>
+	<new>
+	<numeric>
+	<ratio>
+	<regex>
+	<stdexcept>
+	<string>
+	<system_error>
+	<tuple>
+	<utility>
+	

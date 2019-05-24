@@ -1,0 +1,76 @@
+GetInt
+GetDouble
+GetBool
+GetString  返回的是char *
+
+GetType
+
+
+IsArray
+IsString
+IsBoolIsTrue
+IsNull
+
+Size() 
+	对数组可以用这个来进行遍历。
+	
+
+
+# 包含的头文件
+```
+#include <rapidjson/document.h>
+#include <rapidjson/error/en.h> // en为english的简写，定义了取出错信息的函数GetParseError_En(errcode)
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
+```
+# 读取json文件并解析
+```
+void read_json()
+{
+rapidjson::Document document; // 定义一个Document对象
+std::string str = "{\"count\":2,\"names\":[\"zhangsan\",\"wangwu\"]}";
+document.Parse(str.c_str());//没有返回值，也不会抛出异常。
+if (document.HasParseError())//通过这个来检查是否有错误。
+{
+	printf("parse error: (%d:%d)%s\n", document.GetParseError(), document.GetErrorOffset(), rapidjson::GetParseError_En(document.GetParseError()));
+
+}
+else 
+{
+	if(!document.HasMember("count") || !document.HasMember("names")) {
+		//内容不对
+	} else {
+		rapidjson::Value& count_json = document["count"];
+		int count = count_json.GetInt();
+		
+		rapidjson::Value& names_json = document["names"];
+		for(rapidjson::SizeType i=0; i<names_json.Size(); i++) {
+			std::string name = names_json[i].GetString();
+			
+		}
+	}
+	
+}
+}
+```
+# 构造json对象并转成字符串
+```
+void generate_json()
+{
+	rapidjson::StringBuffer buffer;
+	rapidjson::Write<rapidjson::StringBuffer> writer(buffer);
+	
+	writer.StartObject();
+	writer.Key("count");
+	writer.Int(2);
+	
+	writer.Key("names");
+	writer.StartArray();
+	
+	writer.StartObject();
+	writer.Key("name");
+	writer.String("zhangsan");
+	
+}
+```
+https://blog.csdn.net/Aquester/article/details/48736449

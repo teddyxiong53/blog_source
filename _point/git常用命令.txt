@@ -77,3 +77,17 @@ git log --pretty=oneline
 显示改动行数统计
 git log --stat
 
+
+
+git本地仓库使用流程
+1、指定一个目录，作为提交的目的地。
+mkdir git_repo
+cd git_repo
+git init --bare xxx.git
+2、工作目录下。
+git init
+git remote add origin /home/teddy/work/git_repo/xxx.git
+git add .
+git commit -m "xx"
+git push --set-upstream origin master
+这样就完成了。
