@@ -1,0 +1,21 @@
+
+
+snd_pcm_t
+	这个是handle的。贯穿所有地方。
+	
+snd_pcm_open
+	这个就是得到handle。
+	
+	
+硬件参数设置：
+snd_pcm_hw_params_alloca
+	这个分配参数内存空间。
+snd_pcm_hw_params_any
+	Fill params with a full configuration space for a PCM.
+	
+	
+snd_pcm_hw_params_t
+	这个是否需要明确释放内存呢？
+	snd_pcm_hw_params_alloca
+		这个是从栈上分配的空间。所以是不需要释放，释放反而会挂掉。
+	https://stackoverflow.com/questions/40350971/alsa-snd-pcm-hw-params-free-causing-memory-error

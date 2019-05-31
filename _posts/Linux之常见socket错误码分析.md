@@ -36,6 +36,44 @@ EINTR表示操作被中断。
 
 
 
+我还是以send和recv作为分析对象吧。
+
+send
+
+```
+返回值：
+成功的时候，返回的是发出去的字节数。
+失败的时候，返回-1。具体错误信息通过errno来体现。
+
+错误码
+EAGAIN or EWOULDBLOCK
+	当socket被设置为非阻塞模式时，当前buffer是满的，无法发送。
+	这种处理，应该是continue。
+	
+ECONNRESET
+	连接被对方reset了。
+EINTR
+	这个是被signal打断了。可以continue。
+	这个也是阻塞的时候，进程收到一个signal，阻塞接口继续执行，就是对应这个错误。
+```
+
+recv
+
+```
+返回值规律跟send一样。
+有一点不一样，就是返回值为0，表示读取完了。
+```
+
+
+
+recv等待对方的数据时，没有收到。
+
+```
+[11]:[Resource temporarily unavailable]
+```
+
+EAGAIN就是11 。
+
 
 
 # EINTR

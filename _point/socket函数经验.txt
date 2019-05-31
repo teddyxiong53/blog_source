@@ -1,0 +1,7 @@
+read/write和send/recv的区别
+send/recv多了一个参数，flag。默认给0就好了。
+但是可以设置一些socket相关的特性，例如oob等。
+
+
+用select检测对方断开tcp连接
+https://blog.csdn.net/haizhongyun/article/details/7613520

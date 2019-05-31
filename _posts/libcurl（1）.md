@@ -168,6 +168,8 @@ curl_easy_perform() failed: Couldn't resolve host name
 
 # multi的用法
 
+multi接口是对easy接口的封装。是为了支持并发访问。
+
 涉及的结构体是：CURLM。
 
 ```
@@ -215,6 +217,12 @@ while(ret ) {
 
 
 
+
+
+看avs里的使用，curl_easy_perform是阻塞执行的。
+
+
+
 # 参考资料
 
 1、使用libcurl下载文件小例
@@ -240,3 +248,11 @@ https://www.cnblogs.com/zhaoyl/p/4001151.html
 6、libcurl基本知识、post、get请求 -- libcurl
 
 https://blog.csdn.net/cy_cai/article/details/41941161
+
+7、libcurl使用easy模式阻塞卡死等问题的完美解决
+
+https://www.cnblogs.com/bigben0123/p/3192978.html
+
+8、使用multi curl进行http并发访问
+
+https://www.cnblogs.com/bigben0123/p/3154406.html

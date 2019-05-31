@@ -41,6 +41,12 @@ int main(int argc, char const *argv[])
 
 
 
+什么情况下需要用libuv？
+
+你需要一个EventLoop的时候。
+
+
+
 参考资料
 
 1、Basics of libuv

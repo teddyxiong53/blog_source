@@ -380,6 +380,18 @@ message(${CMAKE_BUILD_TYPE})
 
 变量的
 
+# 问题解决
+
+被依赖的库，要写在后面。
+
+```
+例如libA。依赖了LibB。
+在target_link_libraries(要这样写。
+libA
+libB
+如果顺序写错了，就会报符号找不到的错误。我查一个这样的错误， 查了1个多小时。
+```
+
 
 
 # 参考资料
@@ -417,3 +429,7 @@ https://github.com/mortennobel/CMake-Cheatsheet/blob/master/CMake_Cheatsheet.pdf
 这个系列很好。
 
 https://www.cnblogs.com/coderfenghc/archive/2012/10/20/2712806.html
+
+9、CMake命令target_link_libraries链接库的顺序
+
+https://blog.csdn.net/zhujianwei31415/article/details/50727952

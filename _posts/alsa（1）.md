@@ -6,7 +6,7 @@ tags:
 
 ---
 
-
+1
 
 
 
@@ -15,3 +15,7 @@ tags:
 1、深入了解ALSA
 
 https://www.cnblogs.com/lifan3a/articles/5553664.html
+
+2、alsa-lib, alsa-utils交叉编译及在嵌入式上使用
+
+https://blog.csdn.net/luckywang1103/article/details/45626201
