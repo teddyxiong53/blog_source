@@ -220,12 +220,10 @@ https://blog.csdn.net/Lean_on_Me/article/details/84552487
 
 在这个上面继续做就很方便。
 
-
-
-# 直接在vscode里打开浏览器预览html
+直接在vscode里打开浏览器预览html
 
 安装open-in-browser这个插件。
-=======
+
 # 调试c++程序
 
 很简单。
@@ -237,6 +235,12 @@ https://blog.csdn.net/Lean_on_Me/article/details/84552487
 当前还没有配置debug。
 
 配置一下，然后在launch.json里写一下程序的相对路径就好了。
+
+# Ubuntu下cpu占用高
+
+进入设置，把followSymlinks  设置为false。
+
+好像有用。
 
 
 

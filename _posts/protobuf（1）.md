@@ -282,6 +282,230 @@ Type {
 
 
 
+# C++里使用
+
+新建一个addressbook.proto文件。
+
+```
+syntax = "proto2";
+
+package tutorial;
+
+message Person {
+  required string name = 1;
+  required int32 id = 2;
+  optional string email = 3;
+
+  enum PhoneType {
+    MOBILE = 0;
+    HOME = 1;
+    WORK = 2;
+  }
+
+  message PhoneNumber {
+    required string number = 1;
+    optional PhoneType type = 2 [default = HOME];
+  }
+
+  repeated PhoneNumber phones = 4;
+}
+
+message AddressBook {
+  repeated Person people = 1;
+}
+```
+
+编译成c++源文件。
+
+```
+protoc -I=./ --cpp_out=./out ./addressbook.proto
+```
+
+生成目录：
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/protobuf$ tree
+.
+├── addressbook.proto
+└── out
+    ├── addressbook.pb.cc
+    └── addressbook.pb.h
+```
+
+生成的代码，可读性非常差。
+
+看看怎么使用。
+
+
+
+网络发送，就这样就好了。
+
+```
+string data;  
+demo::People p;  
+p.set_name("Hideto");  
+p.set_id(123);  
+p.set_email("hideto.bj@gmail.com");  
+p.SerializeToString(&data);  
+char bts[data.length()];  
+strcpy(bts, data.c_str());  
+send(connectfd, bts, sizeof(bts), 0);  
+```
+
+
+
+#C和C++对比
+
+simple.proto
+
+```
+syntax = "proto2";
+
+message SimpleMessage {
+    required int32 lucky_number = 1;
+}
+```
+
+把这个的nanopb的C语言版本，跟c++版本的生成文件对比一下。
+
+C语言的生成内容，有效的就是这些：
+
+```
+typedef struct _SimpleMessaeg {
+    int32_t lucky_number;
+} SimpleMessage;
+
+#define SimpleMessage_init_default {0}
+#define SimpleMessage_init_zero {0}
+
+#define SimpleMessage_lucky_number_tag 1
+
+extern pb_field_t SimpleMessage_fields[2];
+#define SimpleMessage_size 11
+
+pb_field_t SimpleMessage_fields[2] = {
+    PB_FIELD(1, INT32, REQUIRED, STATIC, FIRST, SimpleMessage, lucky_number, lucky_number, 0),
+    PB_LAST_FIELD
+};
+```
+
+c++的生成结果。
+
+```
+
+#include <google/protobuf/port_def.inc>
+#include <google/protobuf/prot_undef.inc>
+//... 头文件包含
+
+//内部实现细节，不要直接使用
+struct TableStruct_simple_2eproto {
+
+};
+void AddDescriptors_simple_2eproto();
+class SimpleMessage;
+class SimpleMessageDefaultTypeInternal;
+//
+class SimpleMessage : public ::google::protobuf::Message
+{
+public:
+    SimpleMessage();
+    virtual ~SimpleMessage();
+    //拷贝构造
+    SimpleMessage(const SimpleMessage& from);
+    //移动构造
+
+    inline UnknownFieldSet& unknown_fields() {
+        return _internal_metadata_.unknown_fields();
+    }
+
+    static const Descriptor* descriptor() {
+        return default_instance().GetDescriptor();
+    }
+    static const SimpleMessage& default_instance();
+    static vodi InitAsDefaultInstance();//这个只能内部使用。
+    void Swap(SimpleMessage* other);
+    //实现
+    inline SimpleMessage* New() {
+        return CreateMaybeMessage<SimpleMessage>(nullptr);
+    }
+    void CopyFrom();
+    void MergeFrom();
+    void Clear();
+    bool IsInitialized();
+    size_t ByteSizeLong();
+private:
+    void SharedCtor();
+    void SharedDtor();
+
+public://对外的主要就是这些。
+    bool has_lucky_number();
+    void clear_lucky_number();
+    static const kLuckyNumberFieldNumber = 1;
+    int32 lucky_number();
+    void set_lucky_number(int32 value);
+private:
+    int32 lucky_number_;
+};
+//内联实现函数
+inline bool SimpleMessage::has_lucky_number() {
+    return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline int32 SimpleMessage::lucky_number() {
+    return lucky_number_;
+}
+inline void SimpleMessage::set_lucky_number(int32 value) {
+    _has_bits_[0] |= 0x00000001u;
+    lucky_number_ = value;
+}
+```
+
+
+
+上面看到情况，没有涉及到repeated元素。
+
+对于repeated，有这些特点：
+
+```
+xx_size();
+add_xx();
+
+```
+
+一个通讯录里有多个人，一个人有多个号码。
+
+
+
+# proto2和proto3的对比
+
+对于addressbook.proto文件，这个默认是proto2的，我们把required、optional这些去掉，把头部改成proto3的。
+
+可以得到一个proto3版本的文件。
+
+然后用protoc编译，把v2和v3得到的代码文件进行对比。
+
+没有什么本质区别。
+
+```
+Person_PhoneNumber
+	这个是因为在Person内部定义，所以前面有Person_前缀。
+Person
+AddressBook
+```
+
+一个message对应一个class。
+
+
+
+用nanopb生成看看。数组的，和普通的，都是pb_callback_t类型。
+
+```
+/* Struct definitions */
+typedef struct _AddressBook {
+    pb_callback_t people;
+/* @@protoc_insertion_point(struct:AddressBook) */
+} AddressBook;
+```
+
 
 
 参考资料
@@ -301,3 +525,39 @@ https://blog.csdn.net/kid_2412/article/details/52275582
 4、在NodeJS中玩转Protocol Buffer
 
 https://blog.csdn.net/zhulin2609/article/details/50977107
+
+5、
+
+https://developers.google.com/protocol-buffers/docs/cpptutorial
+
+6、Google Protocol Buffer 的使用和原理
+
+https://www.ibm.com/developerworks/cn/linux/l-cn-gpb/index.html
+
+7、
+
+https://blog.csdn.net/cscrazybing/article/details/78061475
+
+8、
+
+https://blog.csdn.net/k346k346/article/details/51754431
+
+9、protobuf的数据类型和C++数据类型
+
+https://blog.csdn.net/wangchong_fly/article/details/47614699
+
+10、最常用的两种C++序列化方案的使用心得（protobuf和boost serialization）
+
+https://www.cnblogs.com/lanxuezaipiao/p/3703988.html
+
+11、protobuf c++客户端/服务器例子
+
+https://blog.csdn.net/u014538198/article/details/72389017
+
+12、protobuf repeated类型的使用
+
+https://blog.csdn.net/mycwq/article/details/19622571
+
+13、protobuf 中的嵌套消息的使用 主要对set_allocated_和mutable_的使用
+
+https://blog.csdn.net/xiaxiazls/article/details/50118161

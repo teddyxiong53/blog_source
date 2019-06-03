@@ -43,6 +43,14 @@ bytes	string
 
 
 
+注意：
+
+proto3的语法里，把required和optional都删除了。
+
+默认都是optional的。
+
+
+
 # optional
 
 可以给optional指定默认值，这样在解析没有这个值的时候，可以给默认值。
@@ -119,8 +127,36 @@ message SearchResponse {
 
 
 
+
+
+proto3默认为每个字段都提供了默认值。
+
+绝大部分情况下，没有设置值，跟0/0.0/false等价。
+
+是不会破坏业务逻辑的 。
+
+例如，没有收钱，跟收了0.0元是等价的。
+
+
+
+这个方案利用了 Protobuf 3 只对原始数据类型不生成 hasXxx() 的特点
+
+
+
 参考资料
 
 1、Protobuf 语法指南
 
 https://colobu.com/2015/01/07/Protobuf-language-guide/
+
+2、protobuf的Required,Optional,Repeated限定修饰符
+
+https://blog.csdn.net/guyue35/article/details/51181845
+
+3、Why required and optional is removed in Protocol Buffers 3
+
+https://stackoverflow.com/questions/31801257/why-required-and-optional-is-removed-in-protocol-buffers-3
+
+4、区分 Protobuf 中缺失值和默认值
+
+https://zhuanlan.zhihu.com/p/46603988

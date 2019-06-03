@@ -209,6 +209,8 @@ typedef struct _ConnectionDetails {
 
 
 
+nanopb支持proto3的语法，这就是SimpleMessage_init_default的作用了。
+
 
 
 

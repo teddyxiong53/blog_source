@@ -310,6 +310,146 @@ make_shared把这2个内存一次性分配了。
 
 
 
+# 使用中的疑问
+
+我现在使用中，需要把一个智能指针转成普通指针传递下去用。
+
+就是protobuf的接口。这些接口为了通用性，是普通指针的。
+
+我的疑问就是，转成普通指针了，还能正常被回收吗？
+
+注意原始指针的获取，应该是
+
+```
+p.get();//注意是点
+而不是
+p->get();//这样会从包含的类里面去找get函数，当然一般是找不到的。
+```
+
+```
+#include <memory>
+#include <iostream>
+#include <unistd.h>
+
+class A {
+public:
+  A() {
+    std::cout << "A construct" << std::endl;
+  }
+  ~A() {
+    std::cout << "A destruct" << std::endl;
+  }
+  void print(const std::string& str) {
+    std::cout << str << std::endl;
+  }
+};
+std::shared_ptr<A> p1;
+
+void func1()
+{
+  p1 = std::shared_ptr<A>(new A());
+  p1->print("func1");
+}
+void func2(A *a)
+{
+  a->print("func2");
+}
+int main()
+{
+  func1();
+  //func2(p1.get());
+  sleep(2);
+}
+```
+
+最后退出的时候，当然是调用了析构。
+
+我这样改造了后，把p1变成jub在sleep之前，就调用了析构。所以传递原始指针的方式，不影响。
+
+```
+#include <memory>
+#include <iostream>
+#include <unistd.h>
+
+class A {
+public:
+  A() {
+    std::cout << "A construct" << std::endl;
+  }
+  ~A() {
+    std::cout << "A destruct" << std::endl;
+  }
+  void print(const std::string& str) {
+    std::cout << str << std::endl;
+  }
+};
+//std::shared_ptr<A> p1;
+void func2(A *a)
+{
+  a->print("func2");
+}
+void func1()
+{
+  std::shared_ptr<A> p1 = std::shared_ptr<A>(new A());
+  p1->print("func1");
+  func2(p1.get());
+}
+
+int main()
+{
+  func1();
+  //func2(p1.get());
+  sleep(2);
+}
+```
+
+
+
+
+
+```
+[2019-06-01 16:36:58][DEBUG][DossOS.cpp][connectToHttpServer][106]: 1122
+terminate called after throwing an instance of 'std::bad_weak_ptr'
+  what():  bad_weak_ptr
+已放弃
+```
+
+
+
+互相持有对方的智能指针，导致析构函数没有被调用。
+
+```
+using namespace std;
+class B;
+class A
+{
+public:
+    A(){cout<<"A()"<<endl;}
+    ~A(){cout<<"~A()"<<endl;}
+    shared_ptr<B> _ptrb;//解决办法是把这个改成weak_ptr。
+};
+
+class B
+{
+public:
+    B(){cout<<"B()"<<endl;}
+    ~B(){cout<<"~B()"<<endl;}
+    shared_ptr<A> _ptra;//解决办法是把这个改成weak_ptr。跟上面都要改。
+};
+int main(int argc, char* argv[])
+{
+    shared_ptr<A> ptra(new A());
+    shared_ptr<B> ptrb(new B());
+
+    ptra->_ptrb = ptrb;
+    ptrb->_ptra = ptra;
+
+    return 0;
+}
+```
+
+
+
 # 参考资料
 
 1、C++智能指针简单剖析
@@ -335,3 +475,15 @@ http://blog.jobbole.com/104666/
 6、make_shared和shared_ptr的区别
 
 https://blog.csdn.net/u013349653/article/details/51155675
+
+7、C++11里的智能指针
+
+https://www.cnblogs.com/xiaouisme/p/7498782.html
+
+8、bad_weak_ptr的原因
+
+https://blog.csdn.net/yockie/article/details/40213331
+
+9、C++11智能指针（五）：shared_ptr的循环引用的问题及weak_ptr
+
+https://blog.csdn.net/lijinqi1987/article/details/79005738

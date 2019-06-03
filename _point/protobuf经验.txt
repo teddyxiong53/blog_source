@@ -1,0 +1,64 @@
+set_xx
+SerializeToOstream
+
+ParseFromIstream
+	然后就可以通过成员变量进行索引使用了。
+	
+
+对于repeated的，就是数组。
+有对应的xx_size()函数可以用来获取大小。
+
+string DebugString() const;
+	这个是调试打印。
+string ShortDebugString() const;
+
+string Utf8DebugString() const;
+
+void PrintDebugString() const;
+
+序列化
+bool SerializeToString(string* output) const;
+
+反序列化
+bool ParseFromString(const string& data); 
+
+bool SerializeToArray(void * data, int size) const  //将消息序列化至数组
+
+bool ParseFromArray(const void * data, int size)    //从数组解析消息
+
+bool SerializeToOstream(ostream* output) const; //将消息写入到给定的C++ ostream中。
+
+bool ParseFromIstream(istream* input); //从给定的C++ istream解析消息。
+
+
+
+# 添加repeated成员
+
+对于普通类型的变量，直接set_xx就好了。
+但是对于复杂类型的，有set_allocated_xx、mutable_xx。需要用这个来做。
+对于AddressBook里的Person。对于Person里的name（string类型）。
+
+AdderssBook addressBook ;
+Person * person = addressBook.add_person();//这个里面给我们分配了一个Person的空间，把指针返回。
+
+person->set_name("xxx");
+std::string *str = new string("yyy");
+person->set_allocated_name(str);
+
+
+bytes数据如何处理呢？
+
+
+void clear_voice();
+static const int kVoiceFieldNumber = 1;
+const ::std::string &voice() const;
+void set_voice(const ::std::string &value);
+
+void set_voice(::std::string &&value);
+
+void set_voice(const char *value);
+void set_voice(const void *value, size_t size);
+::std::string *mutable_voice();
+::std::string *release_voice();
+void set_allocated_voice(::std::string *voice);
+
