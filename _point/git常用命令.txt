@@ -91,3 +91,9 @@ git add .
 git commit -m "xx"
 git push --set-upstream origin master
 这样就完成了。
+
+
+git打包，这样就可以避免把.git目录打包进去。
+git archive --format=zip --output master.zip master
+
+

@@ -198,6 +198,72 @@ socket.on('error', function(err){
 
 
 
+# 我自己的例子
+
+用来做测试用的。
+
+```
+var net = require("net")
+var ProtoBuf = require("protobufjs")
+
+var builder = ProtoBuf.loadProtoFile("./VoiceBoxEvent.proto")
+console.log(builder)
+var VbEvent = builder.build("Event")
+console.log(VbEvent)
+
+var server = net.createServer(function (socket) {
+    console.log(socket.address());
+    socket.on('data', function (data) {
+
+        if (data.toString() == "hello") {
+            console.log(data.toString())
+            var readSize = socket.bytesRead;
+            console.log("data size: ", readSize);
+            socket.write(data.toString(), function () {
+                console.log("write back to client:", socket.bytesWritten);
+            })
+        } else {
+
+            // console.log(data);
+            // const buf = Buffer.alloc(5000, 1);
+            // socket.write(buf, function() {
+            //     console.log("write to client:", socket.bytesWritten);
+            // })
+            //console.log(data)
+            //解析收到的内容
+            var recvEvent = VbEvent.decode(data)
+            var evt = null;
+            console.log("recvEvent.id " + recvEvent.id + " code: " + recvEvent.code )
+            if (recvEvent.code == 0x02) {
+                //说明收到了ping
+                evt = new VbEvent({
+                    id: recvEvent.id,
+                    code: 0x1002,
+                    timestamp: Date.now()
+                });
+                var buffer = evt.encode()
+                var message = buffer.toArrayBuffer()
+                var msg = Buffer.from(message)
+                console.log(msg)
+
+                socket.write(msg, function () {
+                    console.log("write to client:", socket.bytesWritten);
+                })
+            }
+        }
+
+    })
+
+})
+
+server.listen(4000, function () {
+    console.log("listen on 4000");
+})
+
+```
+
+
+
 参考资料
 
 1、

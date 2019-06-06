@@ -561,3 +561,7 @@ https://blog.csdn.net/mycwq/article/details/19622571
 13、protobuf 中的嵌套消息的使用 主要对set_allocated_和mutable_的使用
 
 https://blog.csdn.net/xiaxiazls/article/details/50118161
+
+14、Google Protobuf 协议分析
+
+https://blog.csdn.net/mycwq/article/details/42060641

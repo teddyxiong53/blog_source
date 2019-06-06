@@ -1,0 +1,58 @@
+多行编辑
+	Alt+Shift加鼠标选中。
+	Ctrl+Alt+Shift：加方向键。也可以。
+	Ctrl+Alt+L：先选中要进行列编辑的一个单词，然后按这组合键。
+智能提示
+	默认的组合键是Ctrl+空格。这个不妥。
+	
+行操作
+	删除一行：Ctrl+Shift+K。
+	把当前行向下复制一行：Alt+shift+方向下。
+	交互两行：Alt+方向下。
+	注释：Ctrl+/
+重命名
+	右键可以。也可以F2.
+快速提取公共代码
+	选中代码，按Ctrl+ 点号。
+	
+格式化代码
+	右键就行。
+代码折叠
+	折叠所有：先按Ctrl+K，再按Ctrl+0 。
+	打开所有：先按Ctrl+K，再按Ctrl+J。
+	折叠当前光标所在位置：Ctrl+Shift+[，
+	打开当前光标所在位置：Ctrl+Shift+]。
+错误和警告
+
+代码片段
+	例如trycatch片段。
+	你这样操作。先输入trycatch，然后按一下tab键，就自动帮你写了。
+	
+Emmet
+	就是html里li*5这样的快速写法。
+	这个是一套标准。
+	https://docs.emmet.io/cheat-sheet/
+	
+	
+
+快捷键梳理
+
+基本
+	Ctrl+,  打开用户设置。
+	Ctrl+K，Ctrl+S  打开快捷键设置。
+	Ctrl+P  快速打开。
+	F1  打开命令面板，也可以用Ctrl+Shift+P。
+	
+基本编辑
+	常用的都知道。
+	
+导航
+	Ctrl+T：全局搜索符号。
+	Ctrl+P：快速调到某个文件。
+	F8：跳转到下一个错误的位置。
+	Alt+左或者右：前进后退。
+查找和替换
+	Ctrl+H：替换。
+	F3和Shift+F3：下一个、上一个。
+	
+

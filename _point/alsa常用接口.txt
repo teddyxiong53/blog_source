@@ -1,5 +1,5 @@
 
-
+# 录音
 snd_pcm_t
 	这个是handle的。贯穿所有地方。
 	
@@ -19,3 +19,9 @@ snd_pcm_hw_params_t
 	snd_pcm_hw_params_alloca
 		这个是从栈上分配的空间。所以是不需要释放，释放反而会挂掉。
 	https://stackoverflow.com/questions/40350971/alsa-snd-pcm-hw-params-free-causing-memory-error
+	
+	
+	
+# 播放
+
+snd_pcm_prepare

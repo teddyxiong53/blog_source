@@ -1,0 +1,228 @@
+
+
+# avformat.h里的接口
+
+原则：
+	结构体都是通过指针的方式一层层进行包含。
+	
+=========简单文件播放涉及的接口==================
+
+需要5个结构体
+	AVFormatContext *m_formatCtx;
+	AVCodecContext *m_codecCtx;
+	AVPacket *m_packet;
+	AVFrame *m_frame;
+	SwrContext *m_convertCtx;
+	
+AVFormatContext *avformat_alloc_context(void);
+	分配一个AVFormatContext
+	这个是打开一个文件的前提条件。
+	
+int avformat_open_input(AVFormatContext **ps, const char *url, AVInputFormat *fmt, AVDictionary **options);
+	这个的作用是填充一个AVFormatContext。会根据url的文件的信息进行填充。
+	
+int avformat_find_stream_info(AVFormatContext *ic, AVDictionary **options);
+	继续填充AVFormatContext。把stream信息填充进去。
+	
+void av_dump_format(AVFormatContext *ic,int index,const char *url,int is_output);
+	这个是一个调试接口。
+	把解析处理的文件的信息打印出来看看。
+	
+AVCodec *avcodec_find_decoder(enum AVCodecID id);
+	根据文件里分析出来的codec信息，得到对应的AVCodec结构体。
+	
+AVCodecContext *avcodec_alloc_context3(const AVCodec *codec);
+	根据codec，分配AVCodecContext。
+	
+int avcodec_parameters_to_context(AVCodecContext *codec,
+                                  const AVCodecParameters *par);
+	par是从文件里的streams里得到的信息。
+	用这个信息来填充AVCodecContext。
+	
+
+int avcodec_open2(AVCodecContext *avctx, const AVCodec *codec, AVDictionary **options);
+	用AVCodec来填充AVCodecContext
+	要准备AVCodecContext，需要经过多次填充，才能把需要的信息填充完整。
+
+int av_get_bytes_per_sample(enum AVSampleFormat sample_fmt);
+	根据音频采样格式（16bit signed这样），16bit，得到是2字节。
+	
+int64_t av_get_default_channel_layout(int nb_channels) 
+	获取默认的channel布局。
+	AV_CH_LAYOUT_MONO
+	或者AV_CH_LAYOUT_STEREO
+	
+struct SwrContext *swr_alloc(void)
+	分配一个软件重采样上下文。
+	
+struct SwrContext *swr_alloc_set_opts
+	设置选项。参数较多。
+	参数：一共9个。
+	1、struct SwrContext *
+	2到4：
+		输出通道布局、输出采样格式、输出采样率。
+	5到7：
+		输入的通道布局、采样格式、采样率。
+	8：
+		log_offset，给0 。
+	9：log上下文。给NULL。
+	
+int swr_init(struct SwrContext *s)
+	初始化。
+	
+经过上面的操作后，文件已经被打开。
+可以开始取数据了。
+int av_read_frame(AVFormatContext *s, AVPacket *pkt)
+	从打开的文件里读取一帧数据。
+	AVPacket 先用av_malloc一个空间。
+	返回值：
+	0是正常的。
+	<0
+		1、可能是读到了文件尾部。
+			AVERROR_EOF
+		2、其他错误。
+		
+int  avcodec_send_packet(AVCodecContext *avctx, const AVPacket *avpkt)
+	把读取出来的那一帧数据，发送给解码器去解码。
+	
+int avcodec_receive_frame(AVCodecContext *avctx, AVFrame *frame);
+	然后把解码后的数据，通过AVFrame拿出来。
+	返回值：
+		0：成功
+		< 0：
+			AVERROR_EOF:到文件尾部了。
+			其他错误。
+		
+int swr_convert(struct SwrContext *s, uint8_t **out, int out_count,
+                                const uint8_t **in , int in_count);
+	进行音频转化。
+	返回值：
+		大于0：
+			每个输出通道的sample数。
+		小于0：
+			错误。
+			
+			
+void av_packet_unref(AVPacket *pkt);
+void av_frame_unref(AVFrame *frame);
+
+void swr_free(struct SwrContext **s);
+void avcodec_free_context(AVCodecContext **avctx);
+void avformat_free_context(AVFormatContext *s);
+
+void avformat_close_input(AVFormatContext **s);
+
+=========Stream播放涉及的接口==================
+输入的是编码后的音频帧。
+需要使用的结构体
+	AVInputFormat
+	AVIOContext
+	
+	
+AVIOContext *avio_alloc_context(
+                  unsigned char *buffer,//分配一个缓冲区，512字节。
+                  int buffer_size,//512
+                  int write_flag,//0
+                  void *opaque,//当前播放器的指针。
+                  int (*read_packet)(void *opaque, uint8_t *buf, int buf_size),//实现一个。
+                  int (*write_packet)(void *opaque, uint8_t *buf, int buf_size),//null
+                  int64_t (*seek)(void *opaque, int64_t offset, int whence));//null
+				  
+int av_probe_input_buffer(AVIOContext *pb, AVInputFormat **fmt,
+                          const char *url, void *logctx,
+                          unsigned int offset, unsigned int max_probe_size);
+	探测一个码流。来获取输入格式。
+	探测之后，就跟播放一个简单mp3文件的流程一样了。
+	我觉得这个很神奇，是怎么根据码流探测出格式的？
+	因为每种编码的
+AVFormatContext结构
+	1、AVClass
+		主要作用是给结构体增加AVOption功能的支持。
+		AVClass就是AVOption和目标结构体之间的“桥梁”。
+		特点就是AVClass是在结构体的第一个。
+		AVOption是用来设置FFmpeg中变量值的结构体。
+		特点就在于它赋值的灵活性。
+		AVOption可以使用字符串为任何类型的变量赋值。统一使用字符串赋值。
+		
+	2、AVInputFormat ：2个，一个in，一个out。
+		里面有一组read_xx函数
+		read_packet
+		read_header
+		read_seek
+		read_play
+		read_pause
+			注释写着只对网络情况。
+		
+	3、AVIOContext
+		里面核心是一个buffer的处理。
+	4、unsigned int nb_streams;
+		文件里封装了几个码流。
+	5、AVStream **streams;  ==============重要。
+		码流。
+		int64_t start_time;
+		int64_t duration;
+		int64_t nb_frames; 
+		AVCodecParameters *codecpar; ==============重要。
+			
+	6、char *url;
+		
+	7、int64_t start_time;
+		
+	8、int64_t duration;
+		
+	9、enum AVCodecID video_codec_id;
+		
+	10、 enum AVCodecID audio_codec_id;
+		
+	11、AVIOInterruptCB interrupt_callback;
+		
+	12、AVCodec *video_codec;
+		
+	13、AVCodec *audio_codec;
+		
+	14、void *opaque;
+		
+	15、int max_streams;
+		
+		
+AVCodec 成员不是很多。
+	1、name。
+	2、enum AVMediaType type;
+		AVMEDIA_TYPE_VIDEO,
+		AVMEDIA_TYPE_AUDIO,
+		AVMEDIA_TYPE_DATA,
+	3、enum AVCodecID id;
+		
+	4、enum AVPixelFormat *pix_fmts;
+		对应视频。
+	5、enum AVSampleFormat *sample_fmts;
+		对于音频。
+	6、
+	int (*send_frame)(AVCodecContext *avctx, const AVFrame *frame);
+	int (*receive_packet)(AVCodecContext *avctx, AVPacket *avpkt);
+	int (*receive_frame)(AVCodecContext *avctx, AVFrame *frame);
+	
+	
+AVCodecContext
+	1、AVClass *av_class;
+	2、enum AVMediaType codec_type;
+	3、const struct AVCodec  *codec;
+	4、enum AVCodecID     codec_id;
+	5、struct AVCodecInternal *internal;
+	6、enum AVSampleFormat sample_fmt;
+	7、uint64_t channel_layout;
+	
+	
+SwrContext
+	内容琐碎。
+	不关注。
+	
+# avutil.h里的接口
+	通过包含mem.h
+		av_malloc
+		av_mallocz
+		av_calloc
+		av_realloc
+		av_free
+		av_freep
+		

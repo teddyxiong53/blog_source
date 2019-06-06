@@ -56,3 +56,7 @@ https://baike.baidu.com/item/oAuth/7153134?fr=aladdin
 2、OAuth 授权的工作原理是怎样的？足够安全吗？
 
 https://www.zhihu.com/question/19781476
+
+3、OAuth 2.0 的一个简单解释
+
+http://www.ruanyifeng.com/blog/2019/04/oauth_design.html
