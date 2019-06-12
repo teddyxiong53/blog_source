@@ -40,5 +40,24 @@ Requests: 230 susceed, 0 failed.
 
 
 
+```
+hlxiong@hlxiong-VirtualBox:~/work/study/WebBench$ ./webbench http://localhost/
+Webbench - Simple Web Benchmark 1.5
+Copyright (c) Radim Kolar 1997-2004, GPL Open Source Software.
+
+Request:
+GET / HTTP/1.0
+User-Agent: WebBench 1.5
+Host: localhost
+
+
+Runing info: 1 client, running 30 sec.
+
+Speed=542516 pages/min, 2278567 bytes/sec.
+Requests: 271258 susceed, 0 failed.
+```
+
+
+
 是构造了一个request字符串。直接对socket进行write操作和read来做的。
 

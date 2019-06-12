@@ -84,6 +84,7 @@ int av_read_frame(AVFormatContext *s, AVPacket *pkt)
 		
 int  avcodec_send_packet(AVCodecContext *avctx, const AVPacket *avpkt)
 	把读取出来的那一帧数据，发送给解码器去解码。
+	这个返回值可以不关注。
 	
 int avcodec_receive_frame(AVCodecContext *avctx, AVFrame *frame);
 	然后把解码后的数据，通过AVFrame拿出来。

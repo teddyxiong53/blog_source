@@ -30,7 +30,21 @@ tags:
 
 
 
+交叉模式，interleaved。就是左右声道数据交叉存储，而不是先全部放左声道，然后全部放右声道的方式。
 
+snd_pcm_readi，这个i就是表示interleaved模式。
+
+
+
+xrun包括两种情况：
+
+overrun，就是录音的时候可能会出现。应用层取数据太慢了。
+
+underrun：就是播放的时候出现。应用层写得快，硬件层来不及处理。
+
+
+
+EPIPE错误表示overrun错误。
 
 
 
@@ -59,3 +73,13 @@ https://blog.csdn.net/reille/article/details/5855859
 6、Linux音频编程
 
 https://www.cnblogs.com/hzl6255/p/8245578.html
+
+7、
+
+这篇文章特别好。
+
+https://www.cnblogs.com/cslunatic/p/3677729.html
+
+8、
+
+https://blog.csdn.net/isunbin/article/details/81503152

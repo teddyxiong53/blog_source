@@ -29,3 +29,7 @@ http://www.portaudio.com/apps.html
 2、官网文档
 
 http://portaudio.com/docs/v19-doxydocs/
+
+3、PortAudio编程入门
+
+https://blog.csdn.net/killmice/article/details/8674563

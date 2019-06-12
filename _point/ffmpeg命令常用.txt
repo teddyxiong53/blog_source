@@ -1,0 +1,16 @@
+参考ffmpeg-all.html里的内容。
+
+命令基本格式
+ffmpeg -globa_opt -input_opt -i input_url -output_opt output_url
+	-i后面跟输入文件。
+	有三种选项：
+		全局选项。
+		输入选项。
+		输出选项。
+		
+
+ffmpeg -i 1.mp3 -f alsa default
+	用alsa default设备播放
+ffmpeg -i 1.mp3 -f alsa hw:0,1
+	指定设备。
+	

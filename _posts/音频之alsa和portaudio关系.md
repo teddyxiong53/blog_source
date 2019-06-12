@@ -19,6 +19,8 @@ gstreamer
 
 ```
 
+portaudio是对alsa这些进行了再一次的封装，使用上更加简单了。
+
 
 
 参考资料
