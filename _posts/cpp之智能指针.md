@@ -450,6 +450,36 @@ int main(int argc, char* argv[])
 
 
 
+# 一种常见的用法
+
+我看avs里都是类似这种用法。我也大量模仿了这种用法。
+
+```
+class A {
+public:
+  static std::unique_ptr<A> create();
+  A() {
+    std::cout << "a construct\n";
+  }
+  ~A() {
+    std::cout << "a destruct\n";
+  }
+};
+std::unique_ptr<A> A::create()
+{
+  auto tmp = std::unique_ptr<A>(new A);
+  return tmp;
+}
+int main()
+{
+  std::shared_ptr<A> a1 = A::create();
+  std::shared_ptr<A> a2 = a1;
+  printf("a1:%p, a2:%p\n", a1.get(), a2.get());
+}
+```
+
+
+
 # 参考资料
 
 1、C++智能指针简单剖析

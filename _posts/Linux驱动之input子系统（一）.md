@@ -271,7 +271,193 @@ __set_bit(EV_SYN, dev->evbit);
 
 input子系统的整体流程是怎样的？
 
+用cat /proc/bus/input/devices查看是event几
 
+我们可以`cat /dev/input/event1`。
+
+然后按键，就可以看到打印出来了。
+
+这个是读取板子的按键值的。
+
+```
+#include <stdio.h>
+#include <stdlib.h>
+#include <linux/input.h>
+#include <fcntl.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <linux/input.h>
+
+int main(int argc, char **argv)
+{
+    int fd, retval;
+    char buf[1024] = {0};
+    fd_set readfds;
+    struct timeval tv;
+    // 打开鼠标设备
+    fd = open("/dev/input/event1", O_RDONLY);
+    // 判断是否打开成功
+    if (fd < 0)
+    {
+        printf("Failed to open \"/dev/input/event1\".\n");
+        exit(1);
+    }
+    else
+    {
+        printf("open \"/dev/input/event1\" successfuly.\n");
+    }
+    int flags = fcntl(fd, F_GETFL, 0);
+    flags |= O_NONBLOCK;
+
+    fcntl(fd, F_SETFL, flags);
+
+    printf("fd:%d\n", fd);
+    struct input_event key;
+    while (1)
+    {
+        // 设置最长等待时间
+        tv.tv_sec = 5;
+        tv.tv_usec = 0;
+
+        FD_ZERO(&readfds);
+        FD_SET(fd, &readfds);
+
+        retval = select(fd + 1, &readfds, NULL, NULL, &tv);
+        if (retval == 0)
+        {
+            printf("Time out!\n");
+        }
+        if (FD_ISSET(fd, &readfds))
+        {
+            // 读取鼠标设备中的数据
+            if (read(fd, &key, sizeof(struct input_event)) <= 0)
+            {
+                continue;
+            }
+            printf("\r\ntype:%d, code:%d, value:%d\r\n",  key.type, key.code, key.value);
+            // 打印出从鼠标设备中读取到的数据
+            //printf("Button type = %d, X = %d, Y = %d, Z = %d\n", (buf[0] & 0x07), buf[1], buf[2], buf[3]);
+        }
+    }
+    close(fd);
+    return 0;
+}
+```
+
+运行：
+
+```
+/oem # ./a.out
+open "/dev/input/event1" successfuly.
+fd:3
+
+type:1, code:114, value:1
+
+type:0, code:0, value:0
+
+type:1, code:114, value:0
+
+type:0, code:0, value:0
+
+type:1, code:248, value:1
+
+type:0, code:0, value:0
+
+type:1, code:248, value:0
+
+type:0, code:0, value:0
+```
+
+这些type、code、value，分别代表了什么意思？
+
+```
+struct input_event {
+
+struct timeval time; //按键时间
+
+__u16 type; //类型，在下面有定义
+
+__u16 code; //要模拟成什么按键
+
+__s32 value;//是按下还是释放
+
+};
+```
+
+
+
+type是这样：
+
+```
+#define EV_SYN 0x00
+
+#define EV_KEY 0x01 //按键
+
+#define EV_REL 0x02 //相对坐标(轨迹球)
+
+#define EV_ABS 0x03 //绝对坐标
+
+#define EV_MSC 0x04 //其他
+```
+
+我关注EV_KEY就好了。
+
+所以我就看type为1的就行。
+
+
+
+我在笔记本上测试，按住a键不放。
+
+```
+
+type:4, code:4, value:30
+
+type:1, code:30, value:1
+
+type:0, code:0, value:0
+
+type:4, code:4, value:30
+
+type:1, code:30, value:2 //这里value为什么是2？
+
+type:0, code:0, value:0
+
+type:4, code:4, value:30
+
+type:1, code:30, value:2
+
+type:0, code:0, value:0
+
+type:4, code:4, value:30
+
+type:1, code:30, value:2
+
+type:0, code:0, value:0
+
+type:4, code:4, value:30
+
+type:1, code:30, value:2
+
+```
+
+难道是1按下，2长按，0是松开？
+
+```
+value:根据Type的不同而含义不同。
+例如：
+Type为EV_KEY时，value: 0表示按键抬起。1表示按键按下。（4表示持续按下等？）。
+Type为EV_REL时，value:　表明移动的值和方向（正负值）。
+```
+
+我当前就管value为1的。
+
+```
+code:根据Type的不同而含义不同。
+例如：
+Type为EV_KEY时，code表示键盘code或者鼠标Button值。
+```
 
 
 
@@ -280,3 +466,15 @@ input子系统的整体流程是怎样的？
 1、
 
 https://blog.csdn.net/ielife/article/details/7814108
+
+2、
+
+https://blog.csdn.net/morixinguan/article/details/70040127
+
+3、struct input_event详解
+
+https://blog.csdn.net/bingqingsuimeng/article/details/8178122
+
+4、input_event结构体详解
+
+https://blog.csdn.net/liwei405499/article/details/42025123

@@ -221,6 +221,8 @@ while(ret ) {
 
 看avs里的使用，curl_easy_perform是阻塞执行的。
 
+是的，easy接口是同步执行，multi接口是异步执行。
+
 
 
 # 参考资料
@@ -256,3 +258,8 @@ https://www.cnblogs.com/bigben0123/p/3192978.html
 8、使用multi curl进行http并发访问
 
 https://www.cnblogs.com/bigben0123/p/3154406.html
+
+9、
+
+https://blog.csdn.net/breaksoftware/article/details/45874197
+

@@ -276,6 +276,41 @@ audio --> dueros --> player
 
 
 
+下面是按键唤醒后，什么都不说，等到超时的时候，然后播放没有听到你说了什么时的打印。
+
+```
+INFO:sdk.dueros_core:Found 212 bytes of None application/json, first_payload_block=True
+INFO:sdk.dueros_core:Found 0 bytes of None application/json, first_payload_block=False
+INFO:sdk.dueros_core:Finished downloading JSON
+INFO:root:云端下发directive:{u'header': {u'dialogRequestId': u'7790d0aa194845a3b359dc8ce600c033', u'namespace': u'ai.dueros.device_interface.voice_input', u'name': u'StopListen', u'messageId': u'b580fc3a269b478dbf4fe6f9adfd1be7'}, u'payload': {}}
+INFO:SpeechRecognizer:StopCapture
+INFO:root:[DuerOS状态]正在思考.........
+INFO:sdk.dueros_core:wait for response
+INFO:hyper.http20.connection:Received unhandled event <WindowUpdated stream_id:0, delta:320>
+INFO:hyper.http20.connection:Received unhandled event <WindowUpdated stream_id:5, delta:320>
+INFO:hyper.http20.connection:Received unhandled event <WindowUpdated stream_id:0, delta:24>
+INFO:sdk.dueros_core:status code: 200
+INFO:sdk.dueros_core:Found 388 bytes of None application/json, first_payload_block=True
+INFO:sdk.dueros_core:Found 0 bytes of None application/json, first_payload_block=False
+INFO:sdk.dueros_core:Finished downloading JSON
+INFO:sdk.dueros_core:Found 0 bytes of <4487999> application/octet-stream, first_payload_block=True
+INFO:sdk.dueros_core:Found 3132 bytes of <4487999> application/octet-stream, first_payload_block=False
+INFO:sdk.dueros_core:Found 0 bytes of <4487999> application/octet-stream, first_payload_block=False
+INFO:sdk.dueros_core:Finished downloading application/octet-stream which is <4487999>
+INFO:sdk.dueros_core:write audio to 4487999.mp3
+INFO:root:云端下发directive:{u'header': {u'dialogRequestId': u'7790d0aa194845a3b359dc8ce600c033', u'namespace': u'ai.dueros.device_interface.voice_output', u'name': u'Speak', u'messageId': u'NWQwNGJhMzExYzgwMjE4NDc='}, u'payload': {u'url': u'cid:4487999', u'token': u'eyJib3RfaWQiOiJ1cyIsInJlc3VsdF90b2tlbiI6IjdlNzdiMjU5YzEyZjg4OGEwMDBjZDYzNzQ0NzE3YjdjIiwiYm90X3Rva2VuIjoibnVsbCIsImxhdW5jaF9pZHMiOlsiIl19', u'format': u'AUDIO_MPEG'}}
+INFO:root:[DuerOS状态]正在播放........
+INFO:root:[DuerOS状态]结束
+INFO:root:[DuerOS状态]结束
+INFO:sdk.dueros_core:wait for response
+INFO:hyper.http20.connection:Received unhandled event <WindowUpdated stream_id:0, delta:1247>
+INFO:sdk.dueros_core:status code: 204
+```
+
+看看上面把播报音频下载成文件再播放的过程。
+
+
+
 # 参考资料
 
 1、【DuerOS开发日记】2.打造属于自己的小度(1)：使用PythonSDK

@@ -83,3 +83,23 @@ https://www.cnblogs.com/cslunatic/p/3677729.html
 8、
 
 https://blog.csdn.net/isunbin/article/details/81503152
+
+9、alsa的 snd_pcm_readi 和 snd_pcm_writei
+
+https://blog.csdn.net/junjun5156/article/details/70169912
+
+10、alsa声卡驱动原理分析
+
+https://wenku.baidu.com/view/29edc08a680203d8ce2f2408.html
+
+11、ALSA声音编程介绍+underrun
+
+https://blog.csdn.net/zhang_danf/article/details/39005767
+
+12、音频出现Xrun（underrun或overrun）的原因与解决办法
+
+https://blog.csdn.net/Qidi_Huang/article/details/53100493
+
+13、
+
+https://stackoverflow.com/questions/26545139/alsa-cannot-recovery-from-underrun-prepare-failed-broken-pipe

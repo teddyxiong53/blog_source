@@ -311,6 +311,25 @@ v.SetInt(10);//等价于v = 10;
 
 
 
+# 使用中碰到的问题
+
+##string问题
+
+```
+// document.AddMember("token", "xx", allocator); 这种可以编译通过。
+document.AddMember("token", (char *)AppVar::httpAuthToken.c_str(), allocator);//这种不行。
+```
+
+可以这样解决
+
+```
+Value str_val;
+str_val.SetString(html_snippet.c_str(),html_snippet.length(),allocator);
+bid.AddMember("adm", str_val, allocator);
+```
+
+
+
 #参考资料
 
 1、官方教程

@@ -19,6 +19,10 @@ tags:
 
 
 
+```
+vncserver -kill :1
+```
+
 
 
 # 参考资料
@@ -26,3 +30,7 @@ tags:
 1、修改分辨率。
 
 https://support.realvnc.com/knowledgebase/article/View/523
+
+2、
+
+https://www.cnblogs.com/burningroy/p/3591649.html
