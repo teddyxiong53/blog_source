@@ -29,3 +29,11 @@ https://blog.csdn.net/morixinguan/article/details/79197455
 3、蓝牙协议栈
 
 https://en.wikipedia.org/wiki/Bluetooth_stack
+
+4、用BlueZ A2DP Profile播放音乐
+
+https://blog.csdn.net/bluebeach/article/details/5891035
+
+5、详细的arm移植过程
+
+https://www.cnblogs.com/dong1/p/8271385.html

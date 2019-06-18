@@ -127,6 +127,31 @@ GType：这个就是ulong的。
 
 
 
+安装：
+
+```
+编译安装libffi
+编译安装glib
+然后apt-get安装sudo apt-get install libdbus-glib-1-dev
+```
+
+编译例子
+
+```
+.PHONY: all clean
+
+CFLAGS := -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -I/usr/lib/i386-linux-gnu/glib-2.0/include/ \
+	-L/usr/lib/x86_64-linux-gnu -lgobject-2.0 -lgthread-2.0 -lglib-2.0
+all:
+	gcc recv.c -o recv -ldbus $(CFLAGS)
+	gcc send.c -o send -ldbus $(CFLAGS)
+
+clean:
+	rm -rf recv send
+```
+
+
+
 # 基本使用方法
 
 glib由5个部分组成：

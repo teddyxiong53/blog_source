@@ -30,6 +30,10 @@ dbus是一个为App之间通信的消息总线系统。用于进程间通信。�
 
 官方也不建议直接使用dbus，而是使用包装过的。这样用起来会简单些。
 
+```
+dbus-daemon --system
+```
+
 
 
 看树莓派的情况。
@@ -59,13 +63,19 @@ root@raspberrypi:/etc/dbus-1# tree
 
 
 
-官方也不建议
+
 
 buildroot里，可以选配dbus的支持。
 
 在hardware handling下面。
 
 
+
+这些conf文件，都是xml格式的。
+
+现在我关注的蓝牙这个部分。
+
+看看蓝牙dbus如何使用的。
 
 
 

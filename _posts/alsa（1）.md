@@ -48,6 +48,163 @@ EPIPE错误表示overrun错误。
 
 
 
+
+
+alsa的plugin是个什么概念？
+
+https://alsa.opensrc.org/ALSA_plugins
+
+这里有说明。
+
+什么是plugin？
+
+是用来创建虚拟设备，这些虚拟设备可以当成硬件设备来用。
+
+常见的plugin有：
+
+```
+adpcm
+	
+```
+
+在/etc/asound.conf和~/.asoundrc这2个配置文件里进行配置。
+
+一个基本的插件配置样式是：
+
+```
+pcm.SOMENAME {
+    type PLUGINTYPE
+    slave {
+        pcm SLAVENAME
+    }
+}
+```
+
+上面的语句，创建了一个名字叫SOMENAME的插件。类型是PLUGINTYPE。一个插件相当于一个pipe，它的后端就是slave里的东西。
+
+插件的名字，有些是已经被预定义了的，例如default，dmix 。
+
+slave，可以是另一个插件，也可以是硬件设备。例如可以是hw:0,0
+
+（我是否可以这么理解：插件就是在硬件前面的预处理？）
+
+```
+插件1 -> 插件2 -> ... -> 插件N -> 硬件
+```
+
+一个.asoundrc的写法：
+
+```
+pcm.myplugdev {
+	type plug
+	slave {
+		pcm default
+		rate 44100
+	}
+}
+```
+
+然后我们播放命令这样写：
+
+```
+aplay -Dmyplugdev 1.wav
+```
+
+
+
+
+
+pcm插件扩展了pcm设备的特性和功能。
+
+
+
+还是要把官方文档仔细看一遍。
+
+配置文件语法
+
+```
+简单格式，支持现代数据描述，例如嵌套和数组支持。
+空白。如果有有用的空白，用"A B"。引号来包含。
+注释用# 。
+
+标点符号：
+大括号
+中括号
+,
+;
+=
+.
+''
+""
+
+```
+
+等号不是必须的，因为主要是靠空白进行分割的。
+
+```
+a 1 # is equal to
+a=1 # is equal to
+a=1;    # is equal to
+a 1,
+```
+
+
+
+alsa采用环形队列来存放输出和输入的数据。
+
+
+
+如果要支持多个应用同时打开声卡，需要支持混音功能。
+
+大多数的声卡不支持硬件混音。只有专业的声卡才支持。
+
+所以需要软件混音。
+
+alsa自带了一个很简单的混音器dmix。
+
+dmix的字母d，是Direct的意思。
+
+使用dmix的方法，是把dmix作为默认设备。
+
+我们先输出给dmix，让dmix去处理各个不同声音的混音。
+
+
+
+alsa的接口分为：
+
+```
+control interface
+	对应设备节点：/dev/snd/controlCX
+	在我的笔记本上，有controlC0、controlC1、controlC7 这3个节点。
+	功能：
+		注册声卡。
+		请求可用设备。
+pcm interface
+	对应节点：/dev/snd/pcmCXDX
+	我的笔记本上有：pcmC0D0c  pcmC0D0p  pcmC1D3p 这3个节点。
+	这个是最常用的接口。管理录音和播放。
+	C代表Card。D代表Device。
+raw midi interface
+	设备节点：midiCXDX
+	提供对声卡上midi总线的访问。
+	我的笔记本没有对应的节点。
+	
+timer interface
+	对应设备节点：/dev/snd/timer
+	这个名字是固定的。
+	
+seq interface
+	设备节点：/dev/snd/seq
+	时序器接口。
+mixer interface
+	设备节点：/dev/snd/mixerCXDX
+	笔记本没有。
+	一般都没有这个节点，是硬件混音？
+	
+```
+
+
+
 # 参考资料
 
 1、深入了解ALSA
@@ -103,3 +260,15 @@ https://blog.csdn.net/Qidi_Huang/article/details/53100493
 13、
 
 https://stackoverflow.com/questions/26545139/alsa-cannot-recovery-from-underrun-prepare-failed-broken-pipe
+
+14、Softvol
+
+https://alsa.opensrc.org/Softvol
+
+15、利用alsa dmix实现混音
+
+https://blog.csdn.net/Swallow_he/article/details/80456759
+
+16、
+
+https://blog.csdn.net/cnclenovo/article/details/47106743
