@@ -480,6 +480,67 @@ int main()
 
 
 
+用智能指针来做异步消息。
+
+```
+std::mutex mtx;
+std::condition_variable cond;
+
+class Msg {
+public:
+  Msg(int i) {
+    m_i = i;
+    std::cout << "Msg construct\n";
+  }
+  ~Msg() {
+    std::cout << "Msg destruct\n";
+  }
+  int m_i;
+};
+std::queue<std::shared_ptr<Msg>> msgQueue;
+
+void threadProc()
+{
+  sleep(1);
+  {
+    std::unique_lock<std::mutex> lock(mtx);
+    cond.wait(lock, []() {
+      if(!msgQueue.empty()) {
+        return true;
+      }
+    });
+  }
+  std::shared_ptr<Msg> msgGet;
+  {
+    std::unique_lock<std::mutex> lock(mtx);
+    msgGet = msgQueue.front();
+    msgQueue.pop();
+  }
+  std::cout << "get msg\n";
+  std::cout << msgGet->m_i << std::endl;
+}
+
+void sendMsg()
+{
+  std::shared_ptr<Msg> msg1 = std::shared_ptr<Msg>(new Msg(1));
+  {
+    std::unique_lock<std::mutex> lock(mtx);
+    msgQueue.push(msg1);
+  }
+  cond.notify_one();
+}
+int main()
+{
+  std::thread t1(threadProc);
+  sendMsg();
+  std::cout <<"out of sendMsg\n";
+  t1.join();
+  std::cout << "end\n";
+}
+```
+
+
+
 # 参考资料
 
 1、C++智能指针简单剖析

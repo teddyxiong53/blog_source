@@ -225,6 +225,38 @@ while(ret ) {
 
 
 
+libcurl上传的两种方式：
+
+1、直接上传。类似form表单的方式。我现在就是需要这种。
+
+2、上传二进制流。
+
+
+
+CURLFORM_COPYNAME 什么意思？
+
+curl_addform是用来给multipart/formdata添加一个section的。
+
+你需要先理解multipart。
+
+每一个部分由一个name和一个content组成。
+
+如果对应的这个部分是用来存放文件的，有一个content-type和一个filename。
+
+```
+CURLFORM_COPYNAME
+	这个表示curl会把这个name拷贝走。你可以不再管了。
+	被拷贝而分配的空间，会在curl_formfree的时候被释放掉。
+	对应的CURLFORM_PTRNAME
+	这样不会拷贝，所以你得自己继续维持这个name对应内存的有效性。
+CURLFORM_COPYCONTENTS
+	
+```
+
+
+
+
+
 # 参考资料
 
 1、使用libcurl下载文件小例
@@ -263,3 +295,6 @@ https://www.cnblogs.com/bigben0123/p/3154406.html
 
 https://blog.csdn.net/breaksoftware/article/details/45874197
 
+10、libcurl上传文件
+
+https://cloud.tencent.com/developer/article/1365309

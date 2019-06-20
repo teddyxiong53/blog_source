@@ -508,6 +508,14 @@ typedef struct _AddressBook {
 
 
 
+# 进一步分析
+
+现在我的代码会挂掉，但是不知道为什么挂掉。
+
+所以还是要深入分析一下protobuf。
+
+
+
 参考资料
 
 1、更小、更快、更简单Google ProtoBuf 跨语言通信协议
@@ -565,3 +573,15 @@ https://blog.csdn.net/xiaxiazls/article/details/50118161
 14、Google Protobuf 协议分析
 
 https://blog.csdn.net/mycwq/article/details/42060641
+
+15、protobuf二进制序列化
+
+https://blog.csdn.net/Jorgain/article/details/88768983
+
+16、Protobuf c++使用小坑（set_allocated函数）
+
+https://blog.csdn.net/u014088857/article/details/53291545
+
+17、
+
+https://blog.csdn.net/heybeaman/article/details/85121660

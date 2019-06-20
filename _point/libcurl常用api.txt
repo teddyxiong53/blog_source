@@ -41,7 +41,8 @@
 		单链表增加节点。
 		
 	curl_formadd
-	
+		这个是模拟表单的行为。
+		
 	curl_easy_escape
 		urlEncode。
 		
@@ -50,4 +51,13 @@
 	curl_easy_perform
 		
 		
-
+实现过的功能
+post数据，并解析返回的数据。
+	靠设置write callback，在里面把内容append到一个string。
+	
+post上传文件。
+	用multipart/form-data的方式。
+	
+下载文件
+	这个没有什么特别的，就是使用write callback不断进行写入就好了。
+	

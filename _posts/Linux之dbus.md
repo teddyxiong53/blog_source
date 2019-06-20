@@ -79,6 +79,63 @@ buildroot里，可以选配dbus的支持。
 
 
 
+多对多的dbus消息都通过dbus后台进程进行中转。相当于一个消息路由。
+
+是一种进程间通信机制，支持一对一和一对多的对等通信。
+
+dbus的主要概念是总线。
+
+连接到总线的消息可以通过总线发送或者接收消息。
+
+消息可以分为4种。
+
+```
+1、method call消息。
+	触发一个函数调用。
+2、method return消息。
+	触发函数调用返回的结果。
+3、error消息。
+	触发的函数调用返回一个异常。
+4、signal消息。
+	通知，就是触发事件。这个跟上面三个不同。
+```
+
+主要用来进程间**函数调用**和进程键**信号广播**。
+
+
+
+dbus的特点：
+
+1、低延迟。
+
+2、低开销。
+
+3、高可用。
+
+协议是二进制的，避免了序列化的过程。通信效率高。
+
+
+
+总线有两种，一个是system bus，一个是session bus。
+
+本质上，dbus是一个对等的协议。
+
+每个消息都一个源地址和目的地址。
+
+
+
+看dbus代码里的readme的说明。
+
+版本系统，跟Linux内核一个风格，偶数的表示稳定版本，奇数版本表示开发版本。
+
+
+
+dbus默认提供了一些工具。
+
+dbus-monitor和dbus-send。可以用来测试。
+
+
+
 # 参考资料
 
 1、DBus 入门与应用 －－ DBus 的 C 编程接口
@@ -92,3 +149,20 @@ https://dbus.freedesktop.org/doc/api/html/annotated.html
 3、和菜鸟一起学linux之DBUS基础学习记录
 
 https://blog.csdn.net/eastmoon502136/article/details/10044993
+
+4、dbus通信与接口介绍
+
+https://www.cnblogs.com/klb561/p/9135642.html
+
+5、
+
+https://www.cnblogs.com/chenxf0619/p/4829253.html
+
+6、
+
+https://dbus.freedesktop.org/doc/dbus-tutorial.html
+
+7、dbus-send以及dbus-monitor工具的使用方法示例
+
+https://www.xuebuyuan.com/3188840.html
+

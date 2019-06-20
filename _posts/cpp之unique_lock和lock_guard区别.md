@@ -11,7 +11,7 @@ tags:
 
 我使用中发现，有些地方只能用unique_lock。
 
-
+cond.wait里只能用unique_lock。
 
 ```
 std::unique_ptr<std::function<void()>> TaskQueue::pop() {

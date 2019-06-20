@@ -272,3 +272,14 @@ https://blog.csdn.net/Swallow_he/article/details/80456759
 16、
 
 https://blog.csdn.net/cnclenovo/article/details/47106743
+
+17、这个系列文章可以。
+
+https://www.cnblogs.com/jason-lu/tag/ALSA/
+
+18、Linux音频编程
+
+https://www.cnblogs.com/hzl6255/p/8245578.html
+
+19、
+
