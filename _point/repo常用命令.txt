@@ -33,6 +33,8 @@ repo status
 	
 repo abandon branchName
 
+如果想单独对某个git操作，先在根目录下使用： 
+repo forall -c git checkout rk/doss -b doss
 
 1、查看帮助信息
 	repo help [cmd]

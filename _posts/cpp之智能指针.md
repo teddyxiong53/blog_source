@@ -131,6 +131,16 @@ unique_ptr为什么优于auto_ptr呢？
 3、STL容器包含指针。
 ```
 
+# 原理
+
+智能指针的原理是：
+
+```
+接受一个内存地址，构造一个在栈上的智能指针对象。
+这样当程序退出栈的作用范围后，智能指针对象自动被销毁。
+而智能指针对象里保存的内存也就被释放了（除非把智能指针保存起来）。
+```
+
 
 
 # 例子学习
@@ -307,6 +317,12 @@ make_shared只有一次内存分配，而shared_ptr有2次。
 所谓2次，一次是对象的内存，一次是控制块的内存。
 
 make_shared把这2个内存一次性分配了。
+
+按照大家以往的编程经验，都是要求new和delete成对出现。
+
+而现在智能指针是不需要手动delete的了。所以new最好也别出现了。
+
+这也是make_shared出现的原因之一。
 
 
 
@@ -539,6 +555,438 @@ int main()
 }
 ```
 
+# lock
+
+智能指针可以进行lock操作。这样就很像java的对象的锁了。
+
+并不是，而是weak_ptr的一个操作。
+
+
+
+# 常见错误
+
+智能指针从创建方式有三种：
+
+```
+1、用malloc的一段内存地址，跟shared_ptr做构造函数的参数。
+2、用make_shared函数。
+3、用另外一个shared_ptr来做，就是拷贝构造。
+```
+
+对应的代码如下：
+
+```
+int main()
+{
+    int *raw_ptr = (int *)malloc(sizeof(int));
+    std::shared_ptr<int> p1(raw_ptr);//方式1
+    std::shared_ptr<int> p2 = std::make_shared<int>(11);//方式2
+    std::shared_ptr<int> p3(p1);//方式3
+}
+```
+
+
+
+错误用法
+
+1、把同一个内存地址，给多个指针用了。导致重复释放。
+
+
+
+
+
+weak_ptr和shared_ptr配合使用，是为了解决重复释放的野指针问题。
+
+不考虑拷贝构造的话，shared_ptr的基本构造方式有4种。
+
+```
+1、1个参数。就是一个指针。
+2、2个参数。一个指针，一个删除器。
+3、3个参数。指针、删除器、allocator。
+4、无参构造。
+```
+
+shared_ptr<void>类似于void *，可以容易任意类型。
+
+
+
+常用方法
+
+```
+use_count()
+	拿到指针的引用计数次数。
+get()
+	拿到裸指针。
+reset()
+	把引用计数清除到1 。
+swap()
+	交互2个智能指针的内容。
+=
+	赋值，会导致引用计数加1 。
+```
+
+
+
+# 使用shared_ptr可能会遇到的问题
+
+## 生命周期的问题
+
+使用shared_ptr就是为了管理对象的生命周期。
+
+你不再是自己手动进行管理了。但是对象内存的释放时间也就没有那么精确了。
+
+
+
+
+
+## 多次引用同一块内存
+
+这个会导致对同一块内存的重复释放。
+
+看例子。
+
+```
+void test()
+{
+    A * a1 = new A();
+    std::shared_ptr<A> p1(a1);
+    std::shared_ptr<A> p2(a1);
+    std::cout << p1.get() << "  " << p2.get() << std::endl;
+}
+int main()
+{
+    test();
+}
+```
+
+运行：
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/cpp/build$ ./test 
+A construct
+0x142dc20  0x142dc20
+A destruct
+A destruct
+```
+
+可以看到被调用了2次析构函数。而只有一次构造函数。
+
+## this指针的问题
+
+对于传统方式，返回当前对象指针。
+
+```
+class A {
+public:
+    A() {
+        std::cout <<"A construct\n";
+    }
+    ~A() {
+        std::cout << "A destruct\n";
+    }
+    A * getThis() {//返回当前对象指针。
+        return this;
+    }
+};
+```
+
+这个代码改成shared_ptr方式，不好改。
+
+如果直接这么改。
+
+```
+std::shared_ptr<A> getThis() {
+        return std::shared_ptr<A>(this);
+    }
+```
+
+是有问题的。因为返回后，就被析构了。this就成了野指针了。
+
+看例子。
+
+```
+class A {
+public:
+    A() {
+        std::cout <<"A construct\n";
+    }
+    ~A() {
+        std::cout << "A destruct\n";
+    }
+    std::shared_ptr<A> getThis() {
+        return std::shared_ptr<A>(this);
+    }
+    int m_i;
+};
+
+void test()
+{
+    std::shared_ptr<A> a1 = std::make_shared<A>();
+    a1->m_i = 11;
+    std::shared_ptr<A> a2 = a1->getThis();
+    std::cout << a2->m_i << std::endl;
+}
+int main()
+{
+    test();
+}
+```
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/cpp/build$ ./test 
+A construct
+11
+A destruct
+*** Error in `./test': double free or corruption (out): 0x000000000256ac30 ***
+======= Backtrace: =========
+```
+
+
+
+为了解决这个问题，标准库提供了一个模板类，enable_shared_from_this<T>。
+
+你继承这个类就好了。
+
+在需要使用this的时候，用shared_from_this就好了。
+
+```
+class A : public std::enable_shared_from_this<A>{
+public:
+    A() {
+        std::cout <<"A construct\n";
+    }
+    ~A() {
+        std::cout << "A destruct\n";
+    }
+    std::shared_ptr<A> getThis() {
+        return shared_from_this();
+    }
+    int m_i;
+};
+```
+
+这样运行就不会出错了。
+
+有一点要注意的，shared_from_this不能在构造函数里被调用。
+
+
+
+## 多线程问题
+
+根据boost文档，shared_ptr的线程安全定义如下：
+
+```
+1、一个shared_ptr，可以被多个线程同时read。
+2、2个shared_ptr，指向同一个raw指针。2个线程同时write这2个shared_ptr，是线程安全的。包括析构。
+3、多个线程，对同一个shared_ptr进行读写，是线程不安全的。
+
+简而言之，就是说：
+唯一需要注意的，就是多个线程对同一个shared_ptr对象读写的时候，需要加锁。
+```
+
+这个加锁，也有一个常用的技巧。
+
+是这样的：
+
+```
+thread lock();
+std::shared_ptr<T> tmp = globalSharedPtr;
+thread unlock();
+//对tmp进行操作。
+```
+
+## 环形引用
+
+这个就是A和B这2个类，分别持有一个对方的shared_ptr。
+
+导致无法释放。因为引用计数永远不会等于0。相当于死锁了。
+
+要打破这个死锁，就要靠weak_ptr。
+
+
+
+weak_ptr本身不具有指针的行为。
+
+例如，你不能使用*和->操作。
+
+它一般是用来配合shared_ptr进行工作的。
+
+
+
+weak_ptr作为shared_ptr的观察者。可以获知shared_ptr的引用计数。还可以获知一个shared_ptr是否被析构了。
+
+
+
+怎样构造一个weak_ptr呢？
+
+```
+1、用一个shared_ptr来构造。
+	这个不会导致shared_ptr的引用计数增加。但是会增加另外一个计数增加。
+2、从另一个weak_ptr拷贝。
+```
+
+从上面的说法来看，可以得到一个结论：
+
+weak_ptr不可能脱离shared_ptr而存在。
+
+```
+void test()
+{
+    std::shared_ptr<A> a1 = std::make_shared<A>();
+    std::weak_ptr<A> a2 = a1;
+    a1.reset();
+    std::cout << "a1.use_count():" << a1.use_count() << std::endl;
+    std::cout << "a2.expire:" << a2.expired() << std::endl;
+}
+int main()
+{
+    test();
+}
+```
+
+运行打印：
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/cpp/build$ ./test 
+A construct
+A destruct
+a1.use_count():0
+a2.expire:1
+```
+
+
+
+weak_ptr的常用函数
+
+```
+expired()
+	如果关联的shared_ptr的引用计数减到了0，这个就返回true。
+lock()
+	从当前的weak_ptr创建一个新的shared_ptr。
+use_count()
+	返回的是关联的weak_ptr的引用计数值。
+	
+```
+
+
+
+如上面所说的，weak_ptr的最关键特性就是不会增加shared_ptr的引用计数。
+
+
+
+```
+class A {
+public:
+    A() {
+        std::cout <<"A construct\n";
+    }
+    ~A() {
+        std::cout << "A destruct\n";
+    }
+    int m_i;
+};
+
+void test()
+{
+    std::shared_ptr<A> a1 = std::make_shared<A>();
+    a1->m_i = 11;
+    std::weak_ptr<A> a2 = a1;
+    auto a3 = a2.lock();
+    std::cout << a3->m_i << std::endl;
+}
+int main()
+{
+    test();
+}
+```
+
+运行：
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/cpp/build$ ./test 
+A construct
+11
+A destruct
+```
+
+
+
+# 异步执行时的问题
+
+我写了下面的测试代码。异步是用的avs里的Executor来做的。
+
+```
+#include "Executor.h"
+
+class  A {
+public:
+    A() {
+        printf("a constructor\n");
+    }
+    ~A() {
+        printf("a destruct\n");
+    }
+    int m_i;
+};
+
+
+void test1(std::shared_ptr<A> a1) {
+
+    a1->m_i = 1;
+}
+void test2(A *a) {
+    sleep(2);
+    a->m_i = 2;
+    printf("hhhhhhhhh\n");
+}
+void test()
+{
+    std::shared_ptr<A> a1 = std::make_shared<A>();
+    std::shared_ptr<Executor> executor = std::make_shared<Executor>();
+    test1(a1);
+    executor->submit([a1]() {
+        test2(a1.get());
+    });
+    //sleep(5);//这里sleep，就可以保证test2可以正常执行。
+}
+int main()
+{
+    test();
+
+    while(1) {
+        sleep(1);
+    }
+}
+```
+
+执行结果是这样：
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/cpp/build$ ./test 
+a constructor
+a destruct
+```
+
+test2函数根本就执行不进去了。
+
+这样虽然避免了死机问题，但是还是没有符合预期的行为。
+
+哦，是因为executor也被销毁了而导致的无法执行。
+
+如果executor还在，应该还是会死机的。
+
+把executor提升为全局变量。
+
+再测试。可以正常运行，销毁的时间自动被退后了。
+
+ok，那就没有问题。跟我希望的是一致的。
+
+
+
+
+
+
+
 
 
 # 参考资料
@@ -578,3 +1026,25 @@ https://blog.csdn.net/yockie/article/details/40213331
 9、C++11智能指针（五）：shared_ptr的循环引用的问题及weak_ptr
 
 https://blog.csdn.net/lijinqi1987/article/details/79005738
+
+10、c++ shared_ptr使用的几点注意
+
+https://blog.csdn.net/man_sion/article/details/77196766
+
+11、shared_ptr 简介以及常见问题
+
+这篇文章总结得很好
+
+https://blog.csdn.net/stelalala/article/details/19993425
+
+12、
+
+https://wenku.baidu.com/view/99517ee4ba1aa8114531d968.html
+
+13、智能指针在多线程情况下的问题
+
+https://blog.csdn.net/hopingwhite/article/details/6896211
+
+14、智能指针shared_ptr的用法
+
+https://www.cnblogs.com/jiayayao/archive/2016/12/03/6128877.html

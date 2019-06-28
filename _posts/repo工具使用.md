@@ -231,6 +231,18 @@ default：
 
 
 
+# 提交上传代码
+
+如果本地代码有修改，需要提交上传。
+
+1、先到对应的project目录下，git commit。
+
+2、repo upload进行上传。如果远程git仓库，你有可写权限，也可以直接在git目录下push就行了。
+
+
+
+
+
 # 参考资料
 
 1、Repo工具的使用
@@ -248,3 +260,7 @@ https://blog.csdn.net/zhanglianyu00/article/details/56845462
 4、简易repo服务器搭建
 
 https://blog.csdn.net/eastmoon502136/article/details/72598297
+
+5、
+
+https://www.jianshu.com/p/9c57696165f3

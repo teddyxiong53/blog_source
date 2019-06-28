@@ -1,3 +1,7 @@
+参考资料
+http://nodejs.cn/api/buffer.html
+
+
 在引入TypedArray之前，js语言是没有一种用来操作二进制数据的机制的。
 所以nodejs只能自己加这种机制。
 就是Buffer了。
@@ -6,6 +10,8 @@
 现在js语言引入了TypedArray。Buffer的底层就用这个来实现了。
 
 Buiffer的底层是ArrayBuffer。
+
+Buffer类的实例，相当于uint8_t的数组。
 
 Buffer类在全局作用域里。
 不需要引入。直接用就好了。就跟setTimeout一样。
@@ -48,8 +54,31 @@ const buf1 = Buffer.from("hello你好","latin1")
 
 Buffer构造函数
 	本来有不少，都被废弃了。推荐用alloc、from来进行创建。
-	
+	var buf = Buffer.alloc(10)  //分配10个字节的空间。并清空为0
+	Buffer.alloc(10, 1) //分配10个字节的空间，并且用1填充。
+	Buffer.allocUnsafe(10) //分配10个字节空间，但是不清空内容
+	Buffer.from([1,2,3])//
+	Buffer.from("hello")
 
+创建操作
+	增
+		就是构造函数
+	删
+		
+	改
+		连接
+		var buf1 = Buffer.alloc(10,1)
+		var buf2 = Buffer.alloc(10,2)
+		var total_len = buf1.length + buf2.length
+		var buf_total = Buffer.concat([buf1, buf2], total_len)
+		截取一部分
+		var buf1 = Buffer.alloc(10, 1)
+		buf1.
+	查
+		buf[0] 这样来索引。
+		compare
+		equals
+		
 Buffer之迭代器操作
 	可以用for-of进行迭代。
 	

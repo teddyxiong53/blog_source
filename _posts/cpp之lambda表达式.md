@@ -37,6 +37,22 @@ function body：函数实现部分。
 [capture list] {}
 ```
 
+capture list
+
+```
+这个也叫函数对象参数。
+可能的情况有：
+空：[]
+=：[=]
+	这个是把lambda表达式所在范围的局部变量（包含this），用值传递的方式传递到内部。
+&
+	跟=类似，只是这个是传递引用的方式。
+变量名
+	例如a, this, =a, &a 
+```
+
+
+
 直接看例子。
 
 ```
@@ -74,9 +90,18 @@ int main()
 
 
 
+lambda表达式用来定义并创建匿名函数对象。
+
+作用是让代码更加简洁。
+
+
+
 # 参考资料
 
 1、C++ 11 Lambda表达式
 
 https://www.cnblogs.com/DswCnblog/p/5629165.html
 
+2、C++之Lambda表达式
+
+https://www.cnblogs.com/jimodetiantang/p/9016826.html
