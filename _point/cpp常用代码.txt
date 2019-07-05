@@ -275,6 +275,30 @@ c标准库的，有c++的版本，在名字前面加上了c。
 5、其他
 	<algorithm>
 	<chrono>
+		类：
+			duration：表示一段时间。
+				using jiffies = std::chrono::duration<int, std::centi>;//centi是百分之一。
+				std::chrono::duration sec(1);
+				std::cout << jiffies(sec).count();
+				
+			system_clock
+				常用功能：
+				获取当前时间：
+				std::cout << std::chrono::system_clock::now();
+				跟time_t进行转化
+				std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+				
+				std::cout << std::chrono::system_clock::to_time_t(now);
+			steady_clock
+				
+			high_resolution_clock
+				高精度时钟。
+				
+			time_point：表示一个时间点。
+				
+		便利的typedef
+			std::chrono::nanoseconds
+				
 	<exception>
 	<functional>
 	<initializer_list>
@@ -285,6 +309,11 @@ c标准库的，有c++的版本，在名字前面加上了c。
 	<new>
 	<numeric>
 	<ratio>
+		std::ratio<1,1000>
+			千分之一
+		std::ratio<1000,1>
+			一千倍。
+			
 	<regex>
 	<stdexcept>
 	<string>
