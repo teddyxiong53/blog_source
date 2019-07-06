@@ -488,6 +488,16 @@ qemu-system-arm -M vexpress-a9 -smp 1 -m 256 -kernel output/images/zImage -dtb o
 
 
 
+# make file
+
+这个是编译file这个工具。
+
+从编译过程的打印看，会先编译host的，然后编译板端的。
+
+而且会先打补丁。
+
+
+
 参考资料
 
 1、HOWTO: Use BuildRoot to create a Linux image for QEMU

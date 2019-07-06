@@ -1,0 +1,50 @@
+# 结构体
+
+GstElement
+
+GstBus
+
+GSTMessage
+
+# 接口
+void gst_init(argc, argv);
+	这里面做了这些事情：
+	1、初始化内部结构。
+	2、检查plugin。
+	3、执行命令行选项。（如果有的话）
+	
+gst_element_set_state
+
+gst_element_get_bus
+
+gst_bus_timed_pop_filtered
+
+gst_message_unref
+
+gst_object_unref
+
+gst_element_factory_make ("videotestsrc", "source");
+	创建一个元件。
+	参数1：类型。
+	参数2：名字。可以没有。这个只是为了好理解使用。
+	
+gst_pipeline_new 
+	新建一个pipeline。参数是pipeline的名字。
+
+gst_bin_add_many (GST_BIN (pipeline), source, sink, NULL);
+	把所有的元件添加到pipeline里面。
+	
+gst_bin_add
+	这个一次添加一个。
+	
+	
+gst_element_link (source, sink) 
+	把source和sink连接起来。这样才能通。
+	
+	
+bus = gst_element_get_bus (pipeline);
+msg = gst_bus_timed_pop_filtered (bus, GST_CLOCK_TIME_NONE, GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
+	从pipeline拿到总线，因为总线是由pipeline统一管理的。
+	从总线上拿到消息。
+	
+	
