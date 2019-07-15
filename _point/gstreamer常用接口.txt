@@ -25,12 +25,15 @@ gst_object_unref
 
 gst_element_factory_make ("videotestsrc", "source");
 	创建一个元件。
-	参数1：类型。
+	参数1：类型。这个都是固定的一些字符串，不能随便写。
 	参数2：名字。可以没有。这个只是为了好理解使用。
 	
 gst_pipeline_new 
 	新建一个pipeline。参数是pipeline的名字。
-
+	这个创建一个pipeline和用gst_element_factory_make的方式创建。区别是什么？
+	参数少了一个。
+	返回值是一样的，都是GstElement的。
+	
 gst_bin_add_many (GST_BIN (pipeline), source, sink, NULL);
 	把所有的元件添加到pipeline里面。
 	
@@ -46,5 +49,9 @@ bus = gst_element_get_bus (pipeline);
 msg = gst_bus_timed_pop_filtered (bus, GST_CLOCK_TIME_NONE, GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
 	从pipeline拿到总线，因为总线是由pipeline统一管理的。
 	从总线上拿到消息。
+	这里会阻塞，直到产生了ERROR或者EOS消息。
 	
+## 消息处理
+GST_MESSAGE_TYPE(message)
+	取出消息类型。
 	

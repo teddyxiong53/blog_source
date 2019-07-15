@@ -59,9 +59,16 @@ cget id value
 cget id
 ```
 
+调节音量：
+
+amixer set Master 100%
+
+
+
 
 
 参考资料
 
-1、
+1、linux 用命令设置系统音量大小
 
+https://blog.csdn.net/matthew0618band/article/details/17224983
