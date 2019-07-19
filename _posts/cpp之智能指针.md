@@ -283,6 +283,18 @@ A destruct
 B destruct
 ```
 
+## weak_ptr其他
+
+weak_ptr是为了配合shared_ptr而引入的。
+
+之所以叫weak，是因为它并不具备普通指针的行为：
+
+```
+1、没有重载*和->
+2、主要是为了协助shared_ptr工作，获得资源的观测权，像旁观者那样观测资源的变化。
+3、当观测的shared_ptr失效后，weak_ptr也就失效了。
+```
+
 
 
 # 智能指针跟裸指针相互转化
@@ -1048,3 +1060,7 @@ https://blog.csdn.net/hopingwhite/article/details/6896211
 14、智能指针shared_ptr的用法
 
 https://www.cnblogs.com/jiayayao/archive/2016/12/03/6128877.html
+
+15、智能指针（三）：weak_ptr浅析
+
+https://blog.csdn.net/albertsh/article/details/82286999

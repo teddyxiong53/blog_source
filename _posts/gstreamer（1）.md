@@ -901,11 +901,33 @@ https://github.com/teddyxiong53/c_code/tree/master/gstreamer_test/MediaPlayer
 static constexpr uint8_t DEFAULT_VOLUME = 100;
 ```
 
+# appsrc
+
+这个是起什么作用？
+
+官方说明在这里：
+
+https://gstreamer.freedesktop.org/documentation/app/appsrc.html?gi-language=c#appsrc-page
+
+#实现视频直播
+
+腾讯的视频基础业务
+
+https://cloud.tencent.com/solution/video
+
+
+
+# 资源收集
+
+柳鲲鹏的csdn博客。排名377名。有一些gstreamer相关文章
+
+https://blog.csdn.net/quantum7/column/info/31476
 
 
 
 
-参考资料
+
+#参考资料
 
 1、GStreamer基础教程01——Hello World
 
@@ -992,3 +1014,11 @@ https://www.cnblogs.com/testplay/archive/2013/01/27/2879047.html
 21、中文翻译的教程。排版挺好的。
 
 https://www.cnblogs.com/xleng/p/11008239.html
+
+22、使用 GStreamer appsrc 等插件实现视频音频混流，录制和推流
+
+http://www.mamicode.com/info-detail-2163963.html
+
+23、
+
+https://blog.csdn.net/quantum7/article/details/82250524

@@ -607,6 +607,53 @@ int main()
 }
 ```
 
+# GVariant
+
+这个代表了什么？做什么用的？
+
+可以用来实现数据的序列化。
+
+这个还是比较复杂的一个东西。
+
+这个的内涵是，任意类型。
+
+相当于弱类型一样。
+
+这个知识点非常大。暂时不管。
+
+
+
+# GQuark
+
+quark这个词的字面含义，是一种物理单位。
+
+在glib里，用这个来表示什么含义呢？
+
+在程序里标识一块代码，有两种方式可以做到：
+
+1、用数字。
+
+2、用字符串。
+
+数字比较节省空间，但是可读性差。
+
+字符串可读，但是速度慢。
+
+GQuark就是结合这2者的长处。
+
+主要的接口是：
+
+```
+g_quark_from_string
+g_quark_to_string
+```
+
+
+
+学习方法
+
+把glib/tests目录下的一个个自己写一遍。
+
 
 
 # 参考资料
@@ -654,3 +701,15 @@ https://www.cnblogs.com/wangkangluo1/archive/2011/07/10/2102178.html
 11、How to control level of debugging info in glib?
 
 https://stackoverflow.com/questions/7518620/how-to-control-level-of-debugging-info-in-glib
+
+12、使用GVariant实现数据的序列化处理
+
+https://blog.csdn.net/coroutines/article/details/38496145
+
+13、C++变体数据类型—— VARIANT
+
+https://blog.csdn.net/yousss/article/details/79555821
+
+14、Glib中Gquark浅析
+
+https://blog.csdn.net/wfreehorse/article/details/70238231

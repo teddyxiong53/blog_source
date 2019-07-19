@@ -57,7 +57,7 @@ git branch -a
 基于当前分支创建新的分支
 git branch xx
 
-检出一个分支
+检出一个分支，也是切换一个分支
 git checkout xx
 
 

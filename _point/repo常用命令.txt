@@ -29,7 +29,7 @@ repo diff
 	查看工作区文件的变化。
 	
 repo status
-	该命令实际上是对git diff-index 和git diff-filse命令的封装，同时显示暂存区的状态和本地文件修改的状态
+	该命令实际上是对git diff-index 和git diff-file命令的封装，同时显示暂存区的状态和本地文件修改的状态
 	
 repo abandon branchName
 
