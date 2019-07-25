@@ -56,7 +56,7 @@ bus包含了一个队列。每次往队列里放消息，都会导致main contex
 
 
 
-#元件
+#元件GstElement
 
 GstElement是最基础的元素，翻译为“元件”。
 
@@ -90,9 +90,41 @@ GstObject
 
 
 
+## 元件的连接
+
+```
+GstPad *srcpad, *sinkpad;
+srcpad = gst_element_get_pad(element1, "src");
+sinkpad = gst_element_get_pad(element2, "sink");
+//连接
+gst_pad_link(srcpad, sinkpad);
+//断开
+gst_pad_unlink(srcpad, sinkpad);
+```
+
+如果元件都只有一个sink pad和一个source pad，那么就可以简单地这样来连接。
+
+```
+gst_element_link(element1, element2);
+```
+
+## 元件状态
+
+有4种状态：
+
+1、NULL。
+
+2、READY。
+
+3、PAUSED。
+
+4、PLAYING。
+
+用gst_element_set_state来进行状态的切换。
 
 
-#衬垫
+
+#衬垫pad
 
 对应的英文是pad。
 
@@ -100,9 +132,21 @@ GstObject
 
 对应的结构体是GstPad。
 
+pad可以有两种被激活的模式。
 
+1、push。
 
-# 箱柜
+2、pull。
+
+pad的有效性
+
+1、Always。也叫static。在元件创建后就一直存在。gst-inspect-1.0 alsasink。
+
+2、Sometimes。根据输入数据的不同而产生的pad。看gst-inspect-1.0  qtdemux的属性
+
+3、On Request。
+
+# 箱柜bin
 
 箱柜的英文是bin。
 
@@ -120,9 +164,17 @@ GstObject
 
 
 
-# 精灵衬垫
+# 精灵衬垫ghost pad
 
 ghost pad。
+
+bin作为一个整体，它没有属于自己的sink pad和source pad。
+
+那么就没法跟其他的元件进行交互。
+
+为了解决这个问题，就引入了ghost pad。
+
+它是从bin里面的所有元件里推举出来的。
 
 
 
@@ -865,6 +917,12 @@ playbin是一个pipeline，需要一个Application来调用。gst-launch-1.0就�
   GObjectClass ->GstObjectClass->GstElementClass->GstBinClass->GstPipelineClass->GstPlayBinClass
 ```
 
+是高级插件。使用了gstreamer的自动加载（auto plugging）机制。
+
+可以自动根据媒体类型，选择不同的管道播放。
+
+相当于是个万能的播放插件。
+
 
 
 # 调试方法
@@ -1022,3 +1080,10 @@ http://www.mamicode.com/info-detail-2163963.html
 23、
 
 https://blog.csdn.net/quantum7/article/details/82250524
+
+24、gstreamer简介
+
+这篇文章很好。
+
+https://blog.csdn.net/evsqiezi/article/details/82466267
+

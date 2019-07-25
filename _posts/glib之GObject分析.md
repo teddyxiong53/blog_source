@@ -104,3 +104,7 @@ https://wenku.baidu.com/view/14d8ea8cec3a87c24028c4da.html?from=search
 3、GObject:用C实现类是如何做到的
 
 https://blog.csdn.net/xbl1986/article/details/6702336
+
+4、Gobject的闭包
+
+https://blog.csdn.net/evsqiezi/article/details/82695585

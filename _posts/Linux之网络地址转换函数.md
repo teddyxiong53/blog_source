@@ -73,8 +73,20 @@ char *inet_ntoa(struct in_addr in)
 
 
 
+# 碰到的问题
+
+必须包含#include <arpa/inet.h>
+
+否则会段错误。
+
+
+
 # 参考资料
 
 1、inet_addr()、inet_network()、inet_aton()的区别
 
 https://blog.csdn.net/nokiaxjw/article/details/8083843
+
+2、关于socket编程获取客户端地址笔记
+
+https://www.cnblogs.com/dpf-10/p/5867779.html

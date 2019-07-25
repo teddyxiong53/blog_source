@@ -96,4 +96,6 @@ git push --set-upstream origin master
 git打包，这样就可以避免把.git目录打包进去。
 git archive --format=zip --output master.zip master
 
+本地有添加没有track的文件，确定丢弃。
+git clean -d -fx ""
 

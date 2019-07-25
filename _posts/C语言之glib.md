@@ -713,3 +713,7 @@ https://blog.csdn.net/yousss/article/details/79555821
 14、Glib中Gquark浅析
 
 https://blog.csdn.net/wfreehorse/article/details/70238231
+
+15、如何使用Glib工具集管理C数据
+
+https://wenku.baidu.com/view/29d6911ffc4ffe473368abb8.html?sxts=1563870816369

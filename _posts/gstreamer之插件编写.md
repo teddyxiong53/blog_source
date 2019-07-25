@@ -31,3 +31,8 @@ https://blog.csdn.net/sinat_28502203/article/details/46010485
 2、gstreamer插件开发手册
 
 https://wenku.baidu.com/view/775e189a10a6f524cdbf8533.html
+
+3、gstreamer---Gobject类对象
+
+https://www.jianshu.com/p/5acdb9ea7a08
+
