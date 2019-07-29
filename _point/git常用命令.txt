@@ -77,6 +77,11 @@ git log --pretty=oneline
 显示改动行数统计
 git log --stat
 
+查看某个文件的改动历史
+git log --pretty=oneline 1.txt
+然后可以看到一些版本代号值。
+git show xxx
+这样就可以看到这个文件的改动。
 
 
 git本地仓库使用流程

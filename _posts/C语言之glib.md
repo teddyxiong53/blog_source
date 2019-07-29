@@ -654,6 +654,77 @@ g_quark_to_string
 
 把glib/tests目录下的一个个自己写一遍。
 
+# signal用途
+
+
+
+
+
+GArray跟C语言默认的数组比较像。但是GArray可以自增长。
+
+GAsyncQueue是用来做线程之间异步通信的。
+
+
+
+glib靠一个800K的动态库，还是还易于使用的。
+
+比标准C库函数名更加有规律，易于使用。
+
+
+
+简单测试代码：
+
+```
+int main()
+{
+    //字符串操作
+    {
+        GString *s = g_string_new(NULL);
+        g_string_assign(s, "new value");
+        g_printf("str:%s, len:%d, allocated_len:%d\n", s->str, s->len, s->allocated_len);
+        g_string_append(s, "11111111111111111");
+        g_printf("after append:\n");
+        g_printf("str:%s, len:%d, allocated_len:%d\n", s->str, s->len, s->allocated_len);
+        g_printf("after prepend:\n");
+        g_string_prepend(s, "222222222222222");
+        g_printf("str:%s, len:%d, allocated_len:%d\n", s->str, s->len, s->allocated_len);
+        g_free(s);
+    }
+    //array操作
+    {
+        GArray *a = g_array_new(FALSE, FALSE, sizeof(gint));
+        g_array_set_size(a, 60);//必须指定长度，不然下面操作就会越界导致段错误。
+        gint index = 17;
+        gint value = 55;
+        g_array_append_val(a, value);
+        g_array_insert_val(a, index, value);
+        g_array_free(a, FALSE);
+    }
+    //获取目录。
+    g_printf("user config dir:%s\n", g_get_user_config_dir());
+    g_printf("user data dir:%s\n", g_get_user_data_dir());
+    g_printf("user cache dir:%s\n", g_get_user_cache_dir());
+    //检查文件存在性
+    g_printf("1.txt is exist:%d\n", g_file_test("1.txt", G_FILE_TEST_EXISTS));
+
+    //读文件。
+    {
+        gssize length;
+        gchar *content;
+        gchar *filename = "1.txt";
+        if(g_file_get_contents(filename, &content, &length, NULL)) {
+            g_printf("content:%s\n", content);
+            g_free(content);
+        }
+    }
+    //写文件
+    {
+        g_file_set_contents("1.txt", "aaaa", 4, NULL);
+    }
+
+}
+```
+
 
 
 # 参考资料
@@ -717,3 +788,17 @@ https://blog.csdn.net/wfreehorse/article/details/70238231
 15、如何使用Glib工具集管理C数据
 
 https://wenku.baidu.com/view/29d6911ffc4ffe473368abb8.html?sxts=1563870816369
+
+16、glib中的signal不是异步的，使用g_idle_add实现异步
+
+https://blog.csdn.net/fingding/article/details/6866263
+
+17、Glib Examples
+
+这些例子都很简洁。值得看一遍。
+
+https://lzone.de/examples/Glib
+
+18、Glib学习（15） 线程之间的异步通信 Asynchronous Queues
+
+https://blog.csdn.net/andylauren/article/details/79313181
