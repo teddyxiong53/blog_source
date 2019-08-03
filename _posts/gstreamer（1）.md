@@ -243,40 +243,7 @@ int main(int argc, char **argv)
 
 4、如何监视bus上的信息并处理。
 
-```
-#include <gst/gst.h>
 
-int main(int argc, char **argv)
-{
-	GstElement *pipeline, *source, *sink;
-	GstBus *bus;
-	GstMessage *msg;
-	GstStateChangeReturn ret;
-	gst_init(&argc, &argv);
-	source = gst_element_factory_make("videotestsrc", "source");
-	sink = gst_element_factory_make("autovideosink", "sink");
-	pipeline = gst_pipeline_new("test-pipeline");
-	
-	if(!source || !sink || !pipeline) {
-		return -1;
-	}
-	gst_bin_add_many(GST_BIN(pipeline), source, sink, NULL);
-	if(gst_element_link(source, sink) != TRUE) {
-		return -1;
-	}
-	g_object_set(source, "pattern", 0, NULL);
-	int ret = gst_element_set_state(pipeline, GST_STATE_PLAYING);
-	bus = gst_element_get_bus(pipeline);
-	msg = gst_bus_timed_pop_filtered(bus, GST_CLOCK_TIME_NONE, GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
-	if(msg) {
-		gst_message_unref(msg);
-	}
-	gst_object_unref(bus);
-	gst_element_set_state(pipeline, GST_STATE_NULL);
-	gst_object_unref(pipeline);
-	return 0;
-}
-```
 
 gst_element_factory_make  的参数：
 
@@ -288,100 +255,11 @@ gst_element_factory_make  的参数：
 
 所以需要demuxer来分离。这些蓝色的部分，属于叫做pad。
 
-![](./images/gstreamer之视频pipeline.png)
+为什么需要动态的？因为在demuxer把文件解开之前，你不知道文件里有几路视频几路音频。
+
+所以需要先打开文件，分析之后，才知道pipeline具体应该是怎样。
 
 
-
-```
-#include <gst/gst.h>
-
-typedef struct _CustomData {
-	GstElement* pipeline;
-	GstElement* source;
-	GstElement* convert;
-	GstElement* sink;
-} CustomData;
-
-static void pad_added_handle(GstElement* src, GstPad *pad, CustomData* data);
-
-int main(int argc, char **argv)
-{
-	CustomData data;
-	GstBus *bus;
-	GstMessage *msg;
-	GstStateChangeReturn ret;
-	
-	gboolean terminate = FALSE;
-	gst_init(&argc, &argv);
-	
-	data.source = gst_element_factory_make("uridecodebin", "source");
-	data.convert = gst_element_factory_make("audioconvert", "convert");
-	data.sink = gst_element_factory_make("autoaudiosink", "sink");
-	data.pipeline = gst_pipeline_new("test-pipeline");
-	
-	gst_bin_add_many(GST_BIN(data.pipeline), data.source, data.convert, data.sink);
-	gst_element_link(data.convert. data.sink);
-	g_object_set(data.source, "uri", "http://docs.gstreamer.com/media/sintel_trailer-480p.webm", NULL);
-	g_signal_connect(data.source, "pad-added", G_CALLBACK(pad_added_handle), &data);
-	gst_element_set_state(data.pipeline, GST_STATE_PLAYING);
-	
-	bus = gst_element_get_bus(data.pipeline);
-	do {
-		msg = gst_bus_timed_pop_filtered(bus, GST_CLOCK_TIME_NONE, GST_MESSAGE_ERROR | GST_MESSAGE_EOS | GST_MESSAGE_STATE_CHANGED);
-		if(msg) {
-			switch(GST_MESSAGE_TYPE(msg)) {
-				case GST_MESSAGE_ERROR:
-				case GST_MESSAGE_EOS:
-					terminate = true;
-					break;
-				case GST_MESSAGE_STATE_CHANGED:
-					//this is the msg we are interested in 
-					if(GST_MESSAGE_SRC(msg) == GST_OBJECT(data.pipeline)) {
-						GstState old_state, new_state, pending_state;
-						gst_message_parse_state_changed(msg, &old_state, &new_state, &pending_state);
-					}
-					break;
-				default:
-					break;
-			}
-		}
-		gst_message_unref(msg);
-		
-	} while(!terminate);
-	gst_object_unref(bus);
-	gst_element_set_state(data.pipeline, GST_STATE_NULL);
-	gst_object_unref(data.pipeline);
-	
-	return 0;
-}
-
-static void pad_added_handle(GstElement* src, GstPad *new_pad, 
-CustomData* data) {
-	GstPad *sink_pad = gst_element_get_static_pad(data->convert, "sink");
-	GstPadLinkReturn ret;
-	GstCaps *new_pad_caps = NULL;
-	GstStructure *new_pad_struct = NULL;
-	gchar *new_pad_type = NULL;
-	if(gst_pad_is_linked(sink_pad)) {
-		printf("we are already linked, ignore it\n");
-		goto exit;
-	}
-	new_pad_caps = gst_pad_get_caps(new_pad);
-	new_pad_struct = gst_pad_get_structure(new_pad);
-	new_pad_type = gst_structure_get_name(new_pad_struct);
-	if(!g_str_has_prefix(new_pad_type, "audio/x-raw")) {
-		printf("type is not raw audio, it is [%s]\n", new_pad_type);
-		goto exit;
-	}
-	ret = gst_pad_link(new_pad, sink_pad);
-	
-exit:
-	if(new_pad_caps != NULL) {
-		gst_caps_unref(new_pad_caps);
-	}
-	gst_object_unref(sink_pad);
-}
-```
 
 
 
@@ -391,106 +269,7 @@ exit:
 
 主要是seek和查询。
 
-```
-#include <gst/gst.h>
 
-typedef struct _CustomData {
-	GstElement *playbin;
-	gboolean playing;
-	gboolean terminate;
-	gboolean seek_enabled;
-	gboolean seek_done;
-	gint64 duration;
-} CustomData;
-
-static void handle_message(CustomData *data, GstMessage *msg);
-
-int main(int argc, char **argv)
-{
-	CustomData data;
-	GstBus *bus;
-	GstMessage *msg;
-	GstStateChangeReturn ret;
-	data.playing = FALSE;
-	data.terminate = FALSE;
-	data.seek_enabled = FALSE;
-	data.seek_done = FALSE;
-	data.duration = GST_CLOCK_TIME_NONE;
-	gst_init(&argc,&argv);
-	data.playbin = gst_element_factory_make("playbin", "playbin");
-	g_object_set(data.playbin, "uri", "https://www.freedesktop.org/software/gstreamer-sdk/data/media/sintel-480.webm", NULL);
-	ret = gst_element_set_state(data.playbin, GST_STATE_PLAYING);
-	
-	bus = gst_element_get_bus(data.playbin);
-	do {
-		msg = gst_bus_timed_pop_filtered(bus, 100*GST_MSECOND, GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_EOS | GST_MESSAGE_ERROR | GST_MESSAGE_DURATION);
-		if(msg != NULL) {
-			handle_message(&data, msg);
-		} else {
-			//no msg ,means timeout
-			gint64 current = -1;
-			gst_element_query_position(data.playbin, GST_FORMAT_TIME, &current);
-			if(!GST_CLOCK_TIME_IS_VALID(data.duration)) {
-				gst_element_query_duration(data.playbin, GST_FORMAT_TIME, &data.duration);
-			}
-			printf("position:%d, duration:%d\n", current, data.duration);
-			if(data.seek_enabled && !data.seek_done && current>10*GST_SECOND) {
-				printf("reach 10s, perform seek\n");
-				gst_element_seek_simple(data.playbin, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT, 30*GST_SECOND);
-				data.seek_done = TRUE;
-			}
-		}
-		
-	} while(!data.terminate);
-	gst_object_unref(bus);
-	gst_element_set_state(data.playbin, GST_STATE_NULL);
-	gst_object_unref(data.playbin);
-	return 0;
-}
-
-static void handle_message(CustomData *data, GstMessage *msg)
-{
-	GError *err;
-	gchar *debug_info;
-	switch(GST_MESSAGE_TYPE(msg)) {
-		case GST_MESSAGE_ERROR:
-		case GST_MESSAGE_EOS:
-			data->terminate = TRUE;
-			break;
-		case GST_MESSAGE_DURATION:
-			data->duration = GST_CLOCK_TIME_NONE;
-			break;
-		case GST_MESSAGE_STATE_CHANGED:
-			GstState old_state, new_state, pending_state;
-			gst_message_parse_state_changed(msg, &old_state, &new_state, &pending_state);
-			if(GST_MESSAGE_SRC(msg) == GST_OBJECT(data->playbin)) {
-				data->playing = (new_state == GST_STATE_PLAYING);
-			}
-			if(data->playing) {
-				GstQuery *query ;
-				gint64 start, end;
-				query = gst_query_new_seeking(GST_FORMAT_TIME);
-				if(gst_element_query(data->playbin, queyr)) {
-					gst_query_parse_seeking(query, NULL, &data->seek_enabled, &start, &end);
-					if(data->seek_enabled) {
-						printf("seek is enabled from %ld to %ld\n", GST_TIME_ARGS(start), GST_TIME_ARGS(end));
-					} else {
-						printf("seek is not enabled\n");
-					}
-						
-				} else {
-					printf("seek query failed\n");
-				}
-			}
-			break;
-		default:
-			printf("msg not right\n");
-			break;
-	}
-	gst_message_unref(msg);
-}
-
-```
 
 
 
@@ -935,7 +714,53 @@ export GST_DEBUG=2
 
 然后再执行你的程序，就可以看到相关的日志了。
 
+级别：
 
+```
+0：none
+1：ERROR
+2：warning
+3：fixme
+4：info
+5：debug
+6：log
+7：trace
+8：memdump
+```
+
+你可以单独指定某个元件的日志级别。
+
+```
+export GST_DEBUG=2,audiotestsrc:6
+```
+
+还可以进行通配。
+
+```
+export GST_DEBUG=2,audio*:6
+```
+
+这样就表示audio开头的元件的日志级别都设置为6 。
+
+```
+gst-launch-1.0 --gst-debug-help 
+```
+
+这个可以查看有哪些东西可以设置日志的。
+
+怎么自己在开发的时候添加日志呢？
+
+用GST_ERROR这些宏来打印日志。
+
+
+
+还有一个有用的调试手段是，把pipeline的图输出。
+
+
+
+具体说明在这里。
+
+https://gstreamer.freedesktop.org/documentation/tutorials/basic/debugging-tools.html
 
 # 自己写mp3播放器
 
@@ -983,6 +808,46 @@ https://blog.csdn.net/quantum7/column/info/31476
 
 
 
+# 播放速度
+
+一般播放速度是1.0，如果要快进，就让播放速度大于1，如果要满放，就让播放速度小于1 。
+
+还可以倒着播放，就是让播放速度为负数。
+
+gstreamer提供了2个事件来处理播放控制：step事件和seek事件。
+
+step就是跳过一些帧。
+
+step事件是一种实现控制播放速度的很方便的方式。但是有一些缺点。
+
+所以现在我们先看seek方式的。
+
+
+
+# 音视频同步
+
+
+
+# GstStructure
+
+这个是一组键值对。
+
+key是GQuark类型。
+
+value是任意的GType类型。
+
+还有一个名字。
+
+GstStructure被gstreamer很多地方都用到了。
+
+因为它可以很灵活地存储信息。
+
+这个结构体自己没有引用计数，它靠包含自己的类的引用计数来工作。
+
+gst_structure_set_parent_refcount  靠这个函数来做。
+
+字符串编码必须是ascii或utf-8的。其他的编码都不允许。
+
 
 
 #参考资料
@@ -990,26 +855,6 @@ https://blog.csdn.net/quantum7/column/info/31476
 1、GStreamer基础教程01——Hello World
 
 https://blog.csdn.net/sakulafly/article/details/19398257
-
-2、GStreamer基础教程02——GStreamer概念
-
-https://blog.csdn.net/lengkunbit/article/details/76723932
-
-3、GStreamer基础教程03——动态pipeline
-
-https://blog.csdn.net/sakulafly/article/details/20936067
-
-4、gstreamer基础教程4-Time management
-
-https://blog.csdn.net/knowledgebao/article/details/82688834
-
-5、GStreamer基础教程05——集成GUI工具
-
-https://blog.csdn.net/fireroll/article/details/51498685
-
-6、GStreamer播放教程06——可视化音频
-
-https://blog.csdn.net/sakulafly/article/details/22695577
 
 7、Gstreamer 编译安装
 
@@ -1087,3 +932,6 @@ https://blog.csdn.net/quantum7/article/details/82250524
 
 https://blog.csdn.net/evsqiezi/article/details/82466267
 
+25、Gstreamer的音视频同步
+
+https://blog.csdn.net/maeom/article/details/7729840

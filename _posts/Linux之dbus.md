@@ -34,6 +34,8 @@ dbus是一个为App之间通信的消息总线系统。用于进程间通信。�
 dbus-daemon --system
 ```
 
+dbus就是对socket的封装。
+
 
 
 看树莓派的情况。
@@ -114,6 +116,12 @@ dbus的特点：
 
 协议是二进制的，避免了序列化的过程。通信效率高。
 
+因为主要是用于本机内部通信，所以采用二进制带来的好处大于坏处。
+
+支持异步操作。
+
+dbus易于使用，因为它是基于消息，而不是字节流。
+
 
 
 总线有两种，一个是system bus，一个是session bus。
@@ -133,6 +141,39 @@ dbus的特点：
 dbus默认提供了一些工具。
 
 dbus-monitor和dbus-send。可以用来测试。
+
+
+
+系统里的dbus工具有：
+
+````
+dbus-binding-tool
+dbus-daemon
+	--session等价于：--config-file=/usr/share/dbus-1/session.conf
+	
+dbus-monitor
+	这个只有5个选项。比较简单。
+	--system：监控系统bus的消息。
+	--session：监控用户session bus的消息。默认是这个。
+	--profile：不指定，就是classic模式。这个是精简模式。
+	--monitor：监控输出模式。默认就是这个。
+dbus-send
+dbus-uuidgen
+dbus-cleanup-sockets
+dbus-launch
+dbus-run-session
+dbus-update-activation-environment
+````
+
+
+
+```
+dbus-send --print-reply --type=method_call --dest=org.freedesktop.DBus / org.freedesktop.DBus.ListNames
+```
+
+
+
+dbus-glib和GDBus的区别
 
 
 
@@ -166,3 +207,30 @@ https://dbus.freedesktop.org/doc/dbus-tutorial.html
 
 https://www.xuebuyuan.com/3188840.html
 
+8、dbus-glib示例说明
+
+https://wenku.baidu.com/view/9a352d1152d380eb62946d67.html?sxts=1564551835283
+
+9、dbus基础知识
+
+https://wenku.baidu.com/view/0804b93283c4bb4cf7ecd1a9.html?from=search
+
+10、DBus API的使用
+
+https://my.oschina.net/u/994235/blog/113238
+
+11、DBUS及常用接口介绍
+
+https://blog.csdn.net/mr_wangning/article/details/60324291
+
+12、D-Bus Documentation
+
+https://dbus.freedesktop.org/doc/api/html/index.html
+
+13、DBUS基础知识
+
+https://www.cnblogs.com/wzh206/archive/2010/05/13/1734901.html
+
+14、dbus-glib 和 GDBus 的区别
+
+https://www.cnblogs.com/LubinLew/p/dbus-glib_and_GDBus.html

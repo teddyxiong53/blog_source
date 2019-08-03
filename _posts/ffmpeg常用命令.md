@@ -222,6 +222,20 @@ ffmpeg -i input.mp3 -acodec pcm_s16le -f s16le -ac 1 -ar 16000 output.pcm
 
 # 图片处理
 
+批量缩放图片。
+
+```
+#!/bin/sh
+in_dir=in
+out_dir=out
+files=`ls $in_dir`
+for f in $files; do
+	ffmpeg -i $in_dir/$f -f scale=320:249 $out_dir/$f
+donef in $files; do
+	ffmpeg -i $in_dir/$f -f scale=320:249 $out_dir/$f
+done
+```
+
 
 
 参考资料

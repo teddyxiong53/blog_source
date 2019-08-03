@@ -33,6 +33,12 @@ gtk依赖了这些库：
 	
 ```
 
+安装gtk-3.0的。因为官网教程是基于这个版本。
+
+```
+sudo apt-get install libgtk-3-dev 
+```
+
 
 
 参考资料
@@ -45,5 +51,7 @@ https://blog.csdn.net/goodluckwhh/article/details/39992803
 
 https://www.cnblogs.com/ikodota/archive/2013/03/08/step_by_step_study_gtk_opening.html
 
+3、
 
+https://developer.gnome.org/gtk3/stable/gtk-getting-started.html
 

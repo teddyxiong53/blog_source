@@ -59,14 +59,36 @@ make_element是一个脚本，可以接收2个参数：
 参数1：
 	插件的名字。注意大小写。
 参数2：
-	不知道是啥。省略就好了。
+	这个是指定模板。
+	可以省略。省略就是用gstplugin.c这个文件作为模板。
+	也可以用gsttransform.c来做模板。
 ```
+
+脚本的作用，就是批量替换字符串。
 
 然后在gst-plugin目录下，执行autogen.sh脚本。然后执行make。
 
 可以看到会提示GST_LICENSE等3个宏没有定义。
 
 这个就是在gstplugin.c里最后部分，自己写一下对应的宏定义就好了。
+
+
+
+https://gstreamer.mazdermind.de/
+
+这个网站也可以帮助我们生成代码。这个生成的不太好。
+
+
+
+怎样测试我们写的插件呢？
+
+用gst-launch-1.0就可以。
+
+用法是这样：
+
+```
+gst-launch-1.0 --gst-plugin-path=$HOME/gst-template/gst-plugin/src/.libs TESTPIPELINE
+```
 
 
 

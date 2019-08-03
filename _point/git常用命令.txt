@@ -84,6 +84,24 @@ git show xxx
 这样就可以看到这个文件的改动。
 
 
+=======回退到指定版本=================
+git reset --hard xxx 
+xxx 是git log看到的版本字符串。
+
+===========.gitignore相关问题==============
+有时候发现添加到.gitignore里面的文件还是无法被忽略，原因是因为之前已经被添加追踪了。
+需要执行下面的步骤：
+第一步：xx/yy/zz要替换为实际的文件路径。
+git filter-branch --force --index-filter \
+  'git rm -r --cached --ignore-unmatch xx/yy/zz' \
+  --prune-empty --tag-name-filter cat -- --all
+  
+第二步：
+修改.gitignore。
+第三步：
+提交一次。
+
+
 git本地仓库使用流程
 1、指定一个目录，作为提交的目的地。
 mkdir git_repo
