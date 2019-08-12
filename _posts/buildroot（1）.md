@@ -498,6 +498,21 @@ qemu-system-arm -M vexpress-a9 -smp 1 -m 256 -kernel output/images/zImage -dtb o
 
 
 
+# 依赖关系
+
+在我们新增自己的package的时候，往往可能依赖了某些其他的包。需要先把其他的包编译完了才能编译我们的包。
+
+所以需要添加依赖。
+
+```
+在在mk文件里。添加这个。
+XX_DEPENDANCIES += yy
+```
+
+在Config.in里，depends on并不会产生这种编译依赖。
+
+
+
 参考资料
 
 1、HOWTO: Use BuildRoot to create a Linux image for QEMU
@@ -519,3 +534,7 @@ https://hugh712.gitbooks.io/buildroot/content/default-path.html
 5、buildroot里增加自己的包。
 
 http://www.mamicode.com/info-detail-2460329.html
+
+6、buildroot重新编译package
+
+https://blog.csdn.net/qq_31811537/article/details/81069993

@@ -90,3 +90,20 @@ https://github.com/jeffjose/tget
 
 https://i5ting.github.io/wechat-dev-with-nodejs/nodejs/api.html
 
+
+
+快速搭建一个mock restful api服务器。
+
+https://github.com/typicode/json-server
+
+
+
+命令行上进行汇率换算。这个在于简单实用。
+
+https://github.com/thompsonemerson
+
+参考资料
+
+1、
+
+https://www.jianshu.com/p/31c4955351e7

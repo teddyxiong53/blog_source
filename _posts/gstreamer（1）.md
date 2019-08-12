@@ -850,6 +850,14 @@ gst_structure_set_parent_refcount  靠这个函数来做。
 
 
 
+# 资源收集
+
+
+
+https://github.com/jcaden/gst-dynamic-examples
+
+https://github.com/sampleref/gstreamer-cpp-example
+
 #参考资料
 
 1、GStreamer基础教程01——Hello World

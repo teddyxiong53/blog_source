@@ -221,6 +221,46 @@ G_DEFINE_TYPE(JcBoy, jc_boy, G_TYPE_OBJECT);
 
 
 
+GType API是GObject的基础。
+
+提供了用来注册和管理所有基础类型、用户定义对象类型和接口类型。
+
+对于类型注册和创建，所有类型可以分为2类：static和dynamic。
+
+static的用g_type_register_static这个函数，传递的参数是GTypeInfo
+
+dynamic的用g_type_register_dynamic，传递的参数是GTypePlugin。
+
+还有第三个函数g_type_register_fundamental。但是这个内部就帮我们做好了。不需要我们去调用这个。
+
+结构体大小的限制是64K。
+
+如果有超过这个的需求，用GArray来进行扩展。
+
+类型名字长度，至少3个字符。
+
+```
+if (!type_name[0] || !type_name[1] || !type_name[2])
+    {
+      g_warning ("type name '%s' is too short", type_name);
+      return FALSE;
+    }
+```
+
+gtype.c这个文件是最重要的。
+
+
+
+GBoxed，这个是对结构体进行包装的。例如GValue这些，并没有定义成class的形式。
+
+为了注册到类型系统里，就需要用GBoxed包装一下。
+
+glib目录下的GMainLoop这些，都是普通的结构体。
+
+
+
+
+
 参考资料
 
 1、GObject对象系统
@@ -250,3 +290,17 @@ https://wenku.baidu.com/view/d7c8787f1711cc7931b716e1.html?sxts=1564108386035
 这个教程似乎不错。
 
 https://blog.csdn.net/knowledgebao/article/details/82387743
+
+7、GObject 的子类继承
+
+http://garfileo.is-programmer.com/2011/3/8/inherition-of-gobject.25106.html
+
+8、GObject接口定义和实现
+
+这个是翻译。
+
+https://blog.csdn.net/lp525110627/article/details/71082293
+
+这个是原文。
+
+https://developer.gnome.org/gobject/stable/howto-interface.html

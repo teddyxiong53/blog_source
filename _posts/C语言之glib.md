@@ -607,6 +607,50 @@ int main()
 }
 ```
 
+
+
+idle任务。
+
+```
+#include <glib.h>
+
+gboolean test_idle(gpointer data)
+{
+    gchar *s = (gchar *)data;
+    g_printf("data:%s\n", s);
+    g_usleep(1000*1000);
+    return TRUE;
+}
+int main()
+{
+    GMainLoop *loop;
+    loop = g_main_loop_new(NULL, FALSE);
+    g_idle_add(test_idle, "xxx");
+    g_main_loop_run(loop);
+}
+```
+
+改成这样也可以。
+
+```
+#include <glib.h>
+
+gboolean test_idle(gpointer data)
+{
+    gchar *s = (gchar *)data;
+    g_printf("data:%s\n", s);
+    g_usleep(1000*1000);
+    return TRUE;
+}
+int main()
+{
+    g_idle_add(test_idle, "xxx");
+    g_main_context_iteration (NULL, FALSE);
+}
+```
+
+
+
 # GVariant
 
 这个代表了什么？做什么用的？
@@ -727,6 +771,44 @@ int main()
 
 
 
+# glib-genmarshal
+
+
+
+# once的用法
+
+```
+g_once_init_enter 
+	这个是在临界区初始化的时候用的。
+	它的参数是一个static gsize inited=0;这样的一个初始化值为0的static变量。
+	在完成的时候，inited会被赋值为非0值。
+```
+
+实例代码是这样：
+
+```
+void xx_init()
+{
+	static gsize inited = 0;
+	if(g_once_init_enter(&inited) {
+		g_once_init_leave(&inited, TRUE);
+	}
+	//code
+}
+```
+
+# slice
+
+这个是分配大小相同的多个内存块。
+
+# gspawn
+
+这个支持比posix接口更加好用的fork机制。
+
+在gio里，还进一步封装了GSubprocess。
+
+
+
 # 参考资料
 
 1、浅析GLib
@@ -802,3 +884,11 @@ https://lzone.de/examples/Glib
 18、Glib学习（15） 线程之间的异步通信 Asynchronous Queues
 
 https://blog.csdn.net/andylauren/article/details/79313181
+
+19、glib-genmarshal的使用
+
+https://www.cnblogs.com/super119/archive/2011/01/03/1924442.html
+
+20、
+
+https://blog.csdn.net/fanzirong_/article/details/83069062
