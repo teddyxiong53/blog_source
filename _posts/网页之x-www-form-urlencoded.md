@@ -135,6 +135,25 @@ Content-Type: text/xml
 
 
 
+# 再次理解
+
+上面这些内容，其实就是form表单的编码方式问题。
+
+通过enctype属性来设置。
+
+有3种情况：
+
+```
+1、application/x-www-form-encoded
+	这个是默认情况，你不设置的时候，就是这种。
+	这个是把表单内容编码到url里。
+2 multipart/form-data
+	如果有上传文件时，就用这种。
+3 text/plain
+	H5引入的。传递普通字符串性质的。
+	跟x-www-form-encoded的区别是：内容不会被URL编码（例如空格不会被替换为%20）。
+```
+
 
 
 参考资料
@@ -146,3 +165,7 @@ https://hongjiang.info/http-application-x-www-form-urlencoded/
 2、HTTP协议-POST方法详解
 
 http://www.qmailer.net/archives/245.html
+
+3、Understanding HTML Form Encoding: URL Encoded and Multipart Forms
+
+https://dev.to/sidthesloth92/understanding-html-form-encoding-url-encoded-and-multipart-forms-3lpa

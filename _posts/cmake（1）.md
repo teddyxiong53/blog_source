@@ -392,6 +392,22 @@ libB
 如果顺序写错了，就会报符号找不到的错误。我查一个这样的错误， 查了1个多小时。
 ```
 
+可以用--start-group来避免顺序问题。
+
+
+
+
+
+cmake文件被包含的时候，可以用这个保护头，来避免被多次包含时的问题。
+
+```
+if (DEFINED JSonParserGuard)
+  return()
+endif()
+
+set(JSonParserGuard yes)
+```
+
 
 
 # 参考资料

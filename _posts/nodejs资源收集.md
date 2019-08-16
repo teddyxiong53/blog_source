@@ -120,6 +120,20 @@ https://bitcoin-on-nodejs.ebookchain.org/
 
 https://medium.mybridge.co/45-amazing-node-js-open-source-for-the-past-year-v-2019-c774d750e925
 
+
+
+需要收集的资料
+
+ES6标准。
+
+犀牛书。
+
+iotjs
+
+shadownode
+
+
+
 参考资料
 
 1、

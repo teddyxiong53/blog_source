@@ -94,9 +94,13 @@ int main(int argc, char** argv) {
 
 https://cnodejs.org/topic/5a68d49fafa0a121784a8f48
 
+2、专访 Yorkie：JavaScript 如何开发 IoT 应用？
 
+https://www.infoq.cn/article/QzyM9la8MrIowe*Mrzkp
 
+3、使用 IoT.js 和 Raspberry Pi 开发物联网应用
 
+https://www.wandianshenme.com/play/jerryscript-iotjs-raspberry-pi-build-iot-application/
 
 
 

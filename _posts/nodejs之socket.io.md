@@ -181,6 +181,8 @@ hlxiong@hlxiong-VirtualBox ~/work/test/socket.io/server $ node app.js
 
 # 聊天应用示例
 
+这个例子是socket.io的官网的例子。
+
 使用传统的web应用技术栈，如lamp（php）来写一个聊天应用是困难的。
 
 在传统技术栈上，只能通过轮询，还有追踪时间戳。这种实现效率是很低的。

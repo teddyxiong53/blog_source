@@ -48,6 +48,12 @@ morgan
 	
 debug
 	打印调试信息的模块。
+	基本用法：
+	var debug = require("debug")("express:server")
+	debug("xxx")
+	debug("xx" + " " + "yy")
+	在运行时，设置环境变量：
+	DEBUG=express:* node index.js
 	
 meow
 	写命令行工具需要的模块。
@@ -65,3 +71,16 @@ sleep
 	这个是靠c++实现的。
 	代码在这里：
 	https://github.com/erikdubbelboer/node-sleep/blob/master/index.js
+	
+ms
+	这个是把任意时间转成毫秒数的。
+	debug这个模块只依赖了这个。
+	基本用法：
+	ms("2 days")
+	ms("2d") //这个也是表示2天
+	ms("2h")
+	ms("1m")
+	ms("1y")
+	ms("-1h") //还可以表示负数时间。
+	实现功能很简单，但是很实用。
+	
