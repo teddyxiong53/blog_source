@@ -102,6 +102,24 @@ https://github.com/typicode/json-server
 
 https://github.com/thompsonemerson
 
+
+
+Node.js让您的前端开发像子弹飞一样
+
+https://bitcoin-on-nodejs.ebookchain.org/2-Node.js%E5%85%A5%E9%97%A8%E6%8C%87%E5%8D%97/2-Nodejs%E8%AE%A9%E6%82%A8%E7%9A%84%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91%E5%83%8F%E5%AD%90%E5%BC%B9%E9%A3%9E%E4%B8%80%E6%A0%B7.html
+
+
+
+《Node.js区块链开发》
+
+https://bitcoin-on-nodejs.ebookchain.org/
+
+
+
+2019年的45个nodejs开源项目推荐
+
+https://medium.mybridge.co/45-amazing-node-js-open-source-for-the-past-year-v-2019-c774d750e925
+
 参考资料
 
 1、

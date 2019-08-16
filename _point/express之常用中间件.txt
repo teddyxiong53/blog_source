@@ -21,3 +21,11 @@ winston
 express-formidable
 	表单解析，用了这个，才能拿到req.fields.name这样的东西。
 	
+	
+querystring
+	这个模块就2个函数。
+	一个encode。是stringify的别名。
+	一个decode。是parse的别名。
+	用来解析url里的参数的。
+	
+	

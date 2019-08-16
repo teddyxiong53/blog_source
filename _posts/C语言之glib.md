@@ -809,6 +809,86 @@ void xx_init()
 
 
 
+# 使用了glib的开源项目
+
+## bluez
+
+
+
+
+
+```
+GTypePlugin是什么？主要用途是什么？
+1、是一个interface，用来实现类型的动态加载。
+2、它的父类是GInterface。
+3、实现的子类是GTypeModule。
+
+GTypeXxx
+Xxx有：
+Class
+	成员就是一个GType（本质是u64）
+Instance
+	成员就是一个GTypeClass指针。
+	之所以是指针，是因为所有的实例，共用了一个Class结构体。
+Interface
+	2个成员。
+	都是GType类型。
+	1、g_type。
+	2、g_instance_type。
+	为什么要比Class的还要多一个成员呢？
+Query
+	用来保存一种类型对应的信息的。
+	4个成员。
+	1、GType type
+	2、char * type_name。
+	3、class大小。
+	4、instance大小。
+	
+Info
+	这个结构体成员较多。是创建类型时的重要结构体。
+	1、u16的class_size。这就决定了类的尺寸不能超过64K了。
+	2、base的init和finalize函数。
+		这2个函数的唯一参数都是klass。
+	3、class的init和finalize函数。
+		这2个函数的参数2个：klass和class_data。
+	4、instance相关的3个成员。
+		instance_size。也是u16的。
+		预分配个数。
+		instance的init函数。
+	5、GTypeValueTable指针。
+		这个很多时候，都是NULL。
+		g_boxed_type_register_static
+			这里面用到了，不是空的。
+		_g_enum_types_init
+			不是空的。
+	可以通过搜索GTypeInfo来看系统里定义了哪些类型。
+	看看这些类型。
+	
+GTypeValueTable
+	这个的作用是什么？
+	提供GValue实现需要的函数。
+	这样GValue就可以存放类型的值了。
+	
+	有这些成员：
+	1、value的init、free、copy这3个函数。
+		init：
+			分配的时候，会把对应的空间清零。
+			
+gboxed类型
+一种机制，用来保证C结构体，这些结构体是通过类型系统注册到glib的。
+类型系统只需要知道怎样去copy和free这些结构体。
+基于这个，只需要把结构体当成内存块来处理就好了。
+适合对Point这些简单结构体进行定义。
+
+GApplication
+	这个是一个应用的基础类。
+	是GtkApplication的基础。
+	你不应该直接使用GApplication类。
+	通过引用计数来实现生命周期管理。
+```
+
+
+
 # 参考资料
 
 1、浅析GLib
@@ -892,3 +972,7 @@ https://www.cnblogs.com/super119/archive/2011/01/03/1924442.html
 20、
 
 https://blog.csdn.net/fanzirong_/article/details/83069062
+
+21、GObject 参考手册：概念：GLib 动态类型系统
+
+https://hev.cc/445.html

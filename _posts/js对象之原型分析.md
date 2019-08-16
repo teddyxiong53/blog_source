@@ -56,6 +56,15 @@ var dog2 = new Dog("dog2", "white");
 
 其实是可以抽取出来的。如果不抽取出来，这样对象就要多占用一部分内存。
 
+```
+2019年8月13日16:36:09
+我最近学习了glib的GObject系统。
+这里面的对象系统，Class和Instance是分开定义的。
+Class就跟js里的原型是类似的，所有的Instance共用一个Class，这样就节省了空间了。
+```
+
+
+
 所以就引入了原型。
 
 原型叫prototype。

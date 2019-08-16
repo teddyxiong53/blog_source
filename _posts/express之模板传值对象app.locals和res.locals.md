@@ -16,6 +16,19 @@ app.locals.xx = "aa"
 
 这样在ejs模板里，只需要使用xx的变量名就可以了。写起来就比较简略。
 
+```
+n-blog里，ejs文件里用的user、success、error这3个变量，从哪里传递过来的？
+是在index.js里，有这样的代码：
+// 添加模板必需的三个变量
+app.use(function (req, res, next) {
+  res.locals.user = req.session.user
+  res.locals.success = req.flash('success').toString()
+  res.locals.error = req.flash('error').toString()
+  next()
+})
+这个相当于不管什么情况下都传递的。
+```
+
 
 
 参考资料

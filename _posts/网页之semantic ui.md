@@ -39,6 +39,31 @@ vscode里可以搜索semantic ui，可以找到相关的插件，提高开发效
 
 
 
+semantic ui是一套类似于bootstrap的ui框架。
+
+相比于bootstrap，semantic ui有这些优势：
+
+1、组件采用语义化的组织方式，容易理解和记忆。
+
+2、组件库非常丰富，几乎不需要引入第三方组件，这样就可以保证风格的统一。
+
+3、侵入性低。
+
+4、自定义容易。
+
+
+
+基本概念有：
+
+```
+1、container。
+2、grid。
+3、column。
+4、row。
+```
+
+
+
 # 安装
 
 ```
@@ -144,7 +169,17 @@ https://semantic-ui.com/examples/theming.html
 
 
 
+#原型设计
+
 可以用vscode里的semantic的插件来帮助编程。
+
+从这里下载sketch这个工具，这个工具可以画网页原型。但是这工具只有mac版本。
+
+http://bohemiancoding.com/sketch/
+
+从这里下载sketch需要的semantic ui的资源文件。
+
+https://github.com/guacamoly/semantic-ui-kit-for-sketch
 
 
 
@@ -165,3 +200,7 @@ http://hao.jobbole.com/semantic-ui/
 4、Semantic UI 怎么开始？
 
 https://www.zhihu.com/question/34698183
+
+5、理解 semantic-ui grid 的使用
+
+https://sanyuesha.com/2017/02/05/understand-semantic-ui-grid/

@@ -37,3 +37,7 @@ https://blog.csdn.net/bluebeach/article/details/5891035
 5、详细的arm移植过程
 
 https://www.cnblogs.com/dong1/p/8271385.html
+
+6、Linux下Bluez的编程实现
+
+https://blog.csdn.net/hktkfly6/article/details/75309780

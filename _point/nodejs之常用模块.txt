@@ -1,6 +1,11 @@
 看看有哪些第三方库常用。
 我根据自己在不同的项目里看到的，记录下来。
 
+我对各个模块的简单测试代码放在：
+https://github.com/teddyxiong53/nodejs_code/tree/master/module_study
+
+没事的时候，可以看到这里的模块。
+https://github.com/sindresorhus/awesome-nodejs
 mocha
 	测试框架。
 	同时支持异步和同步的测试。
@@ -44,3 +49,19 @@ morgan
 debug
 	打印调试信息的模块。
 	
+meow
+	写命令行工具需要的模块。
+	logo是一只猫。
+	挺好用的。
+	
+util
+	
+sleep
+	这个可以很方便地实现sleep功能。
+	var sleep = require("sleep")
+	sleep.sleep(1)
+	sleep.msleep(1)
+	sleep.usleep(1)
+	这个是靠c++实现的。
+	代码在这里：
+	https://github.com/erikdubbelboer/node-sleep/blob/master/index.js

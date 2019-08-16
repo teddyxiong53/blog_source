@@ -6,7 +6,7 @@ cmd有：
 		clone
 		init
 	2、在当前变更上工作
-		add
+		add：这个表示添加到暂存区。
 		mv 
 		reset：重置当前HEAD到指定状态。
 		rm
@@ -80,13 +80,13 @@ git log --stat
 查看某个文件的改动历史
 git log --pretty=oneline 1.txt
 然后可以看到一些版本代号值。
-git show xxx
+git show hashcode
 这样就可以看到这个文件的改动。
-
+git log -p filename  这个也可以查看文件的改动。
 
 =======回退到指定版本=================
 git reset --hard xxx 
-xxx 是git log看到的版本字符串。
+xxx 是git log看到的版本字符串。也可以是HEAD。
 
 ===========.gitignore相关问题==============
 有时候发现添加到.gitignore里面的文件还是无法被忽略，原因是因为之前已经被添加追踪了。
@@ -122,3 +122,10 @@ git archive --format=zip --output master.zip master
 本地有添加没有track的文件，确定丢弃。
 git clean -d -fx ""
 
+
+放弃本地的所有修改，并回退到指定版本。
+git reset --hard hashcode
+
+参考资料
+1、Git常用命令速查表
+https://juejin.im/entry/5b802f2f6fb9a019eb43bb42

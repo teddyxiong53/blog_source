@@ -98,6 +98,8 @@ sudo apt dist-upgrade
 
 不继续编译了。
 
+# gnome Bluetooth
+
 
 
 参考资料
