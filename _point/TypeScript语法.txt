@@ -1,0 +1,79 @@
+ts语法
+1、基础类型
+	boolean
+	number
+	string
+	[]
+	元组：
+		例如这样：
+		let x: [string, number]
+	enum
+		这个是比js多的类型。
+		enum Color {
+			Red = 1,
+			Green,
+			Blue
+		};
+		let c = Color.Red;
+	any
+	void
+	null
+	undefined
+	never
+		永远不存在的值的类型。
+		function error(message: string) : never {
+			throw new Error(message);
+		}
+		
+	类型断言
+		有两种写法：
+			都可以，没有什么区别。
+			1、尖括号。
+				let someValue: any = "hello world";
+				let strLength : number = (<string>someValue).length;
+			2、as。
+				(someValue as string).length;
+2、变量声明。
+	var方式的问题。
+		它声明的变量是函数作用域，而不是块作用域。
+		这个对于同名循环变量会引发问题。
+		所以用let来替代。尤其是局部变量。
+3、接口
+	TypeScript的核心理念就是对类型进行检查。
+	可选属性：
+		在属性名字后面紧跟一个问号。
+	只读属性：
+		在属性名字前面加一个readonly。
+	readonly和const的区别：
+		readonly修饰属性，const修饰变量。
+4、类
+	js里是基于原型的继承，对于习惯了java等语言的类继承方式的程序员来说，
+	使用上有些不方便。
+	所以现在js也慢慢引入了类继承类似的语法糖。
+	TypeScript强制要求，在constructor函数里，一定要调用super()。
+	关于权限：
+		默认都是public的。
+	ts用的是结构性类型系统。
+	存取器。
+	静态属性。
+5、函数
+	
+6、泛型
+	
+7、枚举
+8、类型推论
+9、类型兼容性
+10、高级类型。
+	交叉类型
+	联合类型。
+11、symbols
+	从ES6开始，引入了symbol类型，成为js的原生类型之一。
+12、迭代器和生成器
+13、模块
+	导出export
+	导入import
+14、命名空间
+15、命名空间和模块
+16、模块解析
+17、声明合并
+18、书写.d.ts文件。

@@ -323,3 +323,6 @@ https://blog.csdn.net/chaoyangsun/article/details/80295604
 
 https://www.w3cschool.cn/typescript/
 
+5、官方手册。
+
+https://typescript.bootcss.com/variable-declarations.html
