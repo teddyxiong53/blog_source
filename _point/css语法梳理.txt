@@ -160,6 +160,33 @@ vw
 	高度是100vh。
 	其实就相当于百分比。
 	
+伪类
+	用一个冒号。
+	a:hover
+伪元素
+	用两个冒号。
+	这个是css开始要求的。也可以用一个冒号。
+	::before == :before
+	
+vendor-prefix
+-webkit
+-moz
+-ms
+-o: opera
+用来处理新特性的。
+在这个新特性被所有浏览器支持之前。
+带来的好处就是chrome浏览器可以快速推进，不用等其他的浏览器跟上来。
+
+最佳实践是：
+先写带vendor-prefix的，然后写不带prefix的。
+这样就可以在标准实现后，对各个vendor的进行覆盖。
+.p {
+	-webkit-border-radius: 2em;
+	-moz-border-radius: 2em;
+	-ms-border-radius: 2em;
+	border-radius: 2em;
+}
+
 参考资料
 1、
 https://www.w3cschool.cn/cssref/3ps212do.html

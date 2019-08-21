@@ -246,6 +246,17 @@ html5不再支持的，就不再列出来了。
 	object。
 	param。
 	
-	
+12、其他
+	template
+		这个标签里的html元素，不会被直接渲染，需要借助js代码才能被渲染出来。
+		
+		
+		
+html div和section的区别？
+
+window和document是什么关系？
+window是BOM对象。
+document是DOM对象。
+
 参考资料
 https://www.w3cschool.cn/htmltags/ref-byfunc.html

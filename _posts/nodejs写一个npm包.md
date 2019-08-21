@@ -49,3 +49,7 @@ exports.showMsg = function() {
 1、手把手教你创建你的第一个 NPM 包
 
 https://juejin.im/post/5971aa866fb9a06bb5406c94
+
+2.、
+
+https://docs.npmjs.com/files/package.json

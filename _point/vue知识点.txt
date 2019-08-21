@@ -10,8 +10,12 @@ Vue对象的属性
 指令
 	指令都是v-开头的。表示vue提供的东西。
 	v-bind
+		举例：
+		v-bind:title="message" //message是Vue对象里的data里的属性名字。
 	v-if
+		v-if="seen" //seen是一个boolean类型的。
 	v-for
+		
 	v-on:click
 	v-model：输入和状态的双向绑定。
 		就是输入框里的内容和框外面的文本同步变化。
@@ -46,9 +50,130 @@ v-on
 		props: ['todo']
 		template: '<li>{{todo.text}}</li>'
 	})
+	所谓组件，可以理解为自定义的html标签。
+	我们就可以在html里，写<todo-item>这种自定义标签了。
 	
 模板语法
 	vue使用了基于html的模板语法。
 	插值
+		文本
+			就是双大括号语法。
+		原始html
+			因为双大括号里的内容不会被html语法解析。
+			这时候你需要使用v-html指令。
+			<p v-html="rawHtml"></p> //rawHtml是一些html代码的名字。
+			注意要只对自己可以控制的内容进行html渲染。
+			不要对用户提供的内容进行插值操作，很危险。
+	指令
+		指令是v-前缀的特殊特性。
+		指令的值，预期是单个js表达式的，v-for是个例外。
+		1、参数：
+			有些指令可以接收一个参数。用冒号连接。
+			v-bind:href="url"这样。
+			v-on:click="doXxx"
+		2、动态参数
+		3、缩写
+			v-前缀，是一种视觉提示，但是对于一些频繁使用的指令，写这些比较麻烦。
+			所以你可以选择缩写的方式。
+			对于最常用的v-bind和v-on，专门提供了缩写。
+			v-bind完整写法：<a v-bind:href="url">
+			v-bind缩写写法：<a :href="url">
+			v-on完整写法：<a v-on:click="doXxx">
+			v-on缩写写法：<a @click="doXxx">
+			
+计算属性和侦听器
+	所谓计算属性，就是在Vue的选项参数里的computed属性。是一个对象。
+	这个完全可以用methods属性里的一个函数来替代。
+	但是计算属性的好处是，可以利用缓存，在没有变化的时候，直接返回，
+	而不用执行函数内容。
+	而如果你不希望缓存，那就不要用计算属性。
 	
+	尽管计算属性很好用，有时候也需要使用侦听器watch。
+	对应的场景是：
+	需要在数据变化时执行异步操作，或者操作非常耗时的时候。
 	
+Class与Style绑定
+	
+调节渲染
+列表渲染
+表单输入绑定
+	v-model
+		例如对于一个input，总是忽略input自己的value，而把v-model绑定的值作为value的
+		唯一来源。
+		
+
+
+v-text和v-model区别？
+v-text可以写成{{}}
+v-model和v-text的区别在于：
+v-model可以实现表单组件的双向绑定。
+所以一般只用在表单组件上。
+
+v-for循环的key属性
+这个是需要的，方便vue进行处理。
+key是字符串或者数字。
+
+# 自定义指令是做什么用途？
+实现一些特殊功能。
+vue的标准指令，只是覆盖大部分情况。
+
+
+# v-cloak是做什么的？
+是为了隐藏那些还没有准备就绪的{{}}内容。
+需要在css里加一条：
+[v-cloak] {
+  display: none;
+}
+这样就可以。
+https://segmentfault.com/a/1190000008819667
+
+slot是什么？
+插槽，是组件的一块html模板。
+这个模板是否显示，以及怎样显示，是由父组件来决定的。
+
+因为插槽一种模板。
+所以模板就可以分为2种：
+	1、插槽模板。
+		slot。它是一个空壳子。
+		slot写在组件template的什么位置，父组件传递过来的模板就显示在什么位置。
+	2、非插槽模板。
+		div、span这些。
+这篇文档关于slot写得比较好。
+https://juejin.im/post/5a69ece0f265da3e5a5777ed
+
+vue的template
+https://www.w3cplus.com/vue/seven-ways-to-define-a-component-template-by-vuejs.html
+
+
+
+vue的路由
+1、最原始的方式。
+2、使用page.js。
+3、使用vue-router。
+
+组件
+	父组件向子组件传递数据：靠props属性。
+	子组件向父组件传递数据：靠vue的自定义事件系统。
+		就是emit和on，emit进行发送，on进行监听。
+https://juejin.im/post/5a3344216fb9a0450f21fba4
+
+vuex状态管理具体是指什么？
+使用vue的时候，需要在各个组件之间传递参数。
+在需要传递的数据很多而且很频繁的时候，这样就不太好。
+vuex相当于一个系统总线。各个组件之间不直接进行通信，而是通过vuex进行通信。
+
+vue的render函数分析
+https://segmentfault.com/a/1190000010913794
+
+
+vue的插件怎么使用？
+Vue.use(xx)
+插件用来给vue添加全局功能。
+插件的一般作用有：
+1、添加全局属性或者方法。
+2、添加全局资源。
+3、通过全局混入来添加一些组件选项。例如vue-router。
+4、添加vue实例方法。通过把他们添加到Vue.prototype上来实现。
+5、一个库，提供自己的api。同时提供上面提到的功能。例如vue-router。
+
+

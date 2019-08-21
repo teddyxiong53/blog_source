@@ -79,3 +79,7 @@ https://blog.fundebug.com/2017/05/24/arrow-function-for-beginner/
 2、
 
 https://juejin.im/post/5aa1eb056fb9a028b77a66fd
+
+3、ES6专题—箭头函数（5）
+
+https://zhuanlan.zhihu.com/p/59376805

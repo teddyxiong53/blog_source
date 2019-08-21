@@ -27,3 +27,10 @@ vue-cli工具使用
 	https://juejin.im/post/5a7c18d36fb9a0633e51c458
 ```
 
+
+
+```
+1、看vue官网所有资料。
+2、看官网这里。重点看todomvc。
+```
+
