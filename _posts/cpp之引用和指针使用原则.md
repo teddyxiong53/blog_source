@@ -8,11 +8,17 @@ tags:
 
 
 
-为什么要使用引用？
+# 为什么要使用引用？
 
 1、可以修改对象的成员。
 
 2、传递引用比传递整个对象的效率高。可以避免不必要的构造和析构。
+
+
+
+在C语言里，使用指针传递参数，因为指针比传递值的效率高，而且可以修改参数的值。
+
+c++再引入引用类型，主要是为了更加直观地进行使用。本质还是指针。
 
 
 
@@ -150,3 +156,7 @@ https://www.zhihu.com/question/28023545
 7、Effective Modern C++ 条款28 理解引用折叠
 
 https://blog.csdn.net/big_yellow_duck/article/details/52433305
+
+8、C++中函数返回引用
+
+https://blog.csdn.net/tlxxm/article/details/8860760
