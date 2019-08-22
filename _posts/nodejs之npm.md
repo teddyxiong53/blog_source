@@ -108,6 +108,14 @@ npm config list --json
 
 
 
+# 问题解决
+
+在做测试的时候，我建立了一个eslint的目录，然后在这个目录下执行npm install eslint --save-dev。结果报错了。
+
+原因是我的目录不能叫eslint。改成eslint-test就正常了。
+
+
+
 #参考资料
 
 1、NPM 使用介绍

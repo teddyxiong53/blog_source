@@ -54,6 +54,24 @@ config
 
 
 
+# index
+
+
+
+#模糊匹配
+
+```
+$in
+	在某个范围内。
+$nin
+	不在某个范围内。
+$or
+$not
+
+```
+
+
+
 参考资料
 
 1、什么是MongoDB ?
@@ -63,3 +81,11 @@ http://www.runoob.com/mongodb/mongodb-intro.html
 2、
 
 https://www.cnblogs.com/caihuafeng/p/5494336.html
+
+3、MongoDB索引原理
+
+http://www.mongoing.com/archives/2797
+
+4、mongo-查询（2）——比较/$in/$nin/$or/$not
+
+https://www.cnblogs.com/yuechaotian/archive/2013/02/04/2891506.html

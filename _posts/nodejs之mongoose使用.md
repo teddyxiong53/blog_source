@@ -285,6 +285,45 @@ var userSchema = new Schema({
 
 
 
+# virtual属性
+
+virtual属性就是不会被持久化到数据库里的属性。
+
+是为了应对这种场景，有些属性需要拼接起来用。但是每次用的时候都拼接一下非常麻烦。
+
+例如下面的fullName。
+
+```
+var mongoose = require("mongoose")
+var Schema = mongoose.Schema
+
+var personSchema = new Schema({
+    name: {
+        first: String,
+        last: String
+    }
+})
+var Person = mongoose.model('Person', personSchema)
+var allen = new Person({
+    name: {
+        first: "Ray",
+        last: "Allen"
+    }
+})
+
+personSchema.virtual("fullName").get(function() {
+    return this.name.first + ' ' + this.name.last;
+})
+```
+
+# index
+
+这个是建立索引，提高查询的速度。
+
+可以对多个字段建立索引。
+
+
+
 参考资料
 
 1、官网教程
@@ -302,3 +341,7 @@ https://juejin.im/entry/5a0596c5f265da43163c89e4
 4、使用express+mongoose对mongodb实现增删改查操作
 
 https://segmentfault.com/a/1190000004873740
+
+5、
+
+https://mongoosejs.com/docs/guide.html#virtuals

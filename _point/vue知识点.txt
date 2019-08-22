@@ -176,4 +176,9 @@ Vue.use(xx)
 4、添加vue实例方法。通过把他们添加到Vue.prototype上来实现。
 5、一个库，提供自己的api。同时提供上面提到的功能。例如vue-router。
 
+vue里面的挂载是什么意思？
+将组件渲染，并且构造 DOM 元素然后塞入页面的过程称为组件的挂载
 
+vue的use函数作用？
+安装 Vue.js 插件。如果插件是一个对象，必须提供 install 方法。
+如果插件是一个函数，它会被作为 install 方法。install 方法调用时，会将 Vue 作为参数传入。
