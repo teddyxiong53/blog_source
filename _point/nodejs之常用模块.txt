@@ -6,6 +6,12 @@ https://github.com/teddyxiong53/nodejs_code/tree/master/module_study
 
 没事的时候，可以看到这里的模块。
 https://github.com/sindresorhus/awesome-nodejs
+
+nodejs模块划分有的真的太细了。
+例如bytes这个模块，唯一的功能就是把一个数字（表示容量）转成字符串（多少kb、mb之类）。
+或者反过来转化。把一个表示容量的字符串，转成一个数字。
+
+
 mocha
 	测试框架。
 	同时支持异步和同步的测试。
@@ -139,4 +145,23 @@ eventproxy
 	应该是跟promise是一类东西。可以学习一下。
 	解决callback嵌套的问题。
 	把串行等待变成并行等待。
+	
+helmet
+	字面含义是头盔，作用是包含你的网站，通过设置一下http header信息。
+	代码就一个index.js文件。不过集成了一些其他的功能。
+	
+	frameguard
+		这个是起什么作用？
+		防止点击劫持。所谓点击劫持，是指网站或者邮件里的按钮，实际上指向了其他网站的行为。
+		
+loader
+	这个是在html里导入css和js文件的。
+	跟直接引用，有什么特别的好处？
+		对于dev和prod环境，可以生成不同的路径，例如prod的，可以生成cdn路径。
+		主要就是这个用途的。
+	用法：
+		需要在express的应用代码里，把Loader放进到app.locals里。
+		html里，直接使用传递过来的Loader。
+busboy
+	这个是解析form数据的。
 	

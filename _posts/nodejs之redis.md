@@ -7,7 +7,13 @@ tags:
 
 1
 
+redis是什么？主要用来解决什么问题？
+
+
+
 使用ioredis这个模块。
+
+#基本用法
 
 set和get。
 
@@ -36,3 +42,4 @@ redis.get("foo").then(function(result) {
 1、
 
 https://www.npmjs.com/package/ioredis
+

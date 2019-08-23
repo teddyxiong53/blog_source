@@ -107,9 +107,69 @@ bind这些函数，本质都是addListener。
 
 
 
+```
+(function() {
+    var count = 0;
+    var result = {};
+    setTimeout(function() {
+        count++;
+        result.a = 1;
+        handle();
+    }, 3000)
+    setTimeout(function() {
+        count++;
+        result.b = 1;
+        handle();
+    }, 2000)
+    setTimeout(function() {
+        count++;
+        result.c = 1;
+        handle();
+    }, 1000)
+    function handle() {
+        if(count == 3) {
+            console.log(result)
+        }
+    }
+})();
+```
+
+这个代码用eventproxy改造是这样：
+
+```
+var eventproxy = require('eventproxy')
+var ep = new eventproxy()
+
+ep.all("event1", "event2", "event3", function(data1, data2, data3) {
+    console.log(data1, data2, data3)
+})
+setTimeout(function() {
+    console.log("emit event1")
+    ep.emit("event1", "111")
+}, 3000)
+setTimeout(function() {
+    console.log("emit event2")
+    ep.emit("event2", "222")
+}, 2000)
+setTimeout(function() {
+    console.log("emit event3")
+    ep.emit("event3", "333")
+}, 1000)
+```
+
+结果是这样：
+
+```
+emit event3
+emit event2
+emit event1
+111 222 333
+```
+
 
 
 参考资料
 
-1、
+1、使用 eventproxy 控制并发
 
+http://wiki.jikexueyuan.com/project/node-lessons/eventproxy.html

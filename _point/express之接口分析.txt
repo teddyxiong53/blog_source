@@ -186,3 +186,23 @@ res对象
 	router.route
 	router.use
 	
+	
+send、end、json这些reponse方法有什么区别？
+1、send函数。这是最基础的。
+	参数是body。body可以是Buffer类型、string类型、对象类型、数组类型。
+	它会根据body的类型，自动设置content-type类型。
+	如果是Buffer类型，就设置application/octec-stream。
+	不过，我们可以手动给response指定content-type。
+	res.set("content-type", "text/html")
+	我们可以直接send里传递一个对象，这样会被解析成json的。
+	res.send({name:"xhl"})
+2、json函数。
+	这个是用来处理send函数解决不了的特殊情况的。
+	参数可以是null、数字、对象、数组、字符串。
+	res.json(null)
+	res.json({name:"xhl"})
+3、end函数。
+	一般在404的时候用。
+	res.status(404).end();
+	如果用end函数来返回数据，是非常影响性能的。
+	
