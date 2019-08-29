@@ -206,3 +206,11 @@ send、end、json这些reponse方法有什么区别？
 	res.status(404).end();
 	如果用end函数来返回数据，是非常影响性能的。
 	
+url里的冒号
+	/:id
+	你传递/1
+	然后，你可以在代码里：req.params.id 这样来使用这个值。
+	
+express里如何进行异步操作？
+	express用同步可以解决大部分问题。
+	

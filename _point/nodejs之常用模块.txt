@@ -165,3 +165,27 @@ loader
 busboy
 	这个是解析form数据的。
 	
+validator
+	字符串的校验处理相关。
+	
+	
+url
+	var url = require("url")
+	var result = url.parse("http://user:password@host.com:8080/p/a/t/h/?query=string#hash")
+	console.log(result)
+	console.log(url.format(result)) //这个是把一个Url对象转成一个字符串。
+	输出：
+	Url {
+  protocol: 'http:',
+  slashes: true,
+  auth: 'user:password',
+  host: 'host.com:8080',
+  port: '8080',
+  hostname: 'host.com',
+  hash: '#hash',
+  search: '?query=string',
+  query: 'query=string',
+  pathname: '/p/a/t/h/',
+  path: '/p/a/t/h/?query=string',
+  href: //href是全部转成小写。
+   'http://user:password@host.com:8080/p/a/t/h/?query=string#hash' }

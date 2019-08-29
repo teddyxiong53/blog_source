@@ -218,6 +218,12 @@ MP3转pcm
 ffmpeg -i input.mp3 -acodec pcm_s16le -f s16le -ac 1 -ar 16000 output.pcm
 ```
 
+调节音量
+
+```
+ffmpeg -i input.mp3 -af volume=-3dB output.mp3
+```
+
 
 
 # 图片处理

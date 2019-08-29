@@ -69,6 +69,39 @@ app.listen(3000, function() {
 
 
 
+# local授权
+
+代码在这里。
+
+https://github.com/mjhea0/passport-local-express4
+
+运行：
+
+```
+npm install
+PORT=4000 ./bin/www
+```
+
+然后可以测试注册和登陆行为。
+
+关键在：
+
+```
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
+
+const passportLocalMongoose = require('passport-local-mongoose');
+这个是存放密码和用户名到数据库。
+
+var Account = require('./models/account');
+passport.use(new LocalStrategy(Account.authenticate()));
+passport.serializeUser(Account.serializeUser());
+passport.deserializeUser(Account.deserializeUser());
+
+```
+
+
+
 参考资料
 
 1、番外篇之——使用 Passport

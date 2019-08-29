@@ -92,6 +92,13 @@ teddy@teddy-ubuntu:~/work/test/flask$ flask run --host=0.0.0.0
 192.168.190.1 - - [20/Jun/2018 22:48:51] "GET / HTTP/1.1" 200 -
 ```
 
+打开调试
+
+```
+export FLASK_ENV=development
+flask run
+```
+
 
 
 # routing

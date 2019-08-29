@@ -73,6 +73,36 @@ cnode论坛的作者，用了不少自己写的模块。可以学习一下。
 
 
 
+还是以写代读。
+
+新建mynodeclub目录。然后node init -y
+
+新建app.js。
+
+第一个依赖的就是config.js。所以新建config.js。
+
+```
+config.js整个就是export了一个config对象。
+var config = {
+
+}
+module.exports = config
+```
+
+安装依赖：
+
+```
+npm install --save color loader  loader-connect express express-session passport passport-github connect-redis lodash csurf compression body-parser connect-busboy errorhandler cors helmet bytes
+```
+
+把这些都做到Makefile里。
+
+然后是写web_router.js。在根目录下。
+
+
+
+
+
 参考资料
 
 1、
