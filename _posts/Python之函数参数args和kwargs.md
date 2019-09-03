@@ -39,3 +39,20 @@ C:\Python27\python.exe D:/work/pycharm/py_test/test.py
 
 `**kwargs`表示把多余的参数当成字典往下传。
 
+```
+def func(x, *args, **kwargs):
+    print x
+    print args
+    print kwargs
+
+func(1, 2, 3, d=1,e=2)
+```
+
+输出：
+
+```
+1
+(2, 3)
+{'e': 2, 'd': 1}
+```
+

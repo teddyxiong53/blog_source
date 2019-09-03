@@ -130,7 +130,22 @@ Python3里，只留下了`!=`。
 
 2、新增了bytes类型。注意是bytes。复数。
 
+在python2里，bytes类型跟str类型是等价的。
 
+```
+In [78]: bytes == str
+Out[78]: True
+```
+
+在python3里面是不同的。
+
+```
+>>> bytes == str
+False
+```
+
+Python 2 将 strings 处理为原生的 bytes 类型，而不是 unicode， 
+Python 3 所有的 strings 均是 unicode 类型。
 
 # 参考资料
 

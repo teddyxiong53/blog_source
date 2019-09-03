@@ -35,3 +35,17 @@ https://github.com/search?q=cheatsheet+python
 
 进阶书籍
 
+
+
+
+
+
+
+学习记录
+
+```
+werkzeug值得读
+	_compat.py，这个对python2和python3的兼容处理值得看。
+	
+```
+

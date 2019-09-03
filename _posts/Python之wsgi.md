@@ -89,6 +89,104 @@ wsgi就是定义web容器和app的通信规则的。
 
 
 
+werkzeug包括：
+
+```
+1、一个交互debugger。可以在浏览器里进行代码跟踪。
+2、一个功能完整的request对象。
+3、一个response对象。
+4、一个路由系统。
+5、http util函数，
+6、一个wsgi server。
+7、一个test client。
+默认支持Unicode。
+
+```
+
+
+
+官网教程，是实现一个类似tinyurl功能的网站。
+
+安装依赖
+
+```
+pip install Jinja2 redis
+```
+
+新建目录结构如下：
+
+```
+.
+├── shortly.py
+├── static
+└── templates
+```
+
+
+
+shortly.py内容：
+
+```
+import os
+import redis
+import urlparse
+from werkzeug.wrappers import Request, Response
+from werkzeug.routing import Map, Rule
+from werkzeug.exceptions import HTTPException, NotFound
+from werkzeug.wsgi import SharedDataMiddleware
+from werkzeug.utils import redirect
+from jinja2 import Environment, FileSystemLoader
+
+
+class Shortly(object):
+
+    def __init__(self, config):
+        self.redis = redis.Redis(
+            config['redis_host'], config['redis_port'])
+
+    def dispatch_request(self, request):
+        return Response('Hello wsgi!')
+
+    def wsgi_app(self, environ, start_response):
+        request = Request(environ)
+        response = self.dispatch_request(request)
+        return response(environ, start_response)
+
+    def __call__(self, environ, start_response):
+        return self. wsgi_app(environ, start_response)
+
+
+def create_app(redis_host='localhost', redis_port=6379, with_static=True):
+    app = Shortly({
+        'redis_host':       redis_host,
+        'redis_port':       redis_port
+    })
+    if with_static:
+        app.wsgi_app = SharedDataMiddleware(app.wsgi_app, {
+            '/static':  os.path.join(os.path.dirname(__file__), 'static')
+        })
+    return app
+if __name__ == '__main__':
+    from werkzeug.serving import run_simple
+    app = create_app()
+    run_simple('192.168.56.101', 5000, app, use_debugger=True, use_reloader=True)
+
+```
+
+我们直接运行python shortly.py，就可以进行访问了。
+
+
+
+官方代码在这里。这里面有例子。
+
+https://github.com/pallets/werkzeug
+
+
+
+werkzeug代码分析
+
+
+
 # 参考资料
 
 1、WSGI接口
@@ -98,3 +196,11 @@ https://www.liaoxuefeng.com/wiki/001374738125095c955c1e6d8bb493182103fac9270762a
 2、Flask的核心机制！关于请求处理流程和上下文
 
 https://www.jianshu.com/p/2a2407f66438
+
+3、werkzeug官网
+
+https://palletsprojects.com/p/werkzeug/
+
+4、Werkzeug 文档
+
+https://werkzeug-docs-cn.readthedocs.io/zh_CN/latest/

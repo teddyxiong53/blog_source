@@ -134,3 +134,24 @@ cdn一套组合技术。包括：
 
 
 
+cdn还依赖与dns解析。如果你直接通过ip地址来访问，cdn就不起作用了。
+
+
+
+参考资料
+
+1、《CDN 之我见》原理篇——CDN的由来与调度
+
+这个是一个系列文章。
+
+https://linux.cn/thread-17631-1-1.html
+
+2、为什么域名能够访问网站，而直接使用IP不可以
+
+这篇文章很好。
+
+https://blog.csdn.net/gui951753/article/details/83070180
+
+3、CDN使用了哪些DNS技术？
+
+https://www.zhihu.com/question/28884646

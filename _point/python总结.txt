@@ -1,0 +1,165 @@
+我还是把python2.7的看明白先。
+
+
+_是上一次的结果，类似与bash的$? 
+在作为计算器使用的时候，比较方便。
+
+3*"abc"
+多行会被自动连接起来。
+a = ('aaa'
+	'bbb')
+	这个比较实用。
+	
+为什么索引倒着来的时候，是从-1开始呢？
+因为-0就是0啊。
+
+python里字符串是常量，不能修改。
+例如s = "aaa"
+s[0] = 'b'
+这种操作就是不允许的。
+
+unicode
+从python2.0开始，引入了Unicode这种object类型。
+跟已有的string类型可以很好配合，会在需要的时候自动进行转换。
+str也是对象类型的。str->basestring->object
+In [6]: s = u'aaa'
+
+In [7]: type(s)
+Out[7]: unicode
+
+In [8]: s1 = 'bbb'
+
+In [10]: type(s1)
+Out[10]: str
+
+
+In [12]: u1 = unicode("aa")
+
+In [13]: u1
+Out[13]: u'aa'
+
+
+把list当stack用。
+append和pop
+把list当queue用。
+append和popleft
+
+
+os.open和open的区别。
+open返回的是一个file对象。这个更加方便。
+	f.fileno()得到的就是fd。
+os.open返回的是一个fd。
+
+Python自悟：Python中的Dict and Set
+https://www.jianshu.com/p/6439954d2417
+
+class Collection(Sized, Iterable, Container):
+	这个继承了3个父类。其实就是3个接口。
+	Sized，必须实现抽象方法__len__
+	Iterable，必须实现__iter__
+	Container，必须实现__contains__
+	
+	
+defaultdict
+	需要传递一个类型作为参数，用来构造一个默认值。
+	可以这样：
+	defaultdict(lambda: 1)
+	defaultdict(list)
+	
+	
+import string
+这个string模块比较老了。建议不要再用。
+
+maketrans(...)
+        maketrans(frm, to) -> string
+        
+        Return a translation table (a string of 256 bytes long)
+        suitable for use in string.translate.  The strings frm and to
+        must be of the same length.
+table = maketrans(b'', b'')
+	这样得到的table的内容是整个ASCII码表的内容。
+	
+	
+functools模块的作用是什么？
+应用于高阶函数，就是函数的函数。
+参数和返回值是函数。
+
+list.sort函数是直接修改原始列表。
+sorted这个内置函数，是返回一个新的列表，原始列表不变。
+所以一般使用sorted这个内置函数，更好些。
+如下：
+
+In [78]: a = [1,3,2]
+
+In [79]: sorted(a)
+Out[79]: [1, 2, 3]
+
+In [80]: a
+Out[80]: [1, 3, 2]
+In [82]: a.sort()
+
+In [83]: a
+Out[83]: [1, 2, 3]
+
+比较和排序函数，一般有一个key函数。key函数的作用是在比较之前，先对每个元素执行的一个函数。
+例如先把所有元素转成小写的。
+
+In [85]: sorted("I am very GOOD".split(), key=str.lower)
+Out[85]: ['am', 'GOOD', 'I', 'very']
+
+不过key函数更加主要的用途是，从对象里选取索引来做排序。
+student_tuples = [
+    ('allen', 'a', 10),
+    ('bob', 'b', 9),
+    ('carol', 'c', 11)
+]
+print sorted(student_tuples, key=lambda student:student[2])
+
+对于key函数的功能，python还提供了operator模块。来让我们使用更加方便。
+常用的有3个函数itemgetter, attrgetter，methodcaller。
+print sorted(student_tuples, key=operator.itemgetter(2))
+还可以按多个属性依次排序。
+print sorted(student_tuples, key=operator.itemgetter(1,2))
+
+升序和降序
+sorted和list.sort函数默认是升序的，如果要降序，
+把reverse参数赋值为True就好了。
+
+排序的稳定性
+稳定性的一个很有用的特性。它可以保持当前的顺序。
+在多次排序的时候，很有用。
+多个记录有相同的键值的时候，保留当前的原始顺序。
+
+python里使用的排序算法是timsort算法。
+
+__slot__的用法。
+
+jinja2的主要对外内容是：
+Environment和FileSystemLoader这2个类。
+
+在python3里，True和False的大小不一样。
+In [6]: True.__sizeof__() 
+Out[6]: 28
+
+In [7]: False.__sizeof__()
+Out[7]: 24
+在python2里，是一样的。
+In [120]: True.__sizeof__()
+Out[120]: 24
+
+In [121]: False.__sizeof__()
+Out[121]: 24
+bool类型是int的子类。
+可以help(bool)看出来。
+也可以issubclass(bool, int)
+
+>>> import sys
+>>> sys.getsizeof(1L)
+28
+>>> sys.getsizeof(0L)
+24
+
+class A(object) 和class A()
+这2个的表现不一样。
+前者不会调用到__init__，后面不会调用到__new__。
+但是在python3里，这2个没有区别，会默认强制继承object。

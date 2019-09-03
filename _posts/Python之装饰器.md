@@ -178,3 +178,79 @@ def add(a, b):
 	#xxxxx
 ```
 
+
+
+装饰器有4种情况：
+
+```
+主体有2个：函数和类。
+组合起来就是4种情况。
+函数装饰函数。
+函数装饰类。
+类装饰函数。
+类装饰类。
+```
+
+
+
+函数装饰函数
+
+```
+def myWrapper(func):
+    def inner(a,b):
+        print "xhl func wrapper func"
+        r = func(a,b)
+        return r
+    return inner
+
+@myWrapper
+def myadd(a, b):
+    return a+b
+print myadd(1,2)
+```
+
+函数装饰类
+
+相当于在构造函数之前执行。
+
+```
+def myWrapper(cls):
+    def inner(a):
+        print 'class name:', cls.__name__
+        return cls(a)
+    return inner
+
+@myWrapper
+class Foo():
+    def __init__(self, a):
+        self.a = a
+    def func(self):
+        print "self.a=", self.a
+
+f = Foo('xhl')
+f.func()
+```
+
+类装饰函数。
+
+```
+class ShowFuncName():
+    def __init__(self, func):
+        self._func = func
+    def __call__(self, a):
+        print "func name:", self._func.__name__
+        return self._func(a)
+
+@ShowFuncName
+def bar(a):
+    return a
+print bar('xhl')
+```
+
+
+
+参考资料
+
+1、python装饰器的4种类型：函数装饰函数、函数装饰类、类装饰函数、类装饰类
+
+https://blog.csdn.net/xiemanR/article/details/72510885

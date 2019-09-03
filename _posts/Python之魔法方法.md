@@ -262,3 +262,7 @@ class MyClass2(__builtin__.object)
 1、
 
 https://pyzh.readthedocs.io/en/latest/python-magic-methods-guide.html
+
+2、Python 魔术方法指南
+
+https://pycoders-weekly-chinese.readthedocs.io/en/latest/issue6/a-guide-to-pythons-magic-methods.html
