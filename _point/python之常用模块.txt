@@ -1,0 +1,32 @@
+contextlib
+
+fire
+	这个是谷歌出品的。
+	为python object自动生成命令行接口。
+	
+uuid
+	
+		
+	getnode()
+		得到的每个机器唯一的一个值。
+		
+pkgutil
+	find_loader
+	walk_packages
+		遍历一个目录下的python模块。
+		参数：参数可以都不填。
+			3个。
+			参数1：
+				path。路径。默认为None。是一个路径list。
+			参数2：
+				prefix。默认为空。
+			参数3：
+				onerror。错误回调。
+		返回值：
+			yield 一个元组
+				(module_loader, name, ispkg)
+				
+				
+watchdog.observers
+	这个是监视文件系统变化的。
+	

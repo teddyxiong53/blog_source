@@ -54,3 +54,35 @@ Sun, 23 Jul 2017 00:21:26 test.py [line:10] INFO this is info
 Sun, 23 Jul 2017 00:21:26 test.py [line:11] WARNING this is warning
 ```
 
+
+
+# 问题
+
+我这样用：
+
+```
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.debug("xx")
+```
+
+会提示：
+
+```
+No handlers could be found for logger 
+```
+
+需要在getLogger之前，先加上这一句：
+
+```
+logging.basicConfig()
+```
+
+
+
+参考资料
+
+1、No handlers could be found for logger
+
+https://stackoverflow.com/questions/44188270/no-handlers-could-be-found-for-logger

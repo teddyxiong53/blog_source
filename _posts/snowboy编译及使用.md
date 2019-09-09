@@ -33,3 +33,4 @@ https://snowboy.kitt.ai/dashboard
 1、树莓派上搭建唤醒词检测引擎 Snowboy
 
 https://www.cnblogs.com/rnckty/p/8067115.html
+

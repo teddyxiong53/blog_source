@@ -126,6 +126,11 @@ git clean -d -fx ""
 放弃本地的所有修改，并回退到指定版本。
 git reset --hard hashcode
 
+
+阅读代码时，怎么在版本的提交之间穿梭呢？
+就用git reset --hard xxx
+然后要配合git reflog来随时回到最新版本。
+
 参考资料
 1、Git常用命令速查表
 https://juejin.im/entry/5b802f2f6fb9a019eb43bb42

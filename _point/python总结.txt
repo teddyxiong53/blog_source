@@ -163,3 +163,65 @@ class A(object) 和class A()
 这2个的表现不一样。
 前者不会调用到__init__，后面不会调用到__new__。
 但是在python3里，这2个没有区别，会默认强制继承object。
+
+Python的三大器：迭代器、生成器、装饰器
+
+subprocess.call(["ls", "-l"], stdout=f, stderr=f)
+应该是起到一个类似C语言的system函数的作用。
+output = subprocess.check_output(['git', 'rev-parse', 'HEAD'])
+这个可以取得命令的输出。
+
+调试时的日志配置。
+logging.basicConfig(format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s', level=logging.DEBUG)
+
+正式的日志配置：
+logging.basicConfig(filename="./1.log", filemode='w', format="%(asctime)s %(filename)s [line:%(lineno)d] %(levelname)s %(message)s", level=logging.DEBUG)
+
+
+super的用途
+super让你可以避免直接使用基类。这个特性比较有用。
+主要优势是在多继承的时候。
+super这个内置函数是在python2.2的时候引入的。
+之前的super文档描述也是有问题的。
+super函数返回的不是superclass，而是一个proxy对象。
+
+在python2.2里了，Guido引入了descriptor的概念。
+super主要是方便访问被子类override的父类方法。
+
+在python2.1里，class跟type的概念完全没有关联。
+经典类的Instance，跟class没有关系。因为type得到的都是instance类型。
+这个在进行类型比较的时候，就毫无作用了。
+在python2.2引入新式类，就是为了关联class和type。
+
+python的数据模型
+object是python的数据抽象。
+每个object，有一个id，一个type，一个value。
+id是唯一的，在创建时就有的，可以理解为object在内存的地址。
+is()函数，就是比较id是否相同的。
+id()函数，用来查看id。
+
+python里method和function区别？
+method是function的一种特例。
+
+python不会自动调用父类的构造方法。
+需要你自己手动调用。
+调用的方法有2种：
+1、
+Parent.__init__(self, args)
+2、
+super(Child, self).__init__(args)
+第一种方法简单，容易理解。
+
+如果父类的构造函数里有添加成员变量，那么就必须在子类里手动调用父类的构造函数，
+不然你没法在子类的构造函数里使用这些成员变量。
+
+
+python为什么不自动调用父类的构造方法呢？
+对于python来说，构造函数，跟其他函数没有区别。
+
+lambda在threading创建时的一个用法。
+一般我们是这么用的。
+t = threading.Thread(target=xx_func, (arg1, arg2))
+但是可以这么写：
+t = threadin.Thread(target=lambda: xx_func(arg1, arg2))
+

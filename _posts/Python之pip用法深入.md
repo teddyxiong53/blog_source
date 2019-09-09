@@ -81,8 +81,18 @@ https://blog.csdn.net/no_giveup/article/details/53699734
 
 
 
+pip的版本问题
+
+我当前python27对应的pip版本是10.0.1 。
+
+
+
 # 参考资料
 
 1、pip安装使用详解
 
 http://www.ttlsa.com/python/how-to-install-and-use-pip-ttlsa/
+
+2、
+
+https://github.com/sqreen/PyMiniRacer/issues/50

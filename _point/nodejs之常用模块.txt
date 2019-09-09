@@ -189,3 +189,9 @@ url
   path: '/p/a/t/h/?query=string',
   href: //href是全部转成小写。
    'http://user:password@host.com:8080/p/a/t/h/?query=string#hash' }
+   
+   
+should
+	这个是测试库。让你的代码显得更加易读。
+	这样用法，真的挺神奇的。
+	(0).should.be.a.Number()

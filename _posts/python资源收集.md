@@ -39,6 +39,8 @@ https://github.com/search?q=cheatsheet+python
 
 
 
+还是要靠读大量的代码来学习。
+
 
 
 学习记录
@@ -46,6 +48,16 @@ https://github.com/search?q=cheatsheet+python
 ```
 werkzeug值得读
 	_compat.py，这个对python2和python3的兼容处理值得看。
-	
+six.py
+	这个是兼容py2和py3的一个库，值得读。
+```
+
+项目代码阅读
+
+```
+叮当音箱
+homeassistant
+dueros python版本
+shadowsocks
 ```
 

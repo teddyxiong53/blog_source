@@ -72,3 +72,10 @@ class SubclassImplementation(PluginBase):
 
 抽象类里可以放具体方法。子类要调用的时候，就用super来调用。
 
+
+
+参考资料
+
+1、定义接口或者抽象基类
+
+https://python3-cookbook.readthedocs.io/zh_CN/latest/c08/p12_define_interface_or_abstract_base_class.html
