@@ -321,3 +321,11 @@ c标准库的，有c++的版本，在名字前面加上了c。
 	<tuple>
 	<utility>
 	
+	
+常用算法
+std::swap
+	交换vector，或者2个数值。
+std::search
+	字符串查找。
+	
+	

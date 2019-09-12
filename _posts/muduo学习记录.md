@@ -82,7 +82,33 @@ Thread.cc写完了。
 
 
 
+之前写了一段又停下来了，现在重新开始。
 
+现在采取从上到下的写法，从examples里的echo开始，看到需要的，就进行实现。
+
+echo.h里依赖了TcpServer.h，所以需要先实现这个。
+
+```
+TcpServer.h
+	TcpConnect.h
+		StringPiece.h
+			所以先实现这个。
+		Callbacks.h
+			这个定义了一些回调。
+		Buffer.h
+			
+```
+
+还是通过修改运行测试代码来加深理解。
+
+
+
+```
+export MUDUO_LOG_TRACE=1
+./bin/eventloop_unittest 
+```
+
+这样运行，来观察详细的打印。
 
 
 
