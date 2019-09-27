@@ -1,0 +1,4 @@
+# 在bat里执行一个exe文件。
+start xx.exe
+用./xx.exe是不行的。
+

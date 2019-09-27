@@ -995,6 +995,83 @@ ok，那就没有问题。跟我希望的是一致的。
 
 
 
+# 自己实现SmartPointer
+
+智能本质，本质上也是靠RAII机制来实现资源的释放的。
+
+```
+#include <iostream>
+#include <memory>
+#include <stdio.h>
+
+template <typename T>
+class SmartPointer {
+private:
+    T* _ptr;
+    size_t *_count;
+public:
+    SmartPointer(T *ptr = nullptr):
+        _ptr(ptr)
+    {
+        if(_ptr) {
+            _count = new size_t(1);
+        } else {
+            _count = new size_t(0);
+        }
+    }
+    SmartPointer(const SmartPointer& ptr) {
+        if(this != &ptr) {
+            this->_ptr = ptr._ptr;
+            this->_count = ptr._count;
+            (*this->_count)++;
+        }
+    }
+    SmartPointer& operator=(const SmartPointer& ptr) {
+        if (this->_ptr == ptr._ptr) {
+            return *this;
+        }
+        if(this->_ptr) {
+            (*this->_count)--;
+            if(this->_count == 0) {
+                delete this->_ptr;
+                delete this->_count;
+            }
+        }
+        this->_ptr = ptr._ptr;
+        this->_count = ptr._count;
+        (*this->_count)++;
+        return *this;
+    }
+    T& operator*() {
+        return *(this->_ptr);
+    }
+    T* operator->() {
+        return this->_ptr;
+    }
+    ~SmartPointer() {
+        (*this->_count)--;
+        if(*this->_count == 0) {
+            delete this->_ptr;
+            delete this->_count;
+        }
+    }
+    size_t use_count() {
+        return *this->_count;
+    }
+};
+
+int main()
+{
+    SmartPointer<int> sp(new int(10));
+    SmartPointer<int> sp2(sp);
+    SmartPointer<int> sp3(new int(20));
+    sp2 = sp3;
+    printf("sp use count:%d\n", sp.use_count());
+    printf("sp3 use count:%d\n", sp3.use_count());
+}
+
+```
+
 
 
 
@@ -1064,3 +1141,11 @@ https://www.cnblogs.com/jiayayao/archive/2016/12/03/6128877.html
 15、智能指针（三）：weak_ptr浅析
 
 https://blog.csdn.net/albertsh/article/details/82286999
+
+16、C++11中智能指针的原理、使用、实现
+
+https://www.cnblogs.com/wxquare/p/4759020.html
+
+17、比起直接使用new，更偏爱使用std::make_unique和std::make_shared
+
+https://blog.csdn.net/f110300641/article/details/83409804

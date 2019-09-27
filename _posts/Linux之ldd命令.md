@@ -28,3 +28,5 @@ teddy@teddy-ThinkPad-SL410:~/work/test/gstreamer/test$ ldd a.out
         /lib/ld-linux.so.2 (0x8000d000)
 ```
 
+ldd实际是一个脚本。
+

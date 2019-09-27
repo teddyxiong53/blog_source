@@ -12,7 +12,7 @@ c++里的容器有两种类型：
 
 1、顺序容器。包括vector、list、deque。
 
-2、关联容器。包括map和set。
+2、关联容器。包括map和set。还有multiset和multimap，区别在于允许元素重复。
 
 
 
@@ -160,6 +160,14 @@ myset.count(1);//查看这个set里1这个元素的个数，如果为0，说明�
 
 
 
+set和map的内部，使用的是红黑树进行实现的。
+
+所以插入删除效率比较高（本质是链表）。
+
+查找效率也很高。是logN的复杂度。
+
+
+
 # 参考资料
 
 1、C++ STL基本容器使用
@@ -169,3 +177,7 @@ https://www.cnblogs.com/cxq0017/p/6555533.html
 2、
 
 http://www.cppblog.com/sailing/articles/161659.html
+
+3、C++ map,set内部数据结构
+
+https://blog.csdn.net/wl_ss/article/details/78065182

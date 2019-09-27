@@ -223,5 +223,29 @@ lambda在threading创建时的一个用法。
 一般我们是这么用的。
 t = threading.Thread(target=xx_func, (arg1, arg2))
 但是可以这么写：
-t = threadin.Thread(target=lambda: xx_func(arg1, arg2))
+t = threading.Thread(target=lambda: xx_func(arg1, arg2))
+
+
+用requests来下载文件。
+
+Requests 的哲学是以 PEP 20 的习语为中心开发的，所以它比 urllib 更加 Pythoner
+当把get函数的stream参数设置成False时，它会立即开始下载文件并放到内存中，如果文件过大，有可能导致内存不足。
+r = requests.get(url_file, stream=True)
+f = open("file_path", "wb")
+for chunk in r.iter_content(chunk_size=512):
+    if chunk:
+        f.write(chunk)
+
+format补零。
+>>> "{0:03d}".format(1)
+'001'
+
+判断文件夹是否存在
+import os
+os.path.exists(test_dir)
+
+线程使用成员函数作为主体，应该怎么做？
+很简单，直接Test.func作为target就可以了。args传递(args,)
+
+csv文件读写。
 

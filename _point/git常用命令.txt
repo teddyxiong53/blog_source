@@ -131,6 +131,24 @@ git reset --hard hashcode
 就用git reset --hard xxx
 然后要配合git reflog来随时回到最新版本。
 
+
+碰到的一个git的使用问题。
+我不小心把一个30M的zip文件commit了。在push阶段发现很慢，于是强行停止，然后把zip文件删掉。
+然后重新commit。再push。
+但是在另外一台电脑上，进行pull操作时，就卡住了。
+完全重新clone也不行。
+
+
+#下面是设置24个小时内不需要重新输入用户名和密码
+git config --global credential.helper 'cache --timeout 86400'
+
+
+
+# 不要把LF转成CRLF，这样带来了很多麻烦。
+git config --global core.autocrlf false
+
 参考资料
 1、Git常用命令速查表
 https://juejin.im/entry/5b802f2f6fb9a019eb43bb42
+
+
