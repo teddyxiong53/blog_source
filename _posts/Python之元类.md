@@ -115,6 +115,9 @@ Out[9]: 2
 
 https://www.cnblogs.com/tkqasn/p/6524879.html
 
-2、
+2、深度理解python中的元类
+
+这篇文章写得不错。
 
 https://www.cnblogs.com/vipchenwei/p/7239953.html
+

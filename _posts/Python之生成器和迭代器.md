@@ -6,6 +6,98 @@ tags:
 
 ---
 
+1
+
+序列可以迭代的原因：iter这个内置函数。
+
+当解释器需要迭代对象x的时候，会自动调用iter(x)。
+
+内置的iter函数有如下作用：
+
+```
+1、检查对象是否实现了iter方法，如果实现了，就调用该函数，获取一个迭代器。
+2、如果没有实现iter方法，但是实现了getitem方法，而切getitem函数的参数是从0开始的索引值，那么python就会创建一个迭代器，尝试按顺序获取元素。
+3、如果前面2步都失败了，那么就抛出TypeError。
+```
+
+从上面的描述，我们可以得到可迭代对象的定义：
+
+可迭代对象是指用iter函数获取到迭代器的对象。
+
+看只实现了getitem方法的。
+
+```
+class A:
+    def __init__(self,  text):
+        self.text = text
+        self.sub_text = text.split(" ")
+
+    def __getitem__(self, index):
+        return self.sub_text[index]
+
+a = A("hello world")
+for i in a:
+    print(i)
+```
+
+实现了迭代器的。
+
+```
+class A:
+    def __init__(self,  text):
+        self.text = text
+        self.sub_text = text.split(" ")
+
+    def __iter__(self):
+        return AIterator(self.sub_text)
+
+class AIterator:
+    def __init__(self, sub_text):
+        self.sub_text = sub_text
+        self.index = 0
+
+    def __next__(self):
+        try:
+            subtext = self.sub_text[self.index]
+        except IndexError:
+            raise StopIteration()
+        self.index += 1
+        return subtext
+    def __iter__(self):
+        return self
+
+
+a = A("hello world")
+for i in a:
+    print(i)
+b = A("aa bb cc")
+it = iter(b)
+print(next(it))
+```
+
+实现getitem方法，需要我们实现迭代器对象。
+
+实现next方法，使用python内部的。
+
+更加符合python习惯的写法是下面这样的。
+
+```
+class A:
+    def __init__(self,  text):
+        self.text = text
+        self.sub_text = text.split(" ")
+
+    def __iter__(self):
+        for item in self.sub_text:
+            yield item
+```
+
+使用yield，不需要自己去实现一个迭代器类了。
+
+
+
+所有的生成器都是迭代器。
+
 
 
 # 迭代器
@@ -135,3 +227,7 @@ http://www.runoob.com/python3/python3-iterator-generator.html
 2、python的 a,b=b,a+b 和 a=b b=a+b 的区别
 
 https://zhidao.baidu.com/question/304727322833271364.html
+
+3、一文读懂Python可迭代对象、迭代器和生成器
+
+https://blog.csdn.net/zhusongziye/article/details/80246910

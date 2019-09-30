@@ -161,13 +161,19 @@ content不是。
 
 3、json内容。
 
+# 用post上传文件
+
+```
+import  requests
+url = "http://httpbin.org/post"
+files = {'file': open('./1.xlsx', 'rb')}
+r = requests.post(url, files=files)
+print(r.text)
+```
 
 
-# 高级用法
 
-
-
-## session对象
+# session对象
 
 session可以帮你保存多个request的参数。
 
@@ -190,42 +196,28 @@ session可以帮你保存多个request的参数。
 >>> 
 ```
 
-
-
-# 身份认证
-
-
-
-
-
-# 代码分析
-
-主要代码就这些：
+默认的headers
 
 ```
-hlxiong@hlxiong-VirtualBox:~/work/study/requests-master/requests$ tree
-.
-├── adapters.py
-├── api.py
-├── auth.py
-├── certs.py
-├── compat.py
-├── cookies.py
-├── exceptions.py
-├── help.py
-├── hooks.py
-├── __init__.py
-├── _internal_utils.py
-├── models.py
-├── packages.py
-├── sessions.py
-├── status_codes.py
-├── structures.py
-├── utils.py
-└── __version__.py
+In [14]: s.headers                                                                       
+Out[14]: {'User-Agent': 'python-requests/2.18.4', 'Accept-Encoding': 'gzip, deflate', 'Accept': '*/*', 'Connection': 'keep-alive'}
 ```
 
-分析上一层的Makefile。
+
+
+# https证书
+
+
+
+# stream处理
+
+stream下载
+
+stream上传
+
+
+
+
 
 
 

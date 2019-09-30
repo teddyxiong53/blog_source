@@ -1,0 +1,96 @@
+wx.App
+	这个类做了这些事情：
+		1、启动wxpython系统。初始化底层gui组件。
+		2、set和get app层级的property。
+		3、实现native的消息循环。
+		4、其他。
+	每一个wxpython应用，都必须实例化wx.App。
+	一般是你自己定义一个类，继承wx.App。重新OnInit函数。
+	在OnInit里，实例化一个自己的Frame类。
+	
+wx.Frame
+	构造函数有7个参数。
+		parent：
+			这个给None，或者self。
+		id：
+			这个给-1，或者不管。
+		title：
+			标题。写app的名字就好了。
+		pos：
+			位置。一个坐标tuple。
+		size：
+			大小。一个tuple。
+		style：
+			常用的样式常量有：
+				wx.DEFAULT_FRAME_STYLE 用这个就好了。
+				wx.STAY_ON_TOP
+				wx.SYSTEM_MENU
+		name：
+			这个是内部的名字，外观上不可见的。一般不设置。
+	成员函数：
+		self.CreateToolBar() # 可以没有参数。
+		CreateStatusBar()
+		SetSize()
+		SetTitle()
+		
+wx.Panel
+	Frame和Panel的关系是什么？
+	Panel可以看做一个碎片化的Frame。
+	Panel也放在Frame里面。
+	例如有一些控件需要同时控制显示或者隐藏的时候，可以把这些控件的parent指定为一个panel。这样控制就方便。
+	Panel是一个容器，大小一般跟Frame一样大。
+	可以在上面放置各种控件。
+	这样就把窗口内容跟工具栏和状态栏分开了。
+	button = wx.Button(panel 这样来指定。
+	
+常用的控件有：
+	wx.Button
+		
+	wx.StaticText
+		self.label1 = wx.StaticText(self, label="label1") # 至少要这2个参数。
+		self.label1.SetLabel("label1-modify")
+		
+	wx.TextCtrl
+		文本输入框。
+		构造函数的参数有6个。至少有2个参数。
+		style常用的有：
+		wx.TE_MULTILINE 多行。
+		wx.TE_PASSWORD 密码显示为星号。
+		wx.TE_READONLY 只读。
+		
+		self.input1 = wx.TextCtrl(self, value="input1")
+		val = self.input1.GetValue()
+		
+布局：
+	只使用wx.BoxSizer来做就好了。
+	
+wx.Object
+	这个是wxpython的基础类。
+	
+	
+下面是一个简单的例子。后面开发的东西，都可以基于这个来改。
+import wx
+
+class MyFrame(wx.Frame):
+    def __init__(self):
+        wx.Frame.__init__(self, None,title="test wxpython", style=wx.DEFAULT_FRAME_STYLE, pos=(200,200), size=(800,600))
+        self.CreateToolBar()
+        self.statusBar = self.CreateStatusBar()
+        self.layout = wx.BoxSizer(orient=wx.VERTICAL)
+        self.label1 = wx.StaticText(self, label="label1")
+        self.button1 = wx.Button(self, label="button")
+        self.Bind(wx.EVT_BUTTON, self.OnClick, self.button1)
+        self.layout.Add(self.label1, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_CENTER_HORIZONTAL, 0)
+        self.layout.Add(self.button1, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_CENTER_HORIZONTAL, 0)
+        self.SetSizer(self.layout)
+        self.Show(True)
+    def OnClick(self, event):
+        self.statusBar.SetStatusText("click")
+
+class MyApp(wx.App):
+    def OnInit(self):
+        frame = MyFrame()
+        return True
+
+app = MyApp()
+app.MainLoop()

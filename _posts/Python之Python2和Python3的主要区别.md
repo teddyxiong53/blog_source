@@ -147,6 +147,28 @@ False
 Python 2 将 strings 处理为原生的 bytes 类型，而不是 unicode， 
 Python 3 所有的 strings 均是 unicode 类型。
 
+
+
+python3里自带了一个2to3.py的程序，用来进行转化。但是可能不能完全正确。
+
+
+
+python3为什么要去掉long类型？
+
+不用你去操心数据的长度了，自动会帮你扩展的。就这样。
+
+看以lib2to3的代码。
+
+
+
+# 内置函数的改变
+
+py3去掉了cmp函数。比较会调用`__gt__`和`__lt__`函数。
+
+reduce函数移到了functools模块里。
+
+
+
 # 参考资料
 
 1、Python 2 和 Python 3 有哪些主要区别？
@@ -156,3 +178,14 @@ https://www.zhihu.com/question/19698598
 2、Python2.x与3.x版本区别
 
 http://www.runoob.com/python/python-2x-3x.html
+
+3、python2 与 python3的区别
+
+这篇讲得最细致最好。值得反复看。
+
+https://www.cnblogs.com/meng-wei-zhi/articles/8194849.html
+
+4、Python2和Python3的区别，以及为什么选Python3的原因
+
+https://blog.csdn.net/qq_39521554/article/details/80855086
+

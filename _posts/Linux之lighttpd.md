@@ -77,7 +77,57 @@ done
 
 
 
+# 配置语法
+
+```
+name = value #直接赋值
+name += value #追加赋值
+name := value #替换赋值
+name的命名风格：modulename.key，可以用点号来表示层次。
+value的可能取值："text" | 1 | "enable" 。
+还可以是数组。
+数组是这样定义的：
+arr1 = ("key1"=>"val1", "key2"=>"val2")
+arr2 = ("val3", "val4")
+include "cgi.conf"
+include_shell "ls /xx"
+```
+
+
+
+lighttpd是一个单线程的server。
+
+它的主要资源限制就是max fd。默认是1024 。
+
+
+
+代码入口文件是server.c。
+
+
+
+当前我使用cgi方式，非常简单。看看正式的使用是怎么用的。
+
+modules.conf里
+
+```
+"mod_access", //基础模块
+"mod_alias", //路径绑定 用来指定CGI路径
+这里不能打开mod_cgi。（事实上也没有写出了）。
+如果这里加了mod_cgi，会跟后面的include cgi.conf冲突的。
+```
+
+
+
 参考资料
 
-1、
+1、配置语法
 
+https://redmine.lighttpd.net/projects/lighttpd/wiki/Docs_Configuration
+
+2、Lighttpd1.4.20源码分析 笔记 网络服务主模型
+
+https://blog.csdn.net/jiange_zh/article/details/50483099
+
+3、
+
+https://blog.csdn.net/iGrey_/article/details/88265572

@@ -22,6 +22,8 @@ tags:
 	只支持python2.7。
 3、py2exe。
 	python3支持还不够好。
+说明：
+后面发现其实3个都是支持python3的。而且只有pyinstaller可以用起来。而且简单。所以结论是：用pyinstaller。在python3.7上正常。
 ```
 
 所以看看cx-freeze怎么做。
@@ -112,6 +114,46 @@ cxfreeze.bat --init-script=D:\work\中国移动\语料采\code\wakeup_collect_si
 需要自己添加到指定路径。
 
 找了一下，没有找到解决的办法，放弃了。
+
+
+
+试一下py2exe。
+
+```
+pip install py2exe
+```
+
+可以运行。
+
+执行：
+
+```
+build_exe.exe -b 2 main.py
+```
+
+这个会提示：
+
+```
+IndexError: tuple index out of range
+```
+
+试一下pyinstaller。
+
+安装：
+
+```
+pip install pyinstaller
+```
+
+运行：
+
+```
+pyinstaller.exe -F main.py
+```
+
+这个在当前目录下生成了一个main.exe文件。
+
+可以正常运行。路径里有中文也没有关系。
 
 
 
