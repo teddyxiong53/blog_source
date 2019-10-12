@@ -79,11 +79,15 @@ flask run
 
 
 
-目录分析
+自己在windows下，用pycharm，python3.7来写一遍。
 
-```
+首先安装flask和flask-cli。
 
-```
+新建一个项目，叫flaskr，然后新建一个db.py文件。
+
+
+
+
 
 
 

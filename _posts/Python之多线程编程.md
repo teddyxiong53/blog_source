@@ -107,3 +107,69 @@ MainThread
 >>> 
 ```
 
+#加锁
+
+按照预设的逻辑，最后我们得到的，应该是100，不加锁的时候，我们得到的是明显小于100的一个数。
+
+这个就是因为读写全局变量的时候，没有加锁导致的。
+
+```
+import time
+import threading
+
+count = 0
+def sub1():
+    global count
+    tmp = count
+    time.sleep(0.001) #这个是模拟实际处理延迟。如果没有这个，则现象很难模拟出来。
+    count = tmp +1
+    time.sleep(2)
+
+def verify(sub):
+    global count
+    thread_list = []
+    for i in range(100):
+        t = threading.Thread(target=sub)
+        t.start()
+        thread_list.append(t)
+    for j in thread_list:
+        j.join()
+    print(count)
+
+verify(sub1)
+```
+
+怎么解决呢？使用锁。
+
+```
+lock = threading.Lock()
+def sub2():
+    if lock.acquire(1):#这里。
+        global count
+        tmp = count
+        time.sleep(0.001)
+        count = tmp +1
+        lock.release()#这里。
+        time.sleep(2)
+```
+
+这样就无论怎么运行，结果都是100 。
+
+这个加锁和解锁，可以用with来做，更加简洁，也可以避免忘记释放锁。
+
+````
+with lock:
+	global count
+    tmp = count
+    time.sleep(0.001)
+    count = tmp +1
+time.sleep(2)
+````
+
+
+
+参考资料
+
+1、Python中的多线程编程，线程安全与锁(一)
+
+https://www.cnblogs.com/ArsenalfanInECNU/p/10022740.html

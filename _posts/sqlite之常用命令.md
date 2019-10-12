@@ -56,3 +56,9 @@ hello-1.0.0/SConscript|hello-1.0.0.zip|03efbc258f97886ce38ec6b9f8823b5c
 hello-1.0.0/hello.c|hello-1.0.0.zip|2bba3479923b75e22a6ac8b50b1db229
 ```
 
+执行sql脚本，生成数据库。
+
+```
+sqlite3.exe -init schema.sql flaskr.sqlite3
+```
+

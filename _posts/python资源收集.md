@@ -31,9 +31,31 @@ https://github.com/search?q=cheatsheet+python
 
 # 书籍
 
-##《流畅的Python》
+《Learning Python》（中文名《python学习手册》）
 
-进阶书籍
+第四版。重点是Python3.0 。说明跟python2.6的不同。
+
+重点关注语言本身。
+
+《Programming Python》
+
+跟《Learning Python》是一个系列的。
+
+重点关注应用。
+
+作者是做python培训的。这些内容都是总结他的培训经验。
+
+《Learning Python》是3天的培训课程。
+
+
+
+《疯狂python讲义》。李刚的疯狂讲义系列的。都比较实用。
+
+
+
+
+
+
 
 
 
@@ -50,6 +72,10 @@ werkzeug值得读
 	_compat.py，这个对python2和python3的兼容处理值得看。
 six.py
 	这个是兼容py2和py3的一个库，值得读。
+requests
+	这个涉及到大量字符串处理。值得学习。
+flask源代码
+	
 ```
 
 项目代码阅读

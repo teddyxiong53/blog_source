@@ -80,6 +80,24 @@ One that pings a whole network and gives the list of machines answering.
 
 
 
+构造ping包
+
+```
+def ping_once(host):
+    ip_id = randint(1,65535)
+    icmp_id = randint(1, 65535)
+    icmp_seq = randint(1, 65535)
+    packet = IP(dst=host, ttl=64, id=ip_id)/ICMP(id=icmp_id, seq=icmp_seq)/b'rootkit'
+    ping = sr1(packet, timeout=2, verbose=False)
+    if ping:
+        print("ping {} ok".format(host))
+        # sys.exit(3)
+        return True
+    return False
+```
+
+
+
 参考资料
 
 1、Python Scapy使用方法
