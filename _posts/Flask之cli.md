@@ -37,6 +37,29 @@ flask shell，会启动一个shell，可以在shell里进行相关变量的查�
 
 
 
+自己添加新命令
+
+```
+import flask.cli
+import click
+from flask import Flask
+app = Flask(__name__)
+@app.cli.command()
+def mycmd():
+    click.echo("this is my cmd")
+```
+
+
+
+运行：
+
+```
+D:\work\pycharm\flask_study>set FLASK_APP=hello.py 
+                                                   
+D:\work\pycharm\flask_study>flask mycmd            
+this is my cmd                                     
+```
+
 
 
 
@@ -58,3 +81,7 @@ https://www.cnblogs.com/lynsyklate/p/7693169.html
 4、Flask内置命令行工具—CLI
 
 http://www.xampp.cc/archives/3857
+
+5、Flask添加新命令
+
+https://www.cnblogs.com/weswes/p/10108186.html

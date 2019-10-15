@@ -65,6 +65,16 @@ https://github.com/search?q=cheatsheet+python
 
 
 
+服务端
+
+看flask源代码。
+
+客户端
+
+看requests源代码。
+
+
+
 学习记录
 
 ```

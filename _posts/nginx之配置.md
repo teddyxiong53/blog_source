@@ -246,6 +246,14 @@ http {
 
 
 
+# proxy_pass
+
+这个就是反向代理的设置了。
+
+注意路径设置的最后的斜杠的不同。
+
+
+
 # 参考资料
 
 1、Nginx配置详解
@@ -285,3 +293,15 @@ http://me.52fhy.com/php_dev_environment/09 理解nginx配置.html
 9、Nginx配置文件实例整理
 
 https://www.linuxidc.com/Linux/2017-02/140364.htm
+
+10、nginx 之 proxy_pass详解
+
+https://blog.csdn.net/ainuser/article/details/80260144
+
+11、Nginx高并发下的优化
+
+https://segmentfault.com/a/1190000011405320?utm_source=tag-newest
+
+12、从一份配置清单详解Nginx服务器配置
+
+https://segmentfault.com/a/1190000015646701

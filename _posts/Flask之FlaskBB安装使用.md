@@ -122,3 +122,32 @@ flaskbb --config /home/pi/work/test/flaskbb/flaskbb-master/flaskbb.cfg run
 flaskbb --config flaskbb.cfg run
 ```
 
+
+
+# 再次使用
+
+```
+sudo make devconfig
+```
+
+提示了WTForms版本太低。
+
+```
+sudo pip install WTForms==2.2.1
+```
+
+```
+sudo make install
+```
+
+这个会提示输入用户名（默认是root），邮箱、密码。
+
+但是运行碰到问题，我没有找到修改localhost的地方。
+
+
+
+参考资料
+
+1、flaskbb 配置与 AD 登录
+
+https://blog.zengrong.net/post/flashbb-and-ad/

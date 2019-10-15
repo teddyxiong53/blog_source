@@ -73,8 +73,27 @@ print s.score
 
 
 
+property还是一个内置的函数。
+
+可以这样来定义一个属性。更用装饰器是一样的效果。
+
+```
+x = property(getx, setx, delx, "I'm the 'x' property.")
+```
+
+
+
+# lazy_property
+
+
+
 # 参考资料
 
 1、对于Python中@property的理解和使用
 
 https://blog.csdn.net/u013205877/article/details/77804137
+
+2、python 中的lazy property
+
+https://blog.csdn.net/it_zhonghua/article/details/88803926
+
