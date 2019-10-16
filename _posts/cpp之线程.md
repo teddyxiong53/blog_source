@@ -72,6 +72,14 @@ Aborted (core dumped)
 	th2.join();
 ```
 
+# 优雅地进行退出线程
+
+一般在线程里，会进行sleep操作。对于一个进程来说，会监听按键操作退出。但是sleep函数是不会被唤醒，所以收到信号后，还会等sleep结束。
+
+有没有更好的方式来做呢？
+
+有的。是用condition_variable。
+
 
 
 # 参考资料
@@ -80,3 +88,6 @@ Aborted (core dumped)
 
 https://www.cnblogs.com/whlook/p/6573659.html
 
+2、C++ 线程优雅退出
+
+https://irgb.github.io/C++%E7%BA%BF%E7%A8%8B%E4%BC%98%E9%9B%85%E9%80%80%E5%87%BA/

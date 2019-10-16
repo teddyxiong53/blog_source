@@ -27,7 +27,9 @@ https://media.readthedocs.org/pdf/pysheeet/latest/pysheeet.pdf
 
 https://github.com/search?q=cheatsheet+python
 
+这个是崔庆才的python爬虫gitbook。很好。
 
+https://python3webspider.cuiqingcai.com/
 
 # 书籍
 

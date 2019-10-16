@@ -39,35 +39,13 @@ CLASSES
         takewhile
 ```
 
+leetcode的第17题，有用到itertools的product来进行解决。看起来很神奇。
 
-
-# chain
-
-##chain
-
-创建一个新的迭代器，把参数里的迭代器都串联起来。
-
-```
-#!/usr/bin/python
-
-from itertools import chain
-mychain = chain('ab', 'cd', 'e')
-for item in mychain:
-	print item
-```
+product表示的是笛卡尔积。
 
 
 
-```
-teddy@teddy-ubuntu:~/work/test/python$ ./test.py
-a
-b
-c
-d
-e
-```
 
-## chain.from_iterable
 
 
 
@@ -76,3 +54,7 @@ e
 1、Python中itertools模块用法详解
 
 https://www.jb51.net/article/55626.htm
+
+2、
+
+https://blog.csdn.net/dingding_12345/article/details/52456303

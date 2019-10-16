@@ -286,3 +286,8 @@ Out[25]: True
 python里函数和方法的区别。
 
 
+__import__
+跟import的区别：
+__import__是一个函数，而import是一个关键字。
+import sys 等价于sys = __import__('sys')
+

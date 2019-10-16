@@ -186,3 +186,9 @@ echo $i
 
 ```
 
+## 命令行查看自己的公网ip
+
+```
+curl http://members.3322.org/dyndns/getip
+```
+
