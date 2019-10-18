@@ -56,3 +56,14 @@ func(1, 2, 3, d=1,e=2)
 {'e': 2, 'd': 1}
 ```
 
+```
+参数arg、*args、**kwargs三个参数的位置必须是一定的。必须是(arg,*args,**kwargs)这个顺序，否则程序会报错。
+```
+
+
+
+参考资料
+
+1、Python中*args和**kwargs的区别
+
+https://blog.csdn.net/u011596455/article/details/82702301

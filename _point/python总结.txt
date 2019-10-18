@@ -291,3 +291,11 @@ __import__
 __import__是一个函数，而import是一个关键字。
 import sys 等价于sys = __import__('sys')
 
+
+print(a[:-1])  ### 除了最后一个取全部
+[ 1 2 3 4 ]
+ 
+print(a[::-1]) ### 取从后向前（相反）的元素
+[ 5 4 3 2 1 ]
+
+在使用python的高并发场景下，python多进程+协程是最优的解决方案

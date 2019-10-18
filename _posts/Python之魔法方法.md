@@ -34,6 +34,7 @@ tags:
     		__trunc__
     	常见算术操作符：
     		__add__(self, other)
+    			这个是为实现a+b，相当于重载+运算符。
     		__sub__
     		__mul__
     		__floordiv__
@@ -44,6 +45,7 @@ tags:
     		__rshift__
     	反射算术运算符：在上面的基础上加上一个r前缀。
     		__radd__(self, other)
+    			r表示右边的意思。
     		...
     	增强赋值运算符：就是+=的实现。
     		__iadd__
@@ -52,6 +54,8 @@ tags:
     	类型转换操作符
     		__int__(self)
     		__float__(self)
+    		__bool__()
+    			这个是为了实现bool(x)这种操作。
     		...
 类的表示
 	就是用字符串来打印类。
@@ -266,3 +270,8 @@ https://pyzh.readthedocs.io/en/latest/python-magic-methods-guide.html
 2、Python 魔术方法指南
 
 https://pycoders-weekly-chinese.readthedocs.io/en/latest/issue6/a-guide-to-pythons-magic-methods.html
+
+3、`python __add__和__radd`__
+
+https://blog.csdn.net/u011019726/article/details/77834602
+

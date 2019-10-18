@@ -20,6 +20,8 @@ pipenv是什么？从名字上看跟虚拟环境有关系的。
 
 跟virtualenv是什么关系？
 
+pipenv是对pip和virtualenv进行了封装。
+
 
 
 pipenv是Kenneth Reitz写的一个命令行工具。
@@ -43,6 +45,10 @@ pipenv包括：
 Pipfile是TOML格式，而不是简单的txt文本。
 
 TOML是一种新的配置文件，跟ini、json这些是一个类型的东西。
+
+
+
+pipenv的项目宣言是：对人类友好的python开发工作流。
 
 
 
@@ -117,6 +123,10 @@ python_version = "2.7"
 
 
 
+
+
+
+
 # 参考资料
 
 1、Python新利器之pipenv
@@ -126,3 +136,11 @@ https://www.jianshu.com/p/00af447f0005
 2、TOML简介 (转) - 孤独信徒 - 博客园
 
 https://www.cnblogs.com/unqiang/p/6399136.html
+
+3、pipenv与pyenv、pyenv-virtualenv的关系和使用
+
+https://www.xingjiehu.com/2019/06/20/cjxpsmsyd00158mom667oyav9/
+
+4、
+
+https://www.jianshu.com/p/cdee9e4d620a

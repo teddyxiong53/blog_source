@@ -25,6 +25,16 @@ DESCRIPTION
     * defaultdict  dict subclass that calls a factory function to supply missing values
 ```
 
+collections模块，是用来提供对python内建容器tuple/list/dict/set的替代选择。
+
+```
+Counter
+	dict的子类。提供了可哈希对象的计数功能。
+	里面的内容是：以对象的hash值为key，以该对象的出现次数为value。
+	具体可以运用在哪些场景呢？
+	
+```
+
 
 
 我们一个个学习一下。

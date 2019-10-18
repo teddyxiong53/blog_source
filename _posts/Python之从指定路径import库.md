@@ -55,10 +55,77 @@ DATA
 
 
 
+import的查找路径的顺序是怎样的？
+
+```
+标准库
+第三方库
+当前路径
+```
+
+
+
+什么是绝对导入？什么是相对导入？
+
+```
+绝对导入
+import A.B
+from A import B
+```
+
+```
+相对导入
+from . import B
+from ..A imprt B
+```
+
+python2里是默认是相对路径导入。python3默认为绝对路径导入。
+
+有时候，在python2的代码里，会加上这句：
+
+```
+from __future__ import absolute_import
+```
+
+这个又是为了达到什么目标呢？
+
+是为了禁止隐式相对导入。
+
+对于下面这个目录结构。
+
+```
+thing
+├── books
+│ ├── adventure.py
+│ ├── history.py
+│ ├── horror.py
+│ ├── __init__.py
+│ └── lovestory.py
+├── furniture
+│ ├── armchair.py
+│ ├── bench.py ---这个
+│ ├── __init__.py
+│ ├── screen.py
+│ └── stool.py 这个
+└── __init__.py
+```
+
+如果我们要在stool.py里音乐bench.py。有下面三种方式：
+
+```
+import bench # 这个就是隐式相对导入。不推荐。python3废弃了。这种方式只适合用来导入系统路径下的。
+from . import bench # 这个是显式相对导入
+from furniture import bench # 这个就是绝对导入。
+```
+
 
 
 # 参考资料
 
-1、[译][python]ImportError:attempted relative import with no known parent package
+1、ImportError:attempted relative import with no known parent package
 
 https://blog.csdn.net/nigelyq/article/details/78930330
+
+2、Python import搜索的路径顺序
+
+https://blog.csdn.net/csdn912021874/article/details/83017425

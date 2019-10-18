@@ -31,6 +31,14 @@ https://github.com/search?q=cheatsheet+python
 
 https://python3webspider.cuiqingcai.com/
 
+
+
+awesome列表
+
+https://github.com/mahmoud/awesome-python-applications
+
+
+
 # 书籍
 
 《Learning Python》（中文名《python学习手册》）
@@ -97,5 +105,8 @@ flask源代码
 homeassistant
 dueros python版本
 shadowsocks
+lightsocks
+	跟shadowsocks类似，但是更加简单，而且使用了异步机制。
+	不过shadowsocks相当于是自己实现的异步（自己写事件循环的）。
 ```
 
