@@ -58,6 +58,8 @@ async是之前的装饰器的语法糖。
 
 await是之前的yield from的语法糖。
 
+await的作用是挂起当前这个协程。先去执行其他的协程。这个调度是由loop完成的。
+
 
 
 # 定义一个协程
@@ -769,6 +771,52 @@ ensure_future
 这个函数的参数是task或者future，如果是future，直接返回，如果是task，转化成一个future再返回。
 
 就是确保是一个future对象。
+
+
+
+协程嵌套
+
+```
+import time
+import asyncio
+
+now = lambda : time.time()
+async def do_some_work(x):
+    print('waiting:', x)
+    await asyncio.sleep(x)
+    return 'done after {}s'.format(x)
+
+async def main():
+    coroutine1 = do_some_work(1)
+    coroutine2 = do_some_work(2)
+    coroutine3 =do_some_work(4)
+    tasks = [
+        asyncio.ensure_future(coroutine1),
+        asyncio.ensure_future(coroutine2),
+        asyncio.ensure_future(coroutine3)
+    ]
+    dones, pendings = await asyncio.wait(tasks)
+    for task in dones:
+        print("task ret:", task.result())
+
+start = now()
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main())
+print("time:", now()-start)
+```
+
+
+
+协程的状态有4种。
+
+```
+pending
+running
+done
+cancelled
+```
+
+
 
 
 

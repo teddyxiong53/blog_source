@@ -39,6 +39,16 @@ https://github.com/mahmoud/awesome-python-applications
 
 
 
+有趣的十个Python实战项目，让你瞬间爱上Python！
+
+https://cloud.tencent.com/developer/news/319422
+
+
+
+500lines
+
+https://github.com/aosabook/500lines
+
 # 书籍
 
 《Learning Python》（中文名《python学习手册》）
@@ -59,13 +69,15 @@ https://github.com/mahmoud/awesome-python-applications
 
 
 
-《疯狂python讲义》。李刚的疯狂讲义系列的。都比较实用。
+**《Python基础教程》（第三版）**
 
+这本书写得比较好。后面有10个比较好的项目。适合学习。
 
+这本书的英文名是《beginning python from novice to professional》。中文名翻译差太远了吧。
 
+我直接把对应的代码fork到我的github下去。
 
-
-
+https://github.com/teddyxiong53/beginning_python_source_code
 
 
 

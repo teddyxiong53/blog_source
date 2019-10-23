@@ -102,3 +102,7 @@ tags:
 
 大概过了下代码，大部分是Python写的。
 
+对应的代码大概40M。
+
+从github下载。地址：https://github.com/aosabook/500lines
+

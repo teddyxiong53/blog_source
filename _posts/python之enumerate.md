@@ -28,5 +28,6 @@ In [42]: for i, v in enumerate(grps):
 
 参考资料
 
-1、
+1、Python——枚举（enum）
 
+https://www.cnblogs.com/-beyond/p/9777329.html
