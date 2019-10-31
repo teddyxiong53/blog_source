@@ -49,6 +49,16 @@ https://cloud.tencent.com/developer/news/319422
 
 https://github.com/aosabook/500lines
 
+
+
+
+
+https://wenku.baidu.com/view/21800d72a26925c52cc5bf4a.html
+
+python数据结构和算法专题列表，很好。
+
+https://www.jb51.net/Special/663.htm
+
 # 书籍
 
 《Learning Python》（中文名《python学习手册》）

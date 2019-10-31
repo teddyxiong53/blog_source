@@ -89,6 +89,22 @@ gitbook
 
 
 
+现在自己打算用gitbook来翻译一本python数据结构的书。当然这本书已经有中文版本，我相当于是自己写一本笔记。
+
+排版尽量严格。怎样来做呢？
+
+字体。
+
+插图。
+
+```
+gitbook init python_data_structure
+```
+
+
+
+
+
 参考资料
 
 1、Gitbook学习笔记

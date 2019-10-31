@@ -115,3 +115,17 @@ until xx
 
 xx表示行号。
 
+
+
+# 实时attach到已经运行的进程上
+
+```
+gdb attach `pidof xxx`
+```
+
+查看所有线程的栈：
+
+```
+thread apply all bt full 
+```
+
