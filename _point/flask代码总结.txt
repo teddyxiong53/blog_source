@@ -1,0 +1,43 @@
+locked_cached_property
+	一个装饰器，用来把一个函数转化为一个lazy property。
+	被装饰的函数，第一次被调用的时候，计算取得结果。
+	下次直接返回这个缓存的结果。
+	用到了线程锁，所以是线程安全的。
+	
+_AppCtxGlobals
+	一个普通类。
+	作为一个namespace存储app ctx的数据。
+	创建一个app ctx的时候，自动就创建了一个这个对象。
+	
+	
+flask_sqlalchemy
+	连接数据库的url
+		sqlite:
+			sqlite:///path/xx.db
+			主要是3个斜杠。
+		mysql:
+			mysql://user:pass@host/xx.db
+		postgresql:
+			postgresql://user:pass@host/xx.db
+			
+数据库迁移
+为什么需要迁移？
+因为有时候在开发过程中需要修改数据库模型，而之前是数据需要继续保留。
+sqlalchemy的开发者写了一个迁移框架，叫做alembic。
+另外，也可以用flask_migrate插件来做。这个插件是对alembic的包装。
+
+
+
+flask_login
+
+login_required
+
+
+让Password只能写不能读的设置。
+@property 
+def password(self):
+	raise AttributeError("")
+@password.setter
+def password(self, password):
+	self.password_hash = generate_password_hash(password)
+	

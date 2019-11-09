@@ -1,0 +1,8 @@
+nav-inverse
+	表示导航栏是深色。
+	
+sr-only是什么？
+	是给残障人生用的。
+	会朗读对应的文本。
+	sr表示screen read。
+	

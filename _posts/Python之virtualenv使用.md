@@ -174,3 +174,4 @@ export PROJECT_HOME=$HOME/ve_workspace
 ```
 
 这个目录是随意指定的。
+

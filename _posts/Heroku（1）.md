@@ -160,6 +160,129 @@ pip install Django psycopg2 gunicorn dj-database-url
 
 
 
+国内类似heroku的平台有哪些？
+
+bmob.com，名字叫比目。
+
+rainbond.com。名字叫云帮。
+
+
+
+heroku从2007年开始运营。平台的灵活性高，支持多种编程语言。
+
+如果要把应用部署到heroku上，需要使用git来推送到heroku的git服务器上。由这个git服务器来完成安装和升级操作。
+
+heroku使用名为dyno的计算单元来衡量使用量。并作为收费的依据。
+
+最常用的dyno类型是web dyno。表示一个web服务器实例。
+
+如果想要增加处理请求的能力，可以部署多个web dyno。每个dyno运行一个实例。
+
+另外一种dyno是worker dyno。用于执行后台作业或者其他辅助任务。
+
+heroku提供了大量的插件和扩展，可用于数据库、email和其他服务。
+
+下面我们看看把flasky部署到heroku的步骤。
+
+1、注册heroku账户。有免费套餐，非常适合用来做实验。
+
+2、安装heroku cli。
+
+```
+安装好之后，执行
+heroku login
+输入你的email和密码。
+```
+
+3、把你的ssh公钥上传到heroku。这样才能用git push。正常情况下，heroku login会自动上传你的ssh公钥。
+
+4、创建应用。
+
+```
+heroku create xhl-flasky
+对应的域名是：xhl-flasky.herokuapp.com
+```
+
+毫无疑问，你的应用名字必须是唯一的。
+
+在创建应用的过程中，heroku会为你的应用创建一个git仓库。对应的地址是：
+
+https://git.heroku.com/xhl-flasky.git
+
+必须设置FLASK_APP环境变量才能使用flask命令。
+
+```
+heroku config:set FLASK_APP=flasky.py
+```
+
+5、配置数据库。
+
+heroku以扩展形式支持postgres数据库。heroku的免费套餐包含一个小型数据库，最多能存1万条记录。
+
+执行下面的命令，为应用绑定一个postgres数据库。
+
+```
+heroku addons:create heroku-postgresql:hobby-dev
+```
+
+6、配置日志。
+
+heroku把应用写入到stdout和stderror的输出看做日志。
+
+```
+heroku config:set FLASK_CONFIG=heroku
+heroku config:set SECRET_KEY=xxx
+```
+
+7、配置email。
+
+heroku没有提供smtp服务器。
+
+所以我们需要配置一个外部服务器，发送量不大的时候，我们可以用自己的一个邮箱就行了。
+
+还是为了安全，通过环境变量的方式来设置。
+
+```
+heroku config:set MAIL_USERNAME=xx@xx.com
+heroku config:set MAIL_PASSWORD=xxx
+```
+
+8、使用flask-sslify开开启https。
+
+前面我们看到，我们的应用的域名其实是heroku的二级域名。
+
+所以我们的https用的证书其实是heroku的证书。
+
+因此，为了安全，我们只需要拦截发给http的请求，重定向到https。这个就是flask-sslify完成的工作。
+
+9、运行web生产服务器。
+
+heroku要求应用自己启动web生产服务器，并在PORT环境变量设置的端口号上监听请求。
+
+flask自带的web开发服务器，不适合在这种情况下使用。因为它不是为生产环境设计的。
+
+生产服务器有2个常用的：uwsgi和gunicorn。
+
+10、服务器上运行。
+
+```
+heroku run flask deploy
+```
+
+创建并配置好数据库表之后，重启应用。使用更新后的数据库。
+
+```
+heroku restart
+```
+
+查看日志：
+
+```
+heroku logs
+```
+
+
+
 
 
 # 参考资料
@@ -179,3 +302,5 @@ https://blog.csdn.net/daixin_me/article/details/53995845
 4、Heroku实战入门（一）初识heroku
 
 https://www.cnblogs.com/numbbbbb/archive/2013/04/30/3051740.html
+
+5、《Flask web开发》第17章。

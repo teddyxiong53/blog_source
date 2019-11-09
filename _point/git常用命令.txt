@@ -101,6 +101,10 @@ git filter-branch --force --index-filter \
 第三步：
 提交一次。
 
+后面发现不用上面这么复杂。只要执行下面的就行了。
+git rm -r --cached  "xx/yy"
+然后提交就好了。
+
 
 git本地仓库使用流程
 1、指定一个目录，作为提交的目的地。

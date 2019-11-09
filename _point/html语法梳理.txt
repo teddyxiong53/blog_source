@@ -258,5 +258,11 @@ window和document是什么关系？
 window是BOM对象。
 document是DOM对象。
 
+
+div的role是什么？
+html 里面的 role 本质上是增强语义性。
+role的作用是描述一个非标准的tag的实际作用。比如用div做button，那么设置div 的 role=“button”，辅助工具就可以认出这实际上是个button
+
+
 参考资料
 https://www.w3cschool.cn/htmltags/ref-byfunc.html

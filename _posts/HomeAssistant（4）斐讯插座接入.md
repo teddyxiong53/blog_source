@@ -126,3 +126,14 @@ FileNotFoundError: [Errno 2] No such file or directory: '/config/phicomm_token.t
 
 https://smartplug.phicomm.com/
 
+
+
+参考资料
+
+1、使用机智云平台实现斐讯DC1排插的APP远程控制
+
+http://club.gizwits.com/thread-165451-1-1.html
+
+2、斐讯DC1智能排插个人固件公开项目.
+
+https://a2633063.github.io/zDC1_public/

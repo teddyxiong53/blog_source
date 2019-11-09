@@ -39,6 +39,12 @@ read(6,
 
 
 
+2019年11月2日13:21:04
+
+现在自动好了。不知道什么原因。现在我把gnone桌面环境安装上了。现在执行ps命令就不会卡住了。
+
+
+
 参考资料
 
 1、Suggestions needed to debug why ps -ef gets stuck
