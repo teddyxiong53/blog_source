@@ -31,5 +31,20 @@ my_lambda = lambda arg: arg+1
 my_labmda(123)
 ```
 
+上面这个是最基本的用法。
+
+还有很多复杂的用法。
+
+lambda表达式是用来创建匿名函数的方式。
+
+lambda的优点是：代码非常简洁。
+
+缺点是：有时候不容易理解。
 
 
+
+参考资料
+
+1、求解释此python的lambda表达式
+
+https://segmentfault.com/q/1010000015482828/

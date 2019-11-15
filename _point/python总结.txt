@@ -310,3 +310,21 @@ range(5,-1,-1):
 	这个表示的范围是5到0这6个数字。
 	
 
+python3 -m http.server
+	这样就可以运行一个http服务器。
+	
+MappingProxyType
+	这个是对一个dict建立一个代理，通过这个代理只能读对应的dict对象，但是不能改。
+	
+	
+python3的package，可以不包含__init__.py了。
+
+hass里用了多线程
+线程的名字的前缀是SyncWorker。
+if sys.version_info[:2] >= (3, 6):
+            executor_opts['thread_name_prefix'] = 'SyncWorker'
+先从custom_components下面load模块。
+这些load，是靠线程池里的不同线程来并行load的。
+logging是怎么把线程名字记录下来的？
+fmt = ("%(asctime)s %(levelname)s (%(threadName)s) "
+           "[%(name)s] %(message)s")

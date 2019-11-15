@@ -836,7 +836,29 @@ asyncio模块在python3.6版本转正的。
 
 
 
+回调，靠给future对象add_done_callback来做。
 
+
+
+tornado的协程库是比较早的。后面从在这些第三方实践的基础上总结出了python的标准asyncio库。
+
+所以了解tornado的协程库，可以帮助我们了解asyncio的发展历史。
+
+tornado的协程库有这些特点：
+
+```
+1、支持python2.7，没有使用yield from。只用了yield来实现。
+2、使用抛出异常的方式从协程返回值。
+	因为没有使用 yield from，协程无法直接返回值，所以使用抛出异常的方式返回。
+3、采用Future类代理协程。
+4、使用IOLoop做事件循环。
+```
+
+这是一个python协程的经典实现。
+
+实现代码在这里，值得仔细读一遍。
+
+https://github.com/TheBigFish/simple-python/blob/master/tornado/simple_coroutine.py
 
 # 参考资料
 
@@ -862,3 +884,18 @@ https://python3.7中asyncio的具体实现www.cnblogs.com/btxlc/p/10792477.html
 
 https://blog.csdn.net/zhoulei124/article/details/94319248
 
+6、Python 的异步 IO：Asyncio 简介
+
+https://segmentfault.com/a/1190000008814676?utm_source=tag-newest
+
+7、一次爬虫的并发改造过程
+
+https://segmentfault.com/a/1190000020964802
+
+8、tornado 源码之 coroutine 分析
+
+https://segmentfault.com/a/1190000017909929
+
+9、segmentfault的asyncio专题，值得看。
+
+https://segmentfault.com/t/asyncio/blogs

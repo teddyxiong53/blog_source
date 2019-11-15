@@ -36,8 +36,16 @@ Platform support
 
 
 
+gather和wait，一般用gather就好了。
+
+
+
 参考资料
 
 1、Asynchronous I/O
 
 https://docs.python.org/3/library/asyncio.html
+
+2、Python中的asyncio代码详解
+
+https://www.jb51.net/article/162705.htm

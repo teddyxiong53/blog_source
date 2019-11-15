@@ -144,3 +144,7 @@ https://www.xingjiehu.com/2019/06/20/cjxpsmsyd00158mom667oyav9/
 4、
 
 https://www.jianshu.com/p/cdee9e4d620a
+
+5、拥抱pipenv
+
+https://www.jianshu.com/p/d08a4aa0008e
