@@ -16,3 +16,7 @@ http://yongluo2013.github.io/
 
 
 
+http://yongluo2013.github.io/quick-setup-openstack-with-fuel-in-30-minutes/?FbmNv=5dd268132da9ef9c
+
+
+

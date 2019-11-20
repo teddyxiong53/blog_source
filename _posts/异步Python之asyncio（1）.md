@@ -860,6 +860,128 @@ tornado的协程库有这些特点：
 
 https://github.com/TheBigFish/simple-python/blob/master/tornado/simple_coroutine.py
 
+
+
+协程和生成器类似，都是包含了yield。
+不同的是，协程的yield一般出现在等号的右边。可以产出值（y = yield a），也可以不产出值（这个实际是产出值None）。
+caller可以用send函数，给协程发送值。
+
+```
+def coroutine_example(name):
+    print('start coroutine...name:', name)
+    x = yield name #调用next()时，产出yield右边的值后暂停；调用send()时，产出值赋给x，并往下运行
+    print('send值:', x)
+
+coro = coroutine_example('Zarten')
+print('next的返回值:', next(coro))
+print('send的返回值:', coro.send(6))
+```
+
+
+
+yield from内部会自动捕获StopIteration异常，并且把异常对象的value属性编程yield from表达式的值。
+
+yield from表达式内部首先是调用iter(x)，然后再调用next()，因此x是任何可迭代对象。
+
+yield from的主要功能是打开双向通道。把最外层的caller跟最内层的子生成器连接起来。
+
+yield from主要用于asyncio模块做异步io。
+
+
+
+python3.5做的改动：
+
+```
+@asyncio.coroutine 改成了async
+yield from改成了 await
+```
+
+用户主动控制程序，在认为耗时的io处添加await。
+
+
+
+Task不能由用户直接创建，只能通过下面的函数：
+
+```
+loop.create_task()
+asyncio.ensure_future
+```
+
+
+
+获取协程的返回值，有两种方法：
+
+```
+1、task.result()方法。
+	这个如果还没有运行完成，试图去获取结果会抛出异常的。
+2、task.add_done_callback
+```
+
+
+
+用asyncio.wait，可以同时控制多个协程。
+
+多个协程时，如何获取每个协程的返回值？
+
+```
+wait_coro = asyncio.wait(tasks)
+loop.run_until_complete(wait_coro)
+
+for task in tasks:
+    print(task.result())
+```
+
+也可以用add_done_callback来做。
+
+
+
+动态添加协程
+
+方法是创建一个线程，使得事件循环在线程内永久运行。
+
+相关函数有这些：
+
+```
+loop.call_soon()
+loop.call_later()
+loop.call_at()
+loop.call_soon_threadsafe()
+asyncio.run_coroutine_threadsafe()
+```
+
+例子：
+
+````
+import asyncio
+from threading import Thread
+
+def start_thread_loop(loop):
+    asyncio.set_event_loop(loop)
+    loop.run_forever()
+
+def thread_example(name):
+    print('正在执行name:', name)
+    return '返回结果：' + name
+
+
+new_loop = asyncio.new_event_loop()
+t = Thread(target= start_thread_loop, args=(new_loop,))
+t.start()
+
+handle = new_loop.call_soon_threadsafe(thread_example, 'Zarten1')
+handle.cancel()
+
+new_loop.call_soon_threadsafe(thread_example, 'Zarten2')
+
+print('主线程不会阻塞')
+
+new_loop.call_soon_threadsafe(thread_example, 'Zarten3')
+
+print('继续运行中...')
+````
+
+
+
 # 参考资料
 
 1、python asyncio
@@ -899,3 +1021,9 @@ https://segmentfault.com/a/1190000017909929
 9、segmentfault的asyncio专题，值得看。
 
 https://segmentfault.com/t/asyncio/blogs
+
+10、
+
+这篇文章很好。
+
+https://zhuanlan.zhihu.com/p/59621713

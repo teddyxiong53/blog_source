@@ -11,3 +11,12 @@ tags:
 
 
 
+怎样自己用物理机搭建vps？
+
+
+
+参考资料
+
+1、vps
+
+https://baike.baidu.com/item/VPS/11053576?fr=aladdin

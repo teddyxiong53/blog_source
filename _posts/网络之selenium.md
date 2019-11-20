@@ -121,6 +121,24 @@ find_element_by_css_selector
 
 
 
+现在重新来学一下。
+
+我的chrome版本自动更新到78.0.3904.108版本。
+
+从这里找对应版本的webdriver。
+
+https://chromedriver.storage.googleapis.com/index.html
+
+
+
+driver.get()方法会等到页面加载完成，本质上是window.onload方法执行完成。
+
+如果页面里有ajax，driver就不知道这个了。
+
+webdriver有一个基于对象的api。
+
+用一个elem表示所有类型的节点，但是elem的属性是全面的，对于特点的节点，某些属性可能是不存在的，这个是需要注意的。
+
 
 
 # 参考资料

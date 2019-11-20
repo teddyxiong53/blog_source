@@ -1,0 +1,73 @@
+从echo.h开始看。
+EchoServer类
+	成员变量
+		就一个TCPServer类型。
+	对外接口：
+		就一个，start
+	构造函数：
+		就一个。
+			2个参数
+				loop，
+				地址。
+	内部需要实现接口：
+		连接回调。
+		消息回调。
+		
+InetAddress类
+	成员变量：
+		就一个。sockaddr_in类型。
+	构造函数：
+		4个。
+		1、3个参数。都是可选的。
+			port。可选。
+			loopbackOnly。可选。
+			ipv6。bool类型，可选。
+		2、2个参数呢。
+			ip。string类型。
+			port。
+		3、一个参数。
+			sockaddr_in类型。
+	对外接口：
+		toIpPort 转成ip和port的字符串。
+EventLoop类
+	不可拷贝。
+	构造函数：
+		只有一个。不带参数。
+	对外接口：
+		
+TcpServer
+	构造函数：
+		一个。
+		参数4个。
+			1、loop。
+			2、地址。
+			3、名字。EchoServer这样。
+			4、是否复用端口。可选。默认false。
+	
+Timestamp
+	是可拷贝的。
+	实现了boost的等于比较和小于比较。
+	构造函数2个：
+		一个没有参数。
+		一个有一个参数。
+	成员变量
+		只有一个。就是从1970年以来的毫秒数。
+	对外接口：
+		swap
+		toString
+		now
+		invalid
+		fromUnixTime
+
+muduo里，只有极少数几个类是可以拷贝的。
+Buffer
+Date
+HttpContext
+HttpRequest
+HttpResponse
+InetAddress
+TimerId
+Timestamp
+TimeZone
+总共9个。时间相关的4个。
+Http相关的3个。另外2个其他。
