@@ -53,3 +53,11 @@ sudo apt-get install lxc
 
 
 
+#一个错误解决办法
+
+正试图覆盖 /usr/share/accounts/services/google-im.service,它同时被包含于软件
+
+```
+sudo apt-get -o Dpkg::Options::="--force-overwrite" -f install
+```
+
