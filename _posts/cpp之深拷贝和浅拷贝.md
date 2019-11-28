@@ -5,6 +5,10 @@ tags:
 	- cpp
 ---
 
+1
+
+深拷贝叫member-wise-copy，浅拷贝叫bit-wise-copy。
+
 
 
 对于基础类型变量来说，它们之间的拷贝是很简单的。
@@ -98,3 +102,7 @@ public:
 1、C++拷贝构造函数(深拷贝，浅拷贝)
 
 https://www.cnblogs.com/BlueTzar/articles/1223313.html
+
+2、深入分析深拷贝(Memberwise Copy)和浅拷贝(Bitwise Copy)
+
+https://blog.csdn.net/songshiMVP1/article/details/51248658

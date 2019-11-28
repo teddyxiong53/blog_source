@@ -20,7 +20,7 @@ typora-root-url: ..\
 
 全称是Google Protocol Buffer。
 
-其作用开源参考xml文件。
+其作用可以参考xml文件。
 
 优点是更加小、更快。
 
@@ -475,6 +475,100 @@ add_xx();
 
 
 
+# C++生成代码分析
+
+package foo.bar
+此 .proto 文件中所有声明将都属于命名空间 foo::bar。
+
+假定简单的一个消息声明如下：message Foo {}
+protocol buffer编译器生成 Foo 类，公开地(publicly)派生自 google::protobuf::Message。Foo类是一个实体类；禁止遗留下纯虚的方法没有被实现。
+
+如果 .proto 文件包含下列行：
+option optimize_for = CODE_SIZE;
+Foo 将仅重载运行必需的最小方法集合，和依赖于基于反射实现的剩余部分。这意味着减小了生成代码的大小，但也减小了性能。
+
+如果 .proto 文件包含：
+option optimize_for = LITE_RUNTIME;
+
+Foo 将包含所有方法的快速实现(fast implementations)，但是是实现 google::protobuf::MessageLite 接口，仅包含 Message 中所有方法的一个子集。尤其，它不支持描述符(descriptors)或反射。
+以这种方式生成的代码只需要连接 libprotobuf-lite.so 
+而不是 libprotobuf.so(libprotobuf.lib)
+"lite"库比 "full"库(完整的库)要小很多，更适用于资源受限的系统，比如手机。
+
+你不应该创建 Foo 的子类。如果你子类化 Foo ，并且重载虚方法，重载可能被忽略，就像很多生成的方法为了提高性能被去虚拟化(de-virtualized)。
+
+Message接口定义的方法，允许你检查、操作、读、或写整个消息，包括解析二进制字符串，以及序列化二进制字符串
+除此之外， Foo 类定义了下列方法：
+Foo(): 缺省的构造函数。
+~Foo(): 缺省的析构函数。
+Foo(const Foo& other): 复制(Copy)构造函数
+Foo& operator=(const Foo& other): 赋值(Assignment)操作符。
+
+Foo 类也定义了下列静态方法：
+static const Descriptor& descriptor(): 返回类型的描述符
+static const Foo& default_instance(): 返回 Foo 的 const 单例，
+
+一个消息可以声明在其他的消息中。如：message Foo {message Bar {} }
+这种情况下，编译器(protoc)生成两个类：Foo 和 Foo_Bar. 此外，编译器在 Foo 中生成如下的typedef：
+typedef Foo_Bar Bar;
+
+单个的数字字段
+int32 foo = 1;
+对应的函数有：
+bool has_foo() const; 如果字段被设置，返回true。
+int32 foo() const 如果字段没有被设置，返回默认值。
+void set_foo(int32 value)。调用这个方法后，has_foo()就会返回true了。
+void clear_foo();调用这个方法后，has_foo()就会返回false。
+
+单个的字符串字段
+string foo = 1;
+对应的函数有：
+bool has_foo() const;
+const string& foo() const;
+void set_foo(const string& value);
+void set_foo(const char* value); //C语言风格的字符串。
+void set_foo(const char *value, int size);
+string* mutable_foo();
+	这个返回一个指向字段string对象的mutable指针。
+	如果字段在这个之前没有被设置，返回的是指向空字符串的指针（而不是缺省值）。
+	调用这个函数后，has_foo()返回true。
+	clear_foo()函数会清除这个指针。
+void clear_foo()
+void set_allocated_foo(string* value);
+	把参数赋值给foo字段。
+	如果foo字段之前存在值，释放之前的值。
+	如果参数是NULL，那么效果跟clear_foo是一样的。
+string* release_foo()
+	释放对string对象的所有权。
+	
+单个的枚举字段
+enum Bar {
+	BAR_VALUE = 1;
+}
+跟int的一样。
+
+单个的嵌套消息字段
+假定消息类型为message Bar {}
+Bar foo = 1;
+对应的函数有：
+bool has_foo() const;
+const Bar& foo() const;
+Bar* mutable_foo();
+void clear_foo();
+void set_allocated_foo(Bar* bar);
+Bar* release_foo();
+
+重复的数字字段
+repeated int32 foo = 1;
+对应的函数有：
+int foo_size() const; 
+int32 foo(int index) const;
+void set_foo(int index, int32 value);
+void add_foo(int32 value);
+void clear_foo();移除所有元素，foo_size()返回0 
+const RepeatedField<int32>& foo() const;
+RepeatedField<int32> *mutable_foo();
+
 # proto2和proto3的对比
 
 对于addressbook.proto文件，这个默认是proto2的，我们把required、optional这些去掉，把头部改成proto3的。
@@ -585,3 +679,7 @@ https://blog.csdn.net/u014088857/article/details/53291545
 17、
 
 https://blog.csdn.net/heybeaman/article/details/85121660
+
+18、protobuf 生成的C++代码详解
+
+https://blog.csdn.net/zyboy2000/article/details/94960025

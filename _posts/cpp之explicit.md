@@ -76,7 +76,23 @@ class things {
 
 解决办法就是加上explicit声明。对于无参构造和多参数构造，不存在这种问题。
 
+简单例子是这样。如果不加explicit，那么编译可以通过，也可以正常运行。
 
+加上explicit，则编译就报错。
+
+```
+class A
+{
+public:
+    /*explicit*/ A(int x) {
+        printf("x:%d\n", x);
+    }
+};
+int main()
+{
+    A a = 1;
+}
+```
 
 
 

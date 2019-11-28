@@ -1,2 +1,113 @@
--rdynamic
+-x 
+	指定语言，而不是根据后缀名推断。
+	举例：
+	gcc -x c hello.xxx
+	把hello.xxx这个当成C语言来编译。
+-c
+	只进行预处理、编译、汇编，不进行链接。
+	所以得到的是一个obj文件。
+	举例：
+	gcc -c hello.c
+-S
+	只进行预处理和编译，得到汇编文件。
+	gcc -S hello.c
 	
+-E
+	只进行预处理。得到预处理后的源文件。
+	gcc -E hello.c > 1.txt
+	
+-o
+	指定输出的文件名。
+	
+-ansi
+	关闭gnu c里和ansi c不兼容的特性。
+	
+-fno-asm
+	禁止将asm、inline、typeof作为关键字。
+	
+-fno-strict-prototype
+	只对g++起作用。
+	
+-fthis-is-variable
+	不把this当关键字。g++。
+	
+-include file
+	看例子就知道了。
+	gcc hello.c -include ./test.h
+	相当于在代码里写#include "test.h"
+	
+-Dmacro
+-Dmacro=val
+	相当于代码里的#define。
+-Umacro
+	相当于代码里的#undef macro
+	
+-undef
+	取消对任何非标准宏的定义。
+-Idir
+	指定include的头文件目录。
+	
+-nostdinc
+	不要去系统目录里去找头文件。
+-nostdin C++
+	不要在g++的标准路径里搜索。这个选项只在创建libg++的时候有用。
+	
+-C
+	在预处理的时候，不要删除注释。
+-M
+	生成依赖的文件的信息。
+	gcc -M hello.c
+	就可以看到依赖了哪些头文件。
+	
+-MM
+	跟-M类似，但是忽略标准头文件。
+	在写Makefile的时候很有用。头文件有修改的时候，编译依赖了该头文件的c文件。
+-MD
+	跟-M类似，但是把输出结果写入到.d文件里。
+-MMD
+	写入依赖信息到d文件里。
+	
+-Wa,option
+	把option传递给汇编器。
+	option可以有多个，用逗号隔开。
+	
+-Wl.option
+	把option传递给链接器。
+	多个option之间用逗号隔开。
+	
+-lxx
+	链接libxx.so文件。
+	
+-Ldir
+	到dir目录下找so文件。
+	
+-g
+-O0
+-O1
+-O2
+-O3
+	编译优化选项。
+	
+-ggdb
+	尽可能生成gdb可用的调试信息。
+	
+-static
+	禁止链接动态库。
+	
+-share
+	尽量使用动态库。
+	
+-Wall
+	打开所有的警告。
+	
+-Werror
+	把警告当错误处理。
+	这样可强制要求解决所有警告。
+	
+-Wextra
+	警告信息更详细。
+	
+
+参考资料
+1、
+https://www.cnblogs.com/LiuYanYGZ/p/5548855.html

@@ -2,4 +2,43 @@
 根目录下，定义项目。
 project(dossos VERSION 1.0.0 LANGUAGE CXX)
 
-set()
+CMAKE_BUILD_BITS
+	这个不是标准的。
+	
+	
+CMAKE_CXX_COMPILER_ID
+	可能的值：
+	GNU
+	Clang
+	
+	
+message(FATAL_ERROR ${CMAKE_CXX_FLAGS})
+	调试打印信息。
+	
+list(APPEND CXX_FLAGS "-m32")
+	往变量里追加值。
+	
+string(REPLACE ";" " " CMAKE_CXX_FLAGS "${CXX_FLAGS}")
+	替换内容。
+	把结果输出到CMAKE_CXX_FLAGS。
+	
+set(CMAKE_CXX_FLAGS_DEBUG "-O0")
+	设置变量。
+	
+find_package(Boost REQUIRED)
+	如果找到，会设置变量BOOST_FOUND=TRUE。
+	否则是BOOST_FOUND=FALSE
+find_path(CARES_INCLUDE_DIR ares.h)
+	查找路径。
+	CARES_INCLUDE_DIR这里面会放搜索到的结果。
+	
+find_library(CARES_LIBRARY NAMES cares)
+	查找库。
+	
+find_program(THRIFT_COMPILER thrift)
+	查找可执行程序。
+	没有找到是这样：THRIFT_COMPILER-NOTFOUND。
+	
+add_subdirectory(muduo/base)
+	添加其他目录，这些目录下的CMakeLists.txt。
+	

@@ -69,3 +69,22 @@ muduo里的大部分类都是noncopyable。
 
 
 
+看看如何用muduo来写一个TcpClient。因为对我来说，还是写Client端多一些。
+
+先需要编译得到muduo的库和头文件。
+
+执行./build.sh install即可。
+
+输出目录是这个：
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/study/muduo-cpp11/build/release-install-cpp11$ ls
+include  lib
+```
+
+我们把目录拷贝出来，放到我们自己的工程里就可以了。
+
+我就放到我的cpp cmake模板工程里。上传保存。
+
+
+
