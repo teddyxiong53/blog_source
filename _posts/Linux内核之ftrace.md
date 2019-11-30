@@ -21,3 +21,7 @@ tags:
 1、使用 ftrace 调试 Linux 内核
 
 https://blog.csdn.net/adaptiver/article/details/7930646
+
+2、ftrace 简介
+
+https://www.cnblogs.com/danxi/p/6417828.html

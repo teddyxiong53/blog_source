@@ -10,23 +10,23 @@ typora-root-url: ..\
 
 对应的文件在Documentation/arm/memory.txt里。
 
-| 开始            | 结束            | 用途                                  |
-| ------------- | ------------- | ----------------------------------- |
-| FFFF 8000     | FFFF FFFF     | 用于copy_user_page和clear_user_page    |
-| FFFF 4000     | FFFF FFFF     | armv6及之后的CPU的cache混淆。               |
-| FFFF 1000     | FFFF 7FFF     | 保留。不能用。                             |
+| 开始          | 结束          | 用途                                                |
+| ------------- | ------------- | --------------------------------------------------- |
+| FFFF 8000     | FFFF FFFF     | 用于copy_user_page和clear_user_page                 |
+| FFFF 4000     | FFFF FFFF     | armv6及之后的CPU的cache混淆。                       |
+| FFFF 1000     | FFFF 7FFF     | 保留。不能用。                                      |
 | FFFF 0000     | FFFF 0FFF     | CPU vector页。如果CPU支持vector重定位，映射到这里。 |
-| FFFE 0000     | FFFE FFFF     | XScale缓存冲刷区。这种CPU没有TCM              |
-| FFFE 8000     | FFFE FFFF     | 各个平台的DTCM映射区。                       |
-| FFFE 0000     | FFFE 7FFF     | 各个平台的ITCM映射区。                       |
+| FFFE 0000     | FFFE FFFF     | XScale缓存冲刷区。这种CPU没有TCM                    |
+| FFFE 8000     | FFFE FFFF     | 各个平台的DTCM映射区。                              |
+| FFFE 0000     | FFFE 7FFF     | 各个平台的ITCM映射区。                              |
 | FFC0 0000     | FFEF FFFF     | 固定映射区。调用fix_to_virt函数分配该区域。         |
-| FEE0 0000     | FEFF FFFF     | PCI io映射看空间。是vmalloc空间的静态映射。        |
-| VMALLOC_START | VMALLOC_END-1 | vmalloc、ioremap空间。                  |
-| PAGE_OFFSET   | high_memory-1 | 内核直接映射内存区。所有平台典型的一一映射关系。            |
-| PKMAP_BASE    | PAGE_OFFSET-1 | 内核持久映射区。                            |
-| MODULES_VADDR | MODULES_END-1 | 内核模块映射空间。                           |
-| 0000 0100     | TASK_SIZE-1   | 用户进程映射区。每个进程通过mmap映射到这个区域。          |
-| 0000 0000     | 0000 0FFF     | CPU向量页。                             |
+| FEE0 0000     | FEFF FFFF     | PCI io映射看空间。是vmalloc空间的静态映射。         |
+| VMALLOC_START | VMALLOC_END-1 | vmalloc、ioremap空间。                              |
+| PAGE_OFFSET   | high_memory-1 | 内核直接映射内存区。所有平台典型的一一映射关系。    |
+| PKMAP_BASE    | PAGE_OFFSET-1 | 内核持久映射区。                                    |
+| MODULES_VADDR | MODULES_END-1 | 内核模块映射空间。                                  |
+| 0000 1000     | TASK_SIZE-1   | 用户进程映射区。每个进程通过mmap映射到这个区域。    |
+| 0000 0000     | 0000 0FFF     | CPU向量页。null指针捕获。对用户态和内核态都有用。   |
 
 整个内存管理从宏观上可以分为三大部分：用户空间、内核空间和相关硬件。
 

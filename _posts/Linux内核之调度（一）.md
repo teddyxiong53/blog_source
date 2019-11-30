@@ -215,3 +215,6 @@ https://www.ibm.com/developerworks/cn/linux/l-cn-scheduler/
 
 https://blog.csdn.net/ctthuangcheng/article/details/8914309
 
+6、Linux调度子系统
+
+https://blog.csdn.net/u012259202/category_1774977.html

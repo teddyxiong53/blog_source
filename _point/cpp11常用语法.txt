@@ -1,0 +1,102 @@
+c++11常用语法
+
+新类型
+	long long类型
+	是的，你没有看错，c++直到C++11版本才支持这个。C语言是C99开始支持。
+	新增了char16_t char32_t字符类型。
+	
+初始化
+	扩展了大括号的使用范围。
+	既可以用于基本类型，也可以用于自定义类型。
+	举例：
+	int x = {1};
+	double y{1.0};
+	int arr[5]{1,2,3,4,5};
+	int *p = new int[5]{1,2,3,4,5};
+	
+	创建类对象的时候，也可以：
+	A a(1,2);//之前的
+	A a{1,2};//现在的。
+	还可以这样：
+	A a = {1,2};
+	
+	使用初始化列表，可以避免默认的转换。
+	char c{1.5};//这样编译就报错，而不是给你丢掉小数。
+	
+声明
+	c++11提供了多种简化声明的方式。尤其在模板使用时更加方便。
+	1、auto类型推导。
+		auto i = 1;
+		auto p = &i;
+		double fm(double, int);
+		auto pf = fm;//pf被推导为类型：double(*)(double, int);
+	2、decltype
+		decltype (x) y; //将y与x设置为相同的类型，其中x是一个表达式。
+	3、后缀返回类型。
+		auto func(int ) ->double
+		
+	上面3个，配合模板使用是这样：
+	template<typename T, typename U>
+	auto func(T t, U u) -> decltype(T * U)
+	{
+	}
+	
+模板别名
+	之前只有一种方式。
+	typedef std::vector<std::string>::iterator itType;
+	现在增加了using的方式。
+	using itType = std::vector<std::string>::iterator;
+	using方式更加强大，可以使模板具象化。
+	
+nullptr
+	这个不能被转化为整型。
+	比较统一。
+智能指针
+
+异常
+	以前的c++语法可以指定函数可能抛出哪些异常。
+	void f1(int) throw(bad_alloc);//可能抛出bad_alloc异常。
+	void f2() throw(); //不抛出异常。
+	c++11抛弃了异常规范，新增了：
+	void f3() noexcept;
+	
+枚举类
+	enum class Color{RED, GREEN};
+	enum struct Color{RED};
+	
+对类的改进
+	1、explicit。
+		禁止隐式类型转化。
+
+模板和stl方面
+	1、改进的for循环。
+		for(auto i: arr) {
+		}
+	2、新增的容器。
+		
+	3、新增的stl方法。
+		cbegin/cend
+	4、尖括号的问题的解决。
+	
+右值引用
+移动语义
+
+新的类功能
+	default 使用默认的构造函数。
+	delete 删除默认的构造函数。
+	
+	管理虚函数
+	override 
+	final
+	
+lambda函数
+	
+可变参数模板
+	只能递归地访问各个参数。
+	
+新增断言
+	static_assert。在编译阶段就进行判断。
+	
+参考资料
+1、C++11 常用语法
+https://www.cnblogs.com/benxintuzi/p/4613144.html

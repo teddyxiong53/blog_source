@@ -60,6 +60,17 @@ select
 
 
 
+pollhup
+	这个事件什么时候发生？
+	socket的对端关闭，或者read返回0时。会产生这个事件。
+pollin
+	有数据可以读。
+pollout
+	可以写数据（缓冲区没有满）。
+pollpri
+	有紧迫数据可读。
+	
+
 参考资料
 
 1、Linux服务器网络开发模型

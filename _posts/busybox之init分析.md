@@ -27,7 +27,16 @@ init对于理解Linux文件系统的启动过程很有用。值得花大力气�
 
 
 
-然后要看的是ash.c这个文件。
+看init.c文件。
 
-evaltree 这个函数是重要函数。
+```
+/* Start these actions first and wait for completion */
+#define SYSINIT     0x01
+/* Start these after SYSINIT and wait for completion */
+#define WAIT        0x02
+/* Start these after WAIT and *dont* wait for completion */
+#define ONCE        0x04
+```
+
+
 
