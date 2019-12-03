@@ -6,11 +6,22 @@ tags:
 typora-root-url: ..\
 ---
 
+1
+
 
 
 在很多的代码里都看到tailq这种队列，不知跟一般的队列有什么不一样，现在分析一下。
 
 tailq叫做尾队列。
+
+尾队列的优点是插入非常快。
+
+相关的宏：
+
+```
+TAILQ_ENTRY
+TAILQ_HEAD
+```
 
 
 
@@ -25,6 +36,8 @@ struct {								\
 ```
 
 我的疑问就是，为什么prev指针，是一个二级指针？
+
+这样是为了处理第一个和最后一个节点的时候更加方便。不用特殊处理。
 
 
 
@@ -244,3 +257,15 @@ linux中都是用list的。
 1、
 
 http://blog.csdn.net/hunanchenxingyu/article/details/8648794
+
+2、深入理解TAILQ队列
+
+https://blog.csdn.net/fei86155/article/details/79393985
+
+3、请问TAILQ中用二级指针来实现双向链表的好处在哪？
+
+https://segmentfault.com/q/1010000019511467?utm_source=tag-newest
+
+4、TAILQ 队列之一二事
+
+https://segmentfault.com/a/1190000019529307

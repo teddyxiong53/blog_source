@@ -53,6 +53,7 @@ Linux要支持这个功能，需要打一个补丁，需要一个工具软件。
 要使用这个特点，你需要指定bootargs的时候，加上`printk.time=1`这一项。
 如果你想要一直把这个打开，或者你想要看Linux启动更加靠前的时间打印，你可以在配置内核的时候，把对应的项目勾选上。
 你可以在运行时动态改变printk是否带上时间打印，方法是：
+
 ```
 # echo 1> /sys/module/printk/parameters/time
 # echo "hello printk time" > /dev/kmsg
@@ -63,6 +64,37 @@ Linux要支持这个功能，需要打一个补丁，需要一个工具软件。
 简写为KFT。
 
 还有一些其他的方法用于测量时间，后面补充。
+
+# 减小内核的size
+
+ `make tinyconfig`
+
+从Linux 3.17-rc1开始，加入了这个选项来产生一个最小的内核。
+
+把slub分配器改成slob。
+
+内核压缩方法有gzip改成xz。
+
+禁用high mem。
+
+打开内核的size优化配置项。
+
+内核的size，涉及到3个方面：
+
+1、内核被load到ram里需要占用的空间（这个是解压后）
+
+2、内核用的动态内存。
+
+3、内核镜像在flash占用的空间。
+
+使用size命令来查看vmlinux的大小。
+
+```
+size */built-in.o  
+这个可以查看所有的子模块的大小情况。
+```
+
+
 
 # 优化启动时间的手段
 
@@ -111,3 +143,7 @@ ubifs则可以极大地改善这种情况。
 1、嵌入式: jffs2,yaffs2,logfs,ubifs文件系统性能分析
 
 https://blog.csdn.net/iceiilin/article/details/22721029
+
+2、嵌入式 Linux 系统裁剪
+
+https://tinylab.org/embedded-linux-system-size-optimization/

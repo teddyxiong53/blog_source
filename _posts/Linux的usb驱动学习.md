@@ -2,11 +2,9 @@
 title: Linux的usb驱动学习
 date: 2017-05-03 19:20:38
 tags:
-
 	- Linux
-
 	- usb
-
+typora-root-url: ../
 ---
 
 # 1. 基础知识
