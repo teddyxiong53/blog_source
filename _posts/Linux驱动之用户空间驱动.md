@@ -40,3 +40,6 @@ XServer就是一个典型的用户空间驱动。
 
 https://blog.csdn.net/xiezhi123456/article/details/81004421
 
+2、字符设备驱动另一种写法—mmap方法操作LED
+
+https://www.cnblogs.com/weidongshan/p/8178937.html

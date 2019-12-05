@@ -16,7 +16,7 @@ misc device是不能明确归类的一些设备，一般都是功能比较简单
 
 misc device的内部实现就是用字符设备来实现的。
 
-
+鼠标、看门狗、温度传感器、rtc、nvram、kvm
 
 # 为什么需要misc dev？
 
@@ -91,3 +91,10 @@ hw_random           network_throughput
 memory_bandwidth    tun
 ```
 
+
+
+参考资料
+
+1
+
+https://blog.csdn.net/tong646591/article/details/8301925

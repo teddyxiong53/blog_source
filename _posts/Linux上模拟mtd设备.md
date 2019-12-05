@@ -1,6 +1,5 @@
 ---
-title:
- Linux上模拟mtd设备
+title: Linux上模拟mtd设备
 date: 2017-05-03 22:08:46
 tags:
 	- linux

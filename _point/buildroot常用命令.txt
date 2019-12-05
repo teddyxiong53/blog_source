@@ -1,4 +1,6 @@
-
+make list-defconfigs
+	这个是查看所有的支持的板子。
+	
 
 make busybox-menuconfig
 make uclibc-menuconfig
@@ -24,7 +26,9 @@ make savedefconfig
 
 make xx
 作用：编译对应的包。
-	
+make xx-dirclean
+make xx-rebuild
+
 make  allnopackageconfig
 作用：
 	编译最小系统。

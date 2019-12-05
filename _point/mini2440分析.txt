@@ -1,0 +1,209 @@
+从mach-mini2440.c开始看。
+
+customize_machine
+	这个被自动arch_initcall自动调用。
+	里面调用函数指针：init_machine
+在setup_arch里：
+	init_arch_irq = mdesc->init_irq;
+	system_timer = mdesc->timer;
+	init_machine = mdesc->init_machine;
+system_timer被调用的位置比较靠后。
+void __init time_init(void)
+{
+	system_timer->init();
+}
+init_IRQ里调用init_arch_irq
+也比较靠后。
+所以init_machine是最先被调用的。
+
+mini2440_init
+	使用plat-samsung下面的s3c_gpio_cfgpin来进行gpio操作。
+	
+	
+plat-samsung
+	主要包括S3C24XX和S3C64XX两个大的系列。
+	enum s3c_cpu_type {
+		TYPE_S3C24XX,
+		TYPE_S3C64XX
+	};
+	包括：
+	adc
+	clock
+	dev-adc
+		dev开头的，里面定义了platform_device结构体。
+	dev-i2c0/1/2
+		被mini2440_init里进行初始化。注册这些平台设备。
+	dev-nand
+	dev-onenand
+	dev-rtc
+	dev-ts
+	dev-uart
+	dev-usb
+	dev-usb-hsotg
+	dev-wdt
+	dma
+	gpio
+		函数前缀是s3c_gpiolib_
+	gpio-config
+		函数前缀是s3c_gpio_
+	gpiolib
+		函数前缀是samsung_gpiolib_
+	init
+		arch_initcall(s3c_arch_init);
+	irq-uart.c
+		函数前缀是s3c_irq_uart_
+	time.c
+		
+plat-s3c24xx
+	cpu.c
+		这个里面有个cpu_ids结构体数组。
+		这个是一个重要的入口。
+		里面有4个函数指针：
+			s3c244x_map_io
+			s3c244x_init_clocks
+			s3c244x_init_uarts
+			s3c2440_init
+	devs.c
+		这个里面定义了大量的platform_device结构体。
+	gpio.c
+		函数前缀是s3c2410_gpio_
+	gpiolib.c
+		函数前缀是s3c24xx_gpiolib_
+		
+mach-s3c2440
+	这个是指所有使用了s3c2440的机器。
+	包括：
+		mach-mini2440
+		mach-smdk2440
+		
+CONFIG_GENERIC_GPIO
+	Linux的gpio框架。
+	只有这个下面的可以用gpio_xx前缀的函数。
+	gpio_direction_output(S3C2410_GPG(4), 1);
+	gpio_request(S3C2410_GPG(4), "backlight")
+	s3c的那些接口，都是对这些的封装。
+	
+	
+mach-mini2440.c里包含的头文件分析
+
+mini2440的机器号是1999 。
+#define MACH_TYPE_MINI2440             1999
+
+
+每一个led是一个平台设备。
+所有按键是一个平台设备。
+&mini2440_led1,
+&mini2440_led2,
+&mini2440_led3,
+&mini2440_led4,
+&mini2440_button_device,
+
+
+dev_alloc_skb函数
+主要用于设备驱动中，并在中断上下文中使用。
+
+FP_KERNEL是内核内存分配时最常用的，无内存可用时可引起休眠
+
+major没有给的时候，是从后面往前找空闲的。
+for (i = ARRAY_SIZE(chrdevs)-1; i > 0; i--) 
+major = i;
+ret = major;
+
+
+
+为什么要保证原子性？
+cisc：
+	例如x86，可以原子地完成变量的加法操作。
+	也就是说，读内存、计算、写内存。总体上是原子的。
+但是对risc，就不是原子的了。
+	risc的所有操作都必须在cpu内部进行。
+	以对变量做加法操作为例。
+	cpu实际执行流程是这样：
+		1、用load指令把内存load到cpu的寄存器。
+		2、执行add。
+		3、用store指令把值放到内存里去。
+	所以i++在arm上不是原子的。
+	是一个rmw序列（Read Modify Write）。
+	这个序列可能在中间被打断，这样结果就可能不符合预期了。
+	
+atomic_xx这种函数只能保证int类型的原子性。
+	其他类型的原子性只能通过锁或者禁用中断来保证。
+	
+主要有哪几种内核锁？
+	主要就是spinlock和mutex。
+	spin_lock()的实现逻辑是，他执行的是一个 核内锁调度，核间自旋 的过程
+	spinlock适合锁住那些时间特别短且不睡眠的区间。
+	
+Linux内核的同步机制是什么。
+per-cpu 
+atomic
+barrier
+spinlock
+seqlock
+rcu
+sem
+disable_interrupt
+
+Linux提供两种信号量：
+1、内核信号量。
+	供内核使用。
+2、ipc信号量。
+	供用户进程使用。
+	
+Linux的内核模式和用户模式是什么含义？
+1、用户模式是受限模式。对内存和硬件的访问都必须通过系统调用。
+2、内核模式是高级模式。可以直接访问内存和硬件。
+
+怎样申请大块内存？
+1、vmalloc在内核里用于申请大块内存。
+	特点是线性地址连续，物理地址不保证连续。
+	所以不能用于dma。
+2、kmalloc最大只能分配128KB。
+
+通过伙伴系统申请内核内存的函数有哪些？
+1、alloc_pages(gfp_mask, order);
+2、__get_free_pages(gfp_mask, order)
+
+通过slab分配器申请内核内存的函数有哪些？
+1、kmem_cache_create/ kmem_cache_alloc
+	适用于反复分配释放同一大小的内存块的场合。
+	先用kmem_cache_create创建一个区域。
+	然后用kmem_cache_alloc从这个区域里获取内存块。
+	
+Linux的内核空间和用户空间是如何划分的？以32位系统为例。
+
+用户用malloc分配的内存地址在什么范围？
+是虚拟地址，在0000 0000 到0xC000 0000 - 16M之间。
+
+Linux vfs的关键数据结构有哪些？至少列出4个。
+1、super_block。
+	对应一个安装的fs的控制信息。
+	代表一个fs。
+2、inode。
+	inode代表了磁盘上一个物理文件。
+
+3、dentry。
+	dentry主要是为了方便查找文件。
+	dentry没有对应的磁盘数据结构。
+4、file。
+	对应一个打开的文件。
+	
+创建进程的系统调用有哪些？
+1、clone。
+	可以选择是否与父进程共享空间。
+2、fork。
+	不与父进程共享空间。
+3、vfork。
+	父子进程共享空间。
+	
+哪些函数会导致进程切换？
+1、do_fork。
+2、do_timer。定时中断。
+3、wake_up_process
+4、sys_sched_yield。
+
+Linux调度程序是靠静态优先级还是动态优先级来进行调度的？
+1、是根据动态优先级。
+2、但是动态优先级由静态优先级通过算法得到。
+	主要是为了防止高优先级进程长时间占用cpu。
+	

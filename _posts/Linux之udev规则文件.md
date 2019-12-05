@@ -2,7 +2,10 @@
 title: Linux之udev规则文件
 date: 2017-08-05 14:48:45
 tags:
+	- Linux
 ---
+
+1
 
 udev的工作是靠kernel发出的uevent来驱动的，如果是删除的uevent，就会删除对应的节点。如果是增加设备的uevent，就会增加对应的节点。
 

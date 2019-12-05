@@ -24,6 +24,12 @@ spinlock是保证访问资源的时候，只有一个线程可以访问。注意
 
 
 
+spinlock最多被一个可执行线程持有。
+
+如果另外一个线程试图来获取已经被占用的spinlock。那么这个进程就会阻塞，相当于空转。直到持有spinlock的线程释放了为止。
+
+
+
 # 自旋锁的由来
 
 自旋锁最初就是为了smp系统而设计的。实现在多处理器的情况下保护临界区。
@@ -199,5 +205,10 @@ spinlock在不同情况下的表现：
 
 # 参考资料
 
-1、http://blog.chinaunix.net/uid-20543672-id-3252604.html
+1、
 
+http://blog.chinaunix.net/uid-20543672-id-3252604.html
+
+2、linux spinlock之使用
+
+https://blog.csdn.net/xiaoyao1004/article/details/83858953

@@ -47,3 +47,6 @@ slob分配器总共只有三条半满空闲链（partial free list）：
 
 https://www.cnblogs.com/icanth/archive/2012/05/20/2510742.html
 
+2、slab/slob/slub的区别
+
+https://blog.csdn.net/adaptiver/article/details/7042469

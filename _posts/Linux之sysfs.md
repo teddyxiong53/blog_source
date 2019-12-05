@@ -7,6 +7,16 @@ tags:
 
 ---
 
+1
+
+sysfs的作用是什么？
+
+1、建立系统里bus、driver、device这三者直接的桥梁。
+
+2、在用户空间展示内核里各种device的拓扑图。
+
+3、对用户空间暴露接口，取代部分ioctl功能。
+
 
 
 sysfs跟proc类似，都是提供了一种从shell访问内核数据的方式。但是sysfs会比proc更好一些。其中最重要的一点就是设计上更加清晰。
@@ -80,3 +90,6 @@ driver     eeprom     modalias   name       power      subsystem  uevent
 
 https://www.ibm.com/developerworks/cn/linux/l-cn-sysfs/index.html
 
+2、内核Uevent事件机制 与 Input子系统
+
+https://www.cnblogs.com/sky-heaven/p/6394267.html
