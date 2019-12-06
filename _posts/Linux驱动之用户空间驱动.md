@@ -34,6 +34,12 @@ XServer就是一个典型的用户空间驱动。
 
 
 
+用户态直接操作寄存器的方法
+
+用mmap。
+
+
+
 # 参考资料
 
 1、在用户空间编写驱动程序
@@ -43,3 +49,11 @@ https://blog.csdn.net/xiezhi123456/article/details/81004421
 2、字符设备驱动另一种写法—mmap方法操作LED
 
 https://www.cnblogs.com/weidongshan/p/8178937.html
+
+3、linux下操作gpio寄存器的方法
+
+https://www.cnblogs.com/mylinux/p/5639264.html
+
+4、
+
+http://www.360doc.com/content/15/0401/14/9075092_459810908.shtml

@@ -94,9 +94,47 @@ start_kernel
 
 
 
-# vexpress ca9x4
+看驱动的。
 
-用2.6版本的看一下，4.4的，已经没有什么内容，全部挪到设备树里去了。
+梳理驱动的方法是，从mach-mini2440.c里看platform_device，找到name属性。
 
-看一下这个，主要是方便梳理思路，三星的封装层数太多了。看不清本来的样子了。
+然后肯定有一个对应的platform_driver，那么属性的值，跟platform_device是一样的。
+
+
+
+# led
+
+使用了Linux的led子系统。了解一下即可。
+
+# 按键
+
+```
+从platform_device看name属性：
+.name		= "gpio-keys",
+在源代码下grep gpio-keys。
+可以找到是通用驱动框架的。
+./drivers/input/keyboard/gpio_keys.c
+```
+
+看gpio_keys.c注释的第一行写着：
+
+```
+Driver for keys on GPIO lines capable of generating interrupts.
+```
+
+适合中断方式。
+
+
+
+音频驱动
+
+这个不在driver目录下，而是在sound目录下。
+
+
+
+
+
+参考资料
+
+1、
 

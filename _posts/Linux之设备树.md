@@ -887,3 +887,7 @@ http://www.eefocus.com/marianna/blog/14-10/306247_821be.html
 2、LWN 616859: 设备树动态叠加技术
 
 http://tinylab.org/lwn-616859-device-tree-overlays/
+
+3、设备树另类解读
+
+https://blog.csdn.net/lq496387202/article/details/79421138

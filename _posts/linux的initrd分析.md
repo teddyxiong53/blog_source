@@ -5,6 +5,44 @@ tags:
 	- linux
 	- initrd
 ---
+1
+
+为什么需要initrd？
+
+内核里没有编译根文件系统所在的介质的驱动，例如cd-rom。
+
+就需要先用initrd，执行initrd的init进程，然后insmod cd-rom的驱动。挂载cd-rom。
+
+然后切换到cd-rom上的真正文件系统的init上。
+
+
+
+主要作用：
+
+1、Linux发行版必备。
+
+因为发行版需要适应各种不同的硬件，把所有的驱动都编译进内核是不现实的。
+
+2、livecd必备。
+
+3、制作Linux usb启动盘必须适应initrd。
+
+
+
+从本质上来说，就是为了应对存储介质的多样性和不确定性。
+
+
+
+initramfs从内核2.5版本才出现。比initrd要晚。
+
+所以initramfs技术上肯定是有所进步的，不然它的出现就没有意义了。
+
+initramfs的根本上的不同，就是它跟内核被打包成一个文件了。
+
+该cpio格式的文件被链接进了内核中特殊的数据段.init.ramfs上，其中全局变量`__initramfs_start和__initramfs_end`分别指向这个数据段的起始地址和结束地址。内核启动时会对.init.ramfs段中的数据进行解压，然后使用它作为临时的根文件系统。
+
+
+
 linux对所有文件的读写都会在内存里做缓存，这样效率会高很多。
 ramfs直接利用了linux内核的高速缓存机制，做成一个大小可以动态变化的基于内存的文件系统。ramfs工作在vfs层，不能被格式化，可以创建多个，默认情况下，ramfs最多用到系统内存的一半。可以在编译内核的时候修改。
 
@@ -12,6 +50,7 @@ rootfs是一个特定的ramfs实例，始终存在于系统中，是系统的根
 
 initrd是一个被压缩过的小型根目录。系统启动时，initrd文件被载入到内存，内核然后把解压后的initrd挂载为根目录。然后执行/init脚本。在/init脚本里，再去挂载真正的根文件系统。
 看内核里的代码，大概的流程是这样的。
+
 ```
 start_kernel-->
 	rest_init-->
@@ -76,3 +115,10 @@ initramfs处理也更加简单。
 CONFIG_INITRAMFS_SOURCE="/path/to/rootfs/"
 ```
 
+
+
+参考资料
+
+1、《Linux启动过程分析》之区别Initramfs与initrd
+
+https://blog.csdn.net/tankai19880619/article/details/16885615

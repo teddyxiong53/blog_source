@@ -23,3 +23,6 @@ risc-v可以做高端芯片吗？龙芯可以转risc-v架构吗？
 
 http://crva.io/documents/RISC-V-Reader-Chinese-v2p1.pdf
 
+2、Risc-V 发展迅猛，正是关注好时机
+
+https://tinylab.org/riscv-overview/

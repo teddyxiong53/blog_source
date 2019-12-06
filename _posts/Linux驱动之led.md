@@ -78,5 +78,12 @@ static int __init nand_base_init(void)
 }
 ```
 
+def_trigger这个属性值得注意。
 
 
+
+参考资料
+
+1、Linux led子系统
+
+http://www.360doc.com/content/12/0312/20/6828497_193834197.shtml

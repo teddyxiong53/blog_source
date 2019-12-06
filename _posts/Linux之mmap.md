@@ -38,6 +38,8 @@ int xxx_map(struct file *file, struct vm_area_struct *vma);
 
 对于硬盘上的普通文件，这样操作，是非常提高效率的。
 
+mmap的好处是，mmap把设备内存映射到虚拟内存，则用户操作虚拟内存相当于直接操作设备了，省去了用户空间到内核空间的复制过程，相对IO操作来说，增加了数据的吞吐量。
+
 
 
 # 举例
@@ -79,3 +81,7 @@ void main()
 1、
 
 https://www.jianshu.com/p/c3afc0f02560
+
+2、
+
+https://www.cnblogs.com/wanghuaijun/p/7624564.html

@@ -6,6 +6,52 @@ tags:
 
 ---
 
+1
+
+我的一个疑问：
+
+内核调度抢占的时机是什么？
+
+CPU抢占分两种情况, 用户抢占, 内核抢占
+
+其中内核抢占是在Linux2.5.4版本发布时加入, 同SMP(Symmetrical Multi-Processing, 对称多处理器), 作为内核的可选配置。
+
+
+
+需要满足下面的条件，kernel才可以抢占一个任务的内核态：
+
+1、没有锁。
+
+2、code是可重入的。
+
+内核抢占发生的时机，一般发生在：
+
+1、中断处理返回的时候，隐式调用了schedule函数，当前任务没有主动放弃cpu使用权，而是被剥夺了cpu使用权。
+
+2、spinlock解锁后，软中断使能后。也会产生抢占。
+
+3、主动调用schedule主动放弃cpu使用权。
+
+4、内核中阻塞，也会导致被抢占。
+
+
+
+这些情况，不能被内核抢占：
+
+1、内核正在进行中断处理。
+
+2、内核在中断上下文的下半部里。
+
+3、在spinlock锁内。
+
+4、内核正在执行schedule函数。
+
+5、内核正在对per-cpu变量进行处理的时候。
+
+
+
+
+
 
 
 进程调度是os的核心功能。
@@ -218,3 +264,7 @@ https://blog.csdn.net/ctthuangcheng/article/details/8914309
 6、Linux调度子系统
 
 https://blog.csdn.net/u012259202/category_1774977.html
+
+7、Linux用户抢占和内核抢占详解(概念, 实现和触发时机)--Linux进程的管理与调度(二十）
+
+https://blog.csdn.net/gatieme/article/details/51872618
