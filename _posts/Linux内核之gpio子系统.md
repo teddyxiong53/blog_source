@@ -197,6 +197,75 @@ s3c_gpio_setpull
 
 
 
+具体的实现文件为gpiolib.c在配置内核的时候，我们必须使用CONFIG_GENERIC_GPIO这个宏来支持GPIO驱动。
+
+mini2440打开了这个宏的。
+
+CONFIG_GPIOLIB 
+
+
+
+```
+以gpio为入口，把三星的层次关系理清楚。
+还有就是寄存器地址宏定义。
+在plat-samsumg目录下
+	有3个文件：
+	gpio.c
+		5个函数：
+		s3c_gpiolib_input
+		s3c_gpiolib_output
+		s3c_gpiolib_set
+		s3c_gpiolib_get
+		s3c_gpiolib_add
+			只被plat-s3c24xx里gpiolib.c用到。s3c24xx_gpiolib_init
+		对外接口只有一个：s3c_gpiolib_add
+		其余4个都是给s3c_gpiolib_add用的。
+		
+	gpio-config.c
+		s3c_gpio_cfgpin
+			用的比较多，在mach-mini2440.c里用到。
+		s3c_gpio_getcfg
+		s3c_gpio_setpull
+			用的比较多，在mach-mini2440.c里用到。
+		s3c_gpio_setcfg_s3c24xx
+		s3c_gpio_getcfg_s3c24xx
+	gpiolib.c
+		这个文件没有用。
+	
+在plat-s3cx24xx目录下：
+	有2个文件：
+	gpio.c
+		s3c2410_gpio_pullup
+			只在drivers/led-s3c24xx.c里用到了。
+		s3c2410_gpio_setpin
+			只在drivers/led-s3c24xx.c里用到了。
+		s3c2410_gpio_getpin
+			没有用。
+		s3c2410_modify_misccr
+			没用。
+	
+	gpiolib.c
+		对外接口只有一个：s3c24xx_gpiolib_init
+		内核初始化自动调用。作用是把gpio_chip add到gpio子系统。
+mach-mini2440.c
+	这个里面就是使用gpio接口。看看如何使用的。
+	gpio寄存器，都是访问的虚拟地址的了。
+	被映射到F400 0000这个位置了。
+	C0是配置为LEND，LEND是行结束的意思。lcd的一个引脚。
+	G4被配置为背光引脚。然后打开。
+	gpio_request(S3C2410_GPG(4), "backlight")
+	gpio_direction_output(S3C2410_GPG(4), 1);
+	B1被设置为上拉。输入。
+	C5配置为输出，且输出0 
+	所有按键配置为输入。
+	s3c_gpio_setpull(mini2440_buttons[i].gpio, S3C_GPIO_PULL_UP);
+	s3c_gpio_cfgpin(mini2440_buttons[i].gpio, S3C2410_GPIO_INPUT);
+```
+
+
+
+关于gpio，还有一种情况是i2c接口的外扩gpio芯片。
+
 
 
 # 参考资料
@@ -214,3 +283,8 @@ https://blog.csdn.net/mirkerson/article/details/8464290
 4、树莓派学习笔记——Shell脚本操作GPIO
 
 https://blog.csdn.net/xukai871105/article/details/18517729
+
+5、
+
+https://tinylab.org/lwn-532714/
+

@@ -142,3 +142,7 @@ https://stackoverflow.com/questions/77005/how-to-automatically-generate-a-stackt
 ARM Linux BackTrace
 
 https://blog.csdn.net/geniuszm2/article/details/52016102
+
+Linux 段错误详解
+
+https://tinylab.org/explore-linux-segmentation-fault/

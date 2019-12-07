@@ -126,11 +126,17 @@ printk
 
 ## scull的缺陷
 
-## sem和mutex
+## sem
+使用down_interruptible函数。且检查返回值。
+	这个是最佳实践。
+	但是我搜索，大部分都是使用down函数的。
 
 ## completion
 
 ## spinlock
+
+## rcu
+这个很少被使用。但是很出名。
 
 ## 不用锁怎么做
 原子变量

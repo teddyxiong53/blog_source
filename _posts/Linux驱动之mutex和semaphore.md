@@ -125,9 +125,21 @@ void down(struct semaphore *sem)
 }
 ```
 
-我最大的疑问就是`__down`函数里会调度出去。这个是spinlock里面啊。可以吗？
 
-肯定是可以的。但是这里spinlock的作用是什么呢？
+
+
+
+内核里mutex可以用semaphore来做。只要让semaphore只取0和1这2个值就好了。
+
+```
+#define DECLARE_MUTEX(name)	\
+	struct semaphore name = __SEMAPHORE_INITIALIZER(name, 1)
+```
+
+```
+#define init_MUTEX(sem)		sema_init(sem, 1)
+#define init_MUTEX_LOCKED(sem)	sema_init(sem, 0)
+```
 
 
 

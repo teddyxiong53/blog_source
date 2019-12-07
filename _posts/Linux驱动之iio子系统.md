@@ -14,6 +14,8 @@ iio是Industrial IO，工业io。
 
 iio子系统是指那些在分类的时候，处于hwmon和input子系统之间的设备。
 
+iio到目前还一直是在drivers/staging目录下，没有被并入主线版本。
+
 
 
 我们先看看有哪些设备的驱动。文件总共300多个。
@@ -115,11 +117,27 @@ struct device_type iio_device_type = {
 
 
 
+# iio的 使用
+
+直接读取sys下的文件，这样会触发一次采集行为。
+
+```
+/sys/devices/platform/ff1e0000.saradc/iio:device0 # cat in_voltage0_raw
+388
+```
+
+
+
 # 参考资料
 
 1、linux iio子系统
 
 https://blog.csdn.net/tsy20100200/article/details/47101661
 
+2、
 
+https://tinylab.org/lwn-465358/
 
+3、linux IIO子系统使用说明
+
+https://blog.csdn.net/xjq163/article/details/80790613

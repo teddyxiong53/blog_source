@@ -207,3 +207,11 @@ Linux调度程序是靠静态优先级还是动态优先级来进行调度的？
 2、但是动态优先级由静态优先级通过算法得到。
 	主要是为了防止高优先级进程长时间占用cpu。
 	
+	
+mdev -s is to be run during boot to scan /sys and populate /dev.
+Bare mdev is a kernel hotplug helper. To activate it:
+echo /sbin/mdev >/proc/sys/kernel/hotplug
+
+
+kmemcheck_bitfield_begin和kmemcheck_bitfield_end分别用于定义零长数组，以确定这些成员的起始和终止的位置。
+

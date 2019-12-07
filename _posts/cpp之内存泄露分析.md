@@ -126,3 +126,7 @@ https://blog.csdn.net/u011217649/article/details/77683126
 5、tcmalloc使用的一点经验
 
 http://blog.chinaunix.net/uid-20722087-id-5083864.html
+
+6、C：使用mtrace、memwatch、dmalloc检测内存泄漏
+
+https://my.oschina.net/letiantian/blog/754506

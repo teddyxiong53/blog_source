@@ -348,3 +348,199 @@ sudo insmod ./hellop.ko whom=teddy howmany=3
 
 
 
+# jit
+
+jit是just in time模块的意思。
+
+在misc-modules目录下。
+
+插入模块：
+
+```
+sudo insmod ./jit.ko
+```
+
+产生了这些proc节点：
+
+```
+hlxiong@hlxiong-VirtualBox:/proc$ ls jit* -lh
+-r--r--r-- 1 root root 0 12月  7 16:25 jitasklet
+-r--r--r-- 1 root root 0 12月  7 16:25 jitasklethi
+-r--r--r-- 1 root root 0 12月  7 16:25 jitbusy
+-r--r--r-- 1 root root 0 12月  7 16:25 jitimer
+-r--r--r-- 1 root root 0 12月  7 16:25 jitqueue
+-r--r--r-- 1 root root 0 12月  7 16:25 jitsched
+-r--r--r-- 1 root root 0 12月  7 16:25 jitschedto
+```
+
+还有一个currentime
+
+```
+hlxiong@hlxiong-VirtualBox:/proc$ cat currentime 
+0x106d345ab 0x0000000106d345ab 1575707177.097970
+                              1575707177.092723152
+```
+
+依次是：jiffies、64位的jiffies、timeval、timespec。
+
+# complete
+
+这个是用来演示complete的用法的。
+
+先插入模块：
+
+```
+sudo insmod ./complete.ko
+```
+
+查看/proc/devices，看到分配到的设备号是244 。
+
+然后创建设备节点：
+
+```
+sudo mknod c /dev/complete 244 0
+```
+
+一个shell窗口：
+
+```
+cat /dev/complete
+```
+
+会阻塞住。按ctrl+C都无法停止的。
+
+另外开一个shell窗口：
+
+```
+su root # 需要切换到root用户采用权限。
+echo "123" > /dev/complete
+```
+
+这个时候，cat命令执行完。
+
+查看dmesg：
+
+```
+[459639.868842] process 31585 (cat) going to sleep
+[459669.054363] process 31594 (echo) awakening the readers...
+[459669.054372] awoken 31585 (cat)
+```
+
+dmesg里的pid和命令名字，是这样获取到的：
+
+```
+current->pid, current->comm
+```
+
+整个代码很简单。
+
+```
+定义一个complete：
+DECLARE_COMPLETION(comp);
+等待：
+wait_for_completion(&comp);
+发送：
+complete(&comp);
+```
+
+# faulty
+
+这个是用来演示错误的。
+
+在write函数里，故意对指向NULL的指针进行写操作。
+
+```
+ssize_t faulty_write (struct file *filp, const char __user *buf, size_t count,
+		loff_t *pos)
+{
+	/* make a simple fault by dereferencing a NULL pointer */
+	*(int *)0 = 0;
+	return 0;
+}
+```
+
+还是创建节点，对设备节点进行echo操作。
+
+查看dmesg。
+
+```
+[460514.119114] BUG: unable to handle kernel NULL pointer dereference at           (null)
+[460514.119384] IP: faulty_write+0x8/0x20 [faulty]
+[460514.119528] PGD 8000000011189067 
+[460514.119530] P4D 8000000011189067 
+[460514.119755] PUD b53a8067 
+[460514.119868] PMD 0 
+
+[460514.120229] Oops: 0002 [#1] SMP PTI
+[460514.120342] Modules linked in: faulty(OE) xt_nat xt_tcpudp veth ipt_MASQUERADE nf_nat_masquerade_ipv4 xfrm_user xfrm_algo iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 xt_addrtype iptable_filter ip_tables xt_conntrack x_tables nf_nat br_netfilter bridge stp llc overlay aufs cfg80211 nf_conntrack_netlink vboxsf(OE) nf_conntrack libcrc32c nfnetlink binfmt_misc crct10dif_pclmul crc32_pclmul ghash_clmulni_intel pcbc snd_intel8x0 snd_ac97_codec ac97_bus aesni_intel aes_x86_64 crypto_simd glue_helper cryptd joydev snd_pcm snd_seq_midi snd_seq_midi_event snd_rawmidi snd_seq snd_seq_device snd_timer snd vboxvideo(OE) soundcore input_leds intel_rapl_perf ttm serio_raw i2c_piix4 drm_kms_helper vboxguest(OE) drm fb_sys_fops syscopyarea sysfillrect sysimgblt mac_hid ib_iser rdma_cm iw_cm ib_cm ib_core
+[460514.121650]  iscsi_tcp libiscsi_tcp libiscsi scsi_transport_iscsi parport_pc ppdev lp parport nfsd auth_rpcgss nfs_acl lockd grace sunrpc autofs4 hid_generic usbhid hid video e1000 psmouse ahci libahci pata_acpi [last unloaded: complete]
+[460514.122430] CPU: 3 PID: 31590 Comm: zsh Tainted: G           OE   4.13.0-45-generic #50~16.04.1-Ubuntu
+[460514.122694] Hardware name: innotek GmbH VirtualBox/VirtualBox, BIOS VirtualBox 12/01/2006
+[460514.122980] task: ffff8b0287a68000 task.stack: ffffaa1dc2b2c000
+[460514.123125] RIP: 0010:faulty_write+0x8/0x20 [faulty]
+[460514.123329] RSP: 0018:ffffaa1dc2b2feb0 EFLAGS: 00010246
+[460514.123452] RAX: 0000000000000000 RBX: 0000000000000002 RCX: ffffaa1dc2b2ff18
+[460514.123591] RDX: 0000000000000002 RSI: 00000000006c21e0 RDI: ffff8b032d640500
+[460514.123720] RBP: ffffaa1dc2b2fec0 R08: ffffffffc0717000 R09: ffff8b032da8e428
+[460514.123860] R10: 0000000000000001 R11: ffff8b0287a68000 R12: ffffaa1dc2b2ff18
+[460514.123989] R13: 00000000006c21e0 R14: ffff8b032d640500 R15: 0000000000000001
+[460514.124127] FS:  00007fe3b4476700(0000) GS:ffff8b033b380000(0000) knlGS:0000000000000000
+[460514.124376] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[460514.124532] CR2: 0000000000000000 CR3: 0000000006d6c006 CR4: 00000000000606e0
+[460514.124669] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[460514.124870] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+[460514.124999] Call Trace:
+[460514.126666]  ? __vfs_write+0x1b/0x40
+[460514.128139]  vfs_write+0xb8/0x1b0
+[460514.129640]  ? entry_SYSCALL_64_after_hwframe+0xb1/0x139
+[460514.131149]  SyS_write+0x55/0xc0
+[460514.132179]  ? entry_SYSCALL_64_after_hwframe+0x79/0x139
+[460514.133142]  entry_SYSCALL_64_fastpath+0x24/0xab
+[460514.134119] RIP: 0033:0x7fe3b36822c0
+[460514.135104] RSP: 002b:00007ffef4644698 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+[460514.136071] RAX: ffffffffffffffda RBX: 0000000000000004 RCX: 00007fe3b36822c0
+[460514.137024] RDX: 0000000000000002 RSI: 00000000006c21e0 RDI: 0000000000000001
+[460514.137991] RBP: 0000000000000004 R08: 00007fe3b3951780 R09: 00007fe3b4476700
+[460514.138927] R10: 0000000000000001 R11: 0000000000000246 R12: 0000000000000000
+[460514.139874] R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
+[460514.140773] Code: <c7> 04 25 00 00 00 00 00 00 00 00 48 89 e5 5d c3 0f 1f 84 00 00 00 
+[460514.141751] RIP: faulty_write+0x8/0x20 [faulty] RSP: ffffaa1dc2b2feb0
+[460514.142606] CR2: 0000000000000000
+[460514.143475] fbcon_switch: detected unhandled fb_set_par error, error code -16
+[460514.145795] fbcon_switch: detected unhandled fb_set_par error, error code -16
+[460514.148135] ---[ end trace 81f268ce846bc754 ]---
+```
+
+# hellop
+
+这个是演示模块参数传递的。
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/ldd3/ldd3-examples-3.x/misc-modules$ sudo insmod ./hellop.ko 
+hlxiong@hlxiong-VirtualBox:~/work/test/ldd3/ldd3-examples-3.x/misc-modules$ dmesg
+[460725.310139] (0) Hello, world
+```
+
+带上参数：
+
+```
+sudo insmod ./hellop.ko howmany=10 whom=teddy
+dmesg
+[460833.250284] (0) Hello, teddy
+[460833.250289] (1) Hello, teddy
+[460833.250291] (2) Hello, teddy
+[460833.250293] (3) Hello, teddy
+[460833.250295] (4) Hello, teddy
+[460833.250297] (5) Hello, teddy
+[460833.250299] (6) Hello, teddy
+[460833.250301] (7) Hello, teddy
+[460833.250303] (8) Hello, teddy
+[460833.250305] (9) Hello, teddy
+```
+
+# jiq
+
+jiq是just in queue的意思。
+
+
+

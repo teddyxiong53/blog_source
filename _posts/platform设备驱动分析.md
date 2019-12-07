@@ -218,6 +218,14 @@ MODULE_LICENSE("GPL");
 
 
 
+i2c-gpio
+
+这个是用io引脚模拟i2c总线的驱动。
+
+是一个典型的平台设备驱动。
+
+
+
 参考资料
 
 1、Linux Platform devices 平台设备驱动
@@ -231,3 +239,7 @@ https://blog.csdn.net/lizuobin2/article/details/51607813
 3、Linux led子系统
 
 http://www.360doc.com/content/12/0312/20/6828497_193834197.shtml
+
+4、
+
+https://tinylab.org/lwn-448499/
