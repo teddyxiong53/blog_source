@@ -120,6 +120,10 @@ File.extractall(pwd=p)
 
 
 
+windows下有个工具，叫ziperello。破解效率还可以，在我的电脑上，每秒可以尝试600万个密码左右。
+
+
+
 参考资料
 
 1、python利用itertools生成密码字典并多线程撞库破解rar密码

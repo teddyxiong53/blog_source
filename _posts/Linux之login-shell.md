@@ -29,6 +29,27 @@ login shell会做的事情：
 
 1、会读取/etc/profile and ~/.profile这2个脚本文件来设置环境变量。
 
+Linux的login shell和普通shell的不同在于：
+
+```
+	if (isloginsh) {
+		const char *hp;
+
+		state = 1;
+		read_profile("/etc/profile");
+ state1:
+		state = 2;
+		hp = lookupvar("HOME");
+		if (hp) {
+			hp = concat_path_file(hp, ".profile");
+			read_profile(hp);
+			free((char*)hp);
+		}
+	}
+```
+
+login shell会执行/etc/profile和~/.profile脚本。
+
 
 
 

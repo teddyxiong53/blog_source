@@ -20,3 +20,10 @@ bootm 0x80008000这个命令的执行过程分析：
 
 ```
 
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/czg13548930186/article/details/76383153

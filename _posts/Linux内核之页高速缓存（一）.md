@@ -10,6 +10,8 @@ tags:
 
 看《深入理解Linux内核》第15章，不太明白，还是先到网上看看资料。
 
+
+
 页高速缓存，就是page cache。
 
 主要是对磁盘进行缓存，减少对磁盘的io操作。
@@ -32,12 +34,7 @@ page cache是由一组page组成。
 
 为了满足普遍性的要求，linux使用address_space这个结构体来描述page cache里的页面。
 
-```
-struct address_page
-{
-  
-}
-```
+
 
 
 
@@ -47,7 +44,7 @@ struct address_page
 
 2、write through。同时把缓存和磁盘内容写入。
 
-3、回写。写到缓存，对应的page被标记为dirty，被加入到dirty链表，在后台定期写入。
+3、write back。写到缓存，对应的page被标记为dirty，被加入到dirty链表，在后台定期写入。
 
 
 
@@ -87,14 +84,14 @@ block是vfs的最小逻辑操作单位。一个page cache可以由几个block组
 
 # 参考文章
 
-1、
+1、linux内核分析笔记----页高速缓存和页回写
 
 http://www.cnblogs.com/hanyan225/archive/2011/08/05/2126619.html
 
 2、
 
-http://vinllen.com/linuxye-gao-su-huan-cun-he-ye-hui-xie/
-
-3、
-
 https://www.linuxidc.com/Linux/2017-03/142205.htm
+
+3、Linux下的磁盘缓存
+
+https://www.cnblogs.com/heluan/p/8892406.html

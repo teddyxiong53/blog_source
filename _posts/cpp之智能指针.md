@@ -295,6 +295,12 @@ weak_ptr是为了配合shared_ptr而引入的。
 3、当观测的shared_ptr失效后，weak_ptr也就失效了。
 ```
 
+看有的人是建议，汽车持有轮子的shared_ptr。轮子不要持有汽车的weak_ptr。
+
+从逻辑上，程序员要保证汽车的生命周期长于轮子。
+
+weak_ptr一定程度上会掩盖问题。
+
 
 
 # 智能指针跟裸指针相互转化
@@ -1149,3 +1155,7 @@ https://www.cnblogs.com/wxquare/p/4759020.html
 17、比起直接使用new，更偏爱使用std::make_unique和std::make_shared
 
 https://blog.csdn.net/f110300641/article/details/83409804
+
+18、建议慎用boost::weak_ptr来避免
+
+https://blog.csdn.net/runyon1982/article/details/49018765

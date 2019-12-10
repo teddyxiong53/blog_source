@@ -61,13 +61,19 @@ struct ext3_inode {
 
 
 
-我们在进程里打开一个文件，实际上就是在内存里建立对应的dentry和inode。并且与进程task_struct关联起来。
+**我们在进程里打开一个文件，实际上就是在内存里建立对应的dentry和inode**。并且与进程task_struct关联起来。
 
 关系图是这样的：
 
 
 
 ![Linux内核之dentry](/images/Linux内核之dentry.png)
+
+
+
+首先，文件必须由进程打开，每个进程都有它自己当前的工作目录和它自己的根目录。
+
+
 
 # 参考文章
 

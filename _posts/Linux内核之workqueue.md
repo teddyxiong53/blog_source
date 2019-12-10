@@ -6,98 +6,75 @@ tags:
 
 ---
 
+1
 
+在内核驱动里，一般小型的任务（work）都不会自己起一个线程来处理，而是扔到workqueue里去处理。**workqueue的主要工作就是用进程上下文来处理内核中大量的小任务。**
 
-我基于linux2.6.35的来看。
+工作队列是内核2.6版本引入的，工作队列使用起来更加方便。它把工作推后，交给一个内核thread去执行。这个thread总是在进程上下文执行，所以很方便持有sem，也可以允许sleep。
 
-涉及的文件是kernel/workqueue.c。linux/workqueue.h。
+工作队列和tasklet，都是属于底半段机制。
 
-入口函数是init_workqueues。在do_basic_setup里被调用。
+每个workqueue就是一个内核进程。
 
-这里面做的就是
+所以，workqueue的主要设计思想就是：
 
-```
-keventd_wq = create_workqueue("events");
-```
+1、要并行，多个work不要相互阻塞。
 
-创建了一个叫做events的workqueue。
+2、要节省资源，多个work尽量共享资源。
 
-看看create_workqueue是怎么工作的。
+工作队列workqueue**不是通过软中断实现**的，它是**通过内核进程实现**的
 
-```
-struct workqueue_struct *__create_workqueue_key(const char *name,
-						int singlethread,//0
-						int freezeable,//0
-						int rt,//0
-						struct lock_class_key *key,//这个NULL
-						const char *lock_name//这个NULL
-						)
-1、分配一个workqueue_struct结构体。
-2、它的cpu_wq是alloc_percpu(struct cpu_workqueue_struct)
-3、添加到workqueues这个全局链表里去。
-4、create_workqueue_thread，最重要就是这里，创建了一个内核线程。工作者线程叫:events/n
-	p = kthread_create(worker_thread, cwq, fmt, wq->name, cpu);
-```
+内核进程worker_thread做的事情很简单，死循环而已，不停的执行workqueue上的work_list.
 
 
 
-看看workqueue如何为系统服务。
+为了实现这个设计思想，workqueue的设计实现也经历了多个版本。最新的workqueue实现叫做CMWQ（Concurrency Managed Workqueue），也就是更加智能的算法来实现并行和节省。
 
-所以我们要看看workqueue对外提供的接口有哪些。
+相关概念：
 
-驱动开发者，需要做的有：
+1、work。最小单位。核心就是一个函数指针。
 
-1、定义一个work。
+2、workqueue。work的集合。
+
+
+
+涉及的数据结构：
 
 ```
-DEFINE_WORK(xx_work, xx_work_func);
-```
-
-或者直接：
-
-```
-struct work_struct xx_work;
-INIT_WORK(&xx_work, xx_work_func);
-```
-
-驱动开发者需要使用的work_struct，而不是直接使用workqueue。
-
-2、触发调度行为。一般是在中断里。
-
-```
-schedule_work(&xx_work);
+struct work_struct
+struct cpu_workqueue_struct
+struct workqueue_struct
 ```
 
 
 
-下面我们就看看系统之后是如何进行调度的。
+workqueue系统的初始化：
 
 ```
-int schedule_work(struct work_struct *work)
-{
-	return queue_work(keventd_wq, work);
-}
+start_kernel
+	do_basic_setup
+		init_workqueues
+			keventd_wq = create_workqueue("events");
+				create_workqueue_thread
+					kthread_create(worker_thread, cwq, fmt, wq->name, cpu);
 ```
 
-函数就是把work插入到队列里去了。keventd_wq又是如何定义和工作的呢？
 
-定义是这样：
 
-```
-static struct workqueue_struct *keventd_wq
-```
 
-赋值在这里：
 
-```
-keventd_wq = create_workqueue("events");
-```
 
-接下来，我们要看work_thread这个内核线程了。
 
-这里面就是阻塞的，在等。有事件来了。
 
-```
-f(work);//这个就是我们注册进来的函数。
-```
 
+
+
+
+
+
+
+参考资料
+
+1、Linux workqueue工作原理 
+
+https://www.cnblogs.com/sky-heaven/p/5847519.html

@@ -10,6 +10,20 @@ tags:
 
 一直不太明白vm_area_struct这个结构体的用途是什么。现在系统了解一下。
 
+一个vma，对应的是一段线性地址空间。
+
+一个进程，有多个vma。
+
+例如：代码段就是一个vma，数据段也是一个vma，堆也一个vma，栈也是一个vma。
+
+一个mmap调用，也是建立了一个vma。
+
+一个vma，由一个struct vm_area_struct结构体来描述。
+
+这些vma在mm_struct以两种方式进行组织，一种是链表方式，对应于mm_struct中的mmap链表头，一种是红黑树方式，对应于mm_struct中的mm_rb根节点，和内核其他地方一样，链表用于遍历，红黑树用于查找。
+
+
+
 #定义
 
 vma是Virtual Memory Area，虚拟内存区域的缩写。
@@ -56,3 +70,12 @@ inode则是跟进程无关的。
 
 
 
+参考资料
+
+1、Linux内存管理 (7)VMA操作
+
+https://www.cnblogs.com/arnoldlu/p/8329279.html
+
+2、linux进程地址空间--vma的基本操作
+
+https://blog.csdn.net/vanbreaker/article/details/7855007

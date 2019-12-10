@@ -38,3 +38,85 @@ euid == uid
 
 egid == gid。
 
+
+
+```
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+
+int main(void)
+{
+    printf(" UID\t= %d\n", getuid());
+    printf(" EUID\t= %d\n", geteuid());
+    printf(" GID\t= %d\n", getgid());
+    printf(" EGID\t= %d\n", getegid());
+
+    return EXIT_SUCCESS;
+}
+```
+
+运行情况：
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/c-test$ ./a.out 
+ UID    = 1000
+ EUID   = 1000
+ GID    = 1000
+ EGID   = 1000
+hlxiong@hlxiong-VirtualBox:~/work/test/c-test$ sudo ./a.out 
+ UID    = 0
+ EUID   = 0
+ GID    = 0
+ EGID   = 0
+```
+
+用sudo运行的时候，都变成root对应的了。
+
+下面演示一下uid和euid不同的情况。
+
+先修改一下a.out的属性。
+
+```
+chmod u+s ./a.out
+```
+
+然后用sudo来执行这个程序。
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/c-test$ sudo ./a.out 
+ UID    = 0
+ EUID   = 1000
+ GID    = 0
+ EGID   = 0
+```
+
+现在uid和euid就不同了。
+
+
+
+我们看看这个特性的应用。
+
+查看/etc/passwd文件，可以看到只有root用户对这个文件有修改权限。
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/c-test$ ls /etc/passwd -lh
+-rw-r--r-- 1 root root 3.1K 11月 21 14:54 /etc/passwd
+```
+
+
+
+但是，实际上，用户修改自己的密码是不需要sudo的。
+
+那么是怎么做到的呢？
+
+就是借助setuid来解决这个问题的。
+
+
+
+参考资料
+
+1、Linux进程的uid和euid
+
+https://www.cnblogs.com/itech/archive/2012/04/01/2429081.html

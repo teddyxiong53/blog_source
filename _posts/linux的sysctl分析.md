@@ -5,6 +5,10 @@ tags:
 	- linux 
 	- sysctl
 ---
+1
+
+sysctl对应的是/proc/sys目录下。
+
 sysctl是一个允许用户在运行时改变linux系统某些设置的接口，可以设置的变量个数超过500个。
 查看当前的设置：`sysctl -a`
 从得出的结果来看，这些设置项主要是net相关、vm相关、kernel相关、dev相关。net占据了很大一部分。

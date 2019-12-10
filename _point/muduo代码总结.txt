@@ -148,3 +148,11 @@ EventLoopThreadPool分析
 		4、cond。在loop对象准备好的时候，通知一下。
 		5、callback。线程初始化回调。
 		
+Mutex和Condition代码
+这2个很基础，有个特点：
+1、成员变量是引用类型。
+	应该是为了提高效率，避免拷贝构造。
+2、Mutex把Condition设置为友元。
+	MutexLock在内部定义了一个UnasignedGuard类，专门给Condition用的。
+	Unassigned，这个表示没有指定mutex的owner线程。
+	

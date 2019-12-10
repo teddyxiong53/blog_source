@@ -6,6 +6,16 @@ tags:
 
 ---
 
+1
+
+select需要驱动的支持。
+
+驱动程序要实现file_operations的poll函数。
+
+select通过对每个设备文件对应的poll函数提供的信息来判断当前是否有资源可用。
+
+
+
 
 
 代码调用流程是这样：
@@ -55,6 +65,12 @@ return -2;
 这种用法也是醉了。实际效果等于延时1秒。
 
 
+
+参考资料
+
+1、Linux ： select()详解 和 实现原理
+
+https://www.cnblogs.com/sky-heaven/p/7205491.html
 
 
 

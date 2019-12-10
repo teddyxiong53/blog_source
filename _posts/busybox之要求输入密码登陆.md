@@ -5,6 +5,20 @@ tags:
 	- busybox
 ---
 
+1
+
+我的目的是研究怎么自动登陆。或者延迟登陆shell。加快开机速度。
+
+直接运行-sh不就好了吗？
+
+```
+# now run any rc scripts
+::respawn:-/bin/sh
+::sysinit:/etc/init.d/rcS
+```
+
+就这样是可以的正常的。
+
 
 
 要输入密码进入登录的是这样的：
@@ -48,3 +62,22 @@ root::0:0:root:/:/bin/sh
 2、把shadow文件删掉。因为这里面存了加密的密码。
 ```
 
+
+
+bash进程来源于login进程，login进程来源于getty进程或者telnetd进程，从上图中可以看到，bash进程在启动之后，首先加载一系列的配置，最后阶段就readloop，循环等待/dev/tty是否有读数据，也就是看下终端是否有输入的命令。如果有输入就通过flex bison来解析数据，然后看下是否要去fork子进程去执行任务。
+
+ bash进程会把当前的终端和fork出来的子进程做一下关联，这个过程就是进程组获得了控制终端的过程。
+
+参考资料
+
+1、控制终端与前台进程组
+
+http://blog.chinaunix.net/uid-30485355-id-5301998.html
+
+2、
+
+https://zhidao.baidu.com/question/1924322162402419187.html
+
+3、root自动登陆(busybox
+
+http://blog.sina.com.cn/s/blog_735da7ae0102v2o0.html
