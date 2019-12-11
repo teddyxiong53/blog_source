@@ -14,6 +14,12 @@ typora-root-url: ..\
 
 ddr是sdram。
 
+sram使用的MOS管比较多，占用硅片的面积大，因此功耗大，集成度低。
+
+dram则使用MOS管少，功耗低，集成度高。
+
+
+
 # 为什么需要cache
 
 1、因为CPU和ddr内存的速度相差太大。ddr会拖慢CPU的。
@@ -91,3 +97,7 @@ https://blog.csdn.net/bytxl/article/details/50275377
 2、ARM-I/Dcache, MMU关系
 
 https://blog.csdn.net/jijiagang/article/details/8913459
+
+3、内存类型中SRAM和DRAM什么区别？
+
+https://zhidao.baidu.com/question/135827484.html

@@ -544,3 +544,36 @@ jiq是just in queue的意思。
 
 
 
+# snull
+
+这是一个net device的示例。
+
+先看看使用。
+
+```
+sudo insmod ./snullko
+```
+
+这样会产生2个网卡，sn0和sn1。
+
+我们用ifconfig给这2个网络配置地址。
+
+```
+sudo ifconfig sn0 192.168.1.10/24
+sudo ifconfig sn1 192.168.1.20/24
+```
+
+可以ping通。
+
+这里需要看一下书上的描述，因为这个环境准备相对来说麻烦一点。
+
+
+
+# sbull
+
+这个是块设备驱动的演示。
+
+sbull_load脚本，需要修改一下。insmod那里。不要用-f参数。直接insmod就好。
+
+不然insmod会失败。
+

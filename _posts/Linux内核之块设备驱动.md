@@ -256,3 +256,30 @@ brw-rw----    1 0        0          31,   3 Mar 24  2018 /dev/mtdblock3
 / # 
 ```
 
+
+
+现在看ldd3的代码例子sbull来学习。
+
+
+
+主要接口：
+
+```
+int register_blkdev(unsigned int major, const char *name);
+	创建一个块设备。
+unregister_blkdev(unsigned int major, const char *name);
+	卸载一个块设备。
+
+```
+
+
+
+参考资料
+
+1、22.Linux-块设备驱动之框架详细分析(详解)
+
+这篇文章的分析思路很清晰，贴代码的方式也很好，值得学习。
+
+这个系列文章都不错。
+
+https://www.cnblogs.com/lifexy/p/7651667.html

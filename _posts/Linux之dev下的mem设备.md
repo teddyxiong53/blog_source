@@ -145,3 +145,7 @@ phy_addr = __pa(virt_addr);
 1、应用程序中对/dev/mem和/dev/kmem设备文件的访问
 
 https://blog.csdn.net/dumgeewang/article/details/7756396
+
+2、Linux中的虚拟设备/dev/null、/dev/zero、/dev/random和/dev/urandom
+
+https://blog.csdn.net/sinat_26058371/article/details/86754683
