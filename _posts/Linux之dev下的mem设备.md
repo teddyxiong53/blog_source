@@ -113,7 +113,7 @@ xhl -- vma->vm_end:76f71000, vma->vm_start:76f70000
 
 kmem和mem的对比
 
-1、mem是物理内存的全镜像，可以用来访问物理内存。
+**1、mem是物理内存的全镜像，可以用来访问物理内存。**
 
 2、kmem是从kernel的视角看到的虚拟内存的全镜像。可以用来访问kernel的内容。
 
@@ -149,3 +149,4 @@ https://blog.csdn.net/dumgeewang/article/details/7756396
 2、Linux中的虚拟设备/dev/null、/dev/zero、/dev/random和/dev/urandom
 
 https://blog.csdn.net/sinat_26058371/article/details/86754683
+

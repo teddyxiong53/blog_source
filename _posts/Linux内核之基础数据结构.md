@@ -14,60 +14,61 @@ tags:
 
 主要有这4种：
 
-1、链表。
+1、链表。hlist
 
-2、队列。
+2、队列。kfifo
 
-3、映射。
+3、映射。idr，比map要简单。够用了。
 
 4、二叉树。
 
 
 
-# 链表
-
-链表是内核里最简单、最普通的数据结构。
-
-因为双向环形链表提供了最大的灵活性，内核里的标准链表就是双向环形链表。
-
-## 在链表里的移动
-
-只是线性移动。
-
-先访问某个元素，然后再通过next指针访问下一个元素。
-
-如果要实现随机访问，那么就不要用链表。
-
-使用链表的场景是：
-
-1、需要遍历所有数据。
-
-2、需要动态增删元素。
-
-## linux里的链表实现
-
-跟我们一般的用法不同。
-
-我们一般是把数据塞入到链表，linux是把linux塞入到其他结构体里。
-
-定义在linux/list.h里。
-
-```
+# 双向链表
+定义：
 struct list_head {
-  struct list_head *next;
-  struct list_head *prev;
+	struct list_head *next, *prev;
 };
+基本宏定义：
+
+```
+#define LIST_HEAD_INIT(name) { &(name), &(name) }
+#define LIST_HEAD(name) \
+struct list_head name = LIST_HEAD_INIT(name)
 ```
 
-## 链表的操作
-
-1、定义
 
 
+基本操作：
+增
+	list_add(new, head);
+	list_add_tail(new, head);
+	
+删
+	list_del(entry);
+	
+改
+	list_replace(old, new);
+	list_move(list, head);//把list节点移动到另外一个链表head里去。
+	list_move_tail(list, head);
+	
+查
+	list_is_last(list, head);
+	list_empty(head);
+	list_is_singular(head);//看看链表是不是只有一个元素。
+	
+# 哈希链表hlist
+哈希链表也在很多重要的地方有所使用，比如linux内核的dentry，进程查询，
+文件系统等，可以说，弄明白hlist对于理解linux内核具有重要的意义。
+为什么hlist_head不弄成双向链表呢，因为为了节约空间，
+如果一个指针的话，一个哈希数组的空间消耗就会减半。
 
-# 队列
 
-任何OS内核都少不了一种编程模型：生产者和消费者。
 
-内核里的通用消息队列实现是kfifo。
 
+
+参考资料
+
+1、Linux内核中的算法和数据结构
+
+https://www.cnblogs.com/arnoldlu/p/6695451.html

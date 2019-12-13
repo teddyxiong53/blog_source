@@ -14,9 +14,50 @@ mtd的Memory Technology Device的缩写。是内存技术设备。
 
 是用来实现对flash的抽象的。
 
+mtd是用于访问memory设备的Linux子系统。
+
+memory设备包括：ram、rom、flash。
+
+mtd的设计目的：
+
+让新的memory驱动更加简单。
+
+做法是：
+
+在硬件和上层之间，加了一层抽象层。
+
+传统意义上，unix系统只认识块设备和字符设备。
+
+flash既不满足块设备描述，也不满足字符设备描述。
+
+它表现类似于块设备，又有所不同。
+
+例如，块设备不区分erase和write操作。
+
+
+
 有了mtd，驱动工程师就不用关心块设备和字符设备这些事情了。只要专注把硬件相关的内容写好就行。
 
 mtd是一个中间层，下面是flash驱动，上面是文件系统。
+
+```
+------------------------
+设备节点
+------------------------
+mtd字符设备   mtd块设备
+------------------------
+mtd原始设备
+------------------------
+flash驱动 （驱动工程师关注这个就可以了）
+------------------------
+```
+
+```
+#define MTD_CHAR_MAJOR 90
+#define MTD_BLOCK_MAJOR 31
+```
+
+
 
 # mtd跟下面的接口
 
@@ -185,3 +226,7 @@ struct platform_device ldd6410_device_nor = {
 1、25.Linux-Nor Flash驱动(详解)
 
 https://www.cnblogs.com/lifexy/p/7737174.html
+
+2、linux内核中mtd架构分析
+
+https://www.cnblogs.com/embedded-linux/p/5816970.html

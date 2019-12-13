@@ -6,9 +6,57 @@ tags:
 
 ---
 
+1
+
+# nand flash
+
+相比与nor flash，nand flash的一个缺点是容易产生坏块。
+
+因此在使用nand flash的时候，需要使用校验算法来发现并标注坏块。
+
+nand  flash没有地址和数据总线。
+
+nand flash以page为单位进行读写，以block为单位进行擦除。
+
+坏块是指block。
+
+page内部有分为2个区：
+
+main和spare。
+
+main就是存放数据。
+
+spare存放附加信息。例如坏块标记、块的逻辑地址、ECC校验和。
 
 
-nor flash：
+
+因为nand flash的工艺限制，在nand flash的生产和使用过程中，会产生坏块。
+
+坏块的特性是：在擦除和写入的时候，不能将某些位拉高。
+
+
+
+坏块可以分为两种：
+
+1、固有坏块。生产过程中产生的，厂家会在坏块block的第一个page的spare区的第六个bit进行标记。
+
+2、使用坏块。
+
+
+
+坏块有可能是假坏块。
+
+
+
+mini2440上使用的nand flash是256MB。
+
+page是2K+64.
+
+block是128K+4K。
+
+
+
+# nor flash
 
 像访问SDRAM一样，所以可以片内执行。
 
@@ -89,3 +137,7 @@ nand的特点：
 1、
 
 https://www.cnblogs.com/lifexy/p/7737174.html
+
+2、mini2440硬件篇之Nand Flash
+
+https://blog.csdn.net/hyq458941968/article/details/45269799

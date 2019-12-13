@@ -57,3 +57,11 @@ https://www.cnblogs.com/mylinux/p/5639264.html
 4、
 
 http://www.360doc.com/content/15/0401/14/9075092_459810908.shtml
+
+5、利用mmap()操作硬件寄存器
+
+https://blog.csdn.net/litao31415/article/details/43759771
+
+6、嵌入式编程中应如何使用 mmap 访问 CPU 寄存器
+
+https://segmentfault.com/a/1190000008381626

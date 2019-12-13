@@ -62,7 +62,7 @@ strurct zone {
 
 在释放内存的过程中，会看挨着的内存块是否是空闲的且跟自己是兄弟关系（order相同，存在page的private里了）。是的话，就合并。
 
-就是这个自动的合并，解决了内存碎片。
+**就是这个自动的合并，解决了内存碎片。**
 
 
 
@@ -95,6 +95,90 @@ Jeff经过分析发现，在内核里，总是在为那么几种类型分配了�
 有问题，就有优化的空间。
 
 Jeff给出的解决方案是：这些被初始化过的内存对象在释放不要被释放回内存池。标记为废弃。后面需要时，直接用。就不需要重新初始化了。
+
+
+
+slab分配器是基于对象进行管理的。
+
+所谓的对象，就是内核里的数据结构。
+
+例如：task_struct、file_struct。
+
+相同类型的对象归为一类。
+
+每当要申请一个这样的对象的时候，slab分配器就从一个slab列表里分配一个这样大小的单元出去。
+
+而要释放的时候，将其保存在当前列表里，而不是返回给buddy系统。
+
+当需要再次申请的时候，就使用最近的释放的一个单元。
+
+为什么用最近的这个？因为这样cache命中的概率是最高的。
+
+![](./images/slab层级关系.webp)
+
+所有的kmem_cache，都串在一个链表上，叫cache_chain。
+
+```
+在slab.c里，定义了这个全局变量。
+static struct list_head cache_chain;
+```
+
+每个kmem_cache，上面有三种slab。
+
+```
+full
+	完全分配的slab。
+partial
+	部分分配的slab。
+empty
+	空slab。目前还没有对象被分配。
+```
+
+struct slab是slab分配器的最小单位。
+
+单个slab可以在slab链表之间移动。
+
+例如，一个半满的slab被分配了对象变满后，就要从partial中被移到full中去。
+
+
+
+一个slab是什么概念？
+
+一个核心的数据结构是struct kmem_list3。它描述了slab描述符的状态。
+
+
+
+练习slab的用法，代码放在这里：
+
+https://github.com/teddyxiong53/c_code/tree/master/linux/driver_practice/slab
+
+在插入这个模块后，查看slabinfo情况如下：
+
+```
+hlxiong@hlxiong-VirtualBox:~/work/test/driver$ sudo cat /proc/slabinfo 
+slabinfo - version: 2.1
+# name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab> : tunables <limit> <batchcount> <sharedfactor> : slabdata <active_slabs> <num_slabs> <sharedavail>
+test_cachep          128    128     32  128    1 : tunables    0    0    0 : slabdata      1      1      0
+```
+
+另外可以看到kmalloc的也是在slab里进行管理的。
+
+```
+kmalloc-8192         216
+kmalloc-4096         696
+kmalloc-2048        2398
+kmalloc-1024        5375
+kmalloc-512         5132
+kmalloc-256        11111
+kmalloc-192         3948
+kmalloc-128         3704
+kmalloc-96         10221
+kmalloc-64         26382
+kmalloc-32         43247
+kmalloc-16         12288
+```
+
+
 
 ## slab分类
 
@@ -129,7 +213,7 @@ mmu保证了安全性和稳定性，牺牲了一定的性能。
 
 虽然有cache辅助，还是比不上直接访问内存的方式。
 
-所示linux的实时性不好，要实时性，就要用平板内存。
+**所以linux的实时性不好，要实时性，就要用平板内存。**
 
 # 虚拟地址管理
 
@@ -143,7 +227,7 @@ mmu保证了安全性和稳定性，牺牲了一定的性能。
 
 当进程被调度的时候，页表被切换。
 
-（对于cpu来说，切换页表，就是改一下某个CPU的值，例如x86下面的CR3寄存器）。
+**（对于cpu来说，切换页表，就是改一下某个CPU的值，例如x86下面的CR3寄存器）。**
 
 用户程序对内存的操作，例如malloc，只是对某个vma产生影响，不会影响页表。
 
@@ -159,11 +243,11 @@ mmu保证了安全性和稳定性，牺牲了一定的性能。
 
 这个就是靠slab来实现的。
 
-slab相当于为内核中常用的一些结构体对象建立了对象池。
+**slab相当于为内核中常用的一些结构体对象建立了对象池。**
 
 例如task、mm。
 
-slab还维护了通用的对象池，例如32字节对象池，64字节对象池。
+**slab还维护了通用的对象池，例如32字节对象池，64字节对象池。**
 
 kmalloc就是从通用对象池里取得空间的。
 
@@ -216,3 +300,13 @@ http://www.cnblogs.com/zhaoyl/p/3695517.html
 2、维基百科
 
 https://www.wikiwand.com/en/Buddy_memory_allocation
+
+3、常用知识——linux内核中常见的内存分配方法
+
+https://www.cnblogs.com/twlqx/p/3737839.html
+
+4、linux内核slab机制分析
+
+这篇文章不错。
+
+https://www.jianshu.com/p/95d68389fbd1

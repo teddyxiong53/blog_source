@@ -201,36 +201,6 @@ void put_disk(disk)
 
 
 
-#实现一个内存块设备驱动
-
-要实现的效果：
-
-1、在/dev/目录下生成vmemdisk0到vmemdisk3这4个设备节点。
-
-2、可以对/dev/vmemdisk0这些节点进行mkfs.ext2 。然后挂载，往里面写内容。
-
-对于flash、ram盘这种不依赖机械部件的，没有必要对进行请求队列操作。
-
-块设备对于这种设备，提供了“无队列”的操作模式。
-
-驱动需要实现一个函数，叫“制造请求“函数。
-
-原型是这样的。
-
-```
-typedef int (make_request_fn)(request_queue_t *q, struct bio *bio);
-```
-
-这个函数的第一个参数，仍然是一个请求队列，但是里面实际上不包含任何的请求。因为块层没有必要把bio调整为request。
-
-1、初始化函数。
-
-```
-
-```
-
-
-
 # mtd和块设备关系
 
 MTD  是一个虚拟层。
@@ -256,7 +226,7 @@ brw-rw----    1 0        0          31,   3 Mar 24  2018 /dev/mtdblock3
 / # 
 ```
 
-
+#sbull
 
 现在看ldd3的代码例子sbull来学习。
 
@@ -274,6 +244,65 @@ unregister_blkdev(unsigned int major, const char *name);
 
 
 
+```
+注册一个块设备驱动的流程：
+1、创建一个块设备。
+	sbull_major = register_blkdev(sbull_major, "sbull");
+2、分配一个request_queue。
+	dev->queue = blk_init_queue(sbull_request, &dev->lock);
+3、分配一个gendisk。
+	dev->gd = alloc_disk(SBULL_MINORS);
+		SBULL_MINORS 这个参数表示对应设备可以有的分区数。
+4、设置gendisk。
+	dev->gd->major = sbull_major;
+	dev->gd->first_minor = which*SBULL_MINORS;
+	dev->gd->fops = &sbull_ops;
+	set_capacity(dev->gd, nsectors*(hardsect_size/KERNEL_SECTOR_SIZE));
+5、注册gendisk。
+	add_disk(dev->gd);
+	
+```
+
+
+
+```
+主要涉及的结构体：
+bio
+	包含
+	一个磁盘存储区标识符
+	一个或多个描述与IO操作相关的内存区段（bio_vec数组）
+	bio中的每个段是由一个bio_vec数据结构描述的
+request
+	request：一个request中包含了一个或多个bio
+	为什么要有request这个结构呢？它存在的目的就是为了进行io的调度。
+	通过request这个辅助结构，我们来给bio进行某种调度方法的排序，
+	从而最大化地提高磁盘访问速度。
+	
+request_queue
+	每个磁盘对应一个request_queue.该队列挂的就是request请求。
+	
+block_device
+
+```
+
+
+
+在通用块层启动一次新的IO操作时，会调用bio_alloc函数分配一个新的bio结构，bio是由slab分配器分配的。内核同时也为bio_vec结构分配内存池。
+
+一个bio可能有很多个bio段，这些bio段可能在内存上不连续（位于不同的页），但他们在磁盘上对应的位置是连续的。
+
+请求到达block层后，通过generic_make_request这个入口函数，
+在通过调用一系列相关的函数把bio变成了request
+
+具体的做法如下：
+如果几个bio要读写的区域是连续的，
+	即积攒成一个request
+	（一个request上挂多个连续的bio，就是我们通常说的“合并bio请求”）
+如果一个bio跟其他的bio都连不上
+	那它就自己创建一个新的request，把自己挂在这个request下。
+
+每个bio对应着一个连续的扇区段。故一个请求可以构造出多个bio。
+
 参考资料
 
 1、22.Linux-块设备驱动之框架详细分析(详解)
@@ -283,3 +312,7 @@ unregister_blkdev(unsigned int major, const char *name);
 这个系列文章都不错。
 
 https://www.cnblogs.com/lifexy/p/7651667.html
+
+2、bio，request，request_queue的关系
+
+https://blog.csdn.net/jasonLee_lijiaqi/article/details/82850689

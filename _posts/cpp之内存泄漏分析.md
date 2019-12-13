@@ -1,5 +1,5 @@
 ---
-title: cpp之内存泄露分析
+title: cpp之内存泄漏分析
 date: 2018-11-15 14:45:17
 tags:
 	- cpp
@@ -20,7 +20,7 @@ void main()
 }
 ```
 
-这样并不会内存泄露。因为g_str不是一个指针。
+这样并不会内存泄漏。因为g_str不是一个指针。
 
 而且我没有用new。所以也就不需要delete，也无法delete。
 
@@ -44,7 +44,7 @@ void main()
 
 1、heap-profiler。内存监测。
 
-2、heap-checker。检查内存泄露。
+2、heap-checker。检查内存泄漏。
 
 3、cpu-profiler。cpu性能监测。
 
@@ -93,7 +93,7 @@ sudo apt-get install graphviz
 
 
 
-内存泄露检查
+内存泄漏检查
 
 ```
 export PPROF_PATH=/usr/local/bin/pprof
@@ -107,7 +107,7 @@ sudo env HEAPCHECK=normal ./dossos
 
 参考资料
 
-1、警惕多线程环境string、vector、protobuf等自增长数据结构的隐性内存泄露
+1、警惕多线程环境string、vector、protobuf等自增长数据结构的隐性内存泄漏
 
 https://blog.csdn.net/u011693064/article/details/72466171
 
@@ -115,7 +115,7 @@ https://blog.csdn.net/u011693064/article/details/72466171
 
 https://blog.csdn.net/oujiangping/article/details/77172802
 
-3、gperftools工具检测内存泄露
+3、gperftools工具检测内存泄漏
 
 https://blog.csdn.net/zhengbin6072/article/details/80222639
 
