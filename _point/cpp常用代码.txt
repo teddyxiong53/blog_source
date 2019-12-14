@@ -2,9 +2,50 @@
 http://cpp.sh/
 这个网站可以在线测试c++代码，挺方便的。
 
+
+双层vector遍历
+for(auto it: grapes) {
+	for(auto it1: it) {
+		cout << it1 << endl;
+	}
+}
+vector定义的时候，就预留好一定的空间。
+int n;
+cin >> n;
+vector<int> nums(n);
+也可以用reserve函数来预留。
+如果不预留，访问会挂掉的。
+
+arrays.push_back(v);
+这样的时候，就不要前面保留，不然保留的那部分不会被使用的。
+
+int main()
+{
+    vector<int> nums;
+    int x;
+    for(int i=0; i<2; i++) {
+        cin >> x;
+        nums.push_back(x);
+    }
+    for(auto it : nums) {
+        cout << it << endl;
+    }
+}
+
+auto it=vec.begin();
+跟
+for(auto it: vec )  不一样。
+	这个for循环里的不是迭代器啊。
+int main() {
+    vector<int> vec = {1,2,3};
+    for(auto it=vec.begin(); it != vec.end(); it++) {
+        cout << *it << endl;
+    }
+}
+
 # 读取文件
 ```
-	std::ifstream infile;
+	std::ifstream infile;	
 	infile.open("../config.json");
 	if(infile.bad()) {
 		printf("open fail");
@@ -330,8 +371,9 @@ std::swap
 	交换vector，或者2个数值。
 std::search
 	字符串查找。
-	
-	
+std::count
+	统计字符的出现次数。
+	std::count(str.begin(), str.end(), ',');//统计字符串里的逗号的个数。
 	
 二段式构造，在构造函数里，可以不进行错误处理，而在init里进行判断是否正常。
 这样可以简化错误处理。

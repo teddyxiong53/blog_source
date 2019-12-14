@@ -2,7 +2,7 @@ alsa接口里的size，都是frame。
 一个frame的大小，是这样计算的：
 frame_size = 采样位数*通道数/8
 例如16bit，单声道的，frame_size就是16*1/8 = 2字节。
-1bit，双声道，就是4字节。
+16bit，双声道，就是4字节。
 
 对应的数据类型是：    snd_pcm_uframes_t 
 
@@ -28,8 +28,11 @@ snd_pcm_hw_params_t
 	https://stackoverflow.com/questions/40350971/alsa-snd-pcm-hw-params-free-causing-memory-error
 	
 	
+硬件参数包括：
+	interleaved交织模式。
+	format为S16_LE
 	
-# 播放
+
 
 snd_pcm_prepare
 	首先需要prepare。
@@ -40,4 +43,4 @@ snd_pcm_sframes_t snd_pcm_readi(snd_pcm_t* handle, void *buffer, snd_pcm_uframes
 	返回值：
 		>0 ：实际读到的数据帧数。
 		<0 ：错误码。
-		
+# 播放
