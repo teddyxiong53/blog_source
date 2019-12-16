@@ -12,18 +12,11 @@ tags:
 
 alsa在驱动层提供了alsa-driver，在应用层提供了alsa-lib。
 
-在Android里，没有使用标准的alsa，而是使用了简化版本的tinyalsa。
+在Android里，没有使用标准的alsa，而是使用了简化版本的tinyalsa。但是在内核中仍然使用ALSA框架的驱动框架。
 
 Android中使用tinyalsa控制管理所有模式的音频通路。
 
-tinyalsa有4个工具：
 
-```
-tinymix
-tinyplay
-tinycap
-tinypcminfo
-```
 
 
 
