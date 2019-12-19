@@ -20,7 +20,7 @@ tags:
 
 析构函数也遵循这个原则。
 
-如果我们删除一个指向Derived对象的Base指针，而Base类的析构函数又不是virtual的话，就调用了Base的析构函数，导致Derived的析构没有被调用到，这样就造成了资源泄露。
+**如果我们删除一个指向Derived对象的Base指针，而Base类的析构函数又不是virtual的话，就调用了Base的析构函数，导致Derived的析构没有被调用到，这样就造成了资源泄露。**
 
 举例如下：
 
@@ -82,3 +82,16 @@ Derived destruct
 Base destruct
 ```
 
+为什么c++默认的析构函数不设置为虚函数呢？
+
+因为虚函数需要额外的虚函数表和虚表指针。这样占用额外的空间。
+
+一个类，如果不会称为父类，那么是没有必要浪费这个空间的。
+
+
+
+参考资料
+
+1、
+
+https://www.nowcoder.com/tutorial/93/8f38bec08f974de192275e5366d8ae24

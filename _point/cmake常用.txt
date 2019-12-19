@@ -1,4 +1,13 @@
 
+第一种方法是内部构建，第二种方法是外部构建。
+上述两种方法中，最大不同在于cmake与make的工作路径不同。
+我们一般是采用外部构建。
+就是建立单独的build目录。在这个目录下执行cmake命令。
+
+cmake得到的Makefile，要看到编译的详细情况。
+make VERBOSE=1
+这样就可以了。
+
 根目录下，定义项目。
 project(dossos VERSION 1.0.0 LANGUAGE CXX)
 
@@ -11,6 +20,8 @@ CMAKE_CXX_COMPILER_ID
 	GNU
 	Clang
 	
+CMAKE_SOURCE_DIR
+	代码的顶层目录。
 	
 message(FATAL_ERROR ${CMAKE_CXX_FLAGS})
 	调试打印信息。
@@ -24,6 +35,10 @@ string(REPLACE ";" " " CMAKE_CXX_FLAGS "${CXX_FLAGS}")
 	
 set(CMAKE_CXX_FLAGS_DEBUG "-O0")
 	设置变量。
+	语法是：set(var value)
+file(GLOB_RECURSE ACL_SRC "${ACL_SOURCE_DIR}/src/*.cpp")
+	找出目录下所有的cpp文件。
+	这样就可以不一个个地写了。
 	
 find_package(Boost REQUIRED)
 	如果找到，会设置变量BOOST_FOUND=TRUE。
@@ -41,4 +56,56 @@ find_program(THRIFT_COMPILER thrift)
 	
 add_subdirectory(muduo/base)
 	添加其他目录，这些目录下的CMakeLists.txt。
+include_directories(xx yy )
+	添加头文件搜索目录。
+link_directoires(xx yy)
+	到xx yy目录下去找库文件。
 	
+add_executable(exename srcname)
+	编译出exename的可执行文件。
+add_library(libname STATIC|SHARED xx.c yy.c)
+	编译出libname对应的库文件。
+	可以指定为动态库或者静态库。
+	
+target_link_libraries(target lib1 lib2)
+	最后的链接操作。
+	target不一定是可执行文件，也可以是库。
+	把多个库组成一个库。
+	
+	
+流程控制
+1、条件。
+	if (condition)
+		# condition可以用and or not这些。
+		# 还可以用exists来判断文件目录是否存在。
+		# is_newer_than 文件比较新的时候。
+		# defined 如果定义了某个变量的时候。
+		# var matches regex 符合某个正则表达式。
+		# 数字大小比较是：less/greater/equal
+		# 字母比较是：strless/strgreater/streqal
+		
+	elseif()
+	
+	else() # 这个括号不能省。
+	endif (condition)
+	
+2、循环。
+	while(condition)
+		# cmd
+	endwhile(condition)
+	
+	还可以用foreach
+	foreach(loop_var arg1 arg2 ...)
+		# cmd
+	endforeach(loop_var)
+CMake的预定义变量
+假设工程顶层目录为xx。
+PROJECT_SOURCE_DIR
+	就是xx。
+PROJECT_BINARY_DIR
+	运行cmake命令的目录。
+	建议是xx/../build目录。
+	
+参考资料
+1
+https://www.jianshu.com/p/9d246e4071d4
