@@ -6,13 +6,31 @@ tags:
 typora-root-url: ..\
 ---
 
-
+1
 
 gstreamer是gnome桌面环境推荐的流媒体应用框架。
 
 基于插件和管道的设计风格。
 
 基于glib进行开发，所以与一般的C语言写法有些不同。
+
+gstreamer是一个创建流媒体应用程序的框架。
+
+其基本设计思想来自于俄勒冈研究生学院有关视频管道的创意。
+
+同时也借鉴了DirectShow的设计思想。
+
+
+
+设计原则是：
+
+```
+1、结构清晰，功能强大。
+2、面向对象的编程思想。
+3、灵活的可扩展性。
+4、高性能。
+5、核心库与插件分离。
+```
 
 
 
@@ -30,15 +48,7 @@ bus包含了一个队列。每次往队列里放消息，都会导致main contex
 
 
 
-元件的状态有：
 
-1、NULL。默认的状态。
-
-2、READY。就绪状态。
-
-3、PAUSED。暂停状态，已经打开了媒体，但是暂时不处理。
-
-4、PLAYING。
 
 
 
@@ -122,6 +132,42 @@ gst_element_link(element1, element2);
 
 用gst_element_set_state来进行状态的切换。
 
+状态变迁：
+
+```
+NULL->READY
+	NULL是element的默认状态。
+	在NULL状态下，没有分配任何的资源。也没有加载任何运行时库，显然这个时候不能处理任何内容。
+	READY
+	REDY状态下，一个element拥有所有的默认资源。
+	但是跟流相关的东西还没有被分配。
+	这个变化对应的枚举是：GST_STATE_CHANGE_NULL_TO_READY。
+	
+READY->PAUSED
+	这个过程中做的事情是：
+	激活pad，启动stream thread，直到sink pad收到first buffer，停住。
+	PAUSED状态对数据机进行preroll。
+	目的是为后续的PLAYING状态准备好数据。
+	使得PLAYING启动的速度可以更快。
+PAUSED->PLAYING
+	大部分element忽略这个状态。
+	同步时钟只在PLAYING时发生。
+	sink pad不再阻塞buffer和event，开始render数据。
+	对多少element来说，PAUSED状态跟PLAYING状态没有区别。
+	只有sink element需要区分这2种状态。
+	
+PLAYING->PAUSED
+	
+```
+
+
+
+参考资料
+
+https://wenku.baidu.com/view/464fc6728e9951e79b892745.html?sxts=1576827823935
+
+# task调度
+
 
 
 #衬垫pad
@@ -134,17 +180,25 @@ gst_element_link(element1, element2);
 
 pad可以有两种被激活的模式。
 
-1、push。
+1、push。上游element主动push到下游。
 
-2、pull。
+2、pull。下游主动从上游去pull。这个比较少用。
 
 pad的有效性
 
-1、Always。也叫static。在元件创建后就一直存在。gst-inspect-1.0 alsasink。
+1、永久型。Always。也叫static。在元件创建后就一直存在。gst-inspect-1.0 alsasink。
 
-2、Sometimes。根据输入数据的不同而产生的pad。看gst-inspect-1.0  qtdemux的属性
+2、随机型。Sometimes。根据输入数据的不同而产生的pad。看gst-inspect-1.0  qtdemux的属性
 
-3、On Request。
+3、请求型。On Request。
+
+sink pad一般是永久型的。
+
+而src pad一般是随机型的。
+
+参考资料
+
+http://blog.sina.com.cn/s/blog_53b7ddf00102v5sl.html
 
 # 箱柜bin
 
@@ -182,13 +236,34 @@ bin作为一个整体，它没有属于自己的sink pad和source pad。
 
 是一个特殊的GstBin。给所有的子元件提供clock。
 
-也提供一个顶级的bus。
+**也提供一个顶级的bus。**
 
 基于选择的clock计算running_time。
 
 为管道里所有元素计算全局的延迟。
 
 
+
+# 缓冲区Buffer
+
+缓冲区包含了创建的pipeline里的数据流。
+
+通常一个source element会创建一个新的buffer。
+
+同时element会把buffer的数据传递给下一个element。
+
+编写应用的时候，不需要关心buffer，框架给我们自动维护。
+
+一个buffer由这些部分组成：
+
+```
+1、执行某个内存的指针。
+2、内存的大小。
+3、buffer的时间戳。
+4、引用计数。
+```
+
+# 事件Event
 
 
 
@@ -660,6 +735,13 @@ GstClock是精确到纳秒的计数。
 3、
 ```
 
+GStreamer提供了GstQuery的查询机制
+用于查询Element或Pad的相应信息。例如：查询当前的播放速率，产生的延迟，是否支持跳转等。可查看GstQuery文档了解所支持的类型。
+
+我们通过查询Pipeline是否支持跳转（seeking），如果支持跳转（有些媒体不支持跳转，例如实时视频），我们会在播放10秒后跳转到其他位置。
+
+position和duration都是以ns为单位的。
+
 
 
 # 怎样播放pcm
@@ -943,3 +1025,13 @@ https://blog.csdn.net/evsqiezi/article/details/82466267
 25、Gstreamer的音视频同步
 
 https://blog.csdn.net/maeom/article/details/7729840
+
+26、gstreamer
+
+这个的图不错。文章也不错。
+
+https://www.jianshu.com/p/09b98a7e1395
+
+27、这个是官方插件文档，组织地非常好。
+
+https://www.freedesktop.org/software/gstreamer-sdk/data/docs/latest/gstreamer-plugins-0.10/index.html

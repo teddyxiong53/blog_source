@@ -19,7 +19,7 @@ tags:
 
 
 
-gst-launch
+# gst-launch
 
 可以让你在写c代码之前，快速验证一下pipeline的可行性。
 
@@ -54,6 +54,8 @@ gst-launch-1.0 videotestsrc pattern=11 ! videoconvert ! autovideosink
 ```
 
 这个是显示一个同心圆的画面。
+
+要知道某个element的属性有哪些，可以用gst-inspect-1.0 xx来查看。
 
 
 

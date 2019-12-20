@@ -1,7 +1,18 @@
 # 结构体
 
 GstElement
-
+	它的属性大多通过GObject对象实现。
+	使用GObject的方法可以对GstElement进行get、set。
+	GParamSpecs也被支持。
+	每个GstElement至少从基类GstObject继承了一个name属性。
+	这个name属性在gst_element_factory_make的时候有用。
+	你可以用gst_object_get_name来获取名字。用gst_object_set_name来设置名字。
+	gchar *name;
+    element = gst_element_factory_make("fakesrc", "source");
+    g_object_get(G_OBJECT(element), "name", &name, NULL);
+    g_print("the name of element is:%s\n", name);
+    g_free(name);
+    g_object_unref(GST_OBJECT(element));
 GstBus
 
 GSTMessage
@@ -22,12 +33,19 @@ gst_bus_timed_pop_filtered
 gst_message_unref
 
 gst_object_unref
-
+	释放一个对象。例如释放一个element对象。
+	是这样做：
+	gst_object_unref(GST_OBJECT(element));
 gst_element_factory_make ("videotestsrc", "source");
 	创建一个元件。
 	参数1：类型。这个都是固定的一些字符串，不能随便写。
+		常见的类型有：
+		fakesrc
+		videotestsrc
+		
 	参数2：名字。可以没有。这个只是为了好理解使用。
-	
+	实际上是gst_element_factory_find和gst_element_factory_create 这2个函数的组合。
+	GstFactory *fa
 gst_pipeline_new 
 	新建一个pipeline。参数是pipeline的名字。
 	这个创建一个pipeline和用gst_element_factory_make的方式创建。区别是什么？
