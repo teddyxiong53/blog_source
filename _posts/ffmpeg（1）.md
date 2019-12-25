@@ -133,6 +133,80 @@ encode_audio
 
 
 
+```
+AVPacket
+	存放的是压缩的数据。
+	由demuxer输出。
+	然后传递给decoder。
+	或者是从encoder输出，传递给muxer。
+	对于video，它应该包含一个压缩的帧。
+	对于audio，它包含多个压缩的帧。
+	encoder可以输出空的packet。
+	所谓空的packet，是指没有音视频数据，只有一些控制信息。AVPacketSideData
+	AVPacket是一个比较特殊的结构体。
+	里面内容并不多。
+		AVBufferRef *buf
+		pts
+			pts必须大于等于dts。
+			AV_NOPTS_VALUE 这个如果没有，就用这个值。
+		dts
+			d代表decompression，解压的意思。
+			也可以用AV_NOPTS_VALUE。
+		data指针
+		size
+		flags
+		side_data
+		duration
+		pos
+	配套的函数：
+		av_packet_ref
+		av_packet_unref
+		
+AVFrame
+	这个结构体代表界面后的数据。
+	必须用av_frame_alloc来进行分配。
+	必须用av_frame_free进行释放。
+	AVFrame一般只分配一次，然后多次使用。
+	在这种使用情况下，av_frame_unref把AVFrame reset到初始状态。
+	AVPacket也是这样用的。
+	成员变量：
+		width、height
+			对于video。
+		nb_samples
+			对于audio。
+			表示这个AVFrame里包含的音频帧的个数。
+		format
+			对于audio，是AVSampleFormat
+			对于video，是AVPixelFormat
+		key_frame
+			1或者0
+		pict_type
+			I帧、B帧等。
+		pts
+		pkt_dts
+		sample_rate
+		channel_layout
+		pkt_pos
+		pkt_duration
+		channels
+		pkt_size
+		
+《一百万个可能》歌曲信息。
+	Audio file with ID3 version 2.3.0, 
+	contains: MPEG ADTS, layer III, v1, 128 kbps, 44.1 kHz, JntStereo
+	
+	Metadata:
+    title           : 一百万个可能（温柔男声版）（Cover：Christine Welch）
+    album           : 一百万个可能
+    artist          : 黑崎子
+  Duration: 00:03:56.70, start: 0.025057, bitrate: 128 kb/s
+    Stream #0:0: Audio: mp3, 44100 Hz, stereo, s16p, 128 kb/s
+    Metadata:
+      encoder         : LAME3.99r
+    Side data:
+      replaygain: track gain - -4.800000, track peak - unknown, album gain - unknown, album peak - unknown, 
+```
+
 
 
 # 参考资料

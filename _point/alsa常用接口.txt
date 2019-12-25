@@ -43,4 +43,21 @@ snd_pcm_sframes_t snd_pcm_readi(snd_pcm_t* handle, void *buffer, snd_pcm_uframes
 	返回值：
 		>0 ：实际读到的数据帧数。
 		<0 ：错误码。
+		
+
 # 播放
+snd_pcm_prepare
+snd_pcm_pause
+snd_pcm_resume
+snd_pcm_state
+
+
+snd_pcm_drain
+	把缓冲区里的数据耗尽。
+	比较少用。
+snd_pcm_drop
+	丢掉驱动里的缓冲区数据。
+snd_pcm_abort
+	丢掉数据。在销毁播放器的时候。
+	
+snd_pcm_writei

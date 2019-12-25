@@ -1,0 +1,39 @@
+MQTTClient_init_options
+	#define MQTTClient_init_options_initializer { {'M', 'Q', 'T', 'G'}, 0, 0 }
+	
+typedef void* MQTTClient;
+typedef int MQTTClient_deliveryToken;
+typedef int MQTTClient_token;
+
+MQTTClient_message
+#define MQTTClient_message_initializer { {'M', 'Q', 'T', 'M'}, 0, 0, NULL, 0, 0, 0, 0 }
+
+int MQTTClient_create(MQTTClient* handle, const char* serverURI, const char* clientId,
+		int persistence_type, void* persistence_context);
+		
+#define MQTTClient_willOptions_initializer { {'M', 'Q', 'T', 'W'}, 1, NULL, NULL, 0, 0, {0, NULL} }
+
+#define MQTTClient_SSLOptions_initializer { {'M', 'Q', 'T', 'S'}, 0, NULL, NULL, NULL, NULL, NULL, 1 }
+
+MQTTClient_connectOptions
+
+MQTTClient_publishMessage
+MQTTClient_waitForCompletion
+
+MQTTClient_setCallbacks(client, NULL, connlost, msgarrvd, delivered);
+
+#define MQTTASYNC_SSL_NOT_SUPPORTED -13
+现在就碰到了这个错误。
+
+
+MQTTClient_receive
+这个得到的message，payload，我使用json的方式。
+结果收到的内容，后面会随机多出一些东西。
+导致解析json出现问题。
+
+message:{"name":"play"}, len:15
+[2019-12-24 17:04:39][DEBUG][DossMqttClient.cpp][parseMessage][93]: get play
+message:{"name":"play"}e-, len:25
+
+这是为什么呢？
+有办法可以解决，因为message还有个属性，叫payloadlen。把这个也用上就好了。

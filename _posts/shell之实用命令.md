@@ -192,3 +192,9 @@ echo $i
 curl http://members.3322.org/dyndns/getip
 ```
 
+## 获取当前音量的数字
+
+```
+amixer get Master Playback |grep % |grep Left | awk '{print $5}' | tr -cd "0-9"
+```
+

@@ -1,0 +1,107 @@
+接口返回值的风格是：
+	1：成功。
+	0：连接错误。
+	-1：io错误。
+	
+接口可以分为三种：
+1、连接相关。
+	void mqtt_init(mqtt_broker_handle_t* broker, const char* clientid);
+	mqtt_broker_handle_t broker;
+	mqtt_init(&broker, "avengalvon");
+	mqtt_init_auth(&broker, "cid", "campeador");
+	mqtt_set_alive
+	mqtt_connect(&broker);
+	int mqtt_disconnect(mqtt_broker_handle_t* broker);
+2、pub相关。
+	mqtt_publish
+	mqtt_publish_with_qos
+	mqtt_pubrel
+3、sub相关。
+	
+4、工具函数。
+	
+	// >>>>> CONNECT
+	
+	// <<<<< CONNACK
+	packet_length = read_packet(1);
+	if(packet_length < 0)
+	{
+		fprintf(stderr, "Error(%d) on read packet!\n", packet_length);
+		return -1;
+	}
+
+	if(MQTTParseMessageType(packet_buffer) != MQTT_MSG_CONNACK)
+	{
+		fprintf(stderr, "CONNACK expected!\n");
+		return -2;
+	}
+	if(packet_buffer[3] != 0x00)
+	{
+		fprintf(stderr, "CONNACK failed!\n");
+		return -2;
+	}
+
+	// >>>>> PUBLISH QoS 0
+	printf("Publish: QoS 0\n");
+	mqtt_publish(&broker, "hello/emqtt", "Example: QoS 0", 0);
+	
+mqtt协议的版本有：
+3.1.1是目前的主流版本。
+3.1.1的上一个版本是3.1版本。
+3.1.1版本做的改进有：
+1、
+对于3.1.1版协议，协议级别字段的值是4(0x04)
+
+订阅一个带clientID的主题，比如/topic/clientID ,发布者也向这个主题中发布，就可以实现一对一通信了，可以测试一下。
+clientid要保证唯一性。唯一代表一个设备。
+产品id-设备id。这样组合来做。
+
+
+keepalive的机制
+
+broker需要知道client是否正常跟它断开了连接。
+如果是不正常断开，那么需要发送will。
+而client也需要检测自己跟broker的连接，以便重连。
+
+一般mqtt是基于tcp的，tcp因为是双向的，所以有可能出现一个方向上的已经断开了的情况。
+而这个情况在卫星场景里，是比较常见的。
+所以mqtt的keepalive，不能靠tcp连接的状态检测。
+需要自己另外设计keepalive机制。
+
+机制规则是这样的：
+1、client连接到broker的时候，会设置一个keepalive时间。单位是秒。
+2、在1.5*keepalive的时间里，如果broker没有收到任何来做client的包，那么就认为client已经断开了。
+3、client端如果在1.5*keepalive的时间里，没有收到任何来自broker的包，也认为broker已经断开。
+4、keepalive时间设置为0，表示不使用keepalive机制。
+5、使用ping来避免判断断开。ping的时机，以上一次通信时间为计时起点，这样可以减少不必要的ping包。
+6、keepalive是一个u16的，所以最大是65535秒。
+
+清理会话 Clean Session
+这个是做什么用的？
+如果设置为0，那么就表示broker需要在当前的clientid里找到之前保留的信息，基于这个继续通信。
+而不是完全重新开始。
+
+client端的session状态有：
+1、已经发送给broker，但是还没有完成确认的qos1和qos2的消息。
+2、已经从broker接收，但是没有完成确认的qos2的消息。
+
+connect报文是最复杂的一个报文，因为需要传递各种控制信息。
+
+will发送的条件：
+1、broker检测到io错误或者网络故障。
+2、client在keepalive时间内没有通信。
+3、client没有发送disconnect，直接关闭了连接。
+4、由于协议错误，broker关闭了连接。
+
+connect报文的payload
+1、由var header里的各种flag，决定payload的字段。
+2、如果包含的话，要按照这个顺序：
+	clientid
+	will topic
+	will message
+	username
+	Password
+	
+libemqtt
+首先是协议的名字，长度为6个字节，协议名字这里为"MQIsdp"，同mqtt v3.1.1协议上有点区别，在v3.1.1上是"MQTT"。
+只是知道MQTT 3.1 的协议名是MQIsdp，协议等级是3。而MQTT 3.1.1的协议名却是MQTT，等级是4。

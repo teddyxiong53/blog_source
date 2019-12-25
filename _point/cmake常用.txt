@@ -106,6 +106,8 @@ PROJECT_BINARY_DIR
 	运行cmake命令的目录。
 	建议是xx/../build目录。
 	
+怎样往CFLAGS里追加内容呢？
+
 参考资料
 1
 https://www.jianshu.com/p/9d246e4071d4

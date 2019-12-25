@@ -113,6 +113,17 @@ void avformat_free_context(AVFormatContext *s);
 
 void avformat_close_input(AVFormatContext **s);
 
+
+seek接口分析
+
+int av_seek_frame(AVFormatContext *s, int stream_index, int64_t timestamp,
+                  int flags);
+4个参数：
+	1、ctx。
+	2、一般是给-1，这样表示使用默认的stream。
+	3、时间戳。要定位的目标位置的时间戳。
+	4、有4种，但是一般只用AVSEEK_FLAG_BACKWARD，这个表示定位到目标位置最近的关键帧。
+	
 =========Stream播放涉及的接口==================
 输入的是编码后的音频帧。
 需要使用的结构体

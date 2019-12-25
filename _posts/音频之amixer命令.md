@@ -6,6 +6,28 @@ tags:
 
 ---
 
+1
+
+alsa的命令有3套。
+
+```
+这个是alsa官方的。
+aplay
+arecord
+amixer
+这个是图形界面的。调试用。
+alsaconf
+alsactl    
+alsamixer  
+alsaucm
+这个是Android里的tiny版本。
+tinycap
+tinyplay
+tinymix
+```
+
+主要以alsa官方的为主。
+
 
 
 命令的基本格式：

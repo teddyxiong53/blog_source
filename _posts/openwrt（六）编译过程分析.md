@@ -112,6 +112,35 @@ prereq:: prepare-tmpinfo .config
 
 
 
+```
+tools目录
+这个目录下，是一下patch和Makefile。
+每个Makefile里都有一句 $(eval $(call HostBuild))，表示编译这个工具是为了在主机上使用的。
+
+toolchain - 包含一些命令去获取kernel headers, C library, bin-utils, compiler, debugger
+
+target - 各平台在这个目录里定义了firmware和kernel的编译过程。
+
+package - 包含针对各个软件包的Makefile。openwrt定义了一套Makefile模板，各软件参照这个模板定义了自己的信息，如软件包的版本、下载地址、编译方式、安装地址等。
+
+include - openwrt的Makefile都存放在这里。
+
+scripts - 一些perl脚本，用于软件包管理。
+
+dl - 软件包下载后都放到这个目录里
+
+build_dir - 软件包都解压到build_dir/里，然后在此编译
+
+staging_dir - 最终安装目录。tools, toolchain被安装到这里，rootfs也会放到这里。
+
+bin - 编译完成之后，firmware和各ipk会放到此目录下。
+
+firmware由kernel和rootfs两个部分组成，要对两个部分先分别处理，然后再合并成一个.bin文件。
+
+```
+
+
+
 # 参考资料
 
 1、openwrt: Makefile 框架分析

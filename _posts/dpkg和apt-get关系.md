@@ -29,6 +29,14 @@ aptitude
 
 
 
+下面这个命令，可以查看minidlna所有的相关的文件。
+
+```
+sudo dpkg -L minidlna 
+```
+
+
+
 参考资料
 
 1、linux之apt与dpkg安装包管理工具的区别

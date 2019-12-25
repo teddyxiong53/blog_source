@@ -205,6 +205,17 @@ mixer interface
 
 
 
+看alsa的应用层的缓冲区。
+buffer是以时间为衡量单位的，例如500ms。
+这个buffer相对来说有大，会有用户可以感知的延迟，所以在这个基础，再分出一个period的概念。
+例如，我们可以简单的把buffer时间除以4 。
+period_time = buffer_time / 4;
+一个period的数据就是alsa应用往驱动传递的基本单元。
+
+
+
+
+
 # 参考资料
 
 1、深入了解ALSA
@@ -281,5 +292,6 @@ https://www.cnblogs.com/jason-lu/tag/ALSA/
 
 https://www.cnblogs.com/hzl6255/p/8245578.html
 
-19、
+19、ALSA中PCM的使用
 
+https://blog.csdn.net/explore_world/article/details/51013942
