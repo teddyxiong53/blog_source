@@ -34,7 +34,7 @@ find -type f ! -name "*.c" \
 ### 查找拷贝
 
 ```
-
+find -name "*.so" -exec cp {} ./dst_dir \;
 ```
 
 ## stdout和stderr都重定向

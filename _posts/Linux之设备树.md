@@ -350,7 +350,7 @@ start_kernel
 
 
 
-Linux在开机启动阶段，会解析DTS文件，保存到全局链表allnodes中，在掉用.init_machine时，会跟据allnodes中的信息注册平台总线和设备。
+Linux在开机启动阶段，会解析DTS文件，保存到全局链表allnodes中，在调用.init_machine时，会跟据allnodes中的信息注册平台总线和设备。
 
 值得注意的是，加载流程并不是按找从树根到树叶的方式递归注册，而是只注册根节点下的第一级子节点，第二级及之后的子节点暂不注册。
 
@@ -879,7 +879,9 @@ CFLAGS_fdt.o := -DDEBUG
 
 
 
-# 参考文章
+
+
+参考文章
 
 1、
 http://www.eefocus.com/marianna/blog/14-10/306247_821be.html

@@ -74,6 +74,36 @@ make V=99
 
 
 
+gstreamer需要的插件：
+
+```
+├── gst-plugin-scanner
+├── libgstalsa.so
+├── libgstasf.so
+├── libgstaudioconvert.so
+├── libgstaudioparsers.so
+├── libgstaudioresample.so
+├── libgstautodetect.so
+├── libgstcoreelements.so
+├── libgstfaad.so
+├── libgstflac.so
+├── libgsticydemux.so
+├── libgstid3demux.so
+├── libgstisomp4.so
+├── libgstivorbisdec.so
+├── libgstmad.so
+├── libgstmms.so
+├── libgstogg.so
+├── libgstplayback.so
+├── libgstsouphttpsrc.so
+├── libgsttypefindfunctions.so
+├── libgstvolume.so
+├── libgstwavparse.so
+└── libgstwma.so
+```
+
+
+
 参考资料
 
 1、开源wifi音箱

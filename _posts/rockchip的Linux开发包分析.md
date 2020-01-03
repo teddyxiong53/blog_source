@@ -81,3 +81,72 @@ build.sh
 继而生成固件。
 ```
 
+
+
+rockchip默认的发布包没有详细的芯片手册。
+
+网上找到一个RK3328的TRM手册。是详细的芯片手册。大概650页。
+
+一共分为27章。
+
+目录如下：
+
+```
+1、系统概览
+	1.1 地址映射
+		支持从内部bootrom启动，支持remap。remap被SGRF_SOC_CON2[0]控制。
+		如果设置为1，那么bootrom映射到0xff08 0000，内部sram被映射到0xffff 0000
+		从0到0xff00 0000，都是ddr的区域。寄存器都是在0xff00 0000这里往上的16M空间内。
+	1.2 系统启动
+		支持sd卡、emmc、nand、nor这些介质启动。
+	1.3 中断
+		提供了一个gic，有128个SPI（共享外设中断）。有3个PPI（私有外设中断）。
+		中断是高电平触发，不是可编程的。
+		中断号从32开始，到144结束。
+	1.4 dma硬件请求连接
+		提供了一个dma控制器。也是高电平触发，不可编程。
+		
+2、时钟和复位单元。Clock & Reset Unit，简称CRU
+	寄存器非常多。用到了0x39c。
+3、通用寄存器文件。General Register File。GRF
+	grf分为4种：
+        1、普通的。
+        2、ddr grf
+        3、usb2phy grf
+        4、usb3phy grf
+	功能包括：
+		1、io复用。
+		2、控制gpio的状态，在power-down模式下。
+		3、gpio上拉下拉控制。
+		4、系统控制。
+		5、系统状态。
+		
+4、Context-A53
+	4核心的A53 。256K的L2 Cache。
+	
+5、内置sram。
+	36K大小。
+6、pmu。
+7、gic。
+8、DMA Controller。
+9、温度传感器ADC（TSADC）
+10、SARADC
+11、系统调试。
+12、efuse
+13、看门狗
+14、timer
+15、Transport Stream Processing(TSP)
+16、pwm
+17、uart
+18、gpio
+19、i2c
+20、spi
+21、spdif 
+22、gmac 以太网
+23、pdm
+24、Smart Card Reader（SCR）
+25、i2s和pcm
+26、gpu
+27、视频DAC
+```
+
