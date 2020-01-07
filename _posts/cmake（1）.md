@@ -457,3 +457,9 @@ https://www.cnblogs.com/flyinggod/p/8026789.html
 11、
 
 https://blog.csdn.net/Aquester/article/details/84881574
+
+12、cmake教程4(find_package使用)
+
+这个教程写得很好。
+
+https://blog.csdn.net/haluoluo211/article/details/80559341

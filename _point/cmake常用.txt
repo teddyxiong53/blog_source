@@ -11,6 +11,26 @@ make VERBOSE=1
 根目录下，定义项目。
 project(dossos VERSION 1.0.0 LANGUAGE CXX)
 
+添加编译器选项：
+add_compile_options(-std=c++11)
+
+安装命令：
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/ap_notification DESTINATION ${CMAKE_INSTALL_PREFIX})
+可以这样在buildroot里包含include目录。
+include_directories(${GLIB2_INCLUDE_DIRS})
+include_directories(${DBUS_INCLUDE_DIRS})
+
+这样指定链接库。
+target_link_libraries (ble_wificonfig ${GLIB2_LIBRARIES})
+target_link_libraries (ble_wificonfig ${DBUS_LIBRARIES})
+
+
+find_package(PkgConfig)
+pkg_check_modules (GLIB2 glib-2.0 REQUIRED)
+pkg_check_modules (DBUS dbus-1 REQUIRED)
+pkg_check_modules (DBUS-GLIB dbus-glib-1 REQUIRED)
+
+
 CMAKE_BUILD_BITS
 	这个不是标准的。
 	
@@ -107,6 +127,31 @@ PROJECT_BINARY_DIR
 	建议是xx/../build目录。
 	
 怎样往CFLAGS里追加内容呢？
+
+
+find_package有什么用？工作原理是什么？
+
+
+
+
+
+
+
+
+cmake --help-module-list
+	这个可以列出所有的支持的模块。
+	
+
+
+
+如何编写自己的cmake module呢？
+
+project(demo3)
+file(GLOB SRC_LIST ./*.cpp)
+add_executable(demo3 ${SRC_LIST})
+
+CMAKE_BINARY_DIR
+	这个就是输出的目录。
 
 参考资料
 1
