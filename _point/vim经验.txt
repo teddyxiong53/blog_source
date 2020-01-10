@@ -2,3 +2,227 @@ vim .
 	打开当前目录。
 	按Ctrl+6 ，可以退回到目录这一层，进行文件选择打开。
 	
+	
+常用操作：
+
+快速移动：
+0：移动到行首
+2$: 移动到下一行的尾部。
+H、M、L：快速移动。
+ctrl +f和ctrl+b：翻页。
+ctrl + u ctrl+d ：翻半页。
+10G：往下10行。
+10+：往下10行。
+10-：往上10行。
+
+大量删除：
+dd ：删除当前行。
+10dd：删除10行。
+dG：删除后面的。
+d0：删除光标到行首。
+
+快速编辑：
+yy：复制当前行。
+yyp：把当前行复制并粘贴。
+J：合并行。
+ddp：当前行和下一行交换位置。
+
+撤销和重做：
+u：撤销。
+ctrl+r：重做。
+
+查找
+* ： 向下找当前光标所在单词。
+# ： 向上找。
+/xx：向下找。
+?xx：向上找。
+
+命令模式常用操作：
+:w 1.txt 另存为
+:jumps 
+
+
+vim学习配置.vimrc的时候，会频繁修改这个文件，然后希望可以马上看到效果。
+最直接的方式是：
+先:w，然后:source ~/.vimrc
+这样敲的字符还挺多的。
+
+有个autocmd，在.vimrc最后加上这一行，这样就只需:w，就可以自动触发.vimrc的执行了。
+autocmd BufWritePost ~/.vimrc source ~/.vimrc
+但是加上这个导致vim占用cpu到100%了。不用吧。
+
+
+nerdtree使用经验
+1、切换到nerdtree查看，按?可以查看帮助。
+	帮助信息是在最上面，当前的目录就到下面去了。所以我们要按G就可以看到当前目录的部分了。
+2、定位到目录上，按o，可以打开或者关闭这个目录。
+3、过滤文件。
+	当前有很多o文件，我想要过滤掉。
+	let NERDTreeIgnore = ['\.pyc$', '\.o$']
+
+当前vim，不退出，另外打开一个文件进行编辑。
+:edit ~/.vimrc
+这样就好了。
+
+
+查看当前已经打开的文件，并且进行切换。
+类似source insight里的window里选取。
+分两步：
+1、查看。
+	:ls
+2、选择
+	:b x  
+	x是ls看到的某个数字。
+	
+	
+ycm
+模糊搜索代码补全引擎
+包括下面几种引擎：
+	1、基于标识符的引擎。
+	2、基于clang的引擎。
+		可以对C系列的语言进行补全，例如c/c++/objectc。
+	3、基于jedi的python补全引擎。
+	其他语法的。
+	还有基于UltiSnips的代码片段补全引擎。
+	
+vim.plug卸载插件的方法：
+	1、先到.vimrc里把要卸载的插件那一行注释掉。
+	2、保存.vimrc。并进行source操作保证生效。
+	3、执行:PlugClean就可以了。
+	
+
+
+执行vimtutor，根据文章进行操作。
+
+许多改变文本的命令都由一个操作符和一个动作构成。
+
+
+vim的leader
+就是前缀键，可以自定义。
+定义的方式：
+	let maplead = ','  我们可以定义为逗号。
+	然后就可以映射按键了：
+	map <leader>wq :wq<CR>
+		这个就是在normal模式下，先按逗号，再按wq，就等价于:wq。
+	leader主要是减少ctrl键的使用，因为ctrl键还是需要手离开主键盘的。
+	
+	
+vim读代码需要的功能
+	语法高亮。这个vimrc里加上syntax enable和syntax on就可以了。
+	代码折叠。
+		这个也只在vimrc里设置就好了。
+		有两种折叠：
+			基于语法的折叠。我们用这种。
+			基于缩进的折叠。
+		za：打开关闭当前折叠。
+		zM：关闭所有折叠。
+		zR：打开所有折叠。
+	在头文件和C文件之间切换：
+		这个要靠插件了。
+			vim-fswitch。
+			
+vim写代码需要的功能
+	快速注释。
+		这个要插件。nerd commenter。
+		快捷键是leader cc
+		可以先如visual mode选择后，再进行注释。
+		取消注释是leader cu。
+	模板补全
+		这个要插件UltiSnips。
+		这个也比较麻烦一点。需要专门写一篇文章来学习一下。
+		这个跟ycm都要tab来补全。我把ycm的让给UltiSnips。
+		还需要一个代码片段插件素材库。 https://github.com/honza/vim-snippets 
+	由接口快速生成实现框架。
+		靠 vim-protodef这个插件。
+		这个我弄不出效果来。先不管了。
+	查看库文档。
+		直接按一下K就可以看man手册了。
+		跳转到头文件。gf就可以了。
+		
+工程管理
+	工程文件管理
+	多文档编辑
+	工程环境的保存与恢复。
+	
+<silent>
+<silent>是指执行键绑定时不在命令行上回显，比如：
+:map <silent> ,w /abcd<CR>
+你在输入,w查找abcd时，命令行上不会显示/abcd，如果没有<silent>参数就会显示出来。
+
+
+nerdtree刷新。
+	新建了文件，不能马上看到，要定位到nerdtree的窗口里，按R就可以刷新出来了。
+	nerdtree里文件操作。
+		在文件上按m键，会弹出选项。
+		根据提示操作就是了。
+		
+		
+vim 的多文档编辑涉及三个概念：buffer、window、tab
+vim 把加载进内存的文件叫做 buffer，buffer 不一定可见；
+若要 buffer 要可见，则必须通过 window 作为载体呈现；同个看面上的多个 window 组合成一个 tab。
+一句话，vim 的 buffer、window、tab 你可以对应理解成视角、布局、工作区。
+我所用到的多文档编辑场景几乎不会涉及 tab，重点关注 buffer、window。
+vim 中每打开一个文件，vim 就对应创建一个 buffer，多个文件就有多个 buffer，但默认你只看得到最后 buffer 对应的 window，
+
+保存工程
+:mksesssion! my.vim
+:wviminfo! my.viminfo
+然后退出。
+
+恢复工程：
+打开vim
+:source my.vim
+:rviminfo my.viminfo
+可以看到操作还是有点麻烦的，不过我们可以定义快捷键来做。
+
+这个还可以。
+
+集成工具链。
+	编译工具
+		
+
+集成gdb。
+
+
+Vim 就会找到并打开这个文件.
+　　 那么, 如果该文件不在当前目录里怎么办? Vim 将利用 'path' 选项来寻找这个文件.
+　　该选项是一系列目录名, Vim 会在其中为你寻找文件.
+　　 假设你把你的头文件存放在目录 "c:/prog/include" 里. 下面这个命令把该目录加入
+
+Vim 确实在尝试打开名为 event2/event.h 的文件，但由于在对应路径下并未找到该文件，从而报错结束。
+
+可以用:set path?来查看当前的path的情况。
+可以添加set path+=./**5  这样就会在当前目录找5层。
+
+gf之后返回，用ctrl+6就可以了。
+也可以:ls ，这个方式麻烦一些。
+
+这个需要一个插件来帮忙解决。
+叫CtrlP。
+kien/ctrlp.vim
+然后定制一个快捷键。
+	<leader>gf 
+	
+:checkpath可以查看当前文件的路径查找情况。
+
+
+直接在vimrc里给path加上c++的路径。
+
+函数定义跳转
+ctrl+] 这个是跳转。
+ctrl+t返回。
+
+怎么查看函数原型？
+系统函数，就是K。
+
+实际使用中。碰到不少的问题。
+需要看一下插件的写法。
+
+函数必须以大写字母开头。
+
+多个文件里搜索某个符号。
+这时候就得用vim自带的匹配利器---vimgrep。
+
+参考资料
+
+https://wizardforcel.gitbooks.io/use-vim-as-ide

@@ -869,6 +869,19 @@ CFLAGS_fdt.o := -DDEBUG
 
 
 
+在sysfs里
+
+```
+/sys/firmware/fdt
+	这个文件是二进制的设备树文件。可以用hexdump查看。
+/sys/firmware/devicetree
+	这个目录是设备树的可读的细节。
+	根节点对应base目录。
+	属性是文件。节点对应目录。
+```
+
+
+
 # 设备树的当前的问题
 
 1、语法是新的，而且很晦涩难懂。
@@ -879,7 +892,7 @@ CFLAGS_fdt.o := -DDEBUG
 
 
 
-
+head.S会把DTB的位置保存在变量__atags_pointer里，最后调用start_kernel
 
 参考文章
 
@@ -893,3 +906,7 @@ http://tinylab.org/lwn-616859-device-tree-overlays/
 3、设备树另类解读
 
 https://blog.csdn.net/lq496387202/article/details/79421138
+
+4、韦东山
+
+https://blog.csdn.net/thisway_diy/category_8405722.html

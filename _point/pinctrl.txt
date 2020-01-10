@@ -1,0 +1,128 @@
+of.h里的结构体
+struct property
+	属性：这个是设备树的最基本元素。
+	name
+	value
+	length
+	*next
+	unique_id
+	bin_attribute
+	
+struct fwnode_handle
+	fwnode_type：枚举。5个值：of、acpi、acpi_data、pdata、irqchip。
+	struct fwnode_handle *secondary：？下一个节点？
+	fwnode_operations
+		还比较多。
+struct device_node
+	节点。节点包含多个属性，也可能包含子节点。
+	name
+	type：可能有哪些type呢？
+	phandle
+	full_name
+	fwnode_handle
+	*parent，*child，*sibling：父节点，子节点，兄弟节点。
+	kobject：所以对应到了sysfs里的一个文件节点。
+	void *data：
+	
+	
+	
+开机过程中的设备树处理。
+setup_arch
+	setup_machine_fdt(__fdt_pointer);
+		early_init_dt_scan
+			early_init_dt_verify
+			early_init_dt_scan_nodes
+				of_scan_flat_dt(early_init_dt_scan_chosen, boot_command_line);
+					这个就是找到bootargs。
+				of_scan_flat_dt(early_init_dt_scan_root, NULL);
+					这个是找到size-cells和address-cells这2个东西。
+				of_scan_flat_dt(early_init_dt_scan_memory, NULL);
+					找memory节点。可以没有。
+					/memory中的reg属性指定了不同板子内存的大小和起始地址。
+	unflatten_device_tree 在drivers/fdt/fdt.c里。
+		__unflatten_device_tree
+			unflatten_dt_node 这个是得到设备树的长度。
+			unflatten_dt_node 第二次调用，把设备是内容填充到分配的内存里。
+				前面多分配4个字节，填入0xdeadbeef。
+				这里就构造了一棵树。
+		
+接下来是把device_node转成platform_device。
+不是所有的设备节点都会被转成platform_device。
+例如chosen、memory这些就不会。
+而led这些会。
+要求就是：
+	1、节点必须含有compatible属性。
+	2、是根节点的子节点。
+	3、有特殊的compatible属性的节点的子节点。
+		这些特殊的compatible属性是：simple-bus、simple-mfd、isa、arm,amba-bus
+	4、根节点是例外的，即使它有compatible属性，也不会产生platform_device节点。
+	
+	
+	
+gpio的头文件
+include/linux/gpio目录下有3个：
+	comsumer.h
+		对外提供的接口。其他驱动就使用这里面的函数。
+		例如devm_gpiod_get。
+	driver.h
+		定义了struct gpio_chip
+		
+	machine.h
+		gpiod_add_lookup_table
+		查找表。
+drivers/gpio目录下，就1个头文件。
+	gpiolib.h
+		struct gpio_desc 
+struct gpio_chip
+	
+	
+devres_alloc(release, size, gfp)
+	alloc_dr
+	
+
+struct devres
+	struct devres_node		node;
+		链表，里面就一个release函数指针。参数2个：device*和void *。
+		
+		
+gpiod_free
+	这个d的后缀，表示desc。因为这些函数的参数都是gpio_desc*。
+	
+	
+led相关头文件
+include/linux/leds.h
+	enum led_brightness 3个值：0/127/255
+	struct led_classdev 
+		设置亮度、闪烁。
+		
+		
+irq相关头文件
+include/linux/irq.h
+	
+	
+struct irq_domain
+	
+struct irq_chip
+struct irq_data 
+struct irq_desc
+struct irq_chip_generic
+rockchip里相关的代码。
+从rockchip-pinctrl.c里。
+rockchip_interrupts_register
+	struct irq_chip_generic *gc;
+	bank->domain = irq_domain_add_linear
+	irq_alloc_domain_generic_chips
+	
+	
+Linux使用IRQ domain来描述一个中断控制器（IRQ Controller）所管理的中断源。换句话说，每个中断控制器都有自己的domain。我们可以将IRQ Domain看作是IRQ Controller的软件抽象。
+
+这里所说的“中断控制器”，不仅指硬件上实际存在的中断控制器，也可以是一个“虚拟”的中断控制器。
+例如，假设我们有一块CPU，它有多个GPIO Pin可以作为外部中断源使用（事实上大多数嵌入式CPU都有这样的GPIO）。
+我们还假定所有的GPIO中断都复用到该CPU的同一个中断向量。
+在这样的情况下，这多个GPIO中断就可以抽象成一个虚拟的中断控制器，它连接到CPU的某个中断向量上。
+这样做的好处在于，可以将“对中断控制器的中断响应”和“对产生中断的外部设备的中断响应”分离开来。
+有两个函数可以用来创建IRQ Domain：irq_domain_add_linear和irq_domain_add_tree。对于大多数情况，前一个函数就够用了：它在中断源和irq_desc之间建立线性映射。
+
+https://blog.csdn.net/weixin_34115824/article/details/85575365
+
+

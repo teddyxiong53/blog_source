@@ -32,12 +32,12 @@ GIC的全称为general interrupt controller,
 这里面把硬件中断源分为了3类：
 SPI:这是shared peripheral interrupt , 这是常见的外部设备中断，也定义为共享中断，比如按键触发一个中断，手机触摸屏触发的中断，共享的意思是说
 
-可以多个Cpu或者说Core处理，不限定特定的Cpu。一般定义的硬件中断号范围31~1019.
+可以多个Cpu或者说Core处理，不限定特定的Cpu。**一般定义的硬件中断号范围31~1019.**
 
-PPI:这里指的是private peripheral interrupt，16~31，私有中断
+**PPI:这里指的是private peripheral interrupt，16~31，私有中断**
 私有中断，为什么这样说呢，这些中断一般是发送给特定的Cpu的，比如每个Cpu有自己对应的Physicaltimer,产生的中断信号就发送给这个特定的cpu进行处理。
 
-SGI:这个中断有些同学遇到的比较少，software generatedinterrupt，软件出发产生的中断，中断号范围0~15，也就是最前的16个中断。
+**SGI:这个中断有些同学遇到的比较少，software generatedinterrupt，软件出发产生的中断，中断号范围0~15，也就是最前的16个中断。**
 
 如果在X86平台上做过开发工作的同学可能有影响，其实这就是相当于IPI，简单的说Cpu_1要给Cpu_2发送特定信息，比如时间同步，全局进程调度信息，就通过软件中断方式，目标Cpu接受到这样的中断信息，可以获取到信息是哪个Cpu发送过来的，具体的中断ID是哪个数字，从而找到对应处理方式进行处理。
 

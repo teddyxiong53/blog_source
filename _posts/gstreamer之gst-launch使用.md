@@ -27,35 +27,52 @@ tags:
 
 这个只能用来调试，不能用在正式的代码里。
 
+从最简单的开始。
 
+**管道元件之间，用感叹号进行连接。之所以使用感叹号，因为它看起来跟管道符比较像。**
 
-```
-gst-launch-1.0 videotestsrc ! xvimagesink
-```
-
-xvimagesink
-
-渲染视频帧到一个本地显示，用XVideo插件。
-
-管道元件之间，用感叹号进行连接。之所以使用感叹号，因为它看起来跟管道符比较像。
-
-还可以这样：
+显示笔记本的摄像头数据。
 
 ```
-gst-launch-1.0 videotestsrc ! videoconvert ! autovideosink
+gst-launch-1.0 v4l2src ! xvimagesink
 ```
 
-效果跟上面是一样的。都是弹出一个小窗口，播放彩色条纹。
+xvimagesink和ximagesink的不同：
 
-可以通过property=value的方式，进行属性设置，多个属性之间用空格隔开。
+ximagesink只支持rgb，不支持yuv。
+
+所以还是用xvimagesink比较好。
+
+设置一下参数，我的笔记本会失败。因为不支持帧率设置。去掉framerate=15/1就可以了。
 
 ```
-gst-launch-1.0 videotestsrc pattern=11 ! videoconvert ! autovideosink
+gst-launch-1.0 v4l2src ! video/x-raw,format=YUY2,width=640,height=480,framerate=15/1 ! queue2 ! videorate ! videoscale ! videoconvert ! xvimagesink
 ```
 
-这个是显示一个同心圆的画面。
+**queue2插件**
 
-要知道某个element的属性有哪些，可以用gst-inspect-1.0 xx来查看。
+简单的数据队列。属于core element。在libgstcoreelements.so文件里。
+
+有src和sink。可接收的数据类型都是any的。
+
+**videorate插件**
+
+这个是通过操作时间戳来达到目的的。
+
+对应的文件是libgstvideorate.so。属于base插件。
+
+可以接收的能力（输出的能力也是一样的）
+
+```
+video/x-raw
+video/x-bayer
+image/jpge
+image/png
+```
+
+**videoconvert**
+
+这个是进行color space转化的。
 
 
 

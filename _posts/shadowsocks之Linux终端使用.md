@@ -120,6 +120,84 @@ hp curl www.google.com
 
 
 
+# proxychains
+
+polipo已经不再更新了。所以换成proxychains。
+
+安装：
+
+```
+sudo apt-get install proxychains
+```
+
+配置：
+
+```
+sudo vim /etc/proxychains.conf
+```
+
+在最后面加上这样一行：
+
+```
+socks5 127.0.0.1 1080
+```
+
+socks4那一行注释掉。
+
+但是碰到了问题，就是dns不能解析。
+
+```
+sudo apt-get install dnsutils
+```
+
+还是不行。
+
+又看到一个解释：
+
+```
+理论上来说，proxychains不支持udp的，而且dns包基于udp协议，linux上基本所有要操作udp协议的软件都要root权限或者net_admin的capability
+```
+
+但是我用sduo来执行，也不行。
+
+编辑这个文件：
+
+```
+/usr/lib/proxychains3/proxyresolv 
+```
+
+修改默认的4.2.2.2为9.9.9.9（ibm的dns地址）。还是不行。
+
+到/etc/proxychains.conf里把proxy_dns这一行注释掉。也不行。
+
+当前用的是3.1版本。使用proxychains-ng的看看。这个要自己编译。
+
+https://sourceforge.net/projects/proxychains-ng/files/proxychains-ng-4.12.tar.xz/download?use_mirror=ayera
+
+编译后，sudo make install后，/etc目录下，没有看到conf文件。
+
+```
+sudo make install-config
+```
+
+是安装到这里了。
+
+```
+./tools/install.sh -D -m 644 src/proxychains.conf /usr/local/etc/proxychains.conf
+```
+
+
+
+我把电脑上安装的shadowsocks卸载掉。安装下面这个文章重新来一遍。
+
+https://cndaqiang.github.io/2017/09/28/ubuntu1604-ssr/
+
+在自己的目录下，手动启动。
+
+现在结合proxychains正常了。
+
+
+
 # 换一种思路
 
 思路就是：虚拟机通过pc机运行的ssr，pc为虚拟机提供代理服务。
