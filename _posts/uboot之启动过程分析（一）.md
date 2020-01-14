@@ -130,7 +130,77 @@ _main做了这些事情：
 
 
 
+```
+start.S
+	最后调用到_main
+	这个是在arch/arm/lib/crt0.S里。
+	board_init_f_alloc_reserve
+		./common/init/board_init.c
+		struct global_data 分配这个全局结构体。16字节对齐。
+		
+	board_init_f_init_reserve
+		对上面分配的global_data进行初始化。
+	board_init_f_init_serial
+		初始化串口。
+	board_init_f
+		arch/arm/lib/spl.c里有一个weak定义。
+		每个板子下面有自己的定义。
+		但是rk3308用的是common/board_f.c里的。
+		调用initcall_run_list(init_sequence_f)
+			fdtdec_setup
+				准备设备树。
+				
+	relocate_code
+		
+	relocate_vectors
+	coloured_LED_init
+	red_led_on
+	board_init_r
+		r代表relocate，重定位之后的。
+		
+```
 
+
+
+```
+global_data
+	bd_t 
+		board信息。
+			ram的start addr
+			ram的size
+			flash start
+			flash size
+			sram start
+			sram size
+			arm freq
+			dsp freq
+			ddr freq
+			arch number
+			boot params地址。
+	flags
+	波特率
+	cpu clk
+	bus clk
+	pci clk
+	mem clk
+	fb_base
+		如果有lcd的话，framebuffer的base addr。
+	board_type
+	have_console
+	env_addr
+	env_valid
+	ram_top
+		uboot使用的ram的最高地址。
+	relocaddr
+		重定位地址。
+	ram_size
+	new_gd
+		重定位后的global data地址。
+	udevice *dm_root
+		根节点，设备模型。
+	void *fdt_blob
+		设备树。
+```
 
 
 

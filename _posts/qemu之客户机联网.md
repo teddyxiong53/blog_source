@@ -45,9 +45,76 @@ sudo iptables -t nat -A POSTROUTING -o ens33 -s 192.168.1.0/24 -j MASQUERADE
 
 但是我这样操作后，还是不行。看看到有种方案是配置网桥的。我暂时就不弄了。
 
+# 重新尝试
+
+启动docker。
+
+安装这个，是为了得到tunctl工具。
+
+```
+sudo apt-get install uml-utilities
+```
+
+创建一个tun网卡。
+
+```
+sudo tunctl -t tap0
+```
+
+打开网卡：
+
+```
+sudo ifconfig tap0 up
+```
+
+在qemu的启动命令后加上：
+
+```
+-net nic,model=lan9118 -net tap,ifname=tap0,script=no,downscript=no 
+```
+
+启动qemu，里面执行：
+
+```
+ifconfig eth0 172.17.0.30 netmask 255.255.0.0
+route add default gw 172.17.0.1
+```
+
+172.17.0.1这个是docker0这个网卡的ip，它的掩码是255.255.0.0。
+
+这样配置后，还是不能上网。ping不通172.17.0.1 。
+
+host里查看，tap0的网卡信息是这样：
+
+```
+tap0      Link encap:以太网  硬件地址 3e:59:a2:ce:70:89  
+          inet 地址:169.254.149.41  广播:169.254.255.255  掩码:255.255.0.0
+```
+
+我在qemu里再把ip配置为169.254.149.50/16的。这样至少可以ping通169.254.149.41。
+
+但是ping不通114.114.114.114 。
 
 
 
+qemu提供了4种不同模式的网络
+
+```
+1、基于网桥。
+2、基于nat。
+3、qemu内置的usermode network。
+4、直接分配网络设备。
+```
 
 
+
+参考资料
+
+1、一种简单的qemu网络配置方法
+
+https://blog.csdn.net/wujianyongw4/article/details/80497528
+
+2、详解QEMU网络配置的方法
+
+https://blog.csdn.net/rfidunion/article/details/55096935
 

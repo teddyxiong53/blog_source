@@ -156,11 +156,11 @@ info：
 
 recovery的是ramfs，
 
-基于recovery的，比ab系统会省空间。
+**基于recovery的，比ab系统会省空间。**
 
 Android直到N版本才引入ab系统的。之前也是基于recovery的。
 
-基于recovery的叫单拷贝方式。基于ab系统的叫双拷贝方式。
+**基于recovery的叫单拷贝方式。基于ab系统的叫双拷贝方式。**
 
 单拷贝的分区情况：
 

@@ -125,4 +125,12 @@ Linux使用IRQ domain来描述一个中断控制器（IRQ Controller）所管理
 
 https://blog.csdn.net/weixin_34115824/article/details/85575365
 
+IRQ_NOPROBE			- Interrupt cannot be probed by autoprobing
+IRQ_NOREQUEST		- Interrupt cannot be requested via
+ *				  request_irq()
+ 
+FIXADDR_START	(FIXADDR_TOP - FIXADDR_SIZE)
 
+FIXADDR_TOP
+	PCI_IO_START - SZ_2M
+	= 

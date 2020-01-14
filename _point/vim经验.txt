@@ -223,6 +223,13 @@ ctrl+t返回。
 多个文件里搜索某个符号。
 这时候就得用vim自带的匹配利器---vimgrep。
 
+
+cscope使用
+在目录下cscope -R。
+需要按ctrl+d进行退出。
+
+使用ag插件
+
 参考资料
 
 https://wizardforcel.gitbooks.io/use-vim-as-ide

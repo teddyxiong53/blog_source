@@ -26,6 +26,8 @@ ctl.!default {
 
 card表示声卡号，device表示设备号。
 
+default前的**感叹号用于替代**alsa api 中默认的default配置
+
 
 
 首先，无论是用户是.asoundrc还是系统的asound.conf都不是alsa一定要的。
