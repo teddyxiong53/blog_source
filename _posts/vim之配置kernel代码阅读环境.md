@@ -293,6 +293,65 @@ nmap <F9> :NERDTreeToggle<CR>
 
 
 
+## vim显示空格和tab
+
+网上复制的代码，有时候空格有问题。
+
+所以希望可以明确看出空格和tab。这样才能避免问题。
+
+最简单的方法是：
+
+```
+:set list
+```
+
+这个是会显示$和^的。看起来不好看。
+
+可以这样：
+
+```
+:set listchars=tab:>-,trail:-
+```
+
+这个的效果是用`-`来显示空格和tab。也不是很好。
+
+在vimrc最后加上这几行。
+
+```
+highlight ExtraWhitespace ctermbg=red guibg=darkgreen
+autocmd ColorScheme * highlight ExtraWhitespace ctermbg=red guibg=red
+match ExtraWhitespace /\s\+$\| \+\ze\t/
+```
+
+在输入时，会用色块先显示。但是在输入完成后，色块就消失了。
+
+这个可以很简单显示所有的空白字符。
+
+```
+:set syntax=whitespace
+```
+
+找到一个最佳实践。
+
+只需要下面这两行就够了。
+
+```
+:set listchars=eol:¬,tab:>·,trail:~,extends:>,precedes:<,space:␣
+:set list
+```
+
+整理一下。把这个整理成一个快捷键。
+
+用leader键，然后加上s来表示吧。
+
+不用，直接把上面一行写入到vimrc里。set list这个直接输入吧。反正不多。
+
+
+
+需要一个比较好的机制来同步我的vimrc文件。
+
+
+
 参考资料
 
 1、Vim轻量高效插件管理神器vim-plug介绍-Vim插件(9)
