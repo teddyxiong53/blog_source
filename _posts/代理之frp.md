@@ -115,6 +115,39 @@ service supervisor restart
 
 
 
+# 突然不能frp ssh访问了
+
+我一直通过frp连接到办公室的Linux机器，但是今天突然就不能访问了。
+
+把办公室linux、服务器都重启了一次，还是一样的。
+
+报错是这样：
+
+```
+ssh_exchange_identification: Connection closed by remote host
+```
+
+这里说重启服务，还是不行。
+
+另外说可能是连接的客户端太多，我这也没有连接多少。就一个。
+
+https://www.cnblogs.com/cxq20190307/p/10694547.html
+
+还有说要关闭selinux的。
+
+关闭ubuntu的防火墙 
+ufw disable
+
+我感觉是跟办公室的linux机器没有关系。
+
+问题可能还是出在服务器上。
+
+我在我的本地linux上安装supervisor，把frpc在本地用这个启动。
+
+现在就正常了。真是奇怪。可能跟这个也没有关系。
+
+
+
 参考资料
 
 1、使用 FRP 反向代理实现 Windows 远程连接

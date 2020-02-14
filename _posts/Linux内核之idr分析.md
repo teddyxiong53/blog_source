@@ -8,7 +8,7 @@ tags:
 
 1
 
-从本质上来说，这就是一种将整数ID号和特定指针关联在一起的机制。
+从本质上来说，这就是**一种将整数ID号和特定指针关联在一起的机制**。
 
 这个机制最早是在2003年2月加入内核的，当时是作为POSIX定时器的一个补丁。现在，在内核的很多地方都可以找到idr的身影。
 
@@ -22,5 +22,6 @@ tags:
 
 https://blog.csdn.net/ganggexiongqi/article/details/6737389
 
-2、
+2、linux中的IDR机制
 
+https://blog.csdn.net/midion9/article/details/50923095

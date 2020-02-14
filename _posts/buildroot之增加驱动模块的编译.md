@@ -126,6 +126,10 @@ distclean: clean
 
 在顶层make test_driver就可以编译，然后自动拷贝到rootfs的/lib/modules/4.11.3/extra目录下。
 
+要安装到到文件系统里，要执行一下make，重新生成rootfs镜像。
+
+Makefile简化一下。
+
 
 
 参考资料

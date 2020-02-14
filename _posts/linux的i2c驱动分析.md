@@ -493,6 +493,26 @@ xhl -- devname:(null), path:/sys/dev/char/4:30, op:0
 
 
 
+i2c的match方法有三种：
+
+```
+1、of方式。
+2、acpi方式。
+3、i2c id table方式。
+```
+
+这个体现就是在i2c_device_match函数里。
+
+```
+先调用of_driver_match_device，匹配成功则返回
+否则再调用acpi_driver_match_device
+否则在调用i2c_match_id
+```
+
+```
+struct i2c_bus_recovery_info — I2C总线恢复信息？内核新加入的结构，不是很清楚。
+```
+
 # 参考资料
 
 1、Linux i2c子系统(一) _动手写一个i2c设备驱动

@@ -350,6 +350,26 @@ match ExtraWhitespace /\s\+$\| \+\ze\t/
 
 需要一个比较好的机制来同步我的vimrc文件。
 
+# 参考奔跑吧Linux内核的配置
+
+这个是专门配置用来分析内核的，所以很符合我的需求。
+
+这个还是同时使用了ctags和cscope。
+
+tag插件是用tagbar。这个是跟taglist类似的。
+
+关键是内核为我们做好了生成这些的准备。需要先输入环境变量。
+
+```
+export ARCH=arm
+export SUBARCH=arm
+export CROSS_COMPILE=arm-linux-gnueabihf-
+make vexpress_defconfig
+make tags cscope TAGS
+```
+
+
+
 
 
 参考资料

@@ -18,13 +18,55 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 			 const char *devname, void *dev_id)
 ```
 
-##什么时候使用request_threaded_irq？
+**什么时候使用request_threaded_irq？**
+
+如果不用threaded的irq，有些操作需要借助tasklet或者workqueue来完成。
+
+如果中断处理很简单，那么就不用使用request_threaded_irq，简单的request_irq就好了。
+
+如果中断处理较复杂，那么就可以使用request_irq + tasklet或者workqueue。或者使用request_threaded_irq。
 
 
 
-##有什么需要注意的？
+总的来说，request_threaded_irq，就是在内部帮我们使用了workqueue了。让驱动开发少做了一些事情。
 
-1、一定要加上IRQF_ONESHOT。表示在thread_fn处理过程中，不会触发下一次。这是保证功能正常。
+使用上的不同之处在于，中断isr函数，最后要返回IRQ_WAKE_THREAD来激活对应的线程处理。
+
+```
+enum irqreturn {
+	IRQ_NONE		= (0 << 0),
+	IRQ_HANDLED		= (1 << 0),
+	IRQ_WAKE_THREAD		= (1 << 1),
+};
+```
+
+
+
+
+
+**有什么需要注意的？**
+
+一定要加上IRQF_ONESHOT。表示在thread_fn处理过程中，不会触发下一次。这是保证功能正常。
+
+具体情况说明：
+
+例如对于gpio level trigger的中断，如果不设置IRQF_ONESHOT，那么就会导致ISR处理完之后，再次进入ISR，导致下半部永远没有机会执行。
+
+
+
+一个具体的例子：
+
+在手机里，检测耳机的插入，是检测gpio的电平状态来做的。
+
+在gpio的中断处理进行处理。
+
+但是一般要进行防抖处理，延时200ms再读取一次状态。
+
+如果使用使用request_irq的方式，就需要借助一个workqueue，比较麻烦。
+
+如果用request_threaded_irq，你直接sleep 200ms再读就好了。简化了很多。
+
+
 
 # local_irq_enable的实现
 
@@ -150,3 +192,7 @@ https://blog.csdn.net/suncess1985/article/details/7343490
 这篇文章对软中断讲解比较好。
 
 http://blog.chinaunix.net/uid-28541347-id-5716840.html
+
+5、linux驱动request_threaded_irq()
+
+https://blog.csdn.net/gx19862005/article/details/18740705

@@ -214,6 +214,26 @@ irda是InfraRed Data Association，红外数据标准协会。
 
 
 
+<https://blog.bschwind.com/2016/05/29/sending-infrared-commands-from-a-raspberry-pi-without-lirc/>
+
+<http://wiki.t-firefly.com/en/Firefly-RK3399/driver_ir.html>
+
+
+
+关于红外的发送，代码在drivers/input/remotectl下面的rockchip_pwm_remotectl.c里。这个目录下，只有rockchip的代码。
+
+在设备树里，是配置pwm。
+
+```
+compatible = "rockchip,remotectl-pwm"
+```
+
+但是读代码，没有看出是发送的。
+
+这个还是输入的。
+
+那么可能就是要打补丁才能行了。
+
 
 
 参考资料

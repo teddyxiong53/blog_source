@@ -60,6 +60,17 @@ http://www.ruiyixi.com/project/an-rk3308-pcba-for-ai-and-iot/
 
 
 
+```
+ rk_headset {
+     compatible = "rockchip_headset";
+     headset_gpio = <&gpio2 RK_PC6 GPIO_ACTIVE_LOW>;
+     pinctrl-names = "default";
+     pinctrl-0 = <&hp_det>;
+ };
+```
+
+
+
 参考资料
 
 1、耳机插入检测学习总结
