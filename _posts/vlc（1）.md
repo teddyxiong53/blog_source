@@ -30,6 +30,66 @@ https://blog.csdn.net/saddyyun/article/details/85245135
 
 
 
+代码编译
+
+代码是vlc-3.0.4的。
+
+执行configure。
+
+```
+configure: WARNING: No package 'lua5.2' found, trying lua 5.1 instead
+checking for LUA... no
+configure: WARNING: No package 'lua5.1' found, trying lua >= 5.1 instead
+checking for LUA... no
+configure: WARNING: No package 'lua' found, trying manual detection instead
+```
+
+当前安装的lua是5.3的。
+
+安装5.2版本的。
+
+```
+sudo apt-get install lua5.2 lua5.2-dev
+```
+
+现在继续报错。
+
+```
+configure: error: Could not find liba52 on your system:
+```
+
+安装这个库。
+
+```
+ sudo apt-get install liba52-0.7.4-dev
+```
+
+还报错。
+
+```
+configure: error: Package requirements (xcb-composite) were not met:
+```
+
+
+
+```
+sudo apt-get install libxcb-composite0-dev 
+```
+
+```
+configure: error: Package requirements (xcb-xv >= 1.1.90.1) were not met:
+```
+
+现在configure通过了。
+
+make出错了。是PIC问题。
+
+重新configure。
+
+```
+./configure --with-pic
+```
+
 
 
 参考资料

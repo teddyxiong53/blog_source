@@ -226,6 +226,14 @@ ffmpeg -i input.mp3 -af volume=-3dB output.mp3
 
 
 
+录音
+
+```
+
+```
+
+
+
 # 图片处理
 
 批量缩放图片。
@@ -244,6 +252,10 @@ done
 
 
 
+# rtsp相关
+
+
+
 参考资料
 
 1、ffmpeg入门笔记
@@ -253,3 +265,7 @@ http://einverne.github.io/post/2015/12/ffmpeg-first.html
 2、How to specify audio and video bitrate
 
 https://superuser.com/questions/319542/how-to-specify-audio-and-video-bitrate
+
+3、
+
+https://blog.csdn.net/u013010310/article/details/52371440

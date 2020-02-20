@@ -26,6 +26,16 @@ https://github.com/ashwing920/rtspserver
 
 
 
+但一般做直播用RTSP RTMP，做点播用HTTP
+
+RTMP和RTSP协议是流媒体协议。
+
+RTMP协议是Adobe的私有协议,未完全公开，RTSP协议和HTTP协议是共有协议，并有专门机构做维护。
+
+Adobe 收购 Macromedia 购以后，公布了这个协议的一部分，以备公共使用。
+
+
+
 #流媒体定义
 
 流媒体有广义和狭义的两种定义。
