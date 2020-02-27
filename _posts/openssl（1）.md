@@ -26,6 +26,14 @@ ssl是Secure Socket Layer。安全套接字层。是网景公司提出来的概�
 
 因为CA的地址是内嵌在浏览器中的，很难被篡改。
 
+Ubuntu16.04默认安装的openssl是1.0.2g的。
+
+连接需要2个库：libssl和libcrypto。
+
+
+
+
+
 参考资料
 
 1、

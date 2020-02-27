@@ -75,6 +75,18 @@ set args xxx
 show args
 ```
 
+# 自动执行一些命令
+
+主要是用来设置默认的参数。
+
+在~/.gdbinit里加上：
+
+```
+set args -i input.wav output.aac -y
+```
+
+
+
 # 清除断点
 
 delete 断点编号。
@@ -129,3 +141,26 @@ gdb attach `pidof xxx`
 thread apply all bt full 
 ```
 
+
+
+# tui界面乱了怎么解决
+
+使用cgdb。
+
+安装：
+
+```
+sudo apt-get install cgdb
+```
+
+```
+cgdb ./a.out
+```
+
+界面会带颜色。直接用就好了。跟gdb没有什么区别。
+
+至少SecureCRT不再跟我乱闪了，而且显示界面和独特的vi风格交互感也算是加分项了，唯一遗憾的是中文字符没法正常显示，但总体还是比较推荐的。cgdb通过Trivial GDB(libtgdb)的库和后端gdb通信，通过这个库做到前端和后端分离的效果。
+
+参考资料
+
+https://blog.taozj.org/201703/cgdb-cheatsheet.html

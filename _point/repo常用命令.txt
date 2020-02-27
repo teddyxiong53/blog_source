@@ -93,6 +93,9 @@ hlxiong@hlxiong-VirtualBox ~/work2/repo_test/.repo $ tree -L 1
 manifest目录内容就是https://github.com/yodaos-project/yodaos.git 里面的内容。
 manifests.git就是一个.git目录，可以看到版本信息。
 
+下载repo压缩包到本地后，展开.repo。
+repo sync -l 
+
 参考资料
 1、
 https://www.jianshu.com/p/58e5d4f9f9a9

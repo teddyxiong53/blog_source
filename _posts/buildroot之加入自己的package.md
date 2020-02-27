@@ -175,6 +175,29 @@ endif
 
 
 
+# 经验
+
+```
+BELLE_SIP_VERSION = 1.6.x
+BELLE_SIP_SITE = $(TOPDIR)/../external/belle-sip/belle-sip-1.6.x
+BELLE_SIP_SITE_METHOD = local
+BELLE_SIP_AUTOGEN = YES
+
+# 对于只有autogen.sh的，需要加上这个
+define BELLE_SIP_RUN_AUTOGEN
+    cd $(@D) && PATH=$(BR_PATH) ./autogen.sh
+endef
+
+# 对于只有autogen.sh的，需要加上这个。
+BELLE_SIP_PRE_CONFIGURE_HOOKS += BELLE_SIP_RUN_AUTOGEN
+
+$(eval $(autotools-package))
+```
+
+添加某些操作前后的执行脚本。是通过hooks来做的。
+
+
+
 参考资料
 
 1、Buildroot构建指南--快速上手与实用技巧

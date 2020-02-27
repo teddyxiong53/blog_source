@@ -13,7 +13,7 @@ apt-get用来从仓库安装软件。
 
 dpkg不会解决依赖问题。apt-get会解决依赖问题。
 
-可以这么理解，apt-get是对dpkg的封装。
+**可以这么理解，apt-get是对dpkg的封装。**
 
 dpkg是绕过了apt-get的依赖管理。其实不是很安全的做法。
 
@@ -23,7 +23,7 @@ apt-get安装软件时，下载的文件，会缓存在/var/cache/apt/archives�
 
 aptitude
 
-这个跟apt-get类似，功能没有apt-get，但是在安装卸载软件这个功能上，比apt-get要强大。
+这个跟apt-get类似，功能没有apt-get，**但是在安装卸载软件这个功能上，比apt-get要强大。**
 
 而且卸载的时候，卸载得更为干净。
 

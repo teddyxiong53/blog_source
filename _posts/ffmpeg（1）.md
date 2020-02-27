@@ -8,6 +8,121 @@ tags:
 
 1
 
+# 代码经验
+
+free的时候，很多都是二级指针，如果传递一级指针，就会段错误。
+
+```
+
+static void save_gray_frame(unsigned char *buf, int wrap, int xsize, int ysize, char *filename)
+{
+    FILE *f;
+    int i;
+    f = fopen(filename, "w");
+    fprintf(f, "P5\n\%d %d\n%d\n", xsize, ysize, 255);
+    for(i=0;i <ysize; i++) {
+        fwrite(buf + i*wrap, 1, xsize, f);
+    }
+    fclose(f);
+        
+}
+
+static int decode_packet(AVPacket *pPacket, AVCodecContext *pCodecContext, AVFrame *pFrame)
+{
+    int response = avcodec_send_packet(pCodecContext, pPacket);
+    if(response < 0) {
+        printf("send packet fail\n");
+        return -1;
+    }
+    while(response >= 0) {
+        response = avcodec_receive_frame(pCodecContext, pFrame);
+        if(response == AVERROR(EAGAIN) || response == AVERROR_EOF) {
+
+            break;
+        } else if(response < 0) {
+            printf("fatal error:%s\n", av_err2str(response));
+            return response;
+        }
+        if(response >= 0) {
+            char frame_filename[1024];
+            snprintf(frame_filename, sizeof(frame_filename), "%s-%d.pgm", "frame", pCodecContext->frame_number);
+            save_gray_frame(pFrame->data[0], pFrame->linesize[0], pFrame->width, pFrame->height, frame_filename);
+        }
+    }
+    return 0;
+}
+int main(int argc, char **argv)
+{
+    if(argc < 2) {
+        printf("you need to specify a filename\n");
+        return -1;
+    }
+    AVFormatContext *pFormatContext = avformat_alloc_context();
+    char *filename = argv[1];
+    avformat_open_input(&pFormatContext, filename, NULL, NULL);
+    
+    avformat_find_stream_info(pFormatContext, NULL);
+    AVCodec *pCodec = NULL;
+    AVCodecParameters *pCodecParameters;
+    int video_stream_index = -1;
+    int i =0;
+    for(i=0; i<pFormatContext->nb_streams; i++) {
+        AVCodecParameters *pLocalCodecParameters = NULL;
+        pLocalCodecParameters = pFormatContext->streams[i]->codecpar;
+
+        AVCodec *pLocalCodec;
+        pLocalCodec = avcodec_find_decoder(pLocalCodecParameters->codec_id);
+        if(pLocalCodec == NULL) {
+            printf("can not find codec\n");
+            return -1;
+        }
+
+        if(pLocalCodecParameters->codec_type == AVMEDIA_TYPE_VIDEO) {
+            if(video_stream_index == -1) {
+                video_stream_index = i;
+                pCodec = pLocalCodec;
+                pCodecParameters = pLocalCodecParameters;
+            }
+        } else if(pLocalCodecParameters->codec_type == AVMEDIA_TYPE_AUDIO) {
+            printf("find audio stream\n");
+        }
+        
+    }
+    AVCodecContext *pCodecContext = avcodec_alloc_context3(pCodec);
+    avcodec_parameters_to_context(pCodecContext, pCodecParameters);
+
+    avcodec_open2(pCodecContext, pCodec, NULL);
+    AVFrame *pFrame = av_frame_alloc();
+    AVPacket *pPacket = av_packet_alloc();
+    int response = 0;
+    int how_many_packets_to_process = 8;
+    while(av_read_frame(pFormatContext, pPacket) >= 0) {
+        if(pPacket->stream_index == video_stream_index) {
+            printf("pts:%"PRId64"\n", pPacket->pts);
+            response = decode_packet(pPacket, pCodecContext, pFrame);
+            if(response < 0) {
+                break;
+            }
+            if(--how_many_packets_to_process <= 0) {
+                break;
+            }
+        }
+        av_packet_unref(pPacket);
+    }
+    printf("release all resource\n");
+    avformat_close_input(&pFormatContext);
+    avformat_free_context(pFormatContext);
+    av_packet_free(&pPacket);
+    av_frame_free(&pFrame);
+    avcodec_free_context(&pCodecContext);
+    return 0;
+}
+```
+
+
+
+# 简介
+
 ffmpeg是包括：
 
 1、录制。
@@ -202,6 +317,30 @@ AVCodecContext选项
 
 从这里可以得到-b:a是一个完整的选项，而并不是冒号的特别用法。
 
+## 常用选项
+
+```
+-c :指定编码器
+-c copy: 直接赋值，不经过重新编码。这样比较快。
+-c:v 指定视频编码器。
+-c:a 指定音频编码器。
+-an： 去掉音频。
+-vn：去掉视频。
+-preset：
+	指定输出的视频质量。
+	有这些值：
+	ultrafast
+	superfast
+	veryfast
+	faster
+	fast
+	medium
+	slow
+	slower
+	veryslow
+	
+```
+
 
 
 # AVPacket
@@ -360,6 +499,25 @@ packed模式，就是交叉保存各个声道的数据的。
 planar格式，是分开保存的，这样数据看起来就没有那么杂乱。
 
 
+
+# 常用格式
+
+```
+v4l2
+x11grab
+video4linux2,v4l2
+wav
+sdl
+rtp
+rtsp
+rawvideo
+mp3
+mp4
+jack
+h264
+hevc
+flac
+```
 
 
 

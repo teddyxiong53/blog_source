@@ -14,7 +14,18 @@ paho这个项目的总体目标是：提供针对IOT的消息协议。
 
 
 
-# 1. 使用paho client
+库有四种，分别有什么区别？
+
+```
+libmqttv3a.so - asynchronous=异步-明文
+libmqttv3as.so - asynchronous with SSL =使用SSL安全模式
+libmqttv3c.so - “classic” / synchronous==经典/同步明文版本
+libmqttv3cs.so - “classic” / synchronous with SSL
+```
+
+
+
+# 使用paho client
 
 1、创建一个client对象。
 

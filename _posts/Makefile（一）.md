@@ -159,3 +159,47 @@ eval函数在执行时，会对它的参数进行两次展开。
 
 
 
+# 一个最小且实用的Makefile
+
+只有一个代码目录
+
+```
+src = $(wildcard *.c)
+obj = $(src:.c=.o)
+
+LDFLAGS = -lGL -lglut -lpng -lz -lm
+
+myprog: $(obj)
+    $(CC) -o $@ $^ $(LDFLAGS)
+
+.PHONY: clean
+clean:
+    rm -f $(obj) myprog
+```
+
+多个代码目录
+
+```
+csrc = $(wildcard src/*.c) \
+       $(wildcard src/engine/*.c) \
+       $(wildcard src/audio/*.c)
+ccsrc = $(wildcard src/*.cc) \
+        $(wildcard src/engine/*.cc) \
+        $(wildcard src/audio/*.cc)
+obj = $(csrc:.c=.o) $(ccsrc:.cc=.o)
+
+LDFLAGS = -lGL -lglut -lpng -lz -lm
+
+mygame: $(obj)
+    $(CXX) -o $@ $^ $(LDFLAGS)
+```
+
+
+
+参考资料
+
+1、
+
+这篇文章很实用。
+
+http://nuclear.mutantstargoat.com/articles/make/
