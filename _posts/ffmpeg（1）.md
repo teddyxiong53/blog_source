@@ -467,6 +467,146 @@ https://blog.csdn.net/qq_35044535/article/details/77862183
 
 # AVOption
 
+# AVDiscard
+
+一个枚举。
+
+有7种值。
+
+表示是否丢弃某些数据。
+
+例如丢弃非参考帧，丢弃所有帧。
+
+在ffplay的代码里有用到。
+
+
+
+【FFmpeg小点记】AVDiscard的作用
+
+https://segmentfault.com/a/1190000019742659
+
+# avformat_find_stream_info
+
+这个函数的作用：
+
+读取一部分的音视频数据，从中分析得到相关信息。
+
+有一些文件格式没有头，比如说MPEG格式的，这个时候，这个函数就很有用，因为它可以从读取到的包中获得到流的信息。
+
+
+
+
+
+ffmpeg源码分析5-avformat_find_stream_info()
+
+https://www.jianshu.com/p/f840e27fc5f8
+
+
+
+# av_audio_fifo_alloc
+
+这个一般的用法是这样，先申请一个字节的。
+
+后面再realloc。
+
+初始化fifo的时候这样：
+
+```
+av_audio_fifo_alloc(codec_context->sample_fmt, codec_context->channels, 1);//1个字节。
+```
+
+要填入数据的时候。
+
+```
+av_audio_fifo_realloc(fifo, av_audio_fifo_size(fifo)+frame_size);
+
+av_audio_fifo_write(fifo, (void **)converted_input_samples, frame_size);
+```
+
+存储到fifo后，我们需要判断该fifo中是否有一帧数据，如果有，则从fifo中取出，也有可能fifo中含有多帧，
+
+所以从fifo中取出数据的时候，需要用到while循环。
+
+在取出fifo中的数据前，同样需要先申请一帧音频帧的空间：
+
+
+
+大多用audiofifo做音频转码，并没有用avfilter，**当然相比较来说，AVFilter更加简单，适合无脑上手**。不过其实它底层也是用fifo实现。
+
+示例提供了一个“解封装->解码->filtering->编码->封装”的处理流程。
+
+编码之前的音频数据经过AVAudioFifo处理，用于满足音频编码器对frame size的要求。
+
+**否则音频编码为AAC的时候，会报more samples than frame size的错误。**AVAudioFifo提供了一个先入先出的音频缓冲队列。
+
+
+
+参考资料
+
+https://blog.csdn.net/lichen18848950451/article/details/78518439
+
+https://www.jianshu.com/p/f04e0028dd14
+
+# AVFMT_NOFILE
+
+这个对于设备是需要设置的。
+
+
+
+# AVFMT_GLOBALHEADER
+
+如果AVCodecContext中设置了AV_CODEC_FLAG_GLOBAL_HEADER标志，对于生成的视频文件（如mp4），在windows操作系统下，并以图标的方式查看该视频文件时，视频文件的图标将是视频文件的第一帧，从而起到预览的作用
+
+
+
+
+
+https://blog.csdn.net/a812073479/article/details/79856262
+
+https://blog.csdn.net/passionkk/article/details/75528653
+
+
+
+#  时间戳pts/dts
+
+没有封装格式的裸流（例如H.264裸流）是不包含PTS、DTS这些参数的。
+
+在发送这种数据的时候，需要自己计算并写入AVPacket的PTS，DTS，duration等参数。
+
+H264裸流加时间戳
+
+```
+AVRational time_base1=ifmt_ctx->streams[videoindex]->time_base;
+			printf("time base, %d/%d\n", time_base1.num, time_base1.den);
+			//Duration between 2 frames (us)
+			int64_t calc_duration=(double)AV_TIME_BASE/av_q2d(ifmt_ctx->streams[videoindex]->r_frame_rate);
+			printf("cacl_duration:%lld, frame_rate:%d\n", calc_duration,av_q2d(ifmt_ctx->streams[videoindex]->r_frame_rate ));
+			//Parameters
+			pkt.pts=(double)(frame_index*calc_duration)/(double)(av_q2d(time_base1)*AV_TIME_BASE);
+			pkt.dts=pkt.pts;
+			printf("pts:%d\n", pkt.pts);
+			pkt.duration=(double)calc_duration/(double)(av_q2d(time_base1)*AV_TIME_BASE);
+			printf("duration:%lld\n", pkt.duration);
+```
+
+# 解码后延时发送
+
+
+
+# av_rescale_q
+
+av_rescale_q用于计算Packet的PTS。av_rescale_q的返回值是一个很大的整数，
+
+且每次计算的结果间隔很大。
+
+在进行存储视频流的时候，必须将avpacket里的pts设置好，否则会出现视频过快或过慢的情况，在此主要用到ffmpeg里的av_rescale_rnd函数
+
+ffmepg中的时间戳，是以微秒为单位，关乎timebase变量，它是作为dts、pts的时间基准粒度，数值会很大。
+
+
+
+ 如果视频里各帧的编码是按输入顺序（也就是显示顺序）依次进行的，那么解码和显示时间应该是一致的。可事实上，在大多数编解码标准（如H.264或HEVC）中，编码顺序和输入顺序并不一致。 于是才会需要PTS和DTS这两种不同的时间戳。
+
 
 
 # 音频格式
@@ -694,3 +834,7 @@ https://www.cnblogs.com/wangguchangqing/p/5851490.html
 这个教程挺好的。
 
 https://github.com/leandromoreira/ffmpeg-libav-tutorial
+
+FFmpeg音频解码
+
+https://www.jianshu.com/p/d77718947e21

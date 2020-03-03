@@ -118,6 +118,8 @@ FFF3 28C4
 
 
 
+比如常见mp3为[MPEG-1](https://www.baidu.com/s?wd=MPEG-1&tn=SE_PcZhidaonwhc_ngpagmjz&rsv_dl=gh_pc_zhidao) Layer III，而这个规格的采样个数固定为1152（下面公式已经化简过了）。
+
 
 
 这个是mp3解码库。

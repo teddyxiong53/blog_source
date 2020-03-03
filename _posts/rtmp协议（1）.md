@@ -85,6 +85,14 @@ cd trunk
 
 
 
+# live=1参数
+
+点播连接后面加上：
+
+```
+rtmp:///xx?live=1
+```
+
 
 
 参考资料
@@ -112,3 +120,7 @@ https://blog.csdn.net/firehood_/article/details/16844397
 6、
 
 https://blog.csdn.net/fantasy_ARM9/article/details/78150804
+
+7、物联网架构成长之路(42)-直播流媒体入门(RTMP篇)
+
+https://www.cnblogs.com/wunaozai/p/11772392.html

@@ -115,6 +115,21 @@ x/100 buf
 
 # 去掉watch
 
+watch的作用，还导致了设置了断点。
+
+```
+watch xx这样就可以监视变量xx的变化。
+```
+
+```
+info watchpoints 
+	这个查看所有的监视点。
+```
+
+watch point是一种特殊的断点。
+
+所以清除也是用delete breakpoints来进行清除。
+
 
 
 # 跳出循环
