@@ -196,6 +196,77 @@ $(eval $(autotools-package))
 
 添加某些操作前后的执行脚本。是通过hooks来做的。
 
+有些configure，需要加参数才行的。
+
+```
+define XX_CONFIGURE_CMDS
+	(cd $(XX_SRCDIR) \
+	&&  \
+	$(TARGET_CONFIGURE_OPTS) \
+	$(TARGET_CONFIGURE_ARGS) \
+	$(XX_CONF_ENV) \
+	./configure \
+		xx \
+	)
+endef
+```
+
+
+
+
+
+
+
+configure出错，会在目录下生成config.log。
+
+If you meant to cross compile, use `--host'.
+
+
+
+```
+--build, --target, --host
+```
+
+这3个具体指什么，有什么区别？
+
+--target，只在你编译工具链时需要。所以一般你是不需要用的。
+
+--build，编译的机器
+
+--host，运行的机器。
+
+
+
+buildroot里下面的package里的项目，这样执行，是找buildroot下的gstreamer。这很好。
+
+```
+$(shell pkg-config --cflags gstreamer-1.0)
+```
+
+
+
+
+
+
+
+```
+[2020-03-06 14:28:57][DEBUG][UrlPlayerGst.cpp][UrlPlayer][17]:           
+                                                                         
+ERROR: Caught a segmentation fault while loading plugin file:            
+/usr/lib/gstreamer-1.0/libgstlibav.so                                    
+                                                                         
+Please either:                                                           
+- remove it and restart.                                                 
+- run with --gst-disable-segtrap --gst-disable-registry-fork and debug.  
+                                                                         
+ERROR: Caught a segmentation fault while loading plugin file:            
+/usr/lib/gstreamer-1.0/libgstlibav.so                                    
+                                                                         
+Please either:                                                           
+- remove it and restart.                                                 
+- run with --gst-disable-segtrap --gst-disable-registry-fork and debug.  
+```
+
 
 
 参考资料
@@ -211,3 +282,7 @@ https://blog.csdn.net/qq_31811537/article/details/81069993
 3、Buildroot工具
 
 https://blog.csdn.net/zhou_chenz/article/category/6019071
+
+4、
+
+https://stackoverflow.com/questions/5139403/whats-the-difference-of-configure-option-build-host-and-target
