@@ -196,6 +196,36 @@ mygame: $(obj)
 
 
 
+# 技巧
+
+定义宏。和使用宏。
+
+```
+define mymacro
+	@dir="$(1)"; ls $(1)/*
+endef
+
+all:
+	$(call mymacro, "src")
+```
+
+foreach用法。
+
+```
+all:
+	$(foreach s, "aa bb cc", echo $(s))
+```
+
+
+
+
+
+```
+declare test='ywnz.com'    #定义并初始化shell变量
+```
+
+
+
 参考资料
 
 1、

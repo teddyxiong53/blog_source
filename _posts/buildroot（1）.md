@@ -6,7 +6,13 @@ tags:
 
 ---
 
+1
 
+# 资料收集
+
+这个gitbook，台湾人写的，不错。
+
+https://hugh712.gitbooks.io/buildroot/content/
 
 写一个系列文章，把buildroot的编译过程梳理一下。
 
@@ -510,6 +516,226 @@ XX_DEPENDANCIES += yy
 ```
 
 在Config.in里，depends on并不会产生这种编译依赖。
+
+
+
+# 深入
+
+还是看顶层Makefile。
+
+help信息里。
+
+## graph-build
+
+```
+
+	这个是通过读取output/build/build-time.log来生成图表，可以直观看出编译花费的时间细节。
+	执行出错
+	You need python-matplotlib and python-numpy to generate build graphs
+	但是我用apt-get来安装这2个软件，提示是已经安装的。
+	是靠这个脚本的。support/scripts/graph-build-time
+	import matplotlib as mpl
+	import numpy
+	这2句产生了import错误。
+	
+```
+
+直接打开python。进入交互，import matplotlib，报错如下：
+
+```
+ImportError: No module named functools_lru_cache
+```
+
+把python版本切换到3.6，就可以了。
+
+输出目录是：
+
+output/graphs/build.hist-name.pdf 
+
+没有太多可看的。
+
+## graph-depends
+
+这个生成包的依赖关系图。倒是值得看看。
+
+## graph-size
+
+这个可以看rootfs里各个部分的大小。
+
+## legal-info
+
+## printvars
+
+这个会打印出所有的var的名字和值（Makefile里的）。
+
+非常多。
+
+## list-defconfigs
+
+这个是一个目标。
+
+有一个同名的宏定义。
+
+```
+define list-defconfigs
+	
+endef
+```
+
+就是把configs目录下的所有defconfig罗列了一下。
+
+## show-targets
+
+这个是列出实际的target。
+
+我当前的vexpress的例子。是这样。demo_app是我自己加的一个package。
+
+```
+alsa-lib
+alsa-utils
+atest
+busybox
+demo_app
+glibc
+host-e2fsprogs
+host-fakeroot
+host-lzip
+host-makedevs
+host-patchelf
+host-util-linux
+ifupdown-scripts
+initscripts
+libeXosip2
+libev
+libogg
+libosip2
+linphone
+linux
+linux-headers
+ncurses
+skeleton
+skeleton-init-common
+skeleton-init-sysv
+speex
+toolchain
+toolchain-buildroot
+rootfs-ext2
+```
+
+## dirs
+
+这个是创建所有需要的目录。
+
+## prepare
+
+```
+prepare: $(BUILD_DIR)/buildroot-config/auto.conf
+```
+
+只是依赖auto.conf这个文件。
+
+这个文件依赖：
+
+```
+$(BUILD_DIR)/buildroot-config/auto.conf: $(BR2_CONFIG)
+	$(MAKE1) $(EXTRAMAKEARGS) HOSTCC="$(HOSTCC_NOCCACHE)" HOSTCXX="$(HOSTCXX_NOCCACHE)" silentoldconfig
+```
+
+```
+$(BR2_CONFIG)
+	这个就是.config文件。
+	
+```
+
+## sdk
+
+```
+.PHONY: world
+world: target-post-image
+
+.PHONY: sdk
+sdk: world
+```
+
+make sdk依赖于make world。
+
+在world的基础上，做了
+
+```
+1、调用support/scripts/fix-rpath host 
+2、调用support/scripts/fix-rpath staging
+3、安装一个脚本。
+	$(INSTALL) -m 755 $(TOPDIR)/support/misc/relocate-sdk.sh $(HOST_DIR)/relocate-sdk.sh
+	
+```
+
+target-post-image
+
+这个目标做了什么。
+
+```
+依赖与$(TARGETS_ROOTFS) target-finalize。
+是Executing post-image script
+
+```
+
+BR2_ROOTFS_POST_IMAGE_SCRIPT
+
+这个变量里，包含了哪些脚本？
+
+## show-build-order
+
+显示编译的顺序。
+
+## prepare-kconfig
+
+```
+menuconfig: $(BUILD_DIR)/buildroot-config/mconf prepare-kconfig
+```
+
+mconf这个是二进制文件。
+
+```
+prepare-kconfig: outputmakefile $(BUILD_DIR)/.br2-external.in
+```
+
+outputmakefile 这个是空的目标，等于啥也不做。
+
+br2-external.in这个是这样，靠br-external脚本来生成。
+
+```
+$(BUILD_DIR)/.br2-external.in: $(BUILD_DIR)
+	$(Q)support/scripts/br2-external -k -o "$(@)" $(BR2_EXTERNAL)
+```
+
+br-external脚本是怎样工作的？不管先。
+
+## savedefconfig
+
+这个做了什么。
+
+就是保存了配置到configs目录下。
+
+
+
+## world
+
+```
+world只是依赖了target-post-image
+target-post-image是个伪目标。
+依赖了$(TARGETS_ROOTFS) target-finalize。
+进行的操作是执行post image脚本。vexpress这个设备没有post image脚本需要处理。
+
+重点是这个：
+target-finalize: $(PACKAGES)
+
+```
+
+
+
+```
+PACKAGES += $(DEPENDENCIES_HOST_PREREQ)
+```
 
 
 

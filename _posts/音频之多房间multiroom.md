@@ -127,6 +127,10 @@ teddy@teddy-ThinkPad-SL410:~/work/snapcast/snapcast/server$ ./snapserver
 
 
 
+python-matplotlib and python-numpy to generate build graphs
+
+
+
 参考资料
 
 1、在Volumio整合SnapCast有最好的多房间系统

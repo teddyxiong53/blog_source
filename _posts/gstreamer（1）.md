@@ -940,6 +940,36 @@ https://github.com/jcaden/gst-dynamic-examples
 
 https://github.com/sampleref/gstreamer-cpp-example
 
+
+
+#　调试经验
+
+载入libav出错。
+
+```
+ERROR: Caught a segmentation fault while loading plugin file:           
+/usr/lib/gstreamer-1.0/libgstlibav.so                                   
+                                                                        
+Please either:                                                          
+- remove it and restart.                                                
+- run with --gst-disable-segtrap --gst-disable-registry-fork and debug. 
+                                                                        
+ERROR: Caught a segmentation fault while loading plugin file:           
+/usr/lib/gstreamer-1.0/libgstlibav.so                                   
+                                                                        
+Please either:                                                          
+- remove it and restart.                                                
+- run with --gst-disable-segtrap --gst-disable-registry-fork and debug. 
+```
+
+用下面命令测试，也是这样的打印。
+
+```
+gst-inspect-1.0 libav
+```
+
+
+
 #参考资料
 
 1、GStreamer基础教程01——Hello World
