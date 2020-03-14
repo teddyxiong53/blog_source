@@ -149,6 +149,16 @@ endmenu in different file than menu?
 
 
 
+# select
+
+```
+config A
+    depends on B
+    select C
+```
+
+它的含义是：CONFIG_A配置与否，取决于CONFIG_B是否配置。一旦CONFIG_A配置了，CONFIG_C也自动配置了。
+
 
 
 参考资料
@@ -156,3 +166,7 @@ endmenu in different file than menu?
 1、kconfig语法整理
 
 https://www.jianshu.com/p/aba588d380c2
+
+2、Kconfig中的“depends on”和“select”
+
+https://nanxiao.me/linux-kernel-note-59-kconfig-depends-on-select/
