@@ -71,3 +71,4 @@ crw-rw-r--    1 root     root       10,  63 Jan 20 03:50 /dev/rfkill
 1、在 Linux 下使用 rfkill 软开关蓝牙及无线功能 
 
 https://linux.cn/article-5957-1.html
+

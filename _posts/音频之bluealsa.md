@@ -42,7 +42,6 @@ bluez > 5.0
 glib
 sbc
 libdbus
-
 ```
 
 

@@ -39,7 +39,7 @@ exit
 
 这2个最常用的。
 
-转移字符是^ 。而不是类Unix里的反斜杠。
+转义字符是^ 。而不是类Unix里的反斜杠。
 
 ```
 rem "check daemon existence"
@@ -188,6 +188,50 @@ set 查看当前的环境变量。
 set A=1 设置环境变量。
 set A 查看某个环境变量。
 这个在powershell下面是不行的。
+```
+
+
+
+# 带菜单的写法
+
+下面这个是典型例子。可以用。
+
+```
+@echo off 
+chcp 65001
+color 0a
+
+:menu_choose
+echo "================================"
+echo "bat工具"
+echo "1. 菜单1"
+echo "2. 菜单2"
+echo "3. 菜单3"
+echo "输入q再回车退出"
+echo "================================"
+
+set /p num=你的选择是：
+
+if "%num%" == "1" goto menu_1
+if "%num%" == "2" goto menu_2
+if "%num%" == "3" goto menu_3
+if "%num%" == "q" exit
+
+echo "你的选择不正确"
+goto menu_choose
+
+:menu_1
+echo "菜单1"
+goto menu_choose
+
+:menu_2
+echo "菜单2"
+goto menu_choose
+
+
+:menu_3
+echo "菜单3"
+goto menu_choose
 ```
 
 

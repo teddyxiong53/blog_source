@@ -114,11 +114,11 @@ transmission:x:224:224:transmission:/var/run/transmission:/bin/false
 
 是一个小巧的dns和dhcp配置工具。适用于小型网络。
 
-dns功能是必选的，dhcp功能是可选的。
+**dns功能是必选的，dhcp功能是可选的。**
 
-它服务于只在本地使用的域名，这些域名不会在全球的dns服务器里出现。
+**它服务于只在本地使用的域名，这些域名不会在全球的dns服务器里出现。**
 
-如果你想要快速搭建一个dns服务或者dhcp服务，dnsmasq是一个很好的选择。
+**如果你想要快速搭建一个dns服务或者dhcp服务，dnsmasq是一个很好的选择。**
 
 查看我的版本。
 
@@ -153,7 +153,7 @@ listen-address：定义dnsmasq监听的地址，默认是监控本机的所有�
 
 address：启用泛域名解析，就定义私有的域名。
 
-server：这些就是真的全球dns的解析了。相当于中转了一下。
+**server：这些就是真的全球dns的解析了。相当于中转了一下。**
 
 
 
