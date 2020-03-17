@@ -69,6 +69,23 @@ http://www.ruiyixi.com/project/an-rk3308-pcba-for-ai-and-iot/
  };
 ```
 
+对应的选配宏是：CONFIG_RK_HEADSET。
+
+
+
+headphone是听筒，只能听，不能说话，而headset是耳机，能听也可以说话。
+
+我们只需要headphone的检测就好了。
+
+从内核的宏里也可以看出。
+
+```
+enum snd_jack_types {
+	SND_JACK_HEADPHONE	= 0x0001,
+	SND_JACK_MICROPHONE	= 0x0002,
+	SND_JACK_HEADSET	= SND_JACK_HEADPHONE | SND_JACK_MICROPHONE,
+```
+
 
 
 参考资料
@@ -79,6 +96,10 @@ https://wenku.baidu.com/view/7435b1eef18583d048645904.html
 
 2、RK android带MIC耳机检测以及hook-kernel
 
-这个很游泳。
+这个很有用。
 
 https://wenku.baidu.com/view/21f06b66bfd5b9f3f90f76c66137ee06eef94e01.html?from=search
+
+3、headphone与headset有什么区别
+
+https://zhidao.baidu.com/question/1755332853391454548.html

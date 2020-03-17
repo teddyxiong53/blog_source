@@ -197,6 +197,151 @@ asoc是alsa在soc上的发展和演变。
 
 
 
+看Documentation/sound下面的所有文档。
+
+
+
+## Jack-Controls.txt
+
+为什么需要jack kcontrols？
+
+alsa使用kcontrols来export audio的controls到用户空间，包括switch、volume等。
+
+这意味着用户程序例如pulseaudio，可以在检测到耳机拔出的是，进行关闭耳机，切到音箱的操作。
+
+老的alsa jack代码，只是为每个注册的jack创建了input device，如果不是root身份运行，这些input device不能被用户程序读取。
+
+新的jack 代码，不存在这个问题。
+
+
+
+## DAI.txt
+
+DigitalAudio Interfaces (DAI)
+
+AC97, I2S and PCM.
+
+这3个是主要的DAI。
+
+AC97：五根线。在pc声卡上常见。在移动设备上也常见。
+
+reset
+
+out
+
+int
+
+clk
+
+frame
+
+I2S：4根线。在HiFi和移动设备上用得多。
+
+```
+Tx
+Rx
+clk
+left/right clock
+```
+
+pcm：4根线。跟i2s类似。支持比I2S更加灵活的协议。
+
+## jack.txt
+
+jack的单词含义是：插孔。
+
+jack对应的结构体是：struct snd_soc_jack
+
+alsa有一个标准的api，向用户空间表示一个物理jack。
+
+在include/sound/jack.h里有声明。
+
+CONFIG_SND_JACK 这个配置项。
+
+就5个接口。
+
+```
+snd_jack_new
+snd_jack_add_new_kctl
+snd_jack_set_parent
+snd_jack_set_key
+snd_jack_report
+```
+
+一个jack跟一个snd_card结构体对应起来的。
+
+asoc在普通alsa的基础上，多了2个特性：
+
+1、允许多个jack检测方法一起工作在一个用户可见的jack上。
+
+2、跟DAPM集成。允许DAMP节点基于检测到的jack状态动态更新。
+
+这个是通过把jack从逻辑上分为了3个部分：
+
+1、snd_soc_jack代表了jack自身。
+
+2、snd_soc_jack_pins代表了DAPM节点。
+
+3、提供报告jack状态的机制。
+
+例如，系统有一个立体声耳机插孔，有2个报告机制，一个是耳机的，一个是麦克风的。
+
+
+
+DAPM是Dynamic Audio Power Management的缩写，直译过来就是动态音频电源管理的意思，
+
+DAPM是为了使基于linux的移动设备上的音频子系统，**在任何时候都工作在最小功耗状态下**。
+
+**DAPM对用户空间的应用程序来说是透明的，所有与电源相关的开关都在ASoc core中完成。**
+
+用户空间的应用程序无需对代码做出修改，也无需重新编译，
+
+DAPM根据当前激活的音频流（playback/capture）和声卡中的mixer等的配置来决定那些音频控件的电源开关被打开或关闭。
+
+DAPM是**基于kcontrol改进过后的相应框架**，**增加了相应的电源管理机制**，其电源管理机制其实就是按照相应的音频路径，完美的对各种部件的电源进行控制，而且按照某种顺序进行。
+
+
+
+
+
+了解的顺序
+
+先是看/dev/snd目录下的设备。
+
+然后是struct snd_card结构体。
+
+```
+struct list_head devices     记录该声卡下所有逻辑设备的链表
+struct list_head controls    记录该声卡下所有的控制单元的链表
+void *private_data            声卡的私有数据，可以在创建声卡时通过参数指定数据的大小
+```
+
+
+
+snd_card_new
+
+snd_device_new，例如jack就是一个device。
+
+sound/drivers/aloop.c 这个是loop声卡，里面就调用了snd_card_new函数。
+
+经过创建后，声卡的逻辑结构是这样的：
+
+![1584343192365](../images/random_name/1584343192365.png)
+
+
+
+每个声卡最多可以包含4个pcm的实例，每个pcm实例对应一个pcm设备文件。
+
+pcm实例数量的**这种限制源于linux设备号所占用的位大小，**如果以后使用64位的设备号，我们将可以创建更多的pcm实例。
+
+不过大多数情况下，在嵌入式设备中，一个pcm实例已经足够了。
+
+
+
+ASoC正是为了解决上述种种问题而提出的，目前已经被整合至内核的代码树中：sound/soc。ASoC不能单独存在，他只是建立在标准ALSA驱动上的一个它必须和标准的ALSA驱动框架相结合才能工作。
+
+
+
 
 
 参考资料
@@ -204,3 +349,13 @@ asoc是alsa在soc上的发展和演变。
 1、为什么Linux的音频驱动位于sound目录下而不是driver/sound？
 
 http://blog.chinaunix.net/uid-30374564-id-5571674.html
+
+2、ALSA声卡驱动的DAPM（一）-DPAM详解
+
+https://www.cnblogs.com/linhaostudy/archive/2018/03/05/8509899.html
+
+3、Linux音频子系统
+
+这个系列文章不错。
+
+https://blog.csdn.net/droidphone/category_1118446.html
