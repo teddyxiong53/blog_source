@@ -18,3 +18,34 @@ busybox里把telnet的关闭了。但是不方便重新编译busybox，所以想
 
 最后用dropbear搞定的。
 
+
+
+busybox里有telnetd的。
+
+在buildroot下操作。
+
+make busybox-menuconfig
+
+选上telnetd的。
+
+然后make busybox-rebuild。
+
+然后重新生成文件系统就可以了。
+
+但是为什么默认也要密码，而且密码是多少？
+
+buildroot里的system配置里有可以配置密码的地方。
+
+配置好密码重新烧录就好了。
+
+
+
+参考资料
+
+1、Buildroot login
+
+https://wiki.in-circuit.de/index.php5?title=Buildroot_login
+
+2、login and passwords
+
+https://github.com/gcwnow/buildroot/wiki/login-and-passwords

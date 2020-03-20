@@ -162,6 +162,69 @@ done
 
 
 
+现在从这里下载打包好的aosp-20160806.tar。大概15G。
+
+https://mirrors.tuna.tsinghua.edu.cn/aosp-monthly/
+
+下载完之后，解压，执行repo sync -l。报了下面的错误。
+
+```
+for line in d.decode('utf-8').rstrip('\0').split('\0'):  # pylint: disable=W1401
+```
+
+直接改对应的python文件里，把`decode('utf-8')`去掉。
+
+再执行就可以了。
+
+# 编译
+
+```
+source build/envsetup.sh
+```
+
+打印了这些：
+
+```
+including device/asus/deb/vendorsetup.sh
+including device/asus/flo/vendorsetup.sh
+including device/asus/fugu/vendorsetup.sh
+including device/generic/mini-emulator-arm64/vendorsetup.sh
+including device/generic/mini-emulator-armv7-a-neon/vendorsetup.sh
+including device/generic/mini-emulator-mips/vendorsetup.sh
+including device/generic/mini-emulator-x86_64/vendorsetup.sh
+including device/generic/mini-emulator-x86/vendorsetup.sh
+including device/htc/flounder/vendorsetup.sh
+including device/huawei/angler/vendorsetup.sh
+including device/lge/bullhead/vendorsetup.sh
+including device/lge/hammerhead/vendorsetup.sh
+including device/linaro/hikey/vendorsetup.sh
+including device/moto/shamu/vendorsetup.sh
+including sdk/bash_completion/adb.bash
+```
+
+执行执行lunch命令。
+
+选择mini_emulator_x86_64-userdebug，网上看说这个在笔记本上测试起来方便点。
+
+-eng:代表engineer,也就是所谓的开发工程师的版本,拥有最大的权限(root等),此外还附带了许多debug工具
+
+那还是选择aosp_x86_64-eng这个吧。
+
+然后make -j4 开始编译。
+
+-j后面的数字，是你电脑核心数乘以2比较合适。
+
+```
+Your version is: /bin/bash: javac: 未找到命令.
+The required version is: "1.8"
+```
+
+```
+sudo apt-get install openjdk-8-jdk
+```
+
+
+
 # 参考资料
 
 1、Building Android for Qemu: A Step-by-Step Guide

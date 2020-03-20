@@ -11,6 +11,10 @@ tags:
 重新安装
 
 ```
+sudo apt-get --purge --reinstall install pulseaudio
+```
+
+```
 sudo apt-get --reinstall install XXX
 ```
 

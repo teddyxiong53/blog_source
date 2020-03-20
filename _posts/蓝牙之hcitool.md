@@ -122,5 +122,15 @@ Connections:
 
 
 
+hcitool lescan
 
+这个扫描出大量的设备。
+
+
+
+参考资料
+
+1、
+
+https://www.cnblogs.com/zjutlitao/p/9576589.html
 

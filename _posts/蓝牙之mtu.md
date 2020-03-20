@@ -8,7 +8,7 @@ tags:
 
 
 
-
+1
 
 MTU是不可协商的。双方在获知对方的mtu后，用较小值做MTU进行通信。
 
@@ -54,6 +54,18 @@ iPhone6和iPhone6s的ATT_MTU是185字节。
 
 
 
+蓝牙mtu和其他网络的mtu情况对比
+
+```
+以太网：1500
+
+IEEE 802.3/802.2:　1492
+
+X.25: 576
+
+BLE: 23 => 这就是为什么WIFI 可以用于传输视频，传统蓝牙(BT)可以传输音频，而低功耗蓝牙（BTLE 或者BLE）只能够传输控制数据的原因了。
+```
+
 
 
 参考资料
@@ -73,3 +85,7 @@ http://dev.ti.com/tirex/content/simplelink_cc2640r2_sdk_1_35_00_33/docs/ble5stac
 4、
 
 https://www.bbsmax.com/A/RnJWrvoBzq/
+
+5、一分钟读懂低功耗蓝牙(BLE)MTU交换数据包
+
+https://zhuanlan.zhihu.com/p/28141658

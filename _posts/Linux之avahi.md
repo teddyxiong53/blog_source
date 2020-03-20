@@ -232,6 +232,134 @@ eth0:avahi 这个应该怎样来理解？
 
 
 
+
+
+怎样发现局域网里服务并进行使用呢？
+
+
+
+Avahi允许程序在不需要进行手动网络配置的情况 下，在一个本地网络中发布和获知各种服务和主机。例如，当某用户把他的计算机接入到某个局域网时，如果他的机器运行有Avahi服务，则Avahi程式自 动广播，从而发现网络中可用的打印机、共享文件和可相互聊天的其他用户。这有点象他正在接收局域网中的各种网络广告一样。
+
+
+
+难道正常的使用方法是：先通过扫描服务，查询到ip最终还是用ip去进行连接？
+
+
+
+这样来找：
+
+```
+# avahi-browse -t -d local -r _snapcast-stream._tcp 
++  wlan0 IPv4 Snapcast                                      _snapcast-stream._tcp local
+=  wlan0 IPv4 Snapcast                                      _snapcast-stream._tcp local
+   hostname = [snapserver-2.local]
+   address = [192.168.0.104]
+   port = [1704]
+   txt = []
+```
+
+See also the nss-mdns project, which allows hostname lookup of *.local hostnames via mDNS in all system programs using nsswitch
+
+
+
+ BR2_PACKAGE_NSS_MDNS
+
+nsswitch.conf是在glibc目录下的。
+
+但是没有看到install有拷贝行为。
+
+是靠nss-mdns来拷贝的。这个为什么要这样放？真是奇怪。
+
+```
+./nss-mdns/nss-mdns.mk:14:              $(INSTALL) -D -m 0644 package/glibc/nsswitch.conf $(TARGET_DIR)/etc/nsswitch.conf ; \
+```
+
+不用手动改。因为默认nss-mdns帮你改了。
+
+![1584598785328](../images/random_name/1584598785328.png)
+
+编译后只是增加了几个so文件。
+
+```
+./usr/lib/libnss_mdns4_minimal.so.2
+./usr/lib/libnss_mdns_minimal.so.2
+./usr/lib/libnss_mdns4.so.2
+./usr/lib/libnss_mdns6.so.2
+./usr/lib/libnss_mdns6_minimal.so.2
+./usr/lib/libnss_mdns.so.2
+```
+
+nss-mdns是glibc的一个插件。
+
+提供hostname解析房屋，通过mdns协议。
+
+avahi可以使用nss-mdns。
+
+nss-mdns尝试跟一个运行的avahi-daemon进行通信。
+
+
+
+nss-mdns有一个简单的配置文件，默认是/etc/mdns.allow。
+
+安装nss-mdns之后，nslookup snapserver.local还是找到192.168.0.1，是不对的。
+
+nss-mdns的readme写着是用getent这个工具来测试的。
+
+我编译这个工具试一下。
+
+还是192.168.0.1。这个就奇怪了。
+
+```
+/userdata # ./getent hosts snapserver.local 
+192.168.0.1     snapserver.local            
+```
+
+难道是路由器不转发这个mdns导致的吗？
+
+
+
+我简单起见，就这样拿到ip来进行连接吧。
+
+```
+avahi-browse -t -d local -r _snapcast-stream._tcp |grep address | awk '{print $3}'
+```
+
+
+
+# nsswitch.conf
+
+/etc/nsswitch.conf文件，Name Service Switch 配置。
+
+这个文件规定了通过哪些途径，按照什么顺序来查找特定类型的信息。
+
+还可以指定在方法失效的时候应该采取什么措施。
+
+每一行是一个配置。配置的格式：
+
+```
+passwd:         files      
+group:          files      
+shadow:         files      
+                           
+hosts:          files dns  
+networks:       files dns  
+                           
+protocols:      files      
+services:       files      
+ethers:         files      
+rpc:            files         
+```
+
+按照从左到右的顺序来查找。如果没有找到，就找下一个。
+
+例如hosts的，就是先找文件里，文件里找不到，就去找dns。
+
+
+
+
+
+
+
 参考资料
 
 1、linux服务——Avahi
@@ -249,3 +377,21 @@ https://wiki.archlinux.org/index.php/Avahi
 4、Using Zero Config and Avahi with the DT78xx
 
 https://www.mccdaq.com/PDFs/Manuals/DT7837_WebHelp/Using_Zero_Config_and_Avahi_with_the_DT78xx.htm
+
+5、基于zeroconf实现节点自发现
+
+https://zdyxry.github.io/2018/08/22/%E5%9F%BA%E4%BA%8Ezeroconf%E5%AE%9E%E7%8E%B0%E8%8A%82%E7%82%B9%E8%87%AA%E5%8F%91%E7%8E%B0/
+
+6、nsswitch.conf文件详解
+
+https://blog.csdn.net/water_cow/article/details/7190880
+
+7、
+
+https://www.ibm.com/support/knowledgecenter/SSB2MG_4.6.0/com.ibm.ips.doc/concepts/gx_gv_using_avahi.htm
+
+8、nss-mdns
+
+这里将了怎么通过local域名来发现。
+
+https://github.com/lathiat/nss-mdns
