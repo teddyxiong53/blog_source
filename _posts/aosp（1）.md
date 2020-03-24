@@ -225,6 +225,38 @@ sudo apt-get install openjdk-8-jdk
 
 
 
+在我的笔记本上是编译不过的。还是电脑性能太低了，内存太小了。总是jack出问题，要么是java虚拟机内存太小。
+
+最后我在台式机上的虚拟机里编译过了。给虚拟机分配了10G的内存。jvm给了8G的内存。
+
+```
+export JACK_SERVER_VM_ARGUMENTS="-Dfile.encoding=UTF-8 -XX:+TieredCompilation -Xmx8g"
+./prebuilts/sdk/tools/jack-admin kill-server
+./prebuilts/sdk/tools/jack-admin start-server
+```
+
+在台式机上很顺利编译过了，几个小时就完成了。
+
+在虚拟机里是无法运行的。
+
+```
+hlxiong@hlxiong-VirtualBox:~/work3/aosp$ emulator
+emulator: WARNING: system partition size adjusted to match image file (1280 MB > 200 MB)
+
+emulator: WARNING: data partition size adjusted to match image file (550 MB > 200 MB)
+
+emulator: WARNING: Increasing RAM size to 1GB
+emulator: ERROR: x86_64 emulation currently requires hardware acceleration!
+Please ensure KVM is properly installed and usable.
+CPU acceleration status: KVM is not installed on this machine (/dev/kvm is missing).
+```
+
+
+
+看看怎么在物理机里运行编译出来的镜像。
+
+
+
 # 参考资料
 
 1、Building Android for Qemu: A Step-by-Step Guide

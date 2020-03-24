@@ -20,6 +20,10 @@ nodemcu还做到了对arduino的兼容。
 
 我现在手里的这块就是nodemcu v3版本，使用的usb转串口芯片是CH340 。
 
+NodeMCU is implemented in C and is layered on the Espressif NON-OS SDK.
+
+nodemcu使用esp8266的 nonos版本的sdk作为基础，加入了lua解释器。
+
 
 
 # 参考资料

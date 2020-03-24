@@ -289,6 +289,119 @@ sudo apt-get remove pulseaudio
 
 
 
+playlist怎么用呢？
+
+我直接这样添加：
+
+```
+/userdata/mpd/playlists # mpc add http://192.168.0.103/UrlPlayer.mp3    
+error adding http://192.168.0.103/UrlPlayer.mp3: Unsupported URI scheme 
+```
+
+https://github.com/MusicPlayerDaemon/MPD/issues/599
+
+http://mightyohm.com/forum/viewtopic.php?t=21
+
+
+
+我的板端的mpd用mpd --version查看的信息如下：
+
+```
+/userdata/mpd/playlists # mpd --version                                       
+Music Player Daemon 0.20.15                                                   
+                                                
+Database plugins:                                                             
+ simple proxy                                                                 
+                                                                              
+Storage plugins:                                                              
+ local                                                                        
+                                                                              
+Decoders plugins:                                                             
+ [mad] mp3 mp2                                                                
+ [pcm]                                                                        
+                                                                              
+Filters:                                                                      
+                                                                              
+                                                                              
+Tag plugins:                                                                  
+ id3tag                                                                       
+                                                                              
+Output plugins:                                                               
+ null fifo alsa recorder                                                      
+                                                                              
+Encoder plugins:                                                              
+ null wave                                                                    
+                                                                              
+Input plugins:                                                                
+ file alsa                                                                    
+                                                                              
+Playlist plugins:                                                             
+ extm3u m3u pls xspf asx rss cue embcue                                       
+                                                                              
+Protocols:                                                                    
+ file:// alsa://                                                              
+                                                                              
+Other features:                                                               
+ avahi epoll iconv inotify ipv6 tcp un                                        
+```
+
+那么看协议，就是不支持http的，只支持file和alsa的协议。
+
+但是看支持m3u的，看看能不能用这个来做。
+
+我这样操作。
+
+```
+/userdata/mpd/playlists # echo "http://192.168.0.103/UrlPlayer.mp3" > 1.m3u  
+/userdata/mpd/playlists # mpc update                                         
+Updating DB (#3) ...                                                         
+volume:100%   repeat: off   random: off   single: off   consume: off         
+/userdata/mpd/playlists # mpc ls                                             
+1                                                                            
+/userdata/mpd/playlists # mpc lsplaylist                                     
+1                                                                            
+```
+
+但是mpc add不行。
+
+```
+/userdata/mpd/playlists # mpc ls |mpc add   
+error adding 1: No such directory           
+```
+
+我在笔记本上查看，支持的协议有很多。包括http的。说明是支持的。
+
+可能是板端编译的时候，没有打开。
+
+```
+Protocols:
+ file:// http:// https:// mms:// mmsh:// mmst:// mmsu:// gopher:// rtp:// rtsp:// rtmp:// rtmpt:// rtmps:// smb:// nfs:// cdda:// alsa://
+```
+
+进buildroot里的mpd配置里，里面确实有不少的东西，默认没有选curl的，我选配上。重新编译看看。
+
+现在看已经可以了：
+
+```
+Protocols:                         
+ file:// http:// https:// alsa://  
+```
+
+要播放：
+
+```
+mpc add http://192.168.0.103/UrlPlayer.mp3
+mpc play
+```
+
+就可以。
+
+
+
+
+
+
+
 参考资料
 
 1、Arch Linux下使用Mpd+Mpc
@@ -306,3 +419,7 @@ https://feeding.cloud.geek.nz/posts/home-music-server-with-mpd/
 参考这篇文章的解决了播放错误的问题。
 
 https://askubuntu.com/questions/383449/mpd-failed-to-read-mixer-for-my-alsa-device-no-such-mixer-control-pcm
+
+4、
+
+https://cheat.readthedocs.io/en/latest/mpd.html
