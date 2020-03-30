@@ -115,8 +115,76 @@ hlxiong@hlxiong-VirtualBox:~/work/test/c-test$ ls /etc/passwd -lh
 
 
 
+# suid
+
+ls -l 1.txt
+
+这样查看到的属性，有10位。
+
+```
+最高位是文件类型。
+剩下的9位是3对rwx。
+```
+
+如果一个文件被设置了suid或者sgid位。就会表现在x这个位上面。
+
+```
+rws：x位显示为s。
+```
+
+实际上，文件权限，是有12位的，最高的2位，我们一般看不到。
+
+bit11是suid位。
+
+bit10是sgid位。
+
+设置suid位：
+
+```
+chmod u+s 1.txt
+```
+
+去掉sudi位。
+
+```
+chmod u-s 1.txt
+```
+
+设置sgid位。
+
+```
+chmod g+s 1.txt
+```
+
+去掉sgid位。
+
+```
+chmod g-s 1.txt
+```
+
+
+
+主要解决的问题，就是让那些属于root用户的程序，普通用户也可以进行执行。
+
+例如ping程序。
+
+```
+ ls /bin/ping -lh
+-rwsr-xr-x 1 root root 44K 5月   8  2014 /bin/ping
+```
+
+
+
+因为设置了 SUID 位的程序如果被攻击(通过缓冲区溢出等方面),那么hacker就可以拿到root权限。
+
+
+
 参考资料
 
 1、Linux进程的uid和euid
 
 https://www.cnblogs.com/itech/archive/2012/04/01/2429081.html
+
+2、
+
+https://www.jianshu.com/p/71acd8dad454

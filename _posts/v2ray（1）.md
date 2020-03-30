@@ -42,6 +42,24 @@ https://github.com/v2ray/v2ray-core/releases
 
 
 
+现在因为长城宽带不能通过ssr翻墙，所以只能再研究一下v2ray的了。
+
+project V是一个工具集合。
+
+它可以帮组你打造专属的基础通信网络。
+
+project v的核心工具叫V2RAY。
+
+主要负责网络协议和功能的实现。
+
+与其他的project v互通。
+
+v2ray可以单独运行。
+
+
+
+
+
 # 参考资料
 
 1、V2RayN 使用教程

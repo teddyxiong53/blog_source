@@ -10,6 +10,10 @@ tags:
 
 先看看man手册是怎么说的。
 
+sdp就是设备发现协议。它的重点就是查询机器的信息。
+
+
+
 sdptool是控制和查询sdp server的。
 
 先用hcitool扫描一下附近的蓝牙设备。
@@ -47,6 +51,46 @@ sudo apt-get install obexfs
 
 
 
+```
+Services:                                                                 
+        DID SP DUN LAN FAX OPUSH FTP PRINT HS HSAG HF HFAG SAP PBAP MAP   
+        NAP GN PANU HCRP HID KEYB WIIMOTE CIP CTP A2SRC A2SNK AVRCT AVRTG 
+        UDIUE UDITE SEMCHLA SR1 SYNCML SYNCMLSERV ACTIVESYNC HOTSYNC      
+        PALMOS NOKID PCSUITE NFTP NSYNCML NGAGE APPLE IAP ISYNC GATT      
+```
+
+
+
+sdptool常用命令
+
+B4:0B:44:F4:16:8D这个是我的手机的蓝牙地址。
+
+1、查询指定地址的蓝牙设备的服务。板端执行下面的命令：
+
+```
+sdptool browse B4:0B:44:F4:16:8D
+```
+
+2、有些设备不支持browse，那么就可以用search来查询。
+
+```
+sdptool search --bdaddr B4:0B:44:F4:16:8D HFAG
+```
+
+3、查看自己提供的服务的情况。
+
+```
+sdptool browse local
+```
+
+4、添加A2SNK服务。
+
+```
+sdptool add A2SNK
+```
+
+
+
 # 参考资料
 
 1、sdptool 设备服务查找命令使用
@@ -56,3 +100,7 @@ https://blog.csdn.net/u014778332/article/details/50654620
 2、Bluetooth Hacks
 
 https://www.linuxjournal.com/content/bluetooth-hacks
+
+3、sdptool 设备服务查找命令使用
+
+https://blog.csdn.net/u014778332/article/details/50654620

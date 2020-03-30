@@ -32,6 +32,10 @@ input子系统提供了input-polldev.c来处理这种情况。
 
 
 
+长按检测
+
+https://blog.csdn.net/songyulong8888/article/details/80572126
+
 
 
 # 参考资料

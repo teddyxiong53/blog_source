@@ -398,7 +398,121 @@ mpc play
 
 
 
+数据库是用sqlite的。
 
+
+
+```
+1、当前music和playlists目录都是空的。先执行: mpc add http://localhost/lizhi.mp3
+2、mpc ls。这个是查看music目录下和playlists目录下的东西。所以是空的。
+3、mpc playlist。这个是查看当前播放列表的。所以是可以看到这样的内容：
+	root@thinkpad:/var/lib/mpd# mpc playlist
+	http://localhost/lizhi.mp3
+	add的歌曲，默认是添加到当前的playlist。
+	但是这个playlist没有被保存成文件。
+	怎样才能保存成文件呢？
+4、现在就执行mpc play，就可以播放了。
+
+我当前还是希望可以保存且累加歌曲到当前列表。
+继续添加：
+	mpc add http://localhost/UrlPlayer.mp3
+现在看是有两首歌曲了。	
+root@thinkpad:/var/lib/mpd# mpc playlist
+http://localhost/lizhi.mp3
+http://localhost/UrlPlayer.mp3
+执行mpc save list1.m3u
+
+root@thinkpad:/var/lib/mpd/playlists# ls
+list1.m3u.m3u
+root@thinkpad:/var/lib/mpd/playlists# cat list1.m3u.m3u 
+http://localhost/lizhi.mp3
+http://localhost/UrlPlayer.mp3
+可见，是把当前歌单保存到了playlist目录下。而且会自动给你加上m3u的后缀。所以我当前多了一个后缀。
+
+现在mpc ls，可以看到
+root@thinkpad:/var/lib/mpd# mpc ls
+list1.m3u
+跟mpc lsplaylist一样的效果。
+
+执行mpc clear后，当前歌单被清空。所以再执行mpc play就没有任何作用。
+这时候，需要mpc load list1这样来重新导入playlist。mpc play才有效果。
+
+```
+
+所以就这样操作就好了。
+
+
+
+# 配置为网络方式
+
+mpc -h 192.168.0.104 play 这样只是进行了远程的控制而已。
+
+并不会让声音传递到本机上来。
+
+
+
+配置audio_output为http，应该怎样做呢？
+
+这样得到是一个ogg的stream。
+
+需要这样进行点播。
+
+```
+ http://192.168.1.2:8000/mpd.ogg
+```
+
+这样无疑是难以保证不同的客户端的同步性的。
+
+
+
+# 蓝牙方式
+
+需要一个.asoundrc文件。默认是在/var/lib/mpd/.asoundrc。
+
+内容如下：
+
+```
+defaults.bluealsa {
+	interface "hci0"
+	device "xx:xx" # addr
+	profile "a2dp"
+}
+```
+
+然后需要修改mpd.conf文件。
+
+```
+audio_output {
+	type "alsa"
+	name "My ALSA Device"
+}
+audio_output {
+	type "alsa"
+	name "ALSA Bluetooth Headset"
+	device "bluealsa"
+	mixer_type "software"
+}
+```
+
+# 系统音量控制
+
+每次mpc play，都是默认100%的音量。
+
+amixer sset Master 设置的系统音量，对于mpd的音量完全没有起作用。
+
+这个是为什么？
+
+网上看到一个人说自己的没法用mpd调节音量，是因为他的mixer_type是hardware。改成software就可以了。
+
+```
+audio_output {                             
+    type            "fifo"                 
+        name            "my pipe"          
+        path            "/tmp/snapfifo"    
+        format          "48000:16:2"       
+        mixer_type      "software"         
+}                                          
+```
 
 
 
@@ -423,3 +537,15 @@ https://askubuntu.com/questions/383449/mpd-failed-to-read-mixer-for-my-alsa-devi
 4、
 
 https://cheat.readthedocs.io/en/latest/mpd.html
+
+5、mpd+mpc配置
+
+https://my.oschina.net/diefrom/blog/347666?p={{page}}
+
+6、树莓派打造私人电台
+
+https://lmbj.net/blog/raspberry-pi-build-private-fm-radio/
+
+7、MPD
+
+https://wiki.gentoo.org/wiki/MPD

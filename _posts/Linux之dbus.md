@@ -177,6 +177,12 @@ dbus-glib和GDBus的区别
 
 
 
+dbus是很多重要系统的底层，需要加深理解。
+
+例如bluez就大量使用了dbus。
+
+
+
 # 参考资料
 
 1、DBus 入门与应用 －－ DBus 的 C 编程接口
