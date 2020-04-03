@@ -638,9 +638,239 @@ snapserver.conf里改成ogg的先。
 
 
 
+# 代码阅读
+
+```
+ServerSettings	
+   	HttpSettings http;
+   		port：默认1780 。
+    TcpSettings tcp;
+    	port：默认1705
+    StreamSettings stream;
+    	port：默认1704
+    	codec：默认flac。
+    	buffer：默认1000ms。
+    	读取间隔：默认20ms。
+    	格式：48000:16:2
+    	是否发送数据给muted的client：默认为否。
+    LoggingSettings logging;
+```
+
+main函数分析：
+
+```
+1、默认的pcmStream为：pipe:///tmp/snapfifo?name=default
+	默认的配置文件是：/etc/snapserver.conf
+2、解析命令行选项和config文件。
+
+```
 
 
 
+默认的snapserver.conf里内容是这样（去掉了所有注释）。相当于什么都没写。
+
+```
+[http]
+[tcp]
+[stream]
+stream = pipe:///tmp/snapfifo?name=default
+[logging]
+```
+
+
+
+# mdns服务是怎样添加的
+
+```
+_snapcast._tcp
+_snapcast-stream._tcp
+	这2个共用1704端口。
+	这个就是stream的。
+如果tcp使能。
+	_snapcast-jsonrpc._tcp
+	_snapcast-tcp._tcp
+	这2个都使用1705端口。
+如果http使能
+	_snapcast-http._tcp
+	使用1780端口。
+	
+然后调用publishZeroConfg.publish(dns_services);这个进行发布。
+那么就至少有5个服务。
+```
+
+当前机器里可以看到的：
+
+```
+/ # avahi-browse -a -r                                                                   
++  wlan0 IPv4 Snapcast                                      _snapcast-http._tcp  local   
++  wlan0 IPv4 Snapcast                                      _snapcast-tcp._tcp   local   
++  wlan0 IPv4 Snapcast                                      _snapcast-jsonrpc._tcp local 
++  wlan0 IPv4 Snapcast                                      _snapcast-stream._tcp local  
++  wlan0 IPv4 Snapcast                                      _snapcast._tcp       local   
++  wlan0 IPv4 snapserver                                    _ssh._tcp            local   
++  wlan0 IPv4 snapserver                                    _sftp-ssh._tcp       local   
+```
+
+有5个命名为snapcast，有2个命名为snapserver。
+
+snapserver这个名字，是因为我修改了/etc/avahi/avahi-daemon.conf里。
+
+```
+[server]               
+host-name=snapserver   
+```
+
+那2个名字为snapserver的服务，是因为在/etc/avahi/services有对应的服务配置文件。
+
+```
+/etc/avahi/services # ls      
+sftp-ssh.service  ssh.service 
+```
+
+我们看一下ssh.service文件。实际上，机器并没有开启ssh服务。所以这个并不代表真正的服务。实际上这个目录下的内容，可以清空。
+
+```
+<service-group>                               
+                                              
+  <name replace-wildcards="yes">%h</name>     
+                                              
+  <service>                                   
+    <type>_ssh._tcp</type>                    
+    <port>22</port>                           
+  </service>                                  
+                                              
+</service-group>                              
+```
+
+Snapcast，并没有使用avahi-daemon.conf里的统一的全局的snapserver这个名字呢？
+
+是怎么做到修改的呢？
+
+就是靠
+
+```
+PublishmDNS 的这个属性：构造函数传递进来就是Snapcast这个字符串。
+	std::string serviceName_;
+	
+这个字符串，最后传递给下面的函数来创建服务。
+	avahi_entry_group_add_service
+```
+
+
+
+```
+class PublishAvahi : public PublishmDNS
+```
+
+PublishmDNS
+
+```
+PublishmDNS//基类。
+	方法：
+	void publish(const std::vector<mDNSService>& services)//虚函数。
+	属性：
+	std::string serviceName_;
+```
+
+
+
+
+
+```
+struct mDNSService
+	std::string name_;
+    size_t port_;
+```
+
+PublishZeroConf
+
+```
+typedef PublishAvahi PublishZeroConf;
+```
+
+```
+class PublishAvahi : public PublishmDNS
+	AvahiClient* client_;
+	std::vector<mDNSService> services_;
+```
+
+
+
+这个publish就是产生服务的直接原因。
+
+```
+void PublishAvahi::publish(const std::vector<mDNSService>& services)
+```
+
+
+
+自己来创建一个mdns服务看看。
+
+# snapclient如何找到snapserver
+
+看了一下snapclient的代码，snapclient后面可以不跟任何参数，就可以找到snapserver。
+
+就是靠搜索`_snapcast._tcp`这个服务。
+
+```
+if (browser.browse("_snapcast._tcp", avahiResult, 5000))
+```
+
+
+
+# snapclient导致其他的程序播放没有声音
+
+我的程序结构是：
+
+同一台机器，同时运行snapclient和snapserver。
+
+使用mpd把音频数据转发给/tmp/snapfifo。
+
+这样可以正常播放音乐。
+
+但是在这之后，我用aplay、speaker-test、mpg123，播放内容，都不报错。但是没有声音。
+
+如果是在snapclient发出声音之前，使aplay等工具，是可以正常发出声音的。
+
+那么很明显就是snapclient导致了这个问题，而且是在发出声音这一行为发生之后才导致问题。
+
+而且即使我把snapclient杀掉也仍然无法解决问题。
+
+
+
+对于这个问题，除了直接正面解决问题外，目前应该有这么几条可以尝试的解决方法：
+
+1、所有声音都通过snapfifo来发声。这个就需要自己写一个播放器。
+
+
+
+上面说的只是最后的没有办法的时候，才进行尝试。
+
+先还是正面来看问题。
+
+按道理，多个程序，同时进行播放，是可以正常发声的。
+
+
+
+看一下snapclient的main函数流程。
+
+```
+默认参数
+	string meta_script("");
+    string soundcard("default");
+    string host("");
+    size_t port(1704);
+    int latency(0);
+    size_t instance(1);
+```
+
+snapclient -l，可以列出系统里可以用的声卡信息。
+
+主要是在这个函数里工作：
+
+````
+controller->start(pcmDevice, host, port, latency);
+````
 
 
 

@@ -358,6 +358,16 @@ rpc:            files
 
 
 
+# 代码分析
+
+```
+AvahiSimplePoll
+	这个是基于pollfd的。
+	跟simple相对于的是glib版本的。
+```
+
+基于dbus。
+
 
 
 参考资料

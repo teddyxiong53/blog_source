@@ -114,7 +114,7 @@ pcm.!default {
 pcm.primary {
 	type hw
 	card 0 
-	default 0
+	device 0
 }
 ```
 
@@ -385,6 +385,22 @@ plugin列表不等同于alsa device列表。
 
 
 
+alsa.conf最终被解释为一棵树，它的节点是struct _snd_config结构，
+
+
+
+
+
+# defaults
+
+一般alsa设置了一个defaults设备，音频播放软件默认使用defaults设备输出声音。defaults设备定义在alsa.conf中。
+
+defaults会默认匹配card number和device number比较小的声卡。
+
+alsa的配置文件是alsa.conf位于/usr/share/alsa目录下，通常还有/usr/share/alsa/card和/usr/share/alsa/pcm两个子目录用来设置card相关的参数，别名以及一些PCM默认设置。以上配置文件，我等凡夫从不用修改，修改它们是大神的工作。
+
+
+
 # plugin插件写法
 
 插件是用来扩展pcm设备的功能和特性的。
@@ -460,6 +476,56 @@ dsnoop:CARD=CAMERA,DEV=0
 
 https://alsa.opensrc.org/Dsnoop
 
+这样来使用：
+
+```
+arecord -f cd -c 2 -D dsnoop foobar.wav
+```
+
+
+
+
+
+# hw
+
+这种插件是直接跟alsa的kernel 驱动通信。
+
+这个一个raw的通信，没有任何转换。
+
+
+
+# dmix
+
+```
+pcm.card0 {
+	type hw
+	card 0
+}
+pcm.!default {
+	type plug
+	slave.pcm "dmixer"
+}
+
+pcm.dmixer {
+	type dmix
+	ipc_key 1025
+	slave {
+		pcm "hw:0,0"
+		period_time 0
+		period_size 4096
+		buffer_size 16384
+		periods 128
+		rate 44100
+	}
+	bindings {
+		0 0 
+		1 1
+	}
+}
+```
+
+
+
 
 
 播放增益设置
@@ -505,3 +571,15 @@ https://blog.csdn.net/MyArrow/article/details/8230231?depth_1-utm_source=distrib
 9、
 
 https://www.alsa-project.org/wiki/Asoundrc
+
+10、Flask与pyaudio实现音频数据流的传输(电话会议语音交互式应用)
+
+https://blog.csdn.net/weixin_30699831/article/details/99924273
+
+11、alsa设置默认声卡
+
+https://blog.csdn.net/samssm/article/details/53157210
+
+12、alsa-lib的alsa.conf
+
+https://www.pianshen.com/article/684731740/
