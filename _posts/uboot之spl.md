@@ -77,3 +77,10 @@ TPL是Third Program Loader。第三阶段加载器。
 
 tq2440板子，没有打开spl这个功能的。
 
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/rikeyone/article/details/51646200	

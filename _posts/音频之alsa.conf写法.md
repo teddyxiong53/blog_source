@@ -446,7 +446,7 @@ arecord -vD rate_convert  3.wav
 
 打印的输出：
 
-# asym
+## asym
 
 *asym* is an ALSA PCM plugin that combines **half-duplex** PCM plugins like *dsnoop* and *dmix* into one **full-duplex** device
 
@@ -458,7 +458,7 @@ asym是一个插件，作用是把半双工的插件（比如dsnoop、dmix）转
 
 
 
-# dsnoop
+## dsnoop
 
 dsnoop是d + snoop（探听）。
 
@@ -486,7 +486,7 @@ arecord -f cd -c 2 -D dsnoop foobar.wav
 
 
 
-# hw
+## hw
 
 这种插件是直接跟alsa的kernel 驱动通信。
 
@@ -494,7 +494,7 @@ arecord -f cd -c 2 -D dsnoop foobar.wav
 
 
 
-# dmix
+## dmix
 
 ```
 pcm.card0 {
@@ -531,6 +531,126 @@ pcm.dmixer {
 播放增益设置
 
 录音声道转换
+
+
+
+数字音频有几个参数是我们需要关注的：
+
+采样率、通道数、格式。
+
+如果你用过oss编程。你可能是在播放某个文件前，一个一个设置过这些参数。
+
+在alsa里，你会碰到一个概念：Configuration space。配置空间。
+
+这个具体指什么呢？
+
+这个产生的原因是：现实中声卡差别比较大，事情就变得复杂了。
+
+参数不是独立的。
+
+alsa通过一个多维度的参数集来描述。
+
+其中一个维度对应采样率，一个维度对应格式，等等。
+
+
+
+alsa设备，是各种插件的wrapper。
+
+alsa设备由字符串来描述。
+
+设备是在配置文件里定义的。
+
+很多alsa设备是通用的。
+
+alsa设备列表跟插件列表不一样。
+
+毫不夸张地说，alsa完全是由插件构成的。
+
+每当播放器或者其他程序使用alsa设备的时候，是插件来完成实际的工作。
+
+
+
+最重要的插件就是hw插件。
+
+它不进行自己的处理，而只是访问硬件驱动程序。
+
+hw插件的用法：
+
+```
+-D hw:0,0
+```
+
+
+
+如果使用hw插件时，给定的参数，是硬件所不支持的，则hw插件会返回错误。
+
+
+
+所以下一个最重要的插件是plug插件。plug插件会进行通道复制、格式转化和重采样。
+
+用法是：
+
+```
+-D plughw:0,0
+```
+
+另外一个非常有用的插件是file插件。
+
+常见的用法是：
+
+```
+aplay -D tee:\'plughw:0,0\',/tmp/1.out,raw 1.wav
+```
+
+可以在听到声音的同时，把播放的声音保存起来。
+
+
+
+snd_open的时候，都会重新解析配置文件，所以修改配置文件后，程序执行你的程序，就可以生效的。
+
+
+
+# 播放设备名
+
+default：对于大部分应用，用这个就够了。一般使用pulseaudio或者dmix。这样就可以多个应用同时使用声卡了。
+
+front：直接访问硬件，模拟输出。2个通道。通道图：front-left、front-right。
+
+rear：单词意思是后面，跟front相对。直接访问硬件。模拟输出。2个通道。通道图：rear-left、rear-right。
+
+center_lfe：
+
+side
+
+surround40：4个通道。front-left、front-right、rear-left、rear-right。
+
+spdif
+
+hdmi
+
+hw
+
+plughw
+
+
+
+设备名前面可以加上`plug:`
+
+例如：
+
+```
+plug:front
+```
+
+作用是实现参数转化。
+
+
+
+# 录音设备名
+
+default 
+
+hw
 
 
 
@@ -583,3 +703,11 @@ https://blog.csdn.net/samssm/article/details/53157210
 12、alsa-lib的alsa.conf
 
 https://www.pianshen.com/article/684731740/
+
+13、alsa
+
+https://www.volkerschatz.com/noise/alsa.html
+
+14、DeviceNames
+
+https://alsa-project.org/wiki/DeviceNames

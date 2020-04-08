@@ -34,7 +34,5 @@ EasyBcd检测到你的机器是用EFI模式启动的。因为微软的限制，�
 
 
 
-# mac和windows双系统
 
-先安装的windows系统。
 

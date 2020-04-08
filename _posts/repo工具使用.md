@@ -243,6 +243,10 @@ default：
 
 
 
+remote fetch
+
+
+
 # 参考资料
 
 1、Repo工具的使用
@@ -264,3 +268,7 @@ https://blog.csdn.net/eastmoon502136/article/details/72598297
 5、
 
 https://www.jianshu.com/p/9c57696165f3
+
+6、repo: manifest.xml: What does the fetch=“..” mean?
+
+https://stackoverflow.com/questions/18251358/repo-manifest-xml-what-does-the-fetch-mean

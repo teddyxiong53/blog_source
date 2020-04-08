@@ -257,6 +257,26 @@ CPU acceleration status: KVM is not installed on this machine (/dev/kvm is missi
 
 
 
+看一下build/envsetup.sh脚本内容。
+
+```
+第一个函数是：
+function hmm()
+这个是打印帮助信息。
+Invoke ". build/envsetup.sh" from your shell to add the following functions to your environment:
+```
+
+```
+- m:         Makes from the top of the tree.
+- mm:        Builds all of the modules in the current directory, but not their dependencies.
+- mmm:       Builds all of the modules in the supplied directories, but not their dependencies.
+             To limit the modules being built use the syntax: mmm dir/:target1,target2.
+- mma:       Builds all of the modules in the current directory, and their dependencies.
+- mmma:      Builds all of the modules in the supplied directories, and their dependencies.
+```
+
+
+
 # 参考资料
 
 1、Building Android for Qemu: A Step-by-Step Guide

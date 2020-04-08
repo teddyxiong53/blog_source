@@ -18,6 +18,20 @@ klogd是一个用来截获并记录内核消息的守护进程。
 
 
 
+```
+start-stop-daemon -b -S -q -m -p /var/run/klogd.pid --exec /sbin/klogd -- -n
+```
+
+klogd默认是把内核打印转发给syslogd。所以可以从/var/log/messages里看到内核的打印。
+
+Klogd的输出结果会传送给syslogd进行处理,syslogd会根据/etc/syslog.conf的配置把log，信息输出到/var/log/下的不同文件中。
+
+
+
+klogd就是把printk打印的东西转发给syslogd。
+
+
+
 # busybox里的klogd实现
 
 先看帮助信息。

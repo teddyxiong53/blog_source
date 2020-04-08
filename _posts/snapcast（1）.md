@@ -872,6 +872,112 @@ snapclient -l，可以列出系统里可以用的声卡信息。
 controller->start(pcmDevice, host, port, latency);
 ````
 
+鉴于aplay、mpg123、speaker-test这些没有声音的本质问题是一致的，后面我只用speaker-test工具来做测试和说明。
+
+经过进一步分析，有这些现象和初步结论：
+
+```
+1、没有声音的时候，发现eq_drc_process进程退出了。
+2、手动启动eq_drc_process，则speaker-test可以发出声音。
+3、但是，这个导致了snapclient又无法发出声音了。
+4、speaker-test -t sine -D plughw:0,0指定-D为plughw，则可以正常播放出声音。
+5、在snapclient正在播放的时候，speaker-test运行会报错，因为alsa只能被一个独占。会提示busy。
+```
+
+现在有几个问题需要回答：
+
+```
+1、eq_drc_process对于当前场景，是否一定需要？
+2、eq_drc_process为什么会退出？
+3、eq_drc_process为什么会和snapclient相互影响？
+```
+
+要回答eq_drc_process对于当前场景存在的必要性，就需要知道eq_drc_process到底做了一些什么工作。
+
+看eq_drc_process的代码。是操作了fake_play和fake_record这2个plugin。
+
+主要是为了调节EQ和DRC。优化音质和限制音量。
+
+那么对于当前场景还是需要的。
+
+那么eq_drc_process为什么会退出呢？
+
+而且有时候，可以看到eq_drc_process和snapclient都同时在运行，并没有因为打开alsa失败而无法启动。
+
+现在执行eq_drc_process进程。失败而无法启动。打印如下：
+
+```
+# eq_drc_process 
+v1.03 2019-03-05 by lxh 
+eq build Sep 10 2019 16:30:11
+output dev:dmixer_avs_lrtl 
+init_eq_priv_data version=2 use_fifo=0 close_pa_need_delay=0
+Starting eq_drc_process,EQ_USE_AWINIC:0,EQ_USE_RK:1,pid=22211,USE_RT_SHCED=1 use_fifo=0
+para_name  = /data/cfg/eq_bin/Para_48000Hz_2ch.bin
+EQ_DRC_ VERSION v1.2
+Open PCM: dmixer_avs_lrtl
+ALSA lib pcm_mmap.c:341:(snd_pcm_mmap) mmap failed: Invalid argument
+ALSA lib pcm_direct.c:1581:(snd1_pcm_direct_initialize_secondary_slave) unable to mmap channels
+ALSA lib pcm_dmix.c:1167:(snd_pcm_dmix_open) unable to initialize slave
+Unable to open playback PCM device: 
+alsa_fake_device_write_open error
+exit eq_drc_process!
+```
+
+是尝试打开dmixer_avs_lrtl 这个设备。
+
+代码里是这样：
+
+```
+#define REC_DEVICE_NAME "fake_record"
+#define WRITE_DEVICE_NAME "dmixer_avs_lrtl"   //"fake_play"
+#define WRITE_DEVICE_NAME_HEADPHONE "fake_play"//"fake_play"
+```
+
+
+
+目前最新的进展：
+
+```
+1、问题的根本是alsa的输出设备的配置。
+2、按照当前rk给的/etc/asound.conf配置。
+	播放是用loopback这个声卡设备的。通过aplay -vv可以确认这一点。
+	为什么可以？我觉得应该硬件上把loopback跟音频输出引脚是连在一起的。所以二者信号是通的。
+	录音用的是hw:0,0。录音和播放是分开的，所以最前面用了一个asym插件。
+3、不明确指定设备。speaker-test和aplay同时工作，可以正常混音。
+```
+
+即使我把其他的mp3提示音播放，都输出到/tmp/snapfifo里，当前仍然有的问题：
+
+1、snapclient的输出没有经过eq_drc_process进程。所以音量控制不太合理。
+
+当前对pcm设备的使用情况是这样：
+
+```
+/ # lsof |grep pcm                                                                            
+eq_drc_pr  376       root    9u      CHR            116,249      0t0  3127 /dev/snd/pcmC7D1c  
+eq_drc_pr  376  378  root    9u      CHR            116,249      0t0  3127 /dev/snd/pcmC7D1c  
+eq_drc_pr  376  379  root    9u      CHR            116,249      0t0  3127 /dev/snd/pcmC7D1c  
+snapclien  672       root    9u      CHR             116,16      0t0  3129 /dev/snd/pcmC0D0p  
+snapclien  672  674  root    9u      CHR             116,16      0t0  3129 /dev/snd/pcmC0D0p  
+snapclien  672  703  root    9u      CHR             116,16      0t0  3129 /dev/snd/pcmC0D0p  
+snapclien  672  712  root    9u      CHR             116,16      0t0  3129 /dev/snd/pcmC0D0p  
+```
+
+现在二者算是各占用一个声卡。
+
+可以给snapclient -s 2（给2是因为loopback的index是2） 。这样来运行。就是通过loopback了。现在看到的情况是这样：
+
+![1586158528901](../images/random_name/1586158528901.png)
+
+现在用amixer设置音量可以控制snapclient的音量了。
+
+所以这个就这样解决了。
+
+使用snapclient -s Loopback。这样更加灵活一点。
+
+
+
 
 
 参考资料
