@@ -1,5 +1,5 @@
 ---
-title: buildroot（一）
+title: buildroot（1）
 date: 2018-03-25 08:30:56
 tags:
 	- buildroot
@@ -983,6 +983,18 @@ make manual-text
 生成的文档是.text后缀的，默认是用typora打开的。
 
 格式还可以。
+
+# 打开telnetd
+
+这个需要make busybox-menuconfig。选配telnetd。
+
+然后在顶层make menuconfig ，设置密码。没有密码不好登陆。
+
+# 打开zmodem
+
+为了方便传输文件。可以打开zmodem。就是lrzsz。
+
+make lrzsz-rebuild就好了。
 
 
 

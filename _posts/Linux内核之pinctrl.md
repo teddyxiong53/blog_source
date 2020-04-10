@@ -154,7 +154,7 @@ pinctrl-0、pinctrl-1，表示是该设备的一个个状态。
 
 数字0和1，表示在pinctrl-names（这个属性的值是一个字符串数字）里的索引。
 
-pinctrl-0对应的就是“sleep”。
+pinctrl-0对应的就是“sleep”。这个应该对应节能模式这些。我们一般只管name是default的就好了。
 
 而gpio_key_default，就是在pinctrl节点下面的子节点了，类似这样：
 

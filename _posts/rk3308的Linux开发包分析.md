@@ -491,4 +491,84 @@ endef
 	执行rebootUpdate(0);
 ```
 
+# 启动参数
+
+
+
+执行adb reboot bootloader。
+
+看到查看有这个打印：
+
+```
+Returning to boot ROM
+```
+
+这个是两种情况会进。
+
+一个是在SPL方式下。一个就是下载模式。当前SPL方式是关闭的。所以只有下载模式会打印这个。
+
+```
+enum rockchip_bootrom_cmd {
+	/*
+	* These can not start at 0, as 0 has a special meaning
+	* for setjmp().
+	*/
+
+	BROM_BOOT_NEXTSTAGE = 1,  /* continue boot-sequence */
+	BROM_BOOT_ENTER_DNL,      /* have BROM enter download-mode */
+};
+```
+
+靠检测0xff000500这个寄存器的值。
+
+```
+boot mode: loader
+enter Rockusb!
+```
+
+现在电脑上烧录工具看到的就是进入了loader模式了。
+
+
+
+升级包的打包过程
+
+rk3308-package-file-rootfs 这个是处理oem在rootfs 情况的。
+
+如果配置了AB升级。
+
+```
+if [ "$RK_LINUX_AB_ENABLE" == "true" ]; then
+	    ln -fs $PACK_TOOL_DIR/rockdev/rk3308-package-file-ab $PACK_TOOL_DIR/rockdev/package-file
+	fi
+```
+
+我现在是这2种情况都包括。
+
+既把oem放到了rootfs，也把AB系统打开了。
+
+所以最终起作用的是rk3308-package-file-ab 这个配置文件。
+
+在这个文件里，把oem的注释掉。
+
+update.img就是包括了所有分区的一个包。
+
+打包操作过程：
+
+```
+./afptool -pack ./ Image/update.img || pause
+./rkImageMaker -RK3308 Image/MiniLoaderAll.bin Image/update.img update.img -os_type:androidos || pause
+echo "Making update.img OK."
+```
+
+打包AB系统ota包的函数，在build.sh里。
+
+```
+function build_ota_ab_updateimg()
+```
+
+包名没有做区分，统一都叫update_ota.img。
+
+不过打包指导文件都是rk3308-package-file-ota。
+
+我也不改这个机制了。直接在rk3308-package-file-ota这个文件上调整。
 
