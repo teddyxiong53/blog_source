@@ -988,6 +988,8 @@ make manual-text
 
 这个需要make busybox-menuconfig。选配telnetd。
 
+保存busybox的配置，是make busybox-update-config
+
 然后在顶层make menuconfig ，设置密码。没有密码不好登陆。
 
 # 打开zmodem
@@ -1399,3 +1401,6 @@ https://blog.csdn.net/qq_31811537/article/details/81069993
 
 7、doc/manual下面的txt文件
 
+8、
+
+http://wiki.t-firefly.com/zh_CN/Core-3308Y/buildroot_development.html

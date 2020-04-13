@@ -493,7 +493,267 @@ endef
 
 # 启动参数
 
+```
+storagemedia=nand root=PARTUUID=5e1b0000-0000-4613-8000-1a0e0000370e skip_initramfs androidboot.slot_suffix=_a androidboot.serialno=61004P00208989000103  rootwait earlycon=uart8250,mmio32,0xff0c0000 swiotlb=1 console=ttyFIQ0 rootfstype=squashfs snd_aloop.index=7 snd_aloop.use_raw_jiffies=1
+```
 
+这个是cat /proc/cmdline看到的内容。
+
+## storagemedia=nand
+
+这个在kernel里搜索不到。
+
+应该uboot用的。
+
+在uboot的代码里可以搜索到这2处：
+
+```
+./common/boot_rkimg.c:205:                               "storagemedia=%s", boot_media);
+./common/boot_rkimg.c:208:                               "storagemedia=%s androidboot.mode=%s",
+```
+
+整个的调用栈是：
+
+```
+
+```
+
+
+
+# uboot分析
+
+从u-boot.lds入手。
+
+内存地址是从0开始的。
+
+```
+ . = 0x00000000;
+ . = ALIGN(8);
+ .text :
+ {
+  *(.__image_copy_start)
+  arch/arm/cpu/armv8/start.o (.text*)
+  *(.text*)
+ }
+```
+
+`__image_copy_start`在代码里的使用：
+
+```
+./include/asm-generic/sections.h:74:extern char __image_copy_start[];
+```
+
+```
+./arch/arm/lib/relocate_64.S:30:        adr     x1, __image_copy_start  /* x1 <- Run &__image_copy_start */
+```
+
+看看./arch/arm/cpu/armv8/u-boot.lds这个，跟根目录下的u-boot.lds有什么关系？
+
+根目录下的，是arch目录下的展开后的结果。
+
+```
+包含了config.h头文件。
+```
+
+配置生成的include/config.h里：
+
+```
+/* Automatically generated - do not edit */
+#define CONFIG_BOARDDIR board/rockchip/evb_rk3308
+#include <config_defaults.h>
+	这个里面定义了几个宏。就是表示可以引导Linux、bsd、VxWorks这些系统。
+	支持gzip和zlib。
+#include <config_uncmd_spl.h>
+	如果定义了spl，取消几个宏定义，节省空间。
+#include <configs/evb_rk3308.h>
+	包含了rk3308_common.h
+	#define CONFIG_BOOTCOMMAND RKIMG_BOOTCOMMAND 
+		定义了bootcmd。这个很重要。
+	
+#include <asm/config.h>
+	
+#include <linux/kconfig.h>
+#include <config_fallbacks.h>
+```
+
+rk3308_common.h内容：
+
+```
+1、首先包含rockchip-common.h
+	定义了晶振为24M。
+	dram bank为4个。
+	定义了一下启动工具宏：从emmc、sd、nand等启动。
+	定义了root uuid：
+		#define ROOT_UUID "B921B045-1DF0-41C3-AF44-4C6F280D3FAE;\0"
+	定义了分区宏：
+		#define PARTS_RKIMG 
+2、定义了uboot的text base在6M的位置。
+3、定义堆栈指针在8M的位置。
+4、定义了load addr在12M的位置。
+5、sd ram的base为0M的位置。
+6、包含了config_distro_bootcmd.h 这个头文件里定义了很多种的启动命令。
+	是NVIDIA写的。
+	
+```
+
+入口是arch/arm/cpu/armv8/start.o 。这个是start.S。
+
+
+
+```
+.globl	_start
+_start:
+#ifdef CONFIG_ENABLE_ARM_SOC_BOOT0_HOOK
+#include <asm/arch/boot0.h>//这里面有不少代码。开机是执行这里。
+```
+
+通过加错误，可以看到，这个没有使能。
+
+```
+#if CONFIG_IS_ENABLED(ROCKCHIP_EARLYRETURN_TO_BROM)
+```
+
+所以还是调用了 b reset。
+
+```
+reset:
+	/* Allow the board to save important registers */
+	b	save_boot_params
+```
+
+一系列操作后，是调用了_main。
+
+```
+./arch/arm/lib/crt0_64.S:67:ENTRY(_main)
+```
+
+CONFIG_BOOTARGS
+
+这个是在defconfig里进行配置的。目前没有配置这个。
+
+CONFIG_BOOTCOMMAND
+
+```
+#ifndef CONFIG_BOOTCOMMAND
+#define CONFIG_BOOTCOMMAND "run distro_bootcmd"
+#endif
+```
+
+现在停在uboot里，print看看配置情况。
+
+```
+arch=arm
+baudrate=1500000
+board=evb_rk3308
+board_name=evb_rk3308
+boot_a_script=load ${devtype} ${devnum}:${distro_bootpart} ${scriptaddr} ${prefix}${script}; source ${scriptaddr}
+boot_extlinux=sysboot ${devtype} ${devnum}:${distro_bootpart} any ${scriptaddr} ${prefix}extlinux/extlinux.conf
+boot_prefixes=/ /boot/
+boot_script_dhcp=boot.scr.uimg
+boot_scripts=boot.scr.uimg boot.scr
+boot_targets=mmc1 mmc0 rknand0 pxe dhcp 
+bootargs=storagemedia=nand
+bootcmd=boot_android ${devtype} ${devnum};bootrkp;run distro_bootcmd;
+bootcmd_dhcp=if dhcp ${scriptaddr} ${boot_script_dhcp}; then source ${scriptaddr}; fi;
+bootcmd_mmc0=setenv devnum 0; run mmc_boot
+bootcmd_mmc1=setenv devnum 1; run mmc_boot
+bootcmd_pxe=dhcp; if pxe get; then pxe boot; fi
+bootcmd_rknand0=setenv devnum 0; run rknand_boot
+bootdelay=2
+cpu=armv8
+devnum=0
+devtype=spinand
+distro_bootcmd=for target in ${boot_targets}; do run bootcmd_${target}; done
+fdt_addr_r=0x01f00000
+kernel_addr_c=0x02480000
+kernel_addr_no_bl32_r=0x00280000
+kernel_addr_r=280000
+mmc_boot=if mmc dev ${devnum}; then setenv devtype mmc; run scan_dev_for_boot_part; fi
+partitions=uuid_disk=${uuid_gpt_disk};name=loader1,start=32K,size=4000K,uuid=${uuid_gpt_loader1};name=loader2,start=8MB,size=4MB,uuid=${uuid_gpt_loader2};name=trust,size=4M,uuid=${uuid_gpt_atf};name=boot,size=112M,bootable,uuid=${uuid_gpt_boot};name=rootfs,size=-,uuid=B921B045-1DF0-41C3-AF44-4C6F280D3FAE;
+preboot=dvfs repeat
+pxefile_addr_r=0x00600000
+ramdisk_addr_r=0x04000000
+reboot_mode=recovery
+rkimg_bootdev=if mmc dev 1 && rkimgtest mmc 1; then setenv devtype mmc; setenv devnum 1; echo Boot from SDcard;elif mmc dev 0; then setenv devtype mmc; setenv devnum 0;elif rknand dev 0; then setenv devtype rknand; setenv devnum 0;elif rksfc dev 0; then setenv devtype spinand; setenv devnum 0;elif rksfc dev 1; then setenv devtype spinor; setenv devnum 1;fi; 
+rknand_boot=if rknand dev ${devnum}; then setenv devtype rknand; run scan_dev_for_boot_part; fi
+scan_dev_for_boot=echo Scanning ${devtype} ${devnum}:${distro_bootpart}...; for prefix in ${boot_prefixes}; do run scan_dev_for_extlinux; run scan_dev_for_scripts; done;
+scan_dev_for_boot_part=part list ${devtype} ${devnum} -bootable devplist; env exists devplist || setenv devplist 1; for distro_bootpart in ${devplist}; do if fstype ${devtype} ${devnum}:${distro_bootpart} bootfstype; then run scan_dev_for_boot; fi; done
+scan_dev_for_extlinux=if test -e ${devtype} ${devnum}:${distro_bootpart} ${prefix}extlinux/extlinux.conf; then echo Found ${prefix}extlinux/extlinux.conf; run boot_extlinux; echo SCRIPT FAILED: continuing...; fi
+scan_dev_for_scripts=for script in ${boot_scripts}; do if test -e ${devtype} ${devnum}:${distro_bootpart} ${prefix}${script}; then echo Found U-Boot script ${prefix}${script}; run boot_a_script; echo SCRIPT FAILED: continuing...; fi; done
+scriptaddr=0x00500000
+serial#=61004P00208989000103
+soc=rockchip
+stderr=serial@ff0c0000
+stdin=serial@ff0c0000
+stdout=serial@ff0c0000
+vendor=rockchip
+
+Environment size: 3072/32764 bytes
+```
+
+board=evb_rk3308 
+
+这个名字从哪里来的？
+
+```
+./board/rockchip/evb_rk3308/Kconfig:4:  default "evb_rk3308"
+```
+
+启动模式：
+
+```
+enum _boot_mode {
+	BOOT_MODE_NORMAL = 0,
+	BOOT_MODE_RECOVERY,
+	BOOT_MODE_BOOTLOADER,	/* Android: Fastboot mode */
+	BOOT_MODE_LOADER,	/* Rockchip: Rockusb download mode */
+	BOOT_MODE_CHARGING,
+	BOOT_MODE_UMS,
+	BOOT_MODE_BROM_DOWNLOAD,
+	BOOT_MODE_UNDEFINE,
+};
+```
+
+
+
+CONFIG_ANDROID_BOOT_IMAGE
+
+CONFIG_ANDROID_BOOTLOADER
+
+CONFIG_CMD_BOOT_ANDROID
+
+CONFIG_CMD_BOOT_ROCKCHIP
+
+CONFIG_EFI_PARTITION_ENTRIES_NUMBERS
+
+CONFIG_BAUDRATE
+
+# 第一次烧录
+
+烧录后，从串口打印看，
+
+是进入到了recovery模式。
+
+```
+Hit key to stop autoboot('CTRL+C'):  0 
+xhl -- do_boot_android
+xhl -- boot args:storagemedia=nand
+xhl -- boot cmd:boot_android ${devtype} ${devnum};bootrkp;run distro_bootcmd;
+ANDROID: reboot reason: "recovery"
+Booting LZ4 kernel at 0x02480000(Uncompress to 280000) with fdt at 1f00000...
+```
+
+```
+xhl -- kernel bootargs: earlycon=uart8250,mmio32,0xff0c0000 swiotlb=1 console=ttyFIQ0 root=PARTUUID=614e0000-0000 rootfstype=squashfs rootwait snd_aloop.index=7 snd_aloop.use_raw_jiffies=1
+
+xhl -- merged bootargs: storagemedia=nand androidboot.slot_suffix= androidboot.serialno=61004P00208989000103  rootwait earlycon=uart8250,mmio32,0xff0c0000 swiotlb=1 console=ttyFIQ0 root=PARTUUID=614e0000-0000 rootfstype=squashfs snd_aloop.index=7 snd_aloop.use_raw_jiffies=1
+```
+
+然后自动重启，再进入到正常系统。
+
+
+
+# SPL
 
 执行adb reboot bootloader。
 

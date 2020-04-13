@@ -143,6 +143,40 @@ resizeall()
 
 
 
+misc是一个裸分区。类型是emmc（还有这种类型）
+
+```
+Resizing /dev/rkflash0p6 / ext2...
+Resizing /dev/rkflash0p3 /misc emmc...
+Resizing /dev/rkflash0p8 /userdata ext2...
+```
+
+虽然有这些打印，但是只有ext、ntfs、fat支持调整。
+
+
+
+```
+dumpe2fs 1.43.9 (8-Feb-2018)
+dumpe2fs: Bad magic number in super-block while trying to open /dev/rkflash0p6
+Wrong fs type!
+```
+
+# dumpe2fs 命令
+
+这个命令是把ext2/3/4文件系统的信息dump出来。
+
+命令格式：
+
+```
+dumpe2fs [options] device
+```
+
+打印device上的superblock和block group信息。
+
+一般我们用-h选项，这样打印出来的东西没有那么多，可读性好。
+
+
+
 参考资料
 
 1、
