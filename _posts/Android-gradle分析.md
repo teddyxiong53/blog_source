@@ -92,6 +92,28 @@ gradle构建过程分为3个阶段：
 
 
 
+项目中有两个build.gradle文件，一个是在最外层目录下的，一个是在app目录下的。
+
+
+
+有好几个sdk version配置，直接有什么关系？
+
+compileSdkVersion
+
+这个只影响编译，不影响运行。如果你使用了较新的api，就需要使用高版本的sdk。
+
+建议这个指定为最新的api level。
+
+
+
+minSdkVersion和maxSdkVersion
+
+这2个就是影响运行的。表示可以在什么样的api级别上运行。
+
+targetSdkVersion
+
+这个是最重要
+
 参考资料
 
 1、打通Android Gradle编译过程的任督二脉
@@ -101,3 +123,7 @@ https://cloud.tencent.com/developer/article/1032349
 2、AndroidStudio下的build.gradle文件分析
 
 https://blog.csdn.net/qq_39312230/article/details/80314810
+
+3、
+
+http://mouxuejie.com/blog/2018-08-04/android-compilesdkversion-minsdkversion-targetsdkversion/

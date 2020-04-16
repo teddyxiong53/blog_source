@@ -539,3 +539,92 @@ public class Alert {
 
 
 
+# 自己编译
+
+会提示需要mips的工具链。但是我用不上这个工具链。网上看到解释说要升级gradle版本。
+
+那我就升级到gradle-3.4-rc-3-all.zip
+
+修改app/gradle-wrapper/gradle-wrapper.properties文件。
+
+当前是2.1.4的，替换。
+
+然后执行build。需要重新下载。耐心等待。
+
+但是这样问题仍然有。
+
+打开git bash。进入到/d/android_sdk/ndk-bundle/toolchains。执行下面的语句。
+
+```
+ ln -sf aarch64-linux-android-4.9 mips64el-linux-android
+ ln -sf aarch64-linux-android-4.9 mipsel-linux-android
+```
+
+的确就这样就可以了。
+
+继续编译，还是报错。
+
+```
+* What went wrong:
+A problem occurred configuring project ':app'.
+> executing external native build for cmake D:\work\gome\dcs-sdk-java-master\app\CMakeLists.txt
+```
+
+查看详细错误：
+
+```
+CMake Error: Could not create named generator Android Gradle - Ninja
+```
+
+网上看了相同的错误，解决的办法是sdk manager -- 右下角勾选show details。然后cmake安装3.6的，而不是默认的3.10的。同时把3.10的勾选去掉，这样就会卸载3.10的。
+
+再试一下。
+
+```
+CMake Error at D:/android_sdk/ndk-bundle/build/cmake/android.toolchain.cmake:174 (message):
+  armeabi is no longer supported.  Use armeabi-v7a.
+Call Stack (most recent call first):
+  D:/android_sdk/cmake/3.6.4111459/share/cmake-3.6/Modules/CMakeDetermineSystem.cmake:98 (include)
+  CMakeLists.txt
+
+
+CMake Error: CMAKE_C_COMPILER not set, after EnableLanguage
+CMake Error: CMAKE_CXX_COMPILER not set, after EnableLanguage
+```
+
+我直接修改app/build.gradle文件。去掉多余的架构。
+
+```
+ndk {
+            // 平台
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
+```
+
+再进行build。就成功了。
+
+怎样进行在线调试呢？
+
+edit Configuration。
+
+但是module显示no module。这个怎么弄？
+
+这个在线调试没有弄出来。但是可以安装apk到手机上用。
+
+估计是这个的复杂结构导致无法在线调试？
+
+我看其他的工程，不要设置默认就是可以调试的。
+
+
+
+参考资料
+
+1、
+
+https://www.jianshu.com/p/16dde31679d3
+
+2、epic 编译
+
+这里找到了解决cmake错误的方法。
+
+https://wufengxue.github.io/2019/02/25/epic.html

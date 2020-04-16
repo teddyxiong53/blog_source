@@ -205,32 +205,6 @@ pro2 : pro2
 
 
 
-
-
-repo就是管理多个git仓库的工具。
-
-需要一个manifest.xml文件来指定git目录从哪里下载，下载到什么位置。
-
-用project标签来指定仓库。
-
-另外还有remote标签。
-
-```
-remote标签
-	指定远程查看名字和地址。
-project
-	指定每一个子项目的信息。
-	path：下载到的位置。
-	name：相对于remote的路径。
-	copyfile标签。
-	linkfile标签
-default：
-	？
-
-```
-
-
-
 # 提交上传代码
 
 如果本地代码有修改，需要提交上传。
@@ -243,7 +217,225 @@ default：
 
 
 
-remote fetch
+# repo init
+
+有这些常用选项：
+
+```
+-u
+	u表示url。后面跟的是一个manifest-url。
+	表示仓库的地址。其实就是一个default.xml的位置。
+-b
+	只取某个分支或者版本。
+-m
+	指定一个xml文件名字。使用指定的这个manifest xml文件，而不是默认的default.xml文件。
+	
+```
+
+如果还没有同步过，repo init等价于：
+
+```
+git clone
+```
+
+如果已经同步过，那么repo sync等价于：
+
+```
+git remote update
+git rebase origin/<branch>
+```
+
+# repo upload
+
+后面可以跟project的名字。
+
+不带的话，就是提交所有的project。
+
+
+
+# repo源代码分析
+
+repo就是一个900行的python脚本。
+
+
+
+整个工作过程是：
+
+1、先通过wget工具，下载得到一个repo脚本。我们把这个脚本放入到PATH路径下。
+
+2、用repo工具来安装一个repo仓库。
+
+```
+repo init -u http://xx/manifest
+```
+
+这个命令实际上包含了2个操作：安装repo仓库和manifest仓库。
+
+我们看看repo脚本是如何执行repo init命令的。
+
+每个命令都是这种格式：cmd opt  args
+
+```
+def main(orig_args):
+  cmd, opt, args = _ParseArguments(orig_args)
+```
+
+_FindRepo函数，从当前目录开始往上找，直到根目录停止。如果中间某个目录存在一个.repo/repo目录。且这个目录下有一个main.py文件。
+
+那么就会认为当前目录是aosp目录。
+
+
+
+当前我们执行repo init的时候：
+
+1、如果我们只是从网上下载了一个repo脚本，那么在执行repo命令的时候，就会从远程仓库clone一个repo仓库到当前目录来。
+
+2、如果我们从网上下载的是一个带有repo仓库的repo叫本能，那么执行repo命令的时候，就会从本地clone一个repo仓库到当前目录。
+
+
+
+如果我们执行repo脚本的时候，没有指定`--repo-url`和`--repo-branch`这2个参数。
+
+那么就使用REPO_URL和REPO_REV。这个默认是
+
+REPO_ULR=https://gerrit.googlesource.com/git-repo
+
+REPO_REV=stable
+
+
+
+首先用git init在当前目录下的.repo/repo目录下初始化一个仓库。然后调用_SetConfig函数来设置git仓库的url等信息。
+
+bundle文件是git提供的一种机制，用来解决不能正常通过git协议、ssh协议，http协议这些协议来clone的问题。
+
+把整个仓库打包成一个bundle文件，直接拷贝到其他的电脑上可以用。
+
+
+
+当repo init命令完成了repo仓库的安装之，就会调用main.py文件，
+
+repo命令的子命令，都在.repo/repo/subcmds目录下。一个文件对应一个命令。
+
+
+
+xml_manifest.py 这个对应的就是manifest.xml文件的对象。
+
+
+
+# manifest.xml文件语法
+
+## manifest元素
+
+这个是根节点。
+
+## remote元素
+
+可以指定多个remote元素。不过一般就一个。
+
+每个remote元素代表了一个git url。这个url被多个project共享。
+
+属性：
+
+```
+name：
+	一个short name。在本文件里要唯一。
+	在各个project里，用这个name作为remote 的名字。在.git/config里有。
+	因此，在git fetch/remote/pull/push这些命令可以直接使用这个name。
+	
+alias
+	这个可以没有，如果有的话，就会覆盖name属性，在.git/config里使用。
+	alias可以多个project相同。而name必须唯一。
+	
+fetch
+	这个是git url prefix。加在所有的project前面。
+	每个project的name前面都会自动加上这个fetch的值，构成最后的url。
+	在clone的时候用。
+pushurl
+	这个也是git url prefix，在git push的时候用。
+	这个是可选的，默认是跟fetch的一样。
+	
+review
+	repo upload的时候，上传到的gerrit server的名字。
+	这个属性可选，如果没有，那么repo upload没有作用。
+	
+revision
+	这个是一个git branch的名字。例如master或者refs/heads/master。
+	
+```
+
+## default元素
+
+最多只能有一个default元素。作用就是对所有的project设置一些全局参数。project不单独设置，则默认使用default里的属性。
+
+default元素的remote属性和revision属性，对于那些没有指定这2个属性的project都有效。
+
+属性：
+
+```
+remote
+	就是上面的那个remote元素的名字。如果project不单独指定remote，那么默认就是用这个remote。
+revision
+	git branch的名字。
+dest-branch
+	默认跟revision的一致。一般也不设置。
+upstream
+	一个git ref的名字。
+sync-j
+	sync的任务数，一般是4 。
+sync-c
+	bool类型。如果设置为true，那么只同步指定的git 分支。而不是整个ref space。
+sync-s
+	如果设置为true，也同步sub-projects。
+	
+```
+
+## manifest-server元素
+
+这个一般不设置。
+
+## project元素
+
+project是主要的内容。repo就是管理多个project的。
+
+每一个project代表了一个git 仓库，你可以指定git-submodules来创建嵌套的project。
+
+属性
+
+```
+name
+	一个unique的名字。
+	实际是一个路径。
+	使用的时候，会被补全到fetch url后面。
+	
+path
+	一个可选的属性。
+	表示project取下来放在的目录，从当前路径开始的相对路径。
+	
+```
+
+一般就用上面2个属性就够了。
+
+## copy-file元素
+
+是project的子元素。
+
+描述了一个拷贝文件的行为。
+
+有2个属性，一个是dest，一个src。
+
+## link-file元素
+
+也是project的子元素。
+
+描述了一个建立软链接的行为。
+
+## remove-project
+
+这个用得少。
+
+## include元素
+
+这个就是包含其他的xml文件。就一个name属性。描述xml文件的位置。
 
 
 
@@ -272,3 +464,12 @@ https://www.jianshu.com/p/9c57696165f3
 6、repo: manifest.xml: What does the fetch=“..” mean?
 
 https://stackoverflow.com/questions/18251358/repo-manifest-xml-what-does-the-fetch-mean
+
+7、Android源代码仓库及其管理工具Repo分析
+
+https://blog.csdn.net/Luoshengyang/article/details/18195205
+
+8、Android中Repo 常用命令参考
+
+https://www.jianshu.com/p/9e6097093854
+

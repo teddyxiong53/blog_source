@@ -17,6 +17,11 @@ NDK的语言基础是Java的JNI特性。JNI是Java Native Interface的缩写。
 # 1. ndk的安装
 ndk的安装，你可以打开SDK目录下的`SDK Manager.exe`来安装ndk-bundle。
 然后就在Android Studio的`File--Project Structure--SDK Location--Android NDK location`来指定ndk bundle的路径。
+
+ERROR: No toolchains found in the NDK toolchains folder for ABI with prefix: mipsel-linux-android
+
+
+
 这样环境就准备好了。
 
 # 2. 建立基本工程

@@ -277,6 +277,146 @@ Invoke ". build/envsetup.sh" from your shell to add the following functions to y
 
 
 
+# 编译过程分析
+
+看main.mk文件。
+
+这个表示什么意思？RCS是一个很老的版本管理软件。
+
+现在相当于禁止这个的意思。
+
+```
+# this turns off the RCS / SCCS implicit rules of GNU Make
+% : RCS/%,v
+% : RCS/%
+```
+
+使用make编译，则编译的相关脚本在这个目录下。
+
+```
+BUILD_SYSTEM := $(TOPDIR)build/core
+```
+
+默认目标：
+
+```
+# This is the default target.  It must be the first declared target.
+.PHONY: droid
+DEFAULT_GOAL := droid
+$(DEFAULT_GOAL): droid_targets
+```
+
+默认会这样：
+
+```
+Running kati to generate build-aosp_x86_64.ninja.
+```
+
+这个ninja文件会有几百M。
+
+整个main.mk，都被这个变量判断包含了。
+
+```
+	Line 100: ifndef KATI
+	Line 108: else # KATI
+	Line 1136: endif # KATI
+```
+
+默认不会去编译模拟器。
+
+```
+ifndef BUILD_EMULATOR
+  # Emulator binaries are now provided under prebuilts/android-emulator/
+  BUILD_EMULATOR := false
+endif
+```
+
+jack是用来编译java的。
+
+```
+#
+# -----------------------------------------------------------------
+# Install and start Jack server
+-include $(TOPDIR)prebuilts/sdk/tools/jack_server_setup.mk
+```
+
+是不是要编译sdk。
+
+```
+is_sdk_build :=
+
+ifneq ($(filter sdk win_sdk sdk_addon,$(MAKECMDGOALS)),)
+is_sdk_build := true
+endif
+```
+
+
+
+```
+FULL_BUILD := true
+```
+
+包含所有的Makefile。
+
+```
+#
+# Include all of the makefiles in the system
+#
+
+subdir_makefiles := $(SOONG_ANDROID_MK) $(call first-makefiles-under,$(TOP))
+
+$(foreach mk,$(subdir_makefiles),$(info including $(mk) ...)$(eval include $(mk)))
+
+```
+
+总的文件，是在aosp/out/soong/Android-aosp_x86_64.mk里。
+
+这里面可以看到这样的，这就是要编译的模块了。
+
+```
+	Line 302: LOCAL_PATH := hardware/libhardware/modules/audio
+	Line 320: LOCAL_PATH := hardware/libhardware/modules/audio
+	Line 338: LOCAL_PATH := hardware/libhardware/modules/audio
+	Line 356: LOCAL_PATH := hardware/libhardware/modules/audio
+	Line 374: LOCAL_PATH := bionic/benchmarks
+	Line 391: LOCAL_PATH := bionic/benchmarks
+	Line 409: LOCAL_PATH := bionic/tests
+	Line 426: LOCAL_PATH := bionic/tests
+	Line 443: LOCAL_PATH := bionic/tests
+```
+
+
+
+# 编译调试单个模块
+
+例如，我们在Launcher2的onCreate里加了一句打印，想把这个改动在整机上进行测试。
+
+应该怎样操作呢？
+
+```
+mmm packages/apps/Launcher2
+```
+
+编译完会提示你install到哪个位置了。
+
+```
+out/target/product/generic_x86_64/data/app/LauncherRotationStressTest/LauncherRotationStressTest.apk
+```
+
+
+
+```
+adb remount
+adb shell rm system/priv-app/Launcher2/Launcher2.apk
+adb shell rm -r system/priv-app/Launcher2/arm
+adb push /home/lxf/Launcher2.apk system/priv-app/Launcher2
+adb reboot
+```
+
+
+
+
+
 # 参考资料
 
 1、Building Android for Qemu: A Step-by-Step Guide
@@ -294,3 +434,11 @@ https://www.cnblogs.com/wxishang1991/p/5680297.html
 4、
 
 https://source.android.com/source/downloading
+
+5、android framework之旅（三）编译调试单个模块
+
+https://www.jianshu.com/p/d758646cac80
+
+6、
+
+https://www.jianshu.com/p/6b2de1c4a1bc

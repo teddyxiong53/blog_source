@@ -5,10 +5,11 @@ tags:
 	 - 动态库
 ---
 以一个简单的例子来入手，分析动态库的编译和使用。
-# 1. 准备
+# 准备
 新建一个目录c-test。
 目录下新建一个main.c和一个f1.c。
 main.c
+
 ```
 extern void func1();
 
@@ -45,6 +46,7 @@ teddy@teddy-ubuntu:~/test/c-test$ ./a.out
 ```
 出错了，并不能找到libf1.so文件。
 因为Linux只会从指定路径下去找so文件。我现在也不想对系统进行改动。所以这样做：
+
 ```
 teddy@teddy-ubuntu:~/test/c-test$ export LD_LIBRARY_PATH=./:$LD_LIBRARY_PATH             
 teddy@teddy-ubuntu:~/test/c-test$ ./a.out 
@@ -54,7 +56,7 @@ func1
 
 上面我们就实现了动态库的编译和使用。
 
-# 2. 分析
+# 分析
 ldd命令：查看elf文件所链接到的动态库的情况。
 ```
 teddy@teddy-ubuntu:~/test/c-test$ ldd ./a.out 
@@ -197,6 +199,6 @@ _ITM_registerTMCloneTable
 _init
 ```
 
-# 3. 链接和装载的原理
+# 链接和装载的原理
 
 

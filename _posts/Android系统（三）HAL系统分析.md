@@ -40,9 +40,9 @@ Android系统里的hal可以分为下面6类：
 
 # hal主要存放的目录
 
-1、libhardware_legacy。之前的目录。采取了链接库模块的观念来进行架构的。
+1、libhardware_legacy。之前的目录。**采取了链接库模块的观念来进行架构的。**
 
-2、libhardware。新的 目录，采用HAL stub的观念来架构。
+2、libhardware。新的 目录，**采用HAL stub的观念来架构。**
 
 3、ril。是Radio接口层。
 
@@ -60,7 +60,11 @@ HAL层
 linux内核
 ```
 
-hal层把Android框架跟linux内核隔离开了。
+**hal层把Android框架跟linux内核隔离开了。**
+
+
+
+
 
 # 分析hal module架构
 
@@ -84,3 +88,114 @@ id.varient.so
 
 gralloc.msm7k.so
 
+hal层的通用结构，可以总结为“321”结构。
+
+3表示3个结构体。
+
+2表示2个常量。
+
+1表示1个函数。
+
+所有的硬件抽象模块都遵循321架构。在这个基础上进行扩展。
+
+3个结构体是：
+
+```
+硬件模块
+	
+硬件模块方法
+	被硬件模块包含。只有一个open方法。
+硬件设备
+```
+
+2个常量是：
+
+```
+#define HAL_MODULE_INFO_SYM HMI
+#define HAL_MODULE_INFO_SYM_AS_STR "HMI"
+```
+
+1个函数：
+
+```
+int hw_get_module(const char *id, const struct hw_module_t **module);
+```
+
+
+
+# led 的hal分析
+
+我们以led的为例子分析一下hal。
+
+led.h
+
+```
+struct led_module_t {
+	struct hw_module_t common;
+	int (*init_led)(struct led_control_device_t *dev);
+};
+
+struct led_control_device_t {
+	struct hw_device_t common;
+	int fd;
+	int (*set_on)(struct led_control_device_t *dev, int32_t led);
+	
+};
+#define LED_HARDWARE_MODULE_ID "led"
+static inline int led_control_open(const struct hw_module_t *module, struct led_control_device_t **device)
+{
+	return module->methods->open(module, LED_HARDWARE_MODULE_ID, (struct hw_device_t **)device);
+}
+```
+
+led.cpp
+
+```
+int led_device_open(const struct hw_module_t *module, const char *name, struct hw_device_t ** device)
+{
+	struct led_control_device_t *dev;
+	dev = (struct led_control_device_t *)malloc(sizeof(*dev));
+	memset(dev, 0, sizeof(*dev));
+	dev->common.tag = HARDWARE_DEVICE_TAG;
+	dev->common.version = 0;
+	dev->common.module = const_cast<struct hw_module_t *>(module);
+	dev->common.close = led_device_close;
+	
+	dev->set_on = led_on;
+	dev->fd = open("/dev/led-test", O_RDWR);
+	return 0;
+}
+
+struct hw_module_methods_t led_module_methods = {
+	.open = led_device_open
+};
+const struct led_module_t HAL_MODULE_INFO_SYM = {
+	common: {
+		tag: HARDWARE_MODULE_TAG,
+		version_major: 1,
+		version_minor: 0,
+		id: LED_HARDWARE_MODULE_ID,
+		name: "simple led stub",
+		author: "xhl",
+		methods: &led_module_methods,
+	}
+};
+```
+
+
+
+上层调用
+
+这个的查看，就以SoundTrigger的为例来看吧。
+
+hal层在：aosp\hardware\libhardware\modules\soundtrigger
+
+上层在：Z:\work3\aosp\frameworks\base\core\jni\android_hardware_SoundTrigger.cpp
+
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/flappy_boy/article/details/81150290?depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2&utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2

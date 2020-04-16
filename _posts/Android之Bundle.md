@@ -11,3 +11,12 @@ tags:
 
 2、是一个final类。
 
+主要用于在不同的Activity之间传递数据。
+
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/jason0539/article/details/9570601
