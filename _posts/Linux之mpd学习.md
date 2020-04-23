@@ -253,7 +253,10 @@ stats
 toggle
 	播放暂停切换。
 volume -20
-
+	音量减20
+volume 50 
+	音量设置为50，不带加减号，则表示为目标值，而不是偏移量。
+	
 ```
 
 依赖的环境变量：
@@ -513,6 +516,277 @@ audio_output {
         mixer_type      "software"         
 }                                          
 ```
+
+
+
+# 用库函数来进行播放控制
+
+当前是使用mpc命令的方式进行控制的。
+
+这种方式有几个问题：
+
+1、效率低。
+
+2、处理其实也并不方便，尤其是在获取一些播放信息的时候，解析字符串反而麻烦。而且不够健壮。
+
+所以打算用库函数的方式来做。
+
+对应的库是libmpdclient。在buildroot里有带。
+
+先跑一下test/main.c的。看看运行效果。可以符合我的预期，就按照这个文件来改。
+
+这个库的变化还比较大。
+
+既然当前buildroot里默认带的是2.10的，那就以这个版本为准进行分析。
+
+src/example.c也值得分析一下。而且这个比test那个更好些。
+
+
+
+client.h这个是总的头文件，把其他头文件都包含在里面了。我们编程的时候，只需要包含这个头文件就好了。
+
+```
+Use mpd/client.h instead.
+```
+
+
+
+## 主要的头文件
+
+```
+async.h
+	异步操作接口。
+audio_format.h
+	里面就一个结构体。
+	struct mpd_audio_format 
+		3个成员：采样率，格式，通道数。
+capabilities.h
+	一些send和recv函数。
+client.h
+	总头文件。
+compiler.h
+	定义了一些编译器相关的宏。
+connection.h
+	声明了一些mpd_connection_xx函数。
+database.h
+	一些send和recv函数。
+directory.h
+	一些mpd_directory_xx函数。
+	
+status.h
+	获取mpd的运行状态。
+	
+```
+
+
+
+## 主要的结构体
+
+```
+struct mpd_settings
+	表示一个mpd服务器的信息。
+	4个成员：
+	host
+	port
+	password
+	timeout
+
+struct mpd_pair 
+	这个是键值对，表示从mpd收到的键值对。
+	
+struct mpd_connection 
+	这个是最重要的结构体。包含内容也稍微多点。
+	struct mpd_settings
+		服务器配置。
+	struct mpd_error_info error;
+		最近的一个错误。
+	struct mpd_async *async;
+		这个是连接的backend。
+	struct timeval timeout;
+		这个是所有命令的超时时间。
+		如果mpd在这个时间内没有回复，则认为连接断开了。
+	struct mpd_parser *parser;
+		这个是用来解析mpd返回的内容的。
+	bool receiving;
+		表示是否正在接收mpd的返回内容。
+	bool sending_command_list;
+		是否正在进行发送命令。
+	bool sending_command_list_ok;
+		是否在用这个标志进行发送。
+	bool discrete_finished;
+		这个还需要进一步理解。
+	char *request;
+```
+
+
+
+```
+struct mpd_async 
+	表示跟mpd通信的后端。
+	4个成员。
+	int fd
+		这个是跟mpd通信的一个tcp socket。
+	struct mpd_error_info error;
+		
+	struct mpd_buffer input;
+		
+	struct mpd_buffer output;
+	
+struct mpd_buffer
+	这个3个成员。
+	read/write index
+	char buffer[4096]
+	
+```
+
+如果指定host为NULL，那么就表示进行本地的mpd连接件。那么就退而使用本地socket。
+
+```
+#define DEFAULT_SOCKET "/var/run/mpd/socket"
+```
+
+不过我当前的配置文件里有：
+
+```
+bind_to_address         "/var/lib/mpd/socket"
+```
+
+io机制是用的select。
+
+跟mpd的通信协议是基于字符串的。
+
+连上来之后，有一个欢迎信息。
+
+```
+#define MPD_WELCOME_MESSAGE	"OK MPD "
+```
+
+然后是检查密码。
+
+
+
+```
+enum mpd_state 
+	mpd播放暂停。
+	有4个值。
+	unknown
+	stop
+	play
+	pause
+```
+
+
+
+## 主要的接口
+
+连接相关
+
+```
+
+mpd_connection_new(NULL, 0, 30000)
+	建立连接。
+	参数1：是主机名。NULL表示本机。
+	参数2：端口号。0表示使用默认。
+	参数3：超时时间。ms为单位。
+mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS
+	判断是否有错误。
+mpd_connection_get_error_message(conn)
+	获取错误信心。返回字符串。
+mpd_connection_free(conn)
+	释放连接。
+```
+
+状态相关
+
+```
+status = mpd_run_status(conn);
+	获取状态。
+mpd_status_free(status);
+	处理完后要释放掉。
+	里面还有指针。
+
+mpd_status_get_state(status) == MPD_STATE_PAUSE
+	获取播放状态。
+```
+
+
+
+文档在这：https://www.musicpd.org/doc/libmpdclient/index.html
+
+
+
+一切操作的前提，是跟mpd建立一个mpd_connection连接。
+
+所以很多函数的第一个参数，都是mpd_connection指针。
+
+
+
+尽量基于同步机制来做。这样会比较简单。
+
+mpd_run_status 这个相当于把发送和接收合并成一个函数了。就用这个就好了。
+
+```
+struct mpd_status *
+mpd_run_status(struct mpd_connection *connection)
+{
+	return mpd_run_check(connection) && mpd_send_status(connection)
+		? mpd_recv_status(connection)
+		: NULL;
+}
+```
+
+总体风格就是这样，mpd_run_xx相当于mpd_send_xx + mpd_recv_xx。
+
+我们就只使用mpd_run_xx函数就可以了。
+
+
+
+## player.h
+
+这个头文件是我们需要重点关注的。
+
+这里面的run函数有：
+
+```
+mpd_run_current_song
+	获取当前歌曲信息。
+mpd_run_play
+	这个是播放。
+mpd_run_play_pos
+	这个是从指定的位置处开始播放。
+mpd_run_play_id
+	这个是指定歌曲id进行播放。
+mpd_run_stop
+	停止播放。
+mpd_run_toggle_pause
+	播放暂停切换。
+mpd_run_pause
+	暂停。
+mpd_run_next
+mpd_run_previous
+mpd_run_seek_pos
+mpd_run_seek_id
+```
+
+
+
+要获取当前的播放信息，还是需要mpd_song和mpd_status这2个一起组合得到。
+
+mpd_song里面都是静态的信息，没有动态信息。就是歌手、专辑、时长这些信息。
+
+
+
+写到后面，我发现libmpdclient里，缺少了mpc代码里不少的东西。
+
+例如对当前歌曲进行seek操作。是对应seekcur这个命令，而这个命令在libmpdclient里没有。
+
+我发现，自己写，可能短时间内健壮性比不上mpc命令的方式。
+
+所以，还是先用命令来的方式来做吧。
+
+mpc命令也并不是效率很低。
+
+
 
 
 

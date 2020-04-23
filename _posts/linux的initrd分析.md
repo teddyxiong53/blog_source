@@ -25,11 +25,11 @@ tags:
 
 2、livecd必备。
 
-3、制作Linux usb启动盘必须适应initrd。
+3、制作Linux usb启动盘必须使用initrd。
 
 
 
-从本质上来说，就是为了应对存储介质的多样性和不确定性。
+**从本质上来说，就是为了应对存储介质的多样性和不确定性。**
 
 
 
@@ -37,13 +37,13 @@ initramfs从内核2.5版本才出现。比initrd要晚。
 
 所以initramfs技术上肯定是有所进步的，不然它的出现就没有意义了。
 
-initramfs的根本上的不同，就是它跟内核被打包成一个文件了。
+**initramfs的根本上的不同，就是它跟内核被打包成一个文件了。**
 
 该cpio格式的文件被链接进了内核中特殊的数据段.init.ramfs上，其中全局变量`__initramfs_start和__initramfs_end`分别指向这个数据段的起始地址和结束地址。内核启动时会对.init.ramfs段中的数据进行解压，然后使用它作为临时的根文件系统。
 
 
 
-linux对所有文件的读写都会在内存里做缓存，这样效率会高很多。
+**linux对所有文件的读写都会在内存里做缓存，这样效率会高很多。**
 ramfs直接利用了linux内核的高速缓存机制，做成一个大小可以动态变化的基于内存的文件系统。ramfs工作在vfs层，不能被格式化，可以创建多个，默认情况下，ramfs最多用到系统内存的一半。可以在编译内核的时候修改。
 
 rootfs是一个特定的ramfs实例，始终存在于系统中，是系统的根。
@@ -81,7 +81,7 @@ initrd利用ramdisk技术，把内存的一部分实现为/dev/ram设备。然�
 
 2、文件系统上的差异。
 
-initrd，用ext2格式的文件系统。
+**initrd，用ext2格式的文件系统。**
 
 initramfs，使用kernel直接支持的rootfs格式（有这种格式？）的文件系统。
 
@@ -117,8 +117,66 @@ CONFIG_INITRAMFS_SOURCE="/path/to/rootfs/"
 
 
 
+
+
+```
+#define INITRD_MINOR 250
+```
+
+```
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_INITRAMFS_SOURCE=""
+CONFIG_RD_GZIP=y
+```
+
+```
+obj-$(CONFIG_BLK_DEV_INITRD)   += initramfs.o
+obj-y                          += noinitramfs.o //这个里面就一个函数default_rootfs
+```
+
+
+
+boot分区自带recovery mode的ramdisk;
+
+system分区包含了Android系统的rootfs;
+
+启动中，如何选择加载boot分区的ramdisk还是system分区的rootfs呢？
+答案是由kernel的命令行参数skip_initramfs来决定。
+
+正常启动的时候，skip_initramfs这个是设置了的。
+
+linux调用populate_rootf**s默认会并加载boot分区自带的ramdisk**（recovery），
+
+但如果do_skip_initramfs被设置为1，则会调用default_rootfs生成一个极小的rootfs：
+
+```
+static int __init populate_rootfs(void)
+{
+	char *err;
+
+	if (do_skip_initramfs) {
+		if (initrd_start)
+			free_initrd();
+		return default_rootfs();//生成一个很小的rootfs。
+	}
+```
+
+default_rootfs 这个函数很简单，就是做了三件事情：
+
+```
+1、创建目录/dev。权限755
+2、创建节点/dev/console。
+3、创建目录/root。权限700
+```
+
+
+
 参考资料
 
 1、《Linux启动过程分析》之区别Initramfs与initrd
 
 https://blog.csdn.net/tankai19880619/article/details/16885615
+
+2、安卓8 Android O 进入recovery判断流程
+
+https://blog.csdn.net/shangyexin/article/details/86565711

@@ -34,3 +34,20 @@ tags:
 
 就是阿拉伯数字的顺序了。
 
+pure_initcall的调用有：
+
+```
+ipc_ns_init     ipc/shm.c       /^pure_initcall(ipc_ns_init);$/;"       v
+jit_init        net/socket.c    /^pure_initcall(jit_init);$/;"  v
+net_ns_init     net/core/net_namespace.c        /^pure_initcall(net_ns_init);$/;"       v
+rockchip_soc_id_init    drivers/soc/rockchip/rockchip-cpuinfo.c /^pure_initcall(rockchip_soc_id_init);$/;"      v
+```
+
+core_initcall
+
+这个就比较多了。kernel下，driver下。
+
+```
+grep -nwr "core_initcall" ./tags |grep kernel
+```
+

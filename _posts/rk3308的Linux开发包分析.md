@@ -728,6 +728,97 @@ CONFIG_EFI_PARTITION_ENTRIES_NUMBERS
 
 CONFIG_BAUDRATE
 
+# uboot启动命令分析
+
+```
+run distro_bootcmd
+
+这个是在autoconf.mk里的：
+CONFIG_EXTRA_ENV_SETTINGS="ENV_MEM_LAYOUT_SETTINGS "partitions=" PARTS_DEFAULT ROCKCHIP_DEVICE_SETTINGS RKIMG_DET_BOOTDEV BOOTENV_SHARED_RKNAND BOOTENV"
+
+#include <config_distro_bootcmd.h>//这里是得到BOOTENV，放到下面展开。
+#define CONFIG_EXTRA_ENV_SETTINGS \
+	ENV_MEM_LAYOUT_SETTINGS \
+	"partitions=" PARTS_DEFAULT \
+	ROCKCHIP_DEVICE_SETTINGS \
+	RKIMG_DET_BOOTDEV \
+	BOOTENV_SHARED_RKNAND \
+	BOOTENV
+
+ENV_MEM_LAYOUT_SETTINGS这个展开是：
+
+	"scriptaddr=0x00500000\0" \
+	"pxefile_addr_r=0x00600000\0" \
+	"fdt_addr_r=0x01f00000\0" \
+	"kernel_addr_no_bl32_r=0x00280000\0" \
+	"kernel_addr_r=0x00680000\0" \
+	"kernel_addr_c=0x02480000\0" \
+	"ramdisk_addr_r=0x04000000\0"
+	
+PARTS_DEFAULT 这个展开是：
+"uuid_disk=${uuid_gpt_disk};" \
+	"name=loader1,start=32K,size=4000K,uuid=${uuid_gpt_loader1};" \
+	"name=loader2,start=8MB,size=4MB,uuid=${uuid_gpt_loader2};" \
+	"name=trust,size=4M,uuid=${uuid_gpt_atf};" \
+	"name=boot,size=112M,bootable,uuid=${uuid_gpt_boot};" \
+	"name=rootfs,size=-,uuid="ROOT_UUID
+代表的是默认的flash分区情况。
+
+ROCKCHIP_DEVICE_SETTINGS 这个展开是：
+"stdout=serial,vidconsole\0" \
+			"stderr=serial,vidconsole\0"
+
+RKIMG_DET_BOOTDEV 这个展开是：
+"rkimg_bootdev=" \
+	"if mmc dev 1 && rkimgtest mmc 1; then " \
+		"setenv devtype mmc; setenv devnum 1; echo Boot from SDcard;" \
+	"elif mmc dev 0; then " \
+		"setenv devtype mmc; setenv devnum 0;" \
+	"elif rknand dev 0; then " \
+		"setenv devtype rknand; setenv devnum 0;" \
+	"elif rksfc dev 0; then " \
+		"setenv devtype spinand; setenv devnum 0;" \
+	"elif rksfc dev 1; then " \
+		"setenv devtype spinor; setenv devnum 1;" \
+	"fi; \0"
+作用是依次检测不同的设备。
+
+	
+#define BOOTENV_SHARED_RKNAND	BOOTENV_SHARED_BLKDEV(rknand)
+这个展开是：
+
+rknand_boot=" \
+	\
+		"if rknand  dev 0; then " \
+			"setenv devtype " rknand "; " \
+			"run scan_dev_for_boot_part; " \
+		"fi\0"
+		
+
+BOOTENV 这个展开就比较多了。
+上面一部分，是对mmc等设备，跟rknand的展开结果类似。
+"boot_prefixes=/ /boot/\0" \
+	"boot_scripts=boot.scr.uimg boot.scr\0" \
+	"boot_script_dhcp=boot.scr.uimg\0" \
+"boot_extlinux="                                                  \  这个目前不会用。
+		"sysboot ${devtype} ${devnum}:${distro_bootpart} any "    \
+			"${scriptaddr} ${prefix}extlinux/extlinux.conf\0" \
+接下来的内容很多。
+最后一句是："run bootcmd_${target}; "                         \
+这个就是最后的启动。
+target 是nand、dhcp、pxe、mmc等词语。
+我们用的应该是bootcmd_rknand。
+
+
+内核压缩过，读取放在0x0248 0000处，解压到2.5M的位置运行。设备树放在31M的位置。
+设备树解析完之后就没有用，内存可以做其他用途，所以放的位置不用太纠结。
+Booting LZ4 kernel at 0x02480000(Uncompress to 280000) with fdt at 1f00000...
+
+
+```
+
+
+
 # 第一次烧录
 
 烧录后，从串口打印看，
@@ -831,4 +922,33 @@ function build_ota_ab_updateimg()
 不过打包指导文件都是rk3308-package-file-ota。
 
 我也不改这个机制了。直接在rk3308-package-file-ota这个文件上调整。
+
+
+
+# 蓝牙
+
+这样启动蓝牙就可以。
+
+```
+/usr/libexec/bluetooth/bluetoothd --compat -n -d&
+#sleep 1
+sdptool add A2SNK
+#sleep 1
+hciconfig hci0 up
+sleep 1
+hciconfig hci0 piscan
+sleep 1
+hciconfig hci0 class 0x240404
+#sleep 1
+#hciconfig hci0 name 'sayinfo_bt'
+#sleep 1
+hciconfig hci0 down
+#sleep 2
+hciconfig hci0 up
+#sleep 2
+bluealsa --profile=a2dp-sink & 
+sleep 1
+bluealsa-aplay --profile-a2dp 00:00:00:00:00:00 &
+
+```
 

@@ -1371,6 +1371,50 @@ snapcast
 
 
 
+# hook操作
+
+虽然说buildroot的package架构，已经可以满足绝大部分的需求，但是有时候还是不够有弹性。
+
+所以为了满足用户的定制化需求，buildroot提供了hook机制。
+
+可以让你在pre或者post某些action的时间节点上，做一些自己的操作。
+
+这些action包括：
+
+```
+download
+extract
+rsync
+patch
+configure
+build
+install
+install staging
+install target
+install images
+legal info
+```
+
+一个有11个action。
+
+你定义自己操作的规则是：
+
+```
+XXX_(PRE | POST)_<action>_HOOKS
+```
+
+例如，在解压后，进行一些操作。
+
+```
+define XXX_POST_EXTRACT_HOOKS
+	echo "xx"
+endef
+```
+
+
+
+# package的patch怎样生成
+
 
 
 参考资料
@@ -1404,3 +1448,7 @@ https://blog.csdn.net/qq_31811537/article/details/81069993
 8、
 
 http://wiki.t-firefly.com/zh_CN/Core-3308Y/buildroot_development.html
+
+9、
+
+https://hugh712.gitbooks.io/buildroot/content/hooks.html

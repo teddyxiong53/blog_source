@@ -100,3 +100,4 @@ kernel_init
 ​	do_basic_setup
 
 ​		do_initcalls：这个就是遍历这个初始化指针区域，一个个依次调用。
+

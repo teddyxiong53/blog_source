@@ -115,13 +115,13 @@ kmem和mem的对比
 
 **1、mem是物理内存的全镜像，可以用来访问物理内存。**
 
-2、kmem是从kernel的视角看到的虚拟内存的全镜像。可以用来访问kernel的内容。
+2、kmem是**从kernel的视角看到的虚拟内存的全镜像。可**以用来访问kernel的内容。
 
 
 
 用/dev/mem来mmap访问gpio，就是一种实现用户空间驱动的方法。
 
-用/dev/kmem，可以查看kernel里的变量，或者用来做rootkit。
+**用/dev/kmem，可以查看kernel里的变量，或者用来做rootkit。**
 
 
 

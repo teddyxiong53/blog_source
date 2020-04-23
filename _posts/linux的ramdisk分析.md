@@ -43,7 +43,7 @@ ramdisk在嵌入式系统上很常用。有这些优点：
 
 2、kernel把initrd转成一个正常的ram disk，释放initrd占用的内存。
 
-3、如果rootdev不是/dev/ram0，会迪欧用change_root。
+3、如果rootdev不是/dev/ram0，会调用change_root。
 
 4、rootdev挂载了。如果是/dev/ram0，initrd被挂载为root。
 

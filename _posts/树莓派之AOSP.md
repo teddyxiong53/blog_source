@@ -61,7 +61,7 @@ p4：剩余部分，作为data分区。ext4格式。
 用dd命令把镜像烧录到SD卡的对应分区里。
 
 ```
-cd out/target/product/rpi
+cd out/target/product/rpi3
 sudo dd if=system.img of=/dev/mmcblk0p2 bs=1M
 ```
 
@@ -81,6 +81,42 @@ cp out/target/product/rpi3/ramdisk.img /mymnt
 ```
 hdmi_group=2
 hdmi_mode=85
+```
+
+
+
+写一个copy_boot.sh脚本。
+
+```
+#!/bin/sh
+
+AOSP_DIR=/home/teddy/aosp-rpi3
+MNT_DIR=/mymnt
+FAT_DEV=/dev/sdc1
+
+umount $MNT_DIR
+mount $FAT_DEV $MNT_DIR
+mkdir -p $MNT_DIR/overlays
+
+
+
+
+
+
+sudo cp $AOSP_DIR/device/brcm/rpi3/boot/bootcode.bin      $MNT_DIR
+sudo cp $AOSP_DIR/device/brcm/rpi3/boot/cmdline.txt      $MNT_DIR
+sudo cp $AOSP_DIR/device/brcm/rpi3/boot/config.txt      $MNT_DIR
+sudo cp $AOSP_DIR/device/brcm/rpi3/boot/fixup.dat      $MNT_DIR
+sudo cp $AOSP_DIR/device/brcm/rpi3/boot/start.elf      $MNT_DIR
+
+
+sudo cp $AOSP_DIR/kernel/rpi/arch/arm/boot/zImage    $MNT_DIR
+sudo cp $AOSP_DIR/kernel/rpi/arch/arm/boot/dts/bcm2710-rpi-3-b.dtb   $MNT_DIR
+sudo cp $AOSP_DIR/kernel/rpi/arch/arm/boot/dts/overlays/vc4-kms-v3d.dtbo  $MNT_DIR/overlays
+sudo cp $AOSP_DIR/out/target/product/rpi3/ramdisk.img    $MNT_DIR
+
+# umount $MNT_DIR
+
 ```
 
 
@@ -140,9 +176,106 @@ repo sync -f -j4
  done  
 ```
 
+使用清华源，还是有很多的错误。算了。我还是切换到谷歌源，慢慢下。
+
+
+
+# android-rpi
+
+对应url：https://github.com/android-rpi
+
+来自于android-rpi这个项目下的project有3个：
+
+```
+hardware/rpi
+external/mesa3d
+external/drm_gralloc
+```
+
+
+
+# tab-pi
+
+代码：https://github.com/tab-pi
+
+
+
+来自这个项目的project有：
+
+```
+kernel/rpi 这个也是重点。
+device/brcm/rpi3  这个是重点。
+vendor/tab-pi 
+frameworks/native
+frameworks/base
+hardware/broadcom/libbt
+```
+
+
+
+看看device/brcm/rpi3目录。这个是新增自己产品的方法的一个参考。
+
+```
+hlxiong@hlxiong-VirtualBox:~/work3/aosp-rpi3/device/brcm/rpi3$ tree -L 1
+.
+├── AndroidProducts.mk
+├── audio_policy_configuration.xml
+├── bluetooth
+├── BoardConfig.mk
+├── boot
+├── firmware
+├── fstab.rpi3
+├── Generic.kl
+├── init.rpi3.rc
+├── init.usb.rc
+├── overlay
+├── README.md
+├── rpi3_core_hardware.xml
+├── rpi3.mk
+├── sepolicy
+├── system.prop
+├── ueventd.rpi3.rc
+└── vendorsetup.sh 这个下面新增了3个选项，在lunch的时候可以看到。add_lunch_combo rpi3-eng 这样。
+```
+
+
+
+# 运行测试
+
+按照上面的说明，把4个分区都写入到SD卡。修改config.txt的参数。就可以正常启动了。
+
+鼠标键盘都是正常的。
+
+需要注意的是：
+
+内核的是需要自己手动编译的，上面也有写了。
+
+
+
+看看树莓派的kernel，相比于标准的kernel代码，改动了什么。
+
+这个是自动挂载U盘。在fstab里。
+
+```
+/devices/platform/soc/*.usb/usb*     auto   auto      defaults   
+```
+
+
+
+这个下面就一个脚本，就是编译kernel的命令在里面，怎样才能调用到呢？
+
+```
+<project path="vendor/tab-pi" name="vendor_tab-pi" revision="nougat" remote="tab-pi"/>
+```
+
+
+
+framework native，也是用的tab-pi修改的。这个改了些什么？
+
 
 
 参考资料
 
-1、
+1、[ROM] [Testing] Tab-Pi | AOSP/Android TV for Raspberry Pi 3 android-7.1.2_r17
 
+https://forum.xda-developers.com/raspberry-pi/development/rom-tab-pi-aosp-android-tv-raspberry-pi-t3593506
