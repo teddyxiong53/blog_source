@@ -6,7 +6,19 @@ tags:
 
 ---
 
+1
 
+这个视频讲得很清楚了：
+
+https://www.bilibili.com/video/BV11s411V7Dt?from=search&seid=8994910588243535073
+
+这个总结一些口诀，也不错。
+
+https://www.bilibili.com/video/BV1ZJ411y7Te/?spm_id_from=333.788.videocard.0
+
+这个讲了多种装饰器，也讲得好。讲到了functools.wraps出现的原因。
+
+https://www.bilibili.com/video/BV1Wa4y1x7Kk?from=search&seid=8994910588243535073
 
 # 1. 什么是装饰器
 
@@ -68,13 +80,13 @@ Python支持一种名叫函数闭包的特性。英语叫做func_closure。
 
 在非全局作用域定义的inner函数，它会记得它的外层的命名空间的样子。
 
-闭包的存在意义，就是为了实现装饰器的。
+**闭包的存在意义，就是为了实现装饰器的。**
 
 好，到这里，我们可以给装饰器一个明确的定义了。
 
 1、装饰器是一个函数。
 
-2、特点是：用函数名作为参数输入。返回的也是一个函数名。
+2、特点是：**用函数名作为参数输入。返回的也是一个函数名。**
 
 我们先写一个简单的装饰器。
 
@@ -193,7 +205,7 @@ def add(a, b):
 
 
 
-函数装饰函数
+## 函数装饰函数
 
 ```
 def myWrapper(func):
@@ -209,7 +221,7 @@ def myadd(a, b):
 print myadd(1,2)
 ```
 
-函数装饰类
+## 函数装饰类
 
 相当于在构造函数之前执行。
 
@@ -231,7 +243,7 @@ f = Foo('xhl')
 f.func()
 ```
 
-类装饰函数。
+## 类装饰函数。
 
 ```
 class ShowFuncName():

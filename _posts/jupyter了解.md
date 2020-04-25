@@ -20,6 +20,16 @@ tags:
 
 
 
+在我的阿里云服务器上安装一个看看。
+
+```
+pip3 install jupyter
+```
+
+怎样进行访问呢？
+
+
+
 参考资料
 
 1、数据分析为什么常用Jupyter而不是直接使用Python脚本或Excel?
