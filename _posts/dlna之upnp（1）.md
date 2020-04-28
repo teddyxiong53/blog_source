@@ -8,6 +8,10 @@ tags:
 
 1
 
+upnp是Universal Plug and Play的缩写。表示通用即插即用。
+
+
+
 upnp是一种数字网络中间件技术。
 
 建立在tcp和http之上。
@@ -22,9 +26,14 @@ upnp是一种数字网络中间件技术。
 
 它的最大的特点是：它的消息是通过http协议来发送，消息内容都是用xml包装的。
 
-这就让我们可以通过浏览器来访问和控制支持upnp的设备。
+**这就让我们可以通过浏览器来访问和控制支持upnp的设备。**
 
 upnp特别适用于嵌入式网络领域。
+
+UPnP体系允许PC间的点对点连接、网际互连和无线设备。它是一种基于TCP/IP、UDP和HTTP的分布式、开放体系。
+
+UPnP协议无任何身份验证机制，并且现在大部分路由器都默认开启了UPnP服务。大量的设备可利用UPnP进行配置修改。
+通过UPnP协议在内网可以干很多事情如：端口转换，动态DNS，查看设备状态等。
 
 
 
@@ -102,7 +111,7 @@ upnp的工作过程分为6步：
 事件
 ```
 
-
+![1587955360346](../images/random_name/1587955360346.png)
 
 # ssdp协议
 
@@ -113,6 +122,10 @@ Simple Service Discovery Protocol。简单服务发现协议。
 控制点是如何搜索设备，设备如何回应搜索。
 
 ssdp借用了http1.1的部分header。
+
+SSDP 是应用层协议，使用 HTTPU 和 HTTPMU 规范，基于 UDP 端口进行通信。
+
+SSDP 使用一个固定的组播地址 `239.255.255.250` 和 UDP 端口号 `1900` 来监听其他设备的请求。
 
 但是不同的是，ssdp是基于udp的，而且只有header，没有body。也被叫做httpu。
 
@@ -245,6 +258,217 @@ Commands:
 
 libupnp。这个库是用来实现媒体播放（DLAN）或者NAT地址转换（UPnP IGD）。智能手机上的应用程序可用这些功能播放媒体文件或者利用用户的家庭网络连接到其他的设备。
 
+
+
+# miranda
+
+Miranda是kali Linux提供的一个python写的upnp客户端工具。
+
+```
+git clone https://github.com/isaacfife/miranda
+```
+
+上面这个测试不能正常运行。
+
+```
+git clone https://github.com/0x90/miranda-upnp
+```
+
+这个是可以正常运行的。
+
+```
+teddy@thinkpad:~/work/dlna/miranda-upnp/src$ python ./miranda.py 
+
+Miranda v1.3
+The interactive UPnP client
+Craig Heffner, http://www.devttys0.com
+```
+
+
+
+搭建一个最简单的测试环境。
+
+我在我的笔记本上安装minidlna。安装后会自动启动。
+
+然后打开Miranda。搜索：
+
+```
+upnp> msearch 
+
+Entering discovery mode for 'upnp:rootdevice', Ctl+C to stop...
+
+****************************************************************
+SSDP reply message from 172.16.2.168:8200
+XML file is located at http://172.16.2.168:8200/rootDesc.xml
+Device is running Ubuntu DLNADOC/1.50 UPnP/1.0 MiniDLNA/1.1.5
+****************************************************************
+```
+
+```
+upnp> host list
+
+        [0] 172.16.2.168:8200
+```
+
+minidlna的信息，可以通过：http://172.16.2.168:8200/ 这样的地址来查看。
+
+
+
+# dlna server
+
+可以在Linux上跑的dlna服务器软件有哪些？
+
+- [Moode](https://en.wikipedia.org/w/index.php?title=Moode&action=edit&redlink=1), a music-centric DLNA server for Linux running on Raspberry Pi.
+
+minidlna。
+
+- [ReadyMedia](https://en.wikipedia.org/w/index.php?title=ReadyMedia&action=edit&redlink=1) (formerly known as MiniDLNA) is a **simple media server software**, with the aim of being fully compliant with DLNA/UPnP-AV clients. It is developed by a Netgear employee for the **ReadyNAS** product line.
+
+
+
+ReadyNAS 是一个NAS硬件产品，跟群晖那些差不多。
+
+是netgear公司的产品。
+
+
+
+vlc能不能作为一个dlna client，来流量dlna server上的文件呢？
+
+可以的。只要点击视图-- 播放列表 -- 左边的树状结构拉到下面，就可以看到upnp的选项了。
+
+但是实际测试，发现一直发现不了dlna server。
+
+所以放弃vlc的方式。
+
+另外安装kodi来做测试看看。
+
+```
+sudo apt-get install kodi
+```
+
+minidlna测试：
+
+    手机端安装BubbleUPnP，测试可以搜索到minidlna sever，播放音乐正常。
+
+
+
+现在gmrender工作并没有完全正常。
+
+所以需要找一个其他的renderer来验证一下。
+
+在这个页面里搜索renderer。
+
+https://en.wikipedia.org/wiki/List_of_UPnP_AV_media_servers_and_clients#Linux_2
+
+```
+upmpdcli, a free and open-source UPnP media renderer front end to MPD, the Music Player Daemon
+```
+
+upmpdcli这个不是正符合我的要求吗？
+
+试一下这个。
+
+这个在buildroot里默认也带了。
+
+
+
+
+
+# 分析代码
+
+```
+服务器：minidlna。C语言。
+客户端：miranda。python。
+手机客户端：bubble upnp。这个也就是一个renderer。
+渲染器：gmrender。C语言。
+```
+
+
+
+
+
+gmrender就是一个renderer。用来渲染媒体内容（包括视频，音频，图片），从一个upnp media server。
+
+UPnP A/V is a three-tier system, consisting of Servers, Renderers and Controllers. With an A/V UPnP controller you can instruct a UPnP A/V Renderer (such as GMediaRender) to play multimedia content (pictures, music tracks, radio broadcasts, movies, ..) available from a UPnP A/V Server.
+
+
+
+概念层次关系
+
+以gmrender为例。
+
+```
+struct upnp_device
+	这个是最上层的概念。
+	struct upnp_device_descriptor *upnp_device_descriptor;
+	ithread_mutex_t device_mutex;
+    UpnpDevice_Handle device_handle;
+    是对upnp_device_descriptor的简单包装。
+    加上一个锁和一个handler。
+    表示一种设备。可以具体到renderer设备。
+```
+
+
+
+```
+struct upnp_device_descriptor
+	这个就是描述一个renderer。当前音箱就是一个renderer。
+	它包括了3个服务：
+		传输服务
+		连接管理服务。
+		控制服务
+```
+
+```
+struct service
+	一个服务用一个service结构体来表示。
+	传输服务的为例：
+	id："urn:upnp-org:serviceId:AVTransport"
+	type："urn:schemas-upnp-org:service:AVTransport:1"
+	control_url："/upnp/control/rendertransport1"
+	event_url："/upnp/event/rendertransport1"
+	event的namespace："urn:schemas-upnp-org:metadata-1-0/AVT/"
+	
+	一个service有一个action列表。
+```
+
+```
+struct action
+	一个action用一个action结构体来描述。
+	一个action是一个键值对：
+	key是一个字符串。
+	value是一个回调函数。
+	例如这样：[TRANSPORT_CMD_PLAY] =                      {"Play", play},
+	回调函数传递的参数是action_event。
+	
+```
+
+```
+struct action_event
+	这个结构体有4个成员。
+	UpnpActionRequest *request;
+		这个是对libupnp里结构体的使用。
+	int status
+	struct service *service;
+	struct upnp_device *device;
+		这就是事件所属于的设备和服务的指针。
+```
+
+一个service还有一个argument_list。
+
+```
+struct argument
+	有3个成员。
+	name
+	方向：in/out
+	int statevar。这个怎么解释呢？也就是一个变量的id的意思吧。
+	
+	一个例子是这样：
+	{ "InstanceID", PARAM_DIR_IN, TRANSPORT_VAR_AAT_INSTANCE_ID },
+```
+
+
+
 # 参考资料
 
 1、Linux下UPnP sample分析
@@ -268,3 +492,35 @@ https://www.cnblogs.com/Shepherdzhao/p/7570632.html
 很多的缩写，这里讲得很清楚，很好。
 
 http://www.mikewootc.com/wiki/net/protocol/upnp_netpacket_example.html
+
+6、P2P 网络核心技术：UPnP 和 SSDP 协议
+
+https://zhuanlan.zhihu.com/p/40407669
+
+7、UPnP协议利用
+
+https://www.jianshu.com/p/bce3f4047a65
+
+8、
+
+http://www.h3c.com/cn/d_201206/922127_30005_0.htm
+
+9、
+
+https://www.ibm.com/developerworks/cn/linux/other/UPnP/part1/index.html
+
+10、List of UPnP AV media servers and clients
+
+https://en.wikipedia.org/wiki/List_of_UPnP_AV_media_servers_and_clients
+
+11、
+
+http://cn.wondershare.com/vlc/play-dlna-content-using-vlc.html
+
+12、minidlna配置
+
+https://blog.csdn.net/x4dailanfeng/article/details/51546346
+
+13、
+
+http://gmrender.nongnu.org/

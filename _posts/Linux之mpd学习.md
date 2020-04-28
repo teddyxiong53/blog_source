@@ -788,6 +788,182 @@ mpc命令也并不是效率很低。
 
 
 
+发现还是不能频繁大量调用mpc命令，这个命令是每次都建立socket连接，然后端口。
+
+而我使用gmrender来实现dlna播放功能，这个里面有大量频繁的查询操作，导致系统了有一大堆的处于timed wait状态的socket。这个很不好。
+
+所以我还是决定继续自己实现。
+
+
+
+测试发现一个问题，就是我当前针对不同的模式，mpd用了不同的配置文件，其实是可以共用一个配置文件的。
+
+mpd可以控制切换不同的输出通道的。
+
+mpd必须不要被我的进程频繁杀掉，没有这个必要，当前杀掉mpd，导致连接的socket断开。
+
+切换输出，是用这个命令：
+
+```
+{"toggleoutput", 1, -1,   0,    cmd_toggle_output, "<output # or name> [...]", "Toggle output(s)"},
+```
+
+配置文件里，把name指定为有规律的名字。
+
+```
+audio_output {
+    type            "fifo"
+    name            "output_snapfifo"
+    path            "/tmp/snapfifo"
+    format          "48000:16:2"
+    mixer_type      "software"
+}
+audio_output {
+    type        "alsa"
+    name        "output_alsa"
+    mixer_type      "software"
+}
+```
+
+其实是可以同时从多个通道进行输出的。
+
+```
+/ # mpc outputs                         
+Output 1 (output_snapfifo) is enabled   
+Output 2 (output_alsa) is enabled   
+
+/ # mpc toggleoutput output_alsa        
+Output 1 (output_snapfifo) is enabled   
+Output 2 (output_alsa) is disabled      
+```
+
+对应的函数是mpd_run_disable_output和mpd_run_enable_output。
+
+
+
+## 调试问题
+
+进来不用用send接口，用run接口。
+
+song的tag获取。
+
+```
+std::string MpdPlayer::getTag(const struct mpd_song *song, enum mpd_tag_type type)
+{
+    unsigned i = 0;
+	const char *value;
+	while ((value = mpd_song_get_tag(song, type, i++)) != NULL) {
+        return value;
+    }
+}
+```
+
+这样来获取。其他的方式，会内存错误。
+
+但是这个还是会导致内存错误。我先用一个string对象包装一下再返回。
+
+酷狗通过dlna传递过来的歌曲，获取不到title等tag信息。
+
+
+
+
+
+# mpd协议
+
+这个是在mpd代码的doc目录下的protocol.rst文件里。
+
+基于字符串行进行通信。字符串编码是UTF-8的。
+
+当前client连接到server，server回复。
+
+```
+OK MPD 0.12.2
+```
+
+后面的数字是当前mpd的版本号。
+
+如果参数包含空格，那么就用用双引号包裹起来。
+
+server回复的格式。
+
+```
+foo: bar
+OK
+```
+
+前面是一些键值对，最后是一个OK。
+
+也可以带上二进制数据。
+
+```
+foo: bar
+binary: 42
+<42 bytes data>
+OK
+```
+
+如果是出错信息。
+
+```
+ACK [error@command_listNum] {current_command} message_text
+```
+
+看一个交互的例子。
+
+client发给server。
+
+```
+command_list_begin
+volume 86
+play 10240
+status
+command_list_end
+```
+
+server回复给client。
+
+```
+ACK [50@1] {play} song doesn't exist: "10240"
+```
+
+表示错误码是50，命令索引为1（第0条是设置volume那条），对应就是“play 10240”这条命令。
+
+
+
+## command list
+
+上面的例子就是一个command list。
+
+command list是以`command_list_begin`或者`command_list_ok_begin`开头。
+
+以`command_list_end`结尾。
+
+是要把所有命令都读取了才一起执行的，而不是读取一条执行一条。
+
+返回的结果，是把所有的命令的返回拼接起来的。
+
+如果所有命令都成功，返回OK。
+
+如果有一条执行失败了，则后面的不再执行。直接返回。
+
+如果是以command_list_ok_begin开头的，那么成功的时候，返回的是list_OK，而不是OK。
+
+
+
+## 范围
+
+有些命令，例如delete命令，会指定一个范围。
+
+```
+delete start:end
+```
+
+## 过滤
+
+有些命令，例如find和searchadd，使用一个过滤规则。
+
+## tags
+
 
 
 参考资料
@@ -823,3 +999,7 @@ https://lmbj.net/blog/raspberry-pi-build-private-fm-radio/
 7、MPD
 
 https://wiki.gentoo.org/wiki/MPD
+
+8、mpd协议
+
+https://www.musicpd.org/doc/html/protocol.html

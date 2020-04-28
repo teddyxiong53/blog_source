@@ -1417,6 +1417,58 @@ endef
 
 
 
+# 添加一个user
+
+现在使用upmpdcli，这个需要一个upmpdcli的user。
+
+所以需要做文件系统的时候，把这个user添加进去。
+
+具体怎么操作呢？
+
+最简单的当然是自己在fs-overlay里加一个passwd文件。但是这个感觉不太好。会覆盖其他程序修改的。
+
+目前avahi添加了一个用户进去，看看怎么添加的。
+
+```
+avahi:x:1000:1000::/:/bin/false
+```
+
+看avahi的mk文件。里面有这么一句，感觉有点像。
+
+```
+define AVAHI_USERS
+	avahi -1 avahi -1 * - - -
+endef
+```
+
+在buildroot手册里搜索“users”。找到这个。
+
+```
+adding custom user accounts (using BR2_ROOTFS_USERS_TABLES)
+```
+
+
+
+实际上，在upmpdcli里，默认有加上这个。
+
+```
+define UPMPDCLI_USERS
+	upmpdcli -1 upmpdcli -1 * - - audio Upmpdcli MPD UPnP Renderer Front-End
+endef
+```
+
+但是为什么没有生效呢？
+
+大概是因为没有选配upmpdcli，而只是手动调用make进行了编译。
+
+应该是的。
+
+选配再看。
+
+
+
+
+
 参考资料
 
 1、HOWTO: Use BuildRoot to create a Linux image for QEMU
