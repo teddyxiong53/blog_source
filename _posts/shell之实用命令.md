@@ -198,3 +198,24 @@ curl http://members.3322.org/dyndns/getip
 amixer get Master Playback |grep % |grep Left | awk '{print $5}' | tr -cd "0-9"
 ```
 
+## 函数返回值
+
+return int部分----shell函数可以有返回值，但只能返回整数不能返回字符串
+
+要得到字符串，一般通过全局变量的方式来得到。
+
+
+
+## 用lsof查看端口是否被占用
+
+lsof -i:2335
+
+这样就可以查看2335端口是否被使用。如果没有使用，返回空 的，否则返回有内容。
+
+
+
+参考资料
+
+Linux Shell函数定义与调用
+
+<https://www.cnblogs.com/lsdb/p/10148177.html>
