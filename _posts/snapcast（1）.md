@@ -640,6 +640,8 @@ snapserver.conf里改成ogg的先。
 
 # 代码阅读
 
+server端开了3个socket，1780是http端口，1704是音频数据端口，1705是控制信息端口。
+
 ```
 ServerSettings	
    	HttpSettings http;
@@ -675,6 +677,40 @@ main函数分析：
 [stream]
 stream = pipe:///tmp/snapfifo?name=default
 [logging]
+```
+
+# 参数解析库
+
+参数解析是作者自己写的一个库。代码在这里：https://github.com/badaix/popl
+
+popl是Program Option Parser Library的意思。
+
+这个库，只有一个头文件。使用方便。
+
+支持跟getopt一样的解析原则。
+
+没有其他的依赖，只需要C++11支持。
+
+平台无关。
+
+自动创建帮助信息。
+
+这个代码写得非常漂亮，可以作为一个c++11的学习资料。
+
+OptionParser是主要的类。
+
+```
+Option
+	Value
+		Implicit
+		Switch
+```
+
+```
+OptionPrinter
+	ConsoleOptionPrinter
+	GroffOptionPrinter
+	BashCompletionOptionPrinter
 ```
 
 
@@ -975,6 +1011,163 @@ snapclien  672  712  root    9u      CHR             116,16      0t0  3129 /dev/
 所以这个就这样解决了。
 
 使用snapclient -s Loopback。这样更加灵活一点。
+
+# 二进制协议
+
+https://github.com/badaix/snapcast/blob/master/doc/binary_protocol.md
+
+每一个消息，都可以分为2个部分：
+
+1、基本信息（Base Message）。包括时间戳，消息类型，消息长度。
+
+2、消息内容。
+
+
+
+## client连接server过程
+
+1、client打开一个socket，连接到server的1704端口。
+
+2、client发送一个Hello消息。
+
+3、server发送Server Settings消息。
+
+4、server发送StreamTags消息。
+
+5、server发送Codec Header消息。client只有收到这个，才能开始播放。
+
+6、server发送Wire Chunk消息。这个就是音频数据块。
+
+7、一直通信，直到client断开。
+
+## 消息分类
+
+一共7种消息。
+
+```
+id == 0
+	Base消息。每次通信都要带上这个。
+id == 1
+	Codec Header消息。
+id == 2
+	Wire Chunk消息。
+id == 3
+	Server Settings消息。
+id == 4
+	Time消息。用来跟server同步时间。
+id == 5
+	Hello消息。client连接server时发送。
+id == 6
+	Stream Tags消息。关于流的信息。
+```
+
+
+
+Base消息
+
+```
+u16 type 0到6 。
+u16 id   
+u16 refersTo
+	这个是在Response的时候使用，就是标记是回复那个id的消息。
+s32 received.sec
+s32 received.usec
+	收到消息的时间。
+s32 sent.sec
+s32 sent.usec
+	发送时的时间。
+u32 size
+	后面跟的消息的长度。
+```
+
+Time消息
+
+```
+latency.sec
+latency.usec
+	server跟client的时间差。
+```
+
+
+
+
+
+# json rpc
+
+https://github.com/badaix/snapcast/blob/master/doc/json_rpc_api/v2_0_0.md
+
+snapcast可以通过1705端口上的json-rpc  api来进行控制。
+
+一个最简单的验证如下：
+
+```
+teddy@thinkpad:~$ telnet 192.168.0.105 1705
+Trying 192.168.0.105...
+Connected to 192.168.0.105.
+Escape character is '^]'.
+{"id":8,"jsonrpc":"2.0","method":"Server.GetRPCVersion"}
+{"id":8,"jsonrpc":"2.0","result":{"major":2,"minor":0,"patch":0}}
+```
+
+
+
+# 音量控制
+
+当前就是音量感觉非常大。
+
+音箱的系统音量此时并不大，但是snapclient播放的声音非常大。
+
+这个就导致了不协调，怎么解决？
+
+
+
+# snapdroid分析
+
+这个是Android客户端的代码。
+
+https://github.com/badaix/snapdroid
+
+看看怎么调节某个client的音量的。
+
+snapdroid也是作为一个client参与到系统中的。
+
+有一个RemoteControl类，就是封装了jsonrpc的。
+
+调节音量是：
+
+```
+    public void setVolume(Client client, int percent, boolean mute) {
+        try {
+            tcpClient.sendMessage(getVolumeRequest(client, percent, mute).toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+```
+
+是基于tcp，发送了一个jsonrpc调用。
+
+参考文档里，调节音量是这样的。
+
+```
+{"id":8,"jsonrpc":"2.0","method":"Client.SetVolume","params":{"id":"00:21:6a:7d:74:fc","volume":{"muted":false,"percent":74}}}
+```
+
+音箱在收到这个这个消息后，是如何操作的。
+
+本质上是修改了pcm数据，乘以了音量值。
+
+```
+template <typename T>
+    void adjustVolume(char* buffer, size_t count, double volume)
+    {
+        T* bufferT = (T*)buffer;
+        for (size_t n = 0; n < count; ++n)
+            bufferT[n] = endian::swap<T>(endian::swap<T>(bufferT[n]) * volume);
+    }
+```
+
+我当前音箱上，按键是修改系统音量，按道理应该影响不到这个。
 
 
 

@@ -17,13 +17,31 @@ tags:
 
 
 
+这个库设计的原则就是易于使用，有些接口会阻塞。
+
+例如MQTTClient_connect就会阻塞，如果在timeout时间内没有成功，则返回失败。这个timeout默认是30s。
+
+但是对于移动设备或者其他有图形界面的设备，在gui线程里阻塞会导致界面无法响应。
+
+这个对于用户体验是非常不好的。
+
+所以又增加了新的api，MQTTAsync。在MQTTAsync.c里实现。
+
+异步的方式，不会影响gui，但是增加了复杂性。
+
+对线程比较节省，使用了select的io多路复用。
+
+封装的接口是：Socket_getReadySocket。这个api是线程安全的。
+
+
+
 # 对外暴露的数据结构体
 
 1、MQTTClient
 
 这个就是void *的指针。类似一个handle的概念。
 
-对应的内部结构体是MQTTClients，这个是一个较大的结构体。
+**对应的内部结构体是MQTTClients，**这个是一个较大的结构体。
 
 2、MQTTClient_connectOptions
 

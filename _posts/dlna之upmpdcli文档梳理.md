@@ -117,7 +117,55 @@ upmpdcli支持gapless track transition。
 
 支持OpenHome服务。
 
+还实现了songcast协议。让音箱端可以作为一个songcast的sender或者receiver。
 
+提供了一个MediaServer接口。当前是用来访问外部的流服务，例如spotify。
+
+可以被安装在大多数的Linux系统上。在树莓派上用得很多。
+
+很多的针对音频领域的Linux发行版本，把upmpdcli作为默认的upnp Media Renderer。
+
+在很多商业设备上也有用。
+
+
+
+大部分的配置通过配置文件来设置，有些也可以通过环境变量或者命令行参数来设置。
+
+配置文件格式就是key-value对。
+
+配置文件内容较多，但是是分section的。
+
+还有一个图形界面的工具可以帮助你进行配置。
+
+
+
+# upmpdcli Media Renderer
+
+本节讨论renderer的其他方面的细节。
+
+默认upnp av和OpenHome接口都是打开的。
+
+只有OpenHome的ControlPoint可以共享同一个设备。
+
+upnp av如果多个ControlPoint控制同一个设备，则会导致混乱。
+
+
+
+# 音频格式
+
+upmpdcli支持的音频格式，就是mpd支持的音频格式，这几乎包括了所有的格式。
+
+upmpdcli会先检查一下，但是这个检查行为可以用参数关闭。
+
+mpd处理有些通过http传输的格式，有些问题。
+
+wav文件和aiff文件，尤其是格式多于16bit的。这个问题很多。
+
+具体的表现，取决于mpd的版本和插件（可以是ffmpeg、libaudiofile、libsndfile）。
+
+经常有这种情况，文件本地播放是好的，但是通过http播放就不行。
+
+raw pcm是另外一个特别情况。原因是pcm里不带音频的属性信息。
 
 
 
