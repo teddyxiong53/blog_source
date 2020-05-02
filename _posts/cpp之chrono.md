@@ -35,6 +35,19 @@ Period表示单位，默认是秒数。如果是1000，则表示1毫秒。表示
 
 Rep表示单位的个数，例如10秒，10分钟。
 
+ratio就是表示分数值的意思。
+
+```
+ratio<3600, 1>                hours
+ratio<60, 1>                    minutes
+ratio<1, 1>                      seconds
+ratio<1, 1000>               microseconds
+ratio<1, 1000000>         microseconds
+ratio<1, 1000000000>    nanosecons
+```
+
+
+
 预定义的值有：
 
 ```
@@ -47,7 +60,6 @@ typedef duration<long long, milli> milliseconds;    //毫秒
 typedef duration<long long> seconds;                //秒
 typedef duration<int, ratio<60> > minutes;          //分钟
 typedef duration<int, ratio<3600> > hours;          //小时
-
 ```
 
 看一个简单的例子。

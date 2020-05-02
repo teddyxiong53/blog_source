@@ -305,10 +305,6 @@ http://flask.pocoo.org/docs/1.0/
 
 
 
-
-
-
-
 http://brunorocha.org/python/flask/flasgger-api-playground-with-flask-and-swagger-ui.html
 
 
