@@ -5,6 +5,12 @@ tags:
 	- Python
 ---
 
+有两组函数：
+
+1、loads和dumps。loads是把json字符串转成dict。dumps是把dict转成字符串。
+
+2、load和dump。这个是操作文件。dump就是写入到文件。第一个参数是一个fp。
+
 
 
 使用上很简单，就2个函数，一个把python对象编码为json字符串，一个把json字符串解码为python对象。

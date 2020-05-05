@@ -76,3 +76,23 @@ check_sys(){
 	/etc/init.d/ssr start
 ```
 
+颜色提示
+
+```
+Error="${Red_font_prefix}[错误]${Font_color_suffix}"
+```
+
+Red_font_prefix是：
+
+```
+Red_font_prefix="\033[31m" 
+```
+
+Font_color_suffix，每次改了颜色后，都要马上恢复。
+
+```
+Font_color_suffix="\033[0m"
+```
+
+有两种颜色，红色表示错误，绿色表示info和tips（提示）。
+

@@ -60,3 +60,7 @@ http://python.jobbole.com/85685/
 2、Python的方法解析顺序(MRO)
 
 https://hanjianwei.com/2013/07/25/python-mro/
+
+3、python基本数据结构dict继承自object，但为什么又是MutableMapping的子类
+
+<https://segmentfault.com/q/1010000016983193>

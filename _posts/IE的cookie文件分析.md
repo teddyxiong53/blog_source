@@ -7,6 +7,7 @@ tags:
 ---
 IE的cookie文件在`C:\Documents and Settings\Administrator\Cookies`（当前以Administrator身份登录）目录下。cookie文件实质是txt文件，但是换行符是unix风格的。
 下面是我随意打开的一个cookie文件的内容：
+
 ```
 __utma
 76839426.179418388.1466521867.1466521867.1466521867.1
@@ -37,4 +38,12 @@ firefox.com.cn/
 
 
 
+参考资料
 
+1、Http协议中Cookie详细介绍
+
+<https://www.cnblogs.com/bq-med/p/8603664.html>
+
+2、
+
+<https://blog.csdn.net/u013982161/article/details/55005542>

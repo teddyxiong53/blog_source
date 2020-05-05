@@ -23,7 +23,7 @@ Python提供了thread local对象用来存储thread safe的数据。在多线程
 
 thread local对象在有些情况下，还是不能保证安全，而且在python web开发中，很多使用了协程。
 
-所以flask开发了自己的Local。优先使用greenlet的线程，如果没有，则使用线程id。
+**所以flask开发了自己的Local。优先使用greenlet的线程，如果没有，则使用线程id。**
 
 是这么个处理逻辑。
 

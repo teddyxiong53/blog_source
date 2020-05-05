@@ -24,3 +24,8 @@ tags:
 
 
 
+参考资料
+
+1、如何在 Linux 或者 UNIX 下调试 Bash Shell 脚本
+
+<https://linux.cn/article-9302-1.html>

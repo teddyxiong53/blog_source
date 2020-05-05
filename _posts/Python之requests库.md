@@ -205,17 +205,21 @@ Out[14]: {'User-Agent': 'python-requests/2.18.4', 'Accept-Encoding': 'gzip, defl
 
 
 
-# https证书
 
 
+# 代码阅读
 
-# stream处理
+运行一下测试程序看看。
 
-stream下载
+```
+python3 -m pytest test_utils.py
+```
 
-stream上传
+单独测试一个函数：
 
-
+```
+python3 -m pytest test_utils.py::test_unicode_is_ascii
+```
 
 
 

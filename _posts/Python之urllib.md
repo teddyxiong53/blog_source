@@ -8,6 +8,16 @@ tags:
 
 
 
+在python2里，urllib和urllib2是不能相互替代的，是共存的。简单说，urllib2是一个补丁。
+
+在python3里，urllib2被合入到urllib了。
+
+而urllib3，在py2和py3里都有的，urllib3和urllib/urllib2的区别是：urllib3是一个第三方的库。而不是一个系统标准库。
+
+如果你使用python3，那么你只需要记住urllib这一个库就好了。其他的不用管。
+
+
+
 urllib和urllib2的区别
 
 1、urllib和urllib2都是接受url参数的。urllib2还可以接受Request类的参数。
@@ -102,3 +112,8 @@ https://docs.python.org/3/library/urllib.html
 2、urllib
 
 https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/001432688314740a0aed473a39f47b09c8c7274c9ab6aee000
+
+3、Python urllib、urllib2、urllib3用法及区别
+
+<https://blog.csdn.net/jiduochou963/article/details/87564467>
+

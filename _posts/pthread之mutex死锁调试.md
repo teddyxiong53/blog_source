@@ -49,6 +49,12 @@ gdb ./xx -x ./deadlock_gdb_debug.txt
 
 
 
+还有一种方法，是用gdb调试，在死锁发生后，执行：
+
+```
+thread apply all bt
+```
+
 
 
 参考资料

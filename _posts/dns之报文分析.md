@@ -11,4 +11,5 @@ tags:
 
 1、DNS协议详解及报文格式分析
 
-https://blog.csdn.net/tianxuhong/article/details/74922454
+<https://www.cnblogs.com/davidwang456/articles/10660051.html>
+
