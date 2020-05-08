@@ -1080,6 +1080,24 @@ int main()
 
 
 
+# unique_ptr 用法
+
+unique_ptr不可以拷贝和赋值。那么怎样传递unique_ptr参数和返回unique_ptr值呢？
+
+实际上，这个规则有一个例外情况，就是可以拷贝或者赋值一个将要被销毁的unique_ptr。
+
+例如，作为局部变量的unique_ptr，就是一个即将被销毁的，所以可以直接返回一个局部的unique_ptr。
+
+如下面这样：
+
+```
+std::unique_ptr func(int a)
+{
+	std::unique_ptr up(new int(a));
+	return up;//这样是合法的。
+}
+```
+
 
 
 
@@ -1159,3 +1177,7 @@ https://blog.csdn.net/f110300641/article/details/83409804
 18、建议慎用boost::weak_ptr来避免
 
 https://blog.csdn.net/runyon1982/article/details/49018765
+
+19、
+
+https://blog.csdn.net/qq_33266987/article/details/78784286

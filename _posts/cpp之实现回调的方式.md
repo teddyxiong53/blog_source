@@ -36,3 +36,10 @@ sink和delegate的区别：
 
 sink以类为单位，delegate以函数为单位。
 
+
+
+参考资料
+
+1、C++ 回调函数的几种策略
+
+https://www.cnblogs.com/maniford/p/6905317.html

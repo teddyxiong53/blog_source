@@ -79,7 +79,11 @@ char *inet_ntoa(struct in_addr in)
 
 否则会段错误。
 
+https://blog.csdn.net/qiubo702/article/details/49614411
 
+为什么包括了就不会段错误了呢？
+
+以后尽量少使用inet_ntoa，要多用inet_ntop代替它。
 
 # 参考资料
 

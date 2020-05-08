@@ -108,6 +108,10 @@ DLNA包含多种网络协议，如http、https、upnp等，其中upnp是其重�
 
 通常 Android 手机中的 DLNA 功能是把手机作为 DMS(Digital Media Server) 或者 DMC(Digital Media Controller) 这两种角色。有时候也作为 DMP (Digital Media Player) 或者 DMD(Digital Media Downloader) 或者 DMU(Digital Media Uploader) 查看/下载/上传网络上其他服务器的内容，不过这些功能很多厂商并不一定实现了。
 
+
+
+![img](../images/random_name/20130705201404187.png)
+
 # 参考资料
 
 1、

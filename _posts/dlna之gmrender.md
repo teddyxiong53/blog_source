@@ -401,7 +401,22 @@ netstat -ant |grep TIME_WAIT | wc -l
 
 
 
+## 现在手机酷狗音乐app总是连接板端失败
+
+我好像也没有改什么相关的东西。为什么现在连接不成功？
+
+连接笔记本上编译的gmrender还是可以正常的。
+
+```
+mediatomb - UPnP MediaServer (main package)
+minidlna - lightweight DLNA/UPnP-AV server targeted at embedded systems
+linux-igd - Linux UPnP Internet Gateway Device
+```
+
+
+
 参考资料
 
 1、
 
+https://linuxtoy.org/archives/linux-dlna.html

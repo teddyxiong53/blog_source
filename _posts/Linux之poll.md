@@ -58,47 +58,22 @@ server.c
 #include <poll.h>
 #include <unistd.h>
 #include <sys/types.h>
-
-
-#define IPADDR "127.0.0.1"
-#define PORT 8080
+#include <assert.h>
+#include <fcntl.h>
+#include <arpa/inet.h>
 
 #define OPEN_MAX 1000
-#define INFTIM -1
-
-static int socket_bind(char *ip, int port)
-{
-    int listenfd;
-    listenfd = socket(AF_INET, SOCK_STREAM, 0);
-    if(listenfd < 0) {
-        perror("socket fail");
-        exit(1);
-    }
-    struct sockaddr_in server_addr = {0};
-    server_addr.sin_family = AF_INET;
-    inet_aton(ip, &server_addr.sin_addr);
-    server_addr.sin_port = htons(port);
-    int ret;
-    ret = bind(listenfd, (struct sockaddr *)&server_addr,
-                sizeof(server_addr));
-    if(ret < 0) {
-        perror("bind failed");
-        exit(1);
-    }
-    return listenfd;
-}
 
 static void handle_connection(struct pollfd *connfds, int num)
 {
-    int i,n;
-    char buf[1024];
-    memset(buf, 0, 1024);
-    for(i=1;i <=num; i++) {
+    int i = 1;
+    for(i=1; i<=num; i++) {
         if(connfds[i].fd < 0) {
             continue;
         }
         if(connfds[i].revents & POLLIN) {
-            n = read(connfds[i].fd, buf, 1024);
+            char buf[1024] = {0};
+            int n = read(connfds[i].fd, buf, 1024);
             if(n == 0) {
                 close(connfds[i].fd);
                 connfds[i].fd = -1;
@@ -114,33 +89,32 @@ static void do_poll(int listenfd)
 {
     struct pollfd clientfds[OPEN_MAX];
     clientfds[0].fd = listenfd;
-    clientfds[1].events = POLLIN;
-    int i=0;
-    for(i=0; i<OPEN_MAX; i++) {
+    clientfds[0].events = POLLIN;
+    int i = 0;
+    for(i=1; i<OPEN_MAX; i++) {
         clientfds[i].fd = -1;
     }
     int maxi = 0;
     int nready = 0;
-    socklen_t client_addr_len = 0;
     struct sockaddr_in client_addr = {0};
+    socklen_t addr_len = sizeof(client_addr);
     int connfd;
     while(1) {
-        nready = poll(clientfds, maxi+1, INFTIM);
+        nready = poll(clientfds, maxi+1, -1);
         if(nready == -1) {
-            perror("poll fail");
-            exit(1);
+            perror("poll error");
+            exit(-1);
         }
         if(clientfds[0].revents & POLLIN) {
-            client_addr_len = sizeof(client_addr);
-            connfd = accept(listenfd, (struct sockaddr *)&client_addr,
-                   &client_addr_len);
-            printf("connect from %s, %d \n", inet_ntoa(client_addr.sin_addr), client_addr.sin_port);
+            addr_len = sizeof(client_addr);
+            connfd = accept(listenfd, (struct sockaddr *)&client_addr, &addr_len);
+            printf("get connection from %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
             if(connfd < 0) {
                 if(errno == EINTR) {
                     continue;
                 } else {
                     perror("accept error");
-                    exit(1);
+                    exit(-1);
                 }
             }
             for(i=1; i<OPEN_MAX; i++) {
@@ -150,11 +124,11 @@ static void do_poll(int listenfd)
                 }
             }
             if(i == OPEN_MAX) {
-                printf("too many connections\n");
-                exit(1);
+                printf("too many connection\n");
+                exit(-1);
             }
             clientfds[i].events = POLLIN;
-            if(i>maxi) {
+            if(i > maxi) {
                 maxi = i;
             }
             if(--nready <= 0) {
@@ -164,14 +138,29 @@ static void do_poll(int listenfd)
         handle_connection(clientfds, maxi);
     }
 }
-int main(int argc, char **argv)
+int main()
 {
-    int listenfd, connfd, sockfd;
-    struct sockaddr_in client_addr;
-    listenfd = socket_bind(IPADDR, PORT);
-    listen(listenfd, 5);
+    struct sockaddr_in serveraddr = {0};
+    int listenfd ;
+    listenfd = socket(AF_INET, SOCK_STREAM, 0);
+    assert(listenfd > 0);
+    serveraddr.sin_family = AF_INET;
+    serveraddr.sin_addr.s_addr = INADDR_ANY;
+    serveraddr.sin_port = htons(8000);
+    int val = 1;
+    setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val));
+    int flags = fcntl(listenfd, F_GETFL);
+    flags |= O_NONBLOCK;
+    fcntl(listenfd, F_SETFL, flags);
+    
+    int ret;
+    ret = bind(listenfd, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
+    if(ret < 0) {
+        perror("bind fail");
+    }
+    assert(ret == 0);
+    ret = listen(listenfd, 5);
     do_poll(listenfd);
-    return 0;
 }
 ```
 

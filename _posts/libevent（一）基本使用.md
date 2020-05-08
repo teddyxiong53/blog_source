@@ -377,3 +377,50 @@ libev是一个类似于libevent的库。不管先。
 
 
 
+event和event_base关系
+
+结构体event和event_base是libevent的两个核心数据结构，**前者代表一个事件对象，后者代表整个事件处理框架。**
+
+Libevent通过event对象将I/O事件、信号事件和定时器事件封装，从而统一处理，这也是libevent的精妙所有。
+
+```
+(1) ev_events：event关注的事件类型，它可以是以下3种类型： 
+I/O事件： EV_WRITE和EV_READ 
+定时事件：EV_TIMEOUT 
+信号：    EV_SIGNAL 
+辅助选项：EV_PERSIST，表明是一个永久事件 
+```
+
+
+
+struct bufferevent 
+
+写入数据的一般过程是：
+
+1、现在应用要发送数据，把数据放入缓冲区里。
+
+2、等待可以写入。
+
+3、如果可以写了，写入尽量多的数据。
+
+4、记住已经写入了多少数据，如果一次没有写完，则在再次可写时继续写入。
+
+libevent为这个提供了一个通用的机制，就是bufferevent。
+
+作用是在读取或者写入达到足够数量时，调用对应的回调函数。
+
+bufferevent只能用于tcp这样基于流的协议。
+
+
+
+bufferevent和evbuffer的关系
+
+bufferevent包含了evbuffer。bufferevent里有2个evbuffer，一个输入的，一个输出的。
+
+
+
+参考资料
+
+1、libevent--学习使用struct bufferevent
+
+https://blog.csdn.net/qq_36337149/article/details/89922974
