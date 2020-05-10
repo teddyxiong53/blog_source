@@ -18,6 +18,10 @@ d = a.deepcopy() #
 
 对于非容器类型，没有拷贝的说法。
 
+https://www.bilibili.com/video/BV12x411R7Wr
+
+这个视频讲得很清楚了。
+
 
 
 参考资料

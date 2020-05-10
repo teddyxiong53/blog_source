@@ -120,6 +120,23 @@ from furniture import bench # 这个就是绝对导入。
 
 
 
+import特点，防止重复导致，你import多次，只有第一次有用。
+
+如果你的py文件修改了，希望另外一个脚本里把这个修改体现出来。
+
+例如服务器运行后，不让停止的情况下，重新load某个脚本。
+
+```
+from imp import reload
+reload(xxx)
+```
+
+imp里的reload已经是过时的了。
+
+sys.reload可以用。
+
+
+
 # 参考资料
 
 1、ImportError:attempted relative import with no known parent package

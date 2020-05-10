@@ -16,6 +16,8 @@ tags:
 
 如果你使用python3，那么你只需要记住urllib这一个库就好了。其他的不用管。
 
+不对，requests就是对urllib3的封装。
+
 
 
 urllib和urllib2的区别
@@ -99,6 +101,34 @@ print params
 
 ```
 client_secret=bb&grant_type=client_credentials&client_id=aa
+```
+
+# urllib3
+
+urllib3是是一个功能强大，条理清晰，用于http客户端的python库。
+
+许多python的原生系统已经开始使用urllib3。
+
+urllib3提供了很多python标准库里没有的重要特性。
+
+```
+1、线程安全。
+2、连接池。
+3、客户端ssl验证。
+4、文件分部编码上传。
+5、协助处理重复请求和http重定向。
+6、支持压缩编码。
+7、支持http和socks代理。
+```
+
+基本用法
+
+```
+import urllib3
+http = urllib3.PoolManager()
+r = http.request('GET', 'http://www.baidu.com')
+print(r.status)
+print(r.data)
 ```
 
 

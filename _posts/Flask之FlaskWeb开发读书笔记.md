@@ -625,7 +625,7 @@ sudo docker build -t flasky:lastest .
 sudo docker run --name flasky -d -p 8000:5000 \
   -e SECRET_KEY=57d40f677aff4d8d96df97223c74d217 \
   -e MAIL_USERNAME=teddyxiong53@163.com \
-  -e MAIL_PASSWORD=53xhl040253 flasky:latest
+  -e MAIL_PASSWORD=123 flasky:latest
 ```
 
 

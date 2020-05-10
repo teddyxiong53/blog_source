@@ -6,7 +6,11 @@ tags:
 
 ---
 
+1
 
+看这个nginx视频，足矣。这个视频非常好。全是干货。
+
+https://www.bilibili.com/video/BV1Bx411Z7Do
 
 下载安装，用windows版本。
 

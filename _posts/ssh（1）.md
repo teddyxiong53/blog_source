@@ -24,6 +24,21 @@ ssh是Secure SHell的缩写。
 
 
 
+实现免密登录的方法
+
+基本原理是：
+
+```
+1、本机用ssh-keygen生成id_rsa和id_rsa.pub。在~/.ssh后面带pub的公钥，不带pub的是私钥。
+2、复制id_rsa.pub里的内容，实际上就是一行字符串，虽然比较长。
+3、到目标机器上的~/.ssh目录下，有一个authorized_keys文件，我们打开它，然后把刚刚复制的那一行公钥内容粘贴进去。
+4、再尝试登陆，就可以看到已经不需要密码了。
+```
+
+这个视频将得很清楚了。
+
+https://www.bilibili.com/video/BV1y4411q7PW
+
 # 参考资料
 
 ssh与telnet的异同点
