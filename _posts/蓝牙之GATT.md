@@ -6,13 +6,25 @@ tags:
 
 ---
 
+1
+
+```
+我的理解：
+是不是可以把GAP理解为tcpip协议的IP层。
+GATT理解为UDP层。
+GATT的各种service的UUID，就相当于udp端口号。
+
+我觉得这个是可以帮助理解的。
+GATT的确扮演的是传输层的角色。
+```
+
 
 
 看ble，就看到GATT这个东西，GATT和ble是什么关系？
 
 什么是GATT？
 
-GATT是在蓝牙连接的基础上，收发很短小的数据段的规范。这些短小的数据段，被称为属性（Attribute）。
+**GATT是在蓝牙连接的基础上，收发很短小的数据段的规范。**这些短小的数据段，被称为属性（Attribute）。
 
 要讨论GATT，需要先看看GAP的概念。
 
@@ -40,7 +52,7 @@ ATT是ATTribute protocol。
 
 GATT基于ATT。
 
-所有的ble profile一定是基于GATT。
+**所有的ble profile一定是基于GATT。**
 
 也就是说所有的ble服务都是用ATT作为应用协议。
 
@@ -90,7 +102,7 @@ GATT可以叫做普通属性协议。
 
 一旦2个设备建立了连接，GATT就开始起作用了。
 
-GATT是独占的。ble设备连接后，就停止广播了。其他设备就看不到它了。
+**GATT是独占的。ble设备连接后，就停止广播了。其他设备就看不到它了。**
 
 
 

@@ -99,9 +99,9 @@ characteristic UUID。
 
 # 定义uuid
 
-可以自定义uuid。有什么约束吗？
+**可以自定义uuid。有什么约束吗？**
 
-按格式来就行了。
+**按格式来就行了。**
 
 service的uuid。可以理解为tcp协议栈里的端口号。
 

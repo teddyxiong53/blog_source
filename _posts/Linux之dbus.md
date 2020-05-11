@@ -63,6 +63,18 @@ root@raspberrypi:/etc/dbus-1# tree
 2 directories, 14 files
 ```
 
+在rk3308的板子上：
+
+```
+├── session.conf
+├── system.conf
+└── system.d
+    ├── avahi-dbus.conf
+    ├── bluetooth.conf
+    ├── dnsmasq.conf
+    └── wpa_supplicant.conf
+```
+
 
 
 
@@ -114,13 +126,13 @@ dbus的特点：
 
 3、高可用。
 
-协议是二进制的，避免了序列化的过程。通信效率高。
+**协议是二进制的，避免了序列化的过程。通信效率高。**
 
-因为主要是用于本机内部通信，所以采用二进制带来的好处大于坏处。
+**因为主要是用于本机内部通信，所以采用二进制带来的好处大于坏处。**
 
 支持异步操作。
 
-dbus易于使用，因为它是基于消息，而不是字节流。
+**dbus易于使用，因为它是基于消息，而不是字节流。**
 
 
 
@@ -148,6 +160,7 @@ dbus-monitor和dbus-send。可以用来测试。
 
 ````
 dbus-binding-tool
+	这个是生成glib代码文件的工具。
 dbus-daemon
 	--session等价于：--config-file=/usr/share/dbus-1/session.conf
 	
@@ -158,8 +171,11 @@ dbus-monitor
 	--profile：不指定，就是classic模式。这个是精简模式。
 	--monitor：监控输出模式。默认就是这个。
 dbus-send
+	发送dbus消息。
 dbus-uuidgen
+	生成一个uuid。
 dbus-cleanup-sockets
+	
 dbus-launch
 dbus-run-session
 dbus-update-activation-environment
@@ -173,13 +189,31 @@ dbus-send --print-reply --type=method_call --dest=org.freedesktop.DBus / org.fre
 
 
 
-dbus-glib和GDBus的区别
+glib-dbus和GDBus的区别
+
+GDBus和glib-dbus都是由GNU组织开发的。GDBus可以认为是glib-dbus的升级版，其编程过程比起glib-dbus来要简单得多。
 
 
 
 dbus是很多重要系统的底层，需要加深理解。
 
 例如bluez就大量使用了dbus。
+
+
+
+# dbus-binding-tool
+
+ C language GLib bindings generation utility.
+
+一个生成glib绑定代码的工具。
+
+dbus-binding-tool is used to expose a GObject via D-Bus.
+
+As input, dbus-binding-tool uses a D-Bus Introspection XML file.  
+
+As output, the client-side or server-side bindings is generated.  This output is a header file which eases the use of a remote D-Bus object. 
+
+输入一个xml文件，生成C文件和头文件。
 
 
 
@@ -240,3 +274,7 @@ https://www.cnblogs.com/wzh206/archive/2010/05/13/1734901.html
 14、dbus-glib 和 GDBus 的区别
 
 https://www.cnblogs.com/LubinLew/p/dbus-glib_and_GDBus.html
+
+15、基于GDBus技术的IPC通信编程详解(1)
+
+https://blog.csdn.net/adlindary/article/details/80167840

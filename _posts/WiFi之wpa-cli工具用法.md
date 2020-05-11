@@ -263,8 +263,59 @@ wpa_cli reconfigure
 
 
 
+
+
+/var/run/wpa_supplicant
+
+这个的作用是什么？
+
+这个是一个目录，下面会被创建一个wlan0的文件，是一个socket文件。wpa_cli跟wpa_supplicant就通过这个本地socket进行通信。
+
+ctrl_interface指向的是一个目录，在这个目录中默认会生成一个文件/var/run/wpa_supplicant/wlan0，这是local socket address，用于我们的程序和后台程序wpa_supplicant进行通信（我们必须知道wpa_supplicant作为后台服务程序是通过本地socket和客户端进行通信的）
+
+在wpa_supplicant.conf的最前面，要写上这么两行：
+
+```
+ctrl_interface=/var/run/wpa_supplicant
+update_config=1
+```
+
+update_config为1时会在特定时候（客户端发送SAVE_CONFIG命令）更新这个配置文件。
+
+
+
+wpa_supplicant与wpa_cli的关系。就跟mpd跟mpc的关系一样。
+
+我们也可以不使用wpa_cli，使用直接打开通信的那个本地socket来进行操作。
+
+就像我们可以用libmpdclient来自己实现自己的mpc一样。
+
+
+
+wpa_supplicant向上提供api接口，向下对接系统调用。
+
+向上提供的api接口有两套：
+
+1、基于dbus。
+
+2、基于unix本地socket。
+
+
+
 # 参考资料
 
-wpa_cli 命令介绍
+1、wpa_cli 命令介绍
 
 https://blog.csdn.net/ltm157/article/details/24810685
+
+2、wpa_supplicant无线网络配置
+
+https://blog.csdn.net/hxchuan000/article/details/48007367
+
+3、
+
+https://blog.csdn.net/king523103/article/details/38014419
+
+4、wpa_supplicant与wpa_cli之间通信过程
+
+https://blog.csdn.net/chuanzhilong/article/details/53609653

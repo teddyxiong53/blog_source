@@ -28,25 +28,27 @@ ble就是用来传输少量数据的。
 
 
 
+ble
+
 #参考资料
 
-普及一下什么是蓝牙和BLE，看完让你秒懂
+1、普及一下什么是蓝牙和BLE，看完让你秒懂
 
 https://www.sohu.com/a/167206747_404276
 
-ESP32必杀技 - 蓝牙配网篇
+2、ESP32必杀技 - 蓝牙配网篇
 
 http://club.gizwits.com/thread-4966-1-1.html
 
-蓝牙4.0 BLE与传统蓝牙之间的兼容性
+3、蓝牙4.0 BLE与传统蓝牙之间的兼容性
 
 http://blog.51cto.com/cto521/1638654
 
-请问，蓝牙4.0协议能不能传音频或文件? 
+4、请问，蓝牙4.0协议能不能传音频或文件? 
 
 https://bbs.csdn.net/topics/391493417?page=1
 
-Android BLE4.0(蓝牙通信)
+5、Android BLE4.0(蓝牙通信)
 
 https://www.jianshu.com/p/2b4620c52d47
 
