@@ -128,9 +128,36 @@ hcitool lescan
 
 
 
+hcitool的一个重要用途是直接进行命令十六进制的命令发送。
+
+这个的代码实现是：
+
+static void cmd_cmd(int dev_id, int argc, char **argv)
+
+```
+dd = hci_open_dev(dev_id);
+	打开一个蓝牙socket。
+setsockopt(dd, SOL_HCI, HCI_FILTER, &flt, sizeof(flt)
+	设置socket选项。
+hci_send_cmd
+	发送
+len = read(dd, buf, sizeof(buf));
+	等待回复。
+	所以这是一个阻塞同步的通信过程。
+hci_close_dev(dd);
+	关闭设备。
+```
+
+
+
+
+
 参考资料
 
 1、
 
 https://www.cnblogs.com/zjutlitao/p/9576589.html
 
+2、BT[3]-BLE广播详解
+
+https://www.cnblogs.com/rockyching2009/p/10610288.html

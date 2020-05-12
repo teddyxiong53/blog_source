@@ -28,7 +28,19 @@ ble就是用来传输少量数据的。
 
 
 
-ble
+# indicate和notify的区别
+
+这么说吧，如果在连接参数相同的情况下（主要指connection interval），并且APP处理得当，那肯定是Notification快，因为indication要等回复才能发下一个包。
+
+1、什么是indicate？
+
+答：indicate译为“指示”，它是服务器给客户端发送数据的方式。
+
+2、它与notify有什么不同？
+
+答：它在使用上比notify多一个应答的步骤，如下图：
+
+![img](../images/random_name/20151005204548451)
 
 #参考资料
 
@@ -52,3 +64,6 @@ https://bbs.csdn.net/topics/391493417?page=1
 
 https://www.jianshu.com/p/2b4620c52d47
 
+6、
+
+https://e2echina.ti.com/question_answer/wireless_connectivity/bluetooth/f/103/t/111227

@@ -14,19 +14,11 @@ tags:
 
 
 
-我可以把蓝牙协议栈也看成4层结构的。
-
-```
-AVRCP/ADP
---------
-RFCOMM
----------
-L2CAP
---------
-HCI
-```
+蓝牙协议栈的分层, 所有 Profile (配置文件层)和应用都建构在GAP或GATT之上。
 
 
+
+![](../images/random_name/20190529192136627.png)
 
 # 参考资料
 
@@ -37,3 +29,7 @@ https://blog.csdn.net/aotony_1988/article/details/52489173
 2、蓝牙协议与普通网络协议的对比
 
 http://www.voidcn.com/article/p-mjysjvfb-vc.html
+
+3、蓝牙协议栈分层
+
+https://blog.csdn.net/helaisun/article/details/90676922

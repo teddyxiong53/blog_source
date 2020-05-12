@@ -10,7 +10,7 @@ tags:
 
 先看看man手册是怎么说的。
 
-sdp就是设备发现协议。它的重点就是查询机器的信息。
+**sdp就是设备发现协议。它的重点就是查询机器的信息。**
 
 
 
@@ -91,6 +91,24 @@ sdptool add A2SNK
 
 
 
+# 问题
+
+在rk3308上执行：sdptool browse local。
+
+出错提示：
+
+```
+Failed to connect to SDP server on FF:FF:FF:00:00:00:
+```
+
+网上查了一下，说是需要用compatible模式来运行bluetoothd。
+
+我恰好是手动启动bluetoothd，没有加上兼容模式的参数。
+
+加上-C选项运行bluetoothd，果然好了。
+
+
+
 # 参考资料
 
 1、sdptool 设备服务查找命令使用
@@ -101,6 +119,7 @@ https://blog.csdn.net/u014778332/article/details/50654620
 
 https://www.linuxjournal.com/content/bluetooth-hacks
 
-3、sdptool 设备服务查找命令使用
+3、Failed to connect to SDP server on FF:FF:FF:00:00:00: Connection refused问题解决方法
 
-https://blog.csdn.net/u014778332/article/details/50654620
+https://blog.csdn.net/wang_shuai_ww/article/details/68927525
+

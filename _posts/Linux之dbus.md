@@ -36,6 +36,8 @@ dbus-daemon --system
 
 dbus就是对socket的封装。
 
+DBUS可以完成1对1的IPC, 多对多的IPC, 多对多需要daemon,和android中的service_manger类似,如同router.
+
 
 
 看树莓派的情况。
@@ -114,6 +116,23 @@ dbus的主要概念是总线。
 	通知，就是触发事件。这个跟上面三个不同。
 ```
 
+```
+/** This value is never a valid message type, see dbus_message_get_type() */
+#define DBUS_MESSAGE_TYPE_INVALID       0
+/** Message type of a method call message, see dbus_message_get_type() */
+#define DBUS_MESSAGE_TYPE_METHOD_CALL   1
+/** Message type of a method return message, see dbus_message_get_type() */
+#define DBUS_MESSAGE_TYPE_METHOD_RETURN 2
+/** Message type of an error reply message, see dbus_message_get_type() */
+#define DBUS_MESSAGE_TYPE_ERROR         3
+/** Message type of a signal message, see dbus_message_get_type() */
+#define DBUS_MESSAGE_TYPE_SIGNAL        4
+
+#define DBUS_NUM_MESSAGE_TYPES          5
+```
+
+
+
 主要用来进程间**函数调用**和进程间**信号广播**。
 
 
@@ -148,7 +167,216 @@ dbus的特点：
 
 版本系统，跟Linux内核一个风格，偶数的表示稳定版本，奇数版本表示开发版本。
 
+# 概念理解
 
+运行一个dbus-daemon，就创建一个bus。
+
+当一个app连接到这个bus的时候，就创建了一个connection。
+
+每个app里，有多个object。站在dbus的角度，通信的不是app，而是object。
+
+一个object里，有多个不同的interface。我们可以把interface理解为对象的成员变量。这些变量有getter和setter方法。
+
+interface其实是通信方式的集合。
+
+signal通信方式，不需要对方回复。
+
+method call通信方式，需要对方回复。回复的是method return。
+
+
+
+signal方式比较简单，我们就以signal为例，来看看整个通信过程。
+
+```
+conn = dbus_bus_get(DBUS_BUS_SESSION, &err);//连接到bus上。
+ret = dbus_bus_request_name(conn, "test.method.server", DBUS_NAME_FLAG_REPALCE_EXISTING, &err);//把自己的进程名字注册到bus上。
+```
+
+加入一个进程，想要接收interface名字为test.signal.Type的信号。
+
+则这样：
+
+```
+dbus_bus_add_watch(conn, "type='signal',interface='test.signal.Type'", &err);
+```
+
+然后就等待消息的到来：
+
+```
+dbus_connection_read_write(conn, 0);//0表示一直等待，没有超时。
+//执行到这里，说明消息已经来了，取出消息。
+msg = dbus_connection_pop_message(conn);
+```
+
+
+
+发送的进程里这样做：
+
+```
+dbus_uint32_t serial = 0;//消息id
+DBusMessage *msg;
+msg = dbus_message_new_signal("/test/signal/Object", "test.signal.Type", "Test");
+//添加参数给signal
+dbus_message_iter_init_append(msg, &args);
+dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &sigval);
+//发送
+dbus_connection_send(conn, msg, &serial);
+```
+
+
+
+DBusMessage是dbus的核心数据结构。
+
+里面存储了2个主要信息，一个是为通信机制服务的各种name，一个是通信数据本身。
+
+
+
+## 各种name
+
+### dbus name
+
+最重要的name就是dbus name。
+
+这个是每个app用来标记自己的。
+
+可以理解为ip地址。
+
+bus name有两种，
+
+1、unique connection name。`:10`这种以冒号开头的，可读性不太好。
+
+2、well-known name。这种就可读性好一些。
+
+默认只给分配冒号开头的bus name。
+
+如果要well-known name。就使用dbus_bus_request_name来申请。
+
+### interface name
+
+这个是为了上层架构而设计的。例如qt dbus。
+
+在C api这一层，你几乎可以不管它。
+
+它的命名规则个dbus name几乎一样，只是不是用`-`。
+
+### object path
+
+跟interface一样，是为上层架构设计的。
+
+在C api这一层，几乎可以不管他。
+
+### member name
+
+
+
+
+
+dbus规范里标准化了一些接口。
+
+这些接口对我们调用其他服务提供的dbus api很有帮助。
+
+我们看其中比较重要的两个。
+
+```
+org.freedesktop.DBus.Introspectable
+```
+
+看bluez里的gatt-service.c代码：
+
+```
+add_interface(data, DBUS_INTERFACE_INTROSPECTABLE, introspect_methods,
+						NULL, NULL, data, NULL);
+```
+
+会这样调用。那么应该就可以查看这个的信息吧。
+
+对应的命令怎么写呢？
+
+下面这样可以得到回复。
+
+```
+dbus-send --system --type=method_call --print-reply --dest=org.bluez /org/bluez/Device1/hci0/dev_54_A4_93_A0_00_08 org.freedesktop.DBus.Introspectable.Introspect                                          
+```
+
+--dest=org.bluez，表示是发送给bluetoothd这个app。
+
+object path，是从bluez/doc/device-api.txt里分析得到的。
+
+```
+Service		org.bluez
+Interface	org.bluez.Device1
+Object path	[variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX
+```
+
+当前这样返回的，是一个没有什么有效内容的xml文件。
+
+内容是这里填入的：
+
+```
+data->introspect = g_strdup(DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE "<node></node>");
+```
+
+
+
+
+
+# 建立服务的流程
+
+dbus_bus_get：获取一个dbus连接。
+
+dbus_bus_reques_name：为这个连接起名。这个名字就是后续进行远程调用的时候的服务名
+
+dbus_connection_read_write：进入监听循环。
+
+然后在循环里，我们从bus上取出消息。dbus_connection_pop_message
+
+然后对比消息中的方法接口名和方法名：dbus_message_is_method_call
+
+如果对比一致，那么就跳转到响应的处理函数里去。并从消息里取出远程调用的参数。
+
+并且建立起回传结果的通路，reply_to_method_call。
+
+# 发送信号的流程
+
+dbus_message_new_signal
+
+把信号相关的参数放进去。dbus_message_iter_init_append。
+
+dbus_message_iter_append_basic。
+
+然后启动发送：
+
+dbus_connection_send
+
+dbus_connection_flush
+
+
+
+# 进行一次远程调用的流程
+
+申请一个远程调用通道：dbus_message_new_method_call
+
+需要填写的参数有： 本次调用的接口名。本地调用的方法名。
+
+实际上是申请了一个内存，把内容往里面填。
+
+然后启动发送调用并释放发送相关的消息。
+
+dbus_connection_send_with_reply。
+
+会阻塞等待调用执行完成。
+
+当这个句柄回传消息之后，我们从消息结构中分离出参数。
+
+用dbus提供的函数提取参数的类型和参数 -- dbus_message_iter_init(); dbus_message_iter_next(); dbus_message_iter_get_arg_type(); dbus_message_iter_get_basic()。也就达成了我们进行本次远程调用的目的了。
+
+# 信号接收流程
+
+dbus_bus_add_match()。我们进入等待循环后，只需要对信号名，信号接口名进行判断就可以分别处理各种信号了。在各个处理分支上。我们可以分离出消息中的参数。对参数类型进行判断和其他的处理。
+
+
+
+# 工具
 
 dbus默认提供了一些工具。
 
@@ -181,27 +409,118 @@ dbus-run-session
 dbus-update-activation-environment
 ````
 
+## dbus-send
+
+在bluez的代码里搜索dbus_message_new_method_call。就可以看到注册了哪些东西，可以让我们进行调用的。
+
 
 
 ```
-dbus-send --print-reply --type=method_call --dest=org.freedesktop.DBus / org.freedesktop.DBus.ListNames
+dbus-send --system --print-reply --dest=org.bluez /org/bluez/audio org.bluez.audio.Manager.CreateDevice string:'11:11:11:11:11:11'
+其中:
+
+--system
+将命令发向系统总线，也可使用--session
+--print-reply
+打印返回结果
+--dest=org.bluez
+服务名。用户可以用查询命令获得当前系统的所有服务名
+/org/bluez/audio
+对象名。由服务定义
+org.bluez.audio.Manager.CreateDevice
+object.interface.Method
+string:'11:11:11:11:11'
+参数。 类型:值 int32:123
 ```
 
 
 
-glib-dbus和GDBus的区别
+命令要有2个必须的参数：
 
-GDBus和glib-dbus都是由GNU组织开发的。GDBus可以认为是glib-dbus的升级版，其编程过程比起glib-dbus来要简单得多。
+```
+<destination object path> <message name>
+```
+
+path比较好理解，就是`/`这样的路径一样的东西。
+
+message name
+
+这个是怎么写的呢？
 
 
 
-dbus是很多重要系统的底层，需要加深理解。
+遍历dbus上所有的对象。
 
-例如bluez就大量使用了dbus。
+```
+dbus-send --session --type=method_call --print-reply --dest=org.freedesktop.DBus / org.freedesktop.DBus.ListNames
+```
+
+向某个对象发送消息
+
+```
+dbus-send --session --type=method_call --print-reply --dest=org.gnome.ScreenSaver  / org.freedesktop.DBus.Introspectable.Introspect
+```
 
 
 
-# dbus-binding-tool
+buildroot下编译的板端程序，这些dbus的东西，基本都有。
+
+bluez的dbus，有哪些东西可以被dbus-send来查看和设置呢？
+
+可以尝试查看uuid。
+
+
+
+下面这个命令是可以有效果的。是打开discovery。注意这条命令的使用方式。这个对bluez是通用的写法。
+
+```
+dbus-send --system --type=method_call --dest=org.bluez /org/bluez/hci0 org.freedesktop.DBus.Properties.Set string:org.bluez.Adapter1 string:Discoverable variant:boolean:true
+```
+
+下面这个不行。
+
+```
+dbus-send --system --type=method_call --dest=org.bluez --print-reply /org/bluez/hci0 org.bluez.Adapter1.GetName
+```
+
+
+
+查看板端dbus的所有管理的object。
+
+```
+dbus-send --system --print-reply --type=method_call --dest='org.bluez' '/' org.freedesktop.DBus.ObjectManager.GetManagedObjects
+```
+
+```
+dbus-send --system --print-reply --type=method_call --dest='org.bluez' '/org/bluez/hci0/dev_54_A4_93_A0_00_08' org.freedesktop.DBus.ObjectManager.GetManagedObjects
+
+```
+
+
+
+这个文档就是讲用dbus来操作bluez的。
+
+https://www.landley.net/kdocs/ols/2006/ols2006v1-pages-421-426.pdf
+
+
+
+https://www.linumiz.com/bluetooth-list-available-controllers-using-dbus/
+
+
+
+## dbus-launch
+
+
+
+
+
+## d-feet
+
+这个是Ubuntu下的一个图形界面。可以查看系统里的dbus的情况。
+
+
+
+## dbus-binding-tool
 
  C language GLib bindings generation utility.
 
@@ -214,6 +533,224 @@ As input, dbus-binding-tool uses a D-Bus Introspection XML file.
 As output, the client-side or server-side bindings is generated.  This output is a header file which eases the use of a remote D-Bus object. 
 
 输入一个xml文件，生成C文件和头文件。
+
+# glib-dbus和GDBus的区别
+
+GDBus和glib-dbus都是由GNU组织开发的。GDBus可以认为是glib-dbus的升级版，其编程过程比起glib-dbus来要简单得多。
+
+# python例子
+
+```
+#!/usr/bin/python
+
+import dbus
+import dbus.service
+from dbus.mainloop.glib import DBusGMainLoop
+import time
+import gobject
+
+MSG_OBJ_PATH = "/com/example/msg"
+MSG_INTERFACE_URI = "com.example.msg"
+
+TIMEFORMAT = "%H:%M:%S"
+
+class Msg(dbus.service.Object):
+    def __init__(self,bus,object_path):
+        dbus.service.Object.__init__(self,bus,object_path)
+
+    @dbus.service.method(dbus_interface=MSG_INTERFACE_URI,
+                         in_signature='', out_signature='s')
+    def say_hello(self):
+        return "hello, exported method"
+
+    @dbus.service.signal(dbus_interface=MSG_INTERFACE_URI,
+                         signature='as')
+    def msg_signal(self,msg_list):
+        print "exported signal: ",msg_list
+
+    def construct_msg(self):
+        timeStamp = time.strftime(TIMEFORMAT)
+        self.msg_signal(["1111",timeStamp,"This is the content","1 2 3"])
+        return True
+
+if __name__ == "__main__":
+    DBusGMainLoop(set_as_default=True)
+    bus = dbus.SessionBus()
+    aMsg = Msg(bus,MSG_OBJ_PATH)
+
+    gobject.timeout_add(1000,aMsg.construct_msg)
+    loop = gobject.MainLoop()
+    loop.run()
+
+```
+
+
+
+# 官网文档
+
+## 介绍
+
+dbus是一个低开销、易于使用的ipc通信机制。
+
+低开销是因为它是二进制协议，它设计就是为了本机内部的通信。设计时避免round trip。允许异步操作。跟X Protocol有点像。
+
+dbus易于使用，因为它使用了消息的机制，而不是字节流的机制。
+
+帮我们处理了很多复杂的ipc事务。
+
+另外，有很多wrapper库，可以让使用者易于集成。
+
+有message protocol和message bus这2个概念。
+
+system bus，在嵌入式里适合用。
+
+session bus，这个主要是为gnome和KDE这样的桌面环境用的。
+
+dbus并不打算成为一个通用的ipc框架，所以它去掉了很多不必要的功能。
+
+同时，dbus也提供了一些其他ipc一般没有的特色功能。
+
+例如，bus names、安全策略。
+
+这些特性，也是触发dbus进行开发的主要动力。
+
+
+
+dbus协议的稳定性
+
+dbus协议在2006年就已经frozen了。只需要兼容性地扩展。
+
+## 类型系统
+
+dbus有一个类型系统。
+
+可以把不同类型的值，进行序列化。序列化的结果，叫做wire format。
+
+序列化，叫编码。
+
+反序列化，叫反编组。
+
+### 基本类型
+
+```
+u8 ： y
+bool： b
+s16 ： n
+u16： q
+s32： i
+u32： u
+s64：x
+u64：t
+double：d
+unix_fd：h。实际是int32类型。h表示handle的意思。
+```
+
+字符串也是基本类型。
+
+下面3个都是字符串。但是用不同的类型来表示。
+
+```
+string: s
+object path: o
+signature: g
+```
+
+### object path
+
+object path是一个name，用来表示一个对象实例。
+
+一个app里的对象实例，构成了一个树状结构。
+
+object path，一般是用域名倒着写作为开头，相当于一个namespace。
+
+还包含一个interface version number。
+
+这样就可以实现多个service。以及同一个service的多个版本。
+
+例如，xx.com公司在为一个播放器开发一个dbus api。则对应的object path设计为这样：
+
+```
+/com/xx/MusicPlayer1
+```
+
+### 容器类型
+
+有4种容器类型。
+
+struct、array、variant、dict_entry。
+
+struct的类型码是`r`。但是在类型签名里，`r`并不出现。
+
+而是用小括号来表示。
+
+例如，一个包含2个int类型的结构体的类型签名是这样：
+
+```
+(ii)
+```
+
+结构体也可以嵌套。
+
+```
+(i(ii))
+```
+
+这个相当于：
+
+```
+struct {
+	int a;
+	struct {
+		int b;
+		int c;
+	} x;
+};
+```
+
+空的struct不允许。
+
+array类型，用字母`a`表示。
+
+int类型的array：`ai`
+
+array里还可以放结构体。`a(ii)`。表示array里放了结构体，结构体的成员是2个int数据。
+
+array还可以嵌套。`aai`。表示array，里面元素是int类型的array。
+
+variant的限制比较多。用字母v表示。后面只能有一个类型。
+
+而且长度不能超过64字节。
+
+dict_entry跟array有点像。但是用大括号括起来。限制也比较多。
+
+
+
+## message protocol
+
+消息格式
+
+有一个header和一个body。
+
+消息最长可以到128MB。
+
+消息的类型签名是：
+
+```
+yyyyuua(yv)
+```
+
+表示的含义：
+
+```
+字节1：大小端标志。l表示小端，B表示大端。
+字节2：消息类型。就4种。
+字节3：flags。有3种情况。
+字节4：发送的app的major version。
+
+u32成员1：body的长度。
+u32成员2：消息的id。
+array成员：元素是结构体，这个需要重点看一下。
+```
 
 
 
@@ -278,3 +815,7 @@ https://www.cnblogs.com/LubinLew/p/dbus-glib_and_GDBus.html
 15、基于GDBus技术的IPC通信编程详解(1)
 
 https://blog.csdn.net/adlindary/article/details/80167840
+
+16、
+
+https://blog.csdn.net/guoke312/article/details/81352944

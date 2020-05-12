@@ -197,6 +197,40 @@ rfcomm的端口号是1到30 。
 
 
 
+# 问题
+
+我sdptool add SP之后。没有报错。sdptool browse local也可以看到Serial Port。但是没有生成/dev/rfcomm0这样的设备节点。
+
+在rk3308的板子上，和我的笔记本上（用usb蓝牙）。都是这样的现象。
+
+实际上，是我的操作不对。
+
+设备节点是通过rfcomm bind产生的。
+
+```
+scan on
+devices
+pair XX:XX:XX:XX:XX:XX
+trust XX:XX:XX:XX:XX:XX
+quit
+```
+
+```
+sudo rfcomm bind /dev/rfcomm0 XX:XX:XX:XX:XX:XX 1
+```
+
+现在可以进行连接了。但是手机这边用蓝牙spp调试助手，一连接，板端这边就出错退出了。
+
+```
+root@thinkpad:~# rfcomm bind /dev/rfcomm0 08:D4:6A:78:68:D7 
+root@thinkpad:~# rfcomm -h^C
+root@thinkpad:~# rfcomm listen /dev/rfcomm0
+Waiting for connection on channel 1
+Can't create RFCOMM TTY: Address already in use
+```
+
+
+
 #参考资料
 
 1、RFCOMM
@@ -234,3 +268,15 @@ https://people.csail.mit.edu/albert/bluez-intro/x232.html
 9、
 
 http://pages.iu.edu/~rwisman/c490/html/pythonandbluetooth.htm
+
+10、rfcomm工具的使用方法 创建/dev/rfcomm0 并检测
+
+https://blog.csdn.net/wang_shuai_ww/article/details/68944430
+
+11、Using /dev/rfcomm0 in raspberry pi
+
+https://raspberrypi.stackexchange.com/questions/78155/using-dev-rfcomm0-in-raspberry-pi
+
+12、Ubuntu14.04 蓝牙适配器的连接
+
+https://www.cnblogs.com/li-yao7758258/p/5577401.html

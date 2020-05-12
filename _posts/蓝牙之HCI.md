@@ -38,9 +38,45 @@ HCI是蓝牙协议栈最底层的一个协议。
 
 
 
-# HCI的命令
+hci数据包分为4种：
 
-命令可以分为这些类：
+1、命令。
+
+2、ACL数据。
+
+3、SCO数据。
+
+4、event。
+
+同步链路(SCO)类型和异步链路(ACL)类型。前者主要用于同步话音传送，后者主要用于分组数据传送。
+
+bluez/lib/hci.h里：
+
+```
+/* HCI Packet types */
+#define HCI_COMMAND_PKT		0x01
+#define HCI_ACLDATA_PKT		0x02
+#define HCI_SCODATA_PKT		0x03
+#define HCI_EVENT_PKT		0x04
+#define HCI_VENDOR_PKT		0xff
+```
+
+
+
+# 命令
+
+命令包的结构是：
+
+```
+前面2个字节是：opcode
+	分为2个部分：高6bit：ogf。低10位，表示ocf。g表示group。c表示command。
+1个字节的参数长度。
+后面是N个参数。
+```
+
+
+
+命令可以分为这些类：（序号就是ogf的值）
 
 1、link control。
 
@@ -54,40 +90,65 @@ HCI是蓝牙协议栈最底层的一个协议。
 
 6、测试指令。
 
-7、ble控制器命令。
+8、ble控制器命令。
 
 
 
-# 帧结构
-
-## 异步数据包ACL
-
-
-
-## 同步数据包SCO
-
-
-
-##命令包
-
-发送的是cmd。
-
-收到的是event。
-
-cmd的结构是：
+例如ble广播命令是这样：
 
 ```
-前面2个字节的opcode。
-然后2个字节的长度。
-后面就是内容。
+hcitool -i hci0 cmd 0x08 0x000a 01
 ```
 
-event的结构：
+0x08，是ogf。表示是ble控制器命令。
+
+0x000a，是ocf。表示控制ble广播。
+
+01，表示使能。如果是关闭，那么就是00
+
+
+
+hci cmd和hci event是请求响应模型的。
+
+![1589174345573](../images/random_name/1589174345573.png)
+
+
+
+# ACL数据
+
+ACL数据包的结构是这样：
 
 ```
-前面1个字节的event code。
-然后1个字节的长度。
-后面是内容。
+前面2个字节是handle。
+	准确说，高12bit是handle。
+	2个bit的package boundary flag。
+	2个bit的broadcast flag。
+然后是2个自己字节的包长度。
+```
+
+# sco数据包
+
+包的结构是这样：
+
+```
+前面2个字节的handle
+	准确说是12bit的handle。
+	然后2个bit的packet status flag
+	2个bit的保留。
+1个字节的数据长度。
+后面就是数据。
+```
+
+
+
+# event包
+
+包的结构是这样：
+
+```
+1个字节的事件码。
+1个字节的数据长度。
+后面就是数据。
 ```
 
 
@@ -104,6 +165,20 @@ hci 的out buffer也是。
 
 
 
+# 驱动
+
+蓝牙协议栈与蓝牙底层设备一般是通过串口连接，两者之间通过HCI协议通讯。
+
+这就要求实现一个串口tty驱动。
+
+而对于Bluez协议栈来说，它是通过建立蓝牙的socket来发送、接收数据。
+
+因此，在蓝牙通信中，对上层应用是socket通信，对底层则一般是通过一个tty驱动实现。
+
+本文以HCIUART_LL为例，讨论了蓝牙底层的tty驱动部分，代码在drivers\bluetooth\hci_ll.c和hci_ldis.c。
+
+**Hci_ldis.c实现一个蓝牙专用的线路规程**，disc id为N_HCI，结构体如下：
+
 
 
 # 参考资料
@@ -111,3 +186,15 @@ hci 的out buffer也是。
 1、HCI层数据包格式
 
 https://blog.csdn.net/u010657219/article/details/42191039
+
+2、HCI数据包格式分类
+
+https://blog.csdn.net/zmk0810612124/article/details/82590371
+
+3、
+
+https://www.cnblogs.com/rockyching2009/p/10610288.html
+
+4、蓝牙底层HCI驱动的实现
+
+https://blog.csdn.net/sunjing_/article/details/53007005

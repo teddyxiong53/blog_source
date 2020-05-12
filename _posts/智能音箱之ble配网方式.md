@@ -390,6 +390,212 @@ hciconfig hci0 up
 
 
 
+gatt的bluez相关文档在bluez/doc/gatt-api.txt里有一些说明。
+
+
+
+手机锁屏就会断开连接。
+
+```
+[CHG] Device: 5C:EC:83:86:08:DE Connected: no
+```
+
+收到的wifi ssid会写入到/data/cfg/wifi_ssid里。
+
+当前用rk提供的wifi introducer这个app进行测试，板端只是收到了wifi ssid和password。
+
+并没有保存并进行连接等操作。
+
+看代码函数也没有调用。
+
+wpa_supplicant_config_wifi 这个函数是保存信息到wpa_supplicant.conf里的。但是这个函数没有调用。
+
+```
+CHECKDATA_CHAR_UUID
+	这个是特征是做什么呢？是名字看，叫检查数据。
+	只有收到这个特征值的写人操作时，才会调用wifi_config_thread_create
+	目前看到的打印，是没有收到这个的写入。
+```
+
+/data/cfg/check_data 这个也不知道是起什么作用。
+
+config_wifi_thread这个线程的逻辑分析：
+
+```
+1、saveCheckdata(0, check_data);
+	保存收到的check_data。
+	当前因为并没有收到这个。
+2、config_wifi
+	这个是开始进行配网。
+	我手动依次执行下面的命令进行测试。
+	wpa_cli -iwlan0 disconnect
+		断开当前网络。这个是打印OK。
+	wpa_cli -iwlan0 add_network
+		这个会打印一个数字，应该是索引值。当前返回的是0 。
+	check_wifiinfo(0, wifi_ssid)
+		这个是把“xhl“这样的字符串转成对应的十六进制字符串“78686c”
+	wpa_cli -iwlan0 set_network 0 ssid 78686c
+		ssid后面跟十六进制的字符串。这个才返回OK。
+		如果写xhl会FAIL。
+	check_wifiinfo(1, wifi_security);
+		wpa_cli -iwlan0 scan
+		wpa_cli -iwlan0 scan_result | grep xhl
+		
+	wpa_cli -iwlan0 set_network 0 key_mgmt WPA-PSK
+		这个返回OK。
+	wpa_cli -iwlan0 set_network 0 wep_key0 1234567890
+	wpa_cli -iwlan0 set_network 0 scan_ssid X
+		这个是设置hide。X得到值可以是0或者1.如果是1，表示要连接的热点是一个隐藏的热点。
+	wpa_cli -iwlan0 set_network 0 priority 1
+		设置priority。
+	wpa_cli -iwlan0 enable_network 0
+		使能这个网络。
+	wpa_cli -i wlan0 select_network 0
+	
+	这个步骤如果失败：
+		wpa_cli flush
+		wpa_cli reconfigure
+		wpa_cli reconnect
+3、check_wifi_isconnected
+	检查wifi是否已经连接。
+	wpa_cli -iwlan0 status | grep wpa_state
+		当前是返回wpa_state=INACTIVE
+	如果已经连接，则保存当前的配置到文件里。
+	wpa_cli save_config
+	wpa_cli reconfigure
+```
+
+
+
+所以，总结一下手机app这边跟板端的交互过程：
+
+```
+1、板端启动ble_wificonfig。开始进行ble广播。这个是通过hcitool直接写16进制的几条命令来实现的。
+	板端启动ble service。有几个uuid。
+2、手机这边进行扫描，找到在进行广播的板端，点击连接。
+3、连接好之后，手机点击配网按钮。
+	板端这边会收到ssid和密码。
+	然后手机应该继续发送CHECKDATA_CHAR_UUID。
+	这样就会触发板端去使用ssid密码去进行连接操作。
+```
+
+手机对板端的读操作：
+
+```
+1、读取wifi板端扫描到的wifi列表。
+2、读取板端设备信息。
+```
+
+手机对板端的写操作：
+
+```
+1、写ssid
+2、写password
+3、写加密方式。
+4、写check data。
+	这个就靠ssid和密码进行连接操作了。如果成功，就保存配置。
+```
+
+现在我们不要这么麻烦，就一个读，一个写。
+
+写入，就是把ssid、密码发送过来，然后就进入联网操作。
+
+联网成功，则对另外一个uuid进行写入一个标志，app这边去读取这个标志。来查看是否配网成功。
+
+
+
+
+
+点击连接的时候，板端的打印是这个：
+
+```
+Device: /org/bluez/hci0/dev_58_C5_B9_85_BB_D5
+chr_read_value[1]:
+Device: /org/bluez/hci0/dev_58_C5_B9_85_BB_D5
+chr_read_value[1]:
+Device: /org/bluez/hci0/dev_58_C5_B9_85_BB_D5
+chr_read_value[1]:
+```
+
+加上打印：
+
+```
+xhl -- chr->uuid:CAC2ABA4-EDBB-4C4A-BBAF-0A84A5CD93A1,
+chr_read_value[1]:  
+[ 2828.648655] rtk_btcoex: update_hid_active_state: ha
+xhl -- chr->uuid:ACA0EF7C-EEAA-48AD-9508-19A6CEF6B356,
+chr_read_value[1]:  
+xhl -- chr->uuid:40B7DE33-93E4-4C8B-A876-D833B415A6CE,
+```
+
+看这几个uuid，实际上是在读取ssid、password、加密这3个。
+
+但是当前没有处理这3个的读取。所以返回的是空的。
+
+这个可以不处理。
+
+
+
+触发ble关闭，只需要执行下面三条就可以：
+
+```
+hcitool -i hci0 cmd 0x08 0x0005 69 b1 09 8c 3c 71
+hcitool -i hci0 cmd 0x08 0x0008 15 02 01 06 11 07 23 20 56 7c 05 cf 6e b4 c3
+hcitool -i hci0 cmd 0x08 0x000a 1
+```
+
+
+
+notify当前是不支持的。
+
+```
+static DBusMessage *chr_start_notify(DBusConnection *conn, DBusMessage *msg,
+							void *user_data)
+{
+	return g_dbus_create_error(msg, DBUS_ERROR_NOT_SUPPORTED,
+							"Not Supported");
+}
+```
+
+
+
+在板端执行：
+
+```
+dbus-send  --type=method_call --print-reply --dest=org.bluez /org/bluez/hci0/dev_54_A4_93_A0_00_08 org.freedesktop.DBus.Introspectable.Introspect
+```
+
+会报错：
+
+```
+Failed to open connection to "session" message bus: Using X11 for dbus-daemon autolaunch was disabled at compile time, set your DBUS_SESSION_BUS_ADDRESS instead
+```
+
+解决方法是：
+
+```
+export $(dbus-launch)
+```
+
+dbus-launch得到的输出是这样的：
+
+```
+DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-oy7Xhk3qXS,guid=7154dbb8ad648e9b3a95a4df0000131c
+DBUS_SESSION_BUS_PID=751
+```
+
+
+
+
+
+当前手动ctrl+c结束ble_wificonfig的时候，bluetoothd也会挂掉。
+
+```
+/userdata # munmap_chunk(): invalid pointer
+
+[1]+  Aborted                    /usr/libexec/bluetooth/bluetoothd
+```
+
 
 
 
@@ -407,3 +613,28 @@ hciconfig hci0 up
 1、
 
 https://blog.csdn.net/z497544849/article/details/94575987
+
+2、蓝牙BLE GATT完全分析和运用
+
+https://blog.csdn.net/yueqian_scut/article/details/50752314
+
+3、BlueZ5.45 D-Bus总线 GATT API 分析
+
+https://blog.csdn.net/csdn_zyp2015/article/details/73089380
+
+4、关于hiden的ssid
+
+https://unix.stackexchange.com/questions/555380/wpa-cli-connection-to-hidden-ssid
+
+5、用wpa_cli 连接无线网络
+
+https://blog.csdn.net/cupidove/article/details/41545849
+
+6、BCSphere入门教程01：Immediate Alert
+
+https://www.ituring.com.cn/article/117570
+
+7、nordic的资料，各种定义
+
+`https://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.sdk51.v9.0.0%2Fgroup__ble__sdk__srv__ias__c.html`
+

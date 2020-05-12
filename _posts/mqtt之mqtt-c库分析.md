@@ -106,6 +106,46 @@ mqtt_mq_currsz
 
 
 
+mqtt_mq_init
+
+```
+参数1：
+	是输出参数，主要就是用这个函数来填充mqtt_client结构体。
+参数2：
+	sockfd。socket需要用户自己创建，然后传递进去。
+参数3/4/5/6：
+	send buf和recv buf及长度。
+参数7；
+	一个回调函数。是在收到数据的时候调用。
+	我们在这个里面接收处理数据。
+处理逻辑：
+	很简单，就是填充结构体。
+```
+
+mqtt_connect
+
+```
+参数：
+	有9个。主要是username这种，没有什么特别的。
+```
+
+构造一个message，都是这种模式。
+
+```
+/* try to pack the message */
+    MQTT_CLIENT_TRY_PACK(rv, msg, client, 
+        mqtt_pack_connection_request(
+            client->mq.curr, client->mq.curr_sz,
+            client_id, will_topic, will_message, 
+            will_message_size,user_name, password, 
+            connect_flags, keep_alive
+        ), 
+        1
+    );
+```
+
+
+
 参考资料
 
 1、

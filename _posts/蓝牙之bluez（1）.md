@@ -374,6 +374,123 @@ thinkpad
 
 # 代码分析
 
+## bluez/lib/hci.h
+
+这个头文件里定义了很多的重要结构体。
+
+```
+struct hci_dev_info 
+```
+
+hcitool dev，这个命令执行的是查询本地的hci设备信息。
+
+最后是调用了系统调用。
+
+```
+ioctl(s, HCIGETDEVINFO, (void *) &di)
+```
+
+HCIGETDEVINFO 这个宏在kernel/include/net/blutooth/hci_sock.h里定义：
+
+```
+#define HCIGETDEVINFO	_IOR('H', 211, int)
+```
+
+这个hci_sock.h里，也有hci_dev_info结构体定义，跟应用层的一样。
+
+打开一个蓝牙socket。是这样：
+
+```
+sk = socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC, BTPROTO_HCI);
+```
+
+HCI_MAX_DEV这个最大是16个。
+
+## bluetoothd
+
+这个代码入口在bluez/src/main.c。
+
+调试方法：
+
+```
+/usr/libexec/bluetooth/bluetoothd -d -n
+```
+
+-n表示前台运行，-d表示debug模式。
+
+```
+connect_dbus
+	连接到bus，设置本app的name为org.bluez。
+adapter_init
+btd_device_init
+btd_agent_init
+btd_profile_init
+	这些都是注册dbus的interface。
+plugin_init
+	Loading builtin plugins
+        Loading gap plugin
+        Loading a2dp plugin
+        Loading avrcp plugin
+        Loading hostname plugin
+        Loading builtin plugins
+        not load battery plugin
+	Loading plugins /usr/lib/bluetooth/plugins
+rfkill_init();
+	fd = open("/dev/rfkill", O_RDWR);
+然后就进入mainloop。
+```
+
+
+
+```
+#define BTPROTO_L2CAP	0
+#define BTPROTO_HCI	1
+#define BTPROTO_SCO	2
+#define BTPROTO_RFCOMM	3
+#define BTPROTO_BNEP	4
+#define BTPROTO_CMTP	5
+#define BTPROTO_HIDP	6
+#define BTPROTO_AVDTP	7
+
+#define SOL_HCI		0
+#define SOL_L2CAP	6
+#define SOL_SCO		17
+#define SOL_RFCOMM	18
+
+```
+
+
+
+# bluez的dbus使用
+
+还是以gatt-service.c作为分析。
+
+```
+create_services_one
+	register_service(IAS_UUID)
+```
+
+register_service函数分析
+
+```
+
+```
+
+一个service，对应了dbus里一个interface。
+
+不只是service，其实其他的对象，也都是对应一个dbus的service。
+
+```
+#define GATT_MGR_IFACE			"org.bluez.GattManager1"
+#define GATT_SERVICE_IFACE		"org.bluez.GattService1"
+#define GATT_CHR_IFACE			"org.bluez.GattCharacteristic1"
+#define GATT_DESCRIPTOR_IFACE		"org.bluez.GattDescriptor1"
+```
+
+我似乎可以这样理解：
+
+gatt-service.c这个app，里面就一个dbus object，所有跟dbus打交道的东西，都是这个object的interface（相当于成员变量）。
+
 
 
 # 参考资料
