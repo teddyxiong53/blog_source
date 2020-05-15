@@ -8,7 +8,7 @@ tags:
 
 1
 
-rapidjson为了最大化性能，大量使用了浅拷贝，使用之前一定要了解清楚。
+**rapidjson为了最大化性能，大量使用了浅拷贝，使用之前一定要了解清楚。**
 
 另外，还有move语义。这个都是为了提高性能。
 
@@ -349,3 +349,7 @@ https://blog.csdn.net/qq849635649/article/details/52678822
 4、rapidjson常见使用示例
 
 https://blog.csdn.net/Aquester/article/details/48736449
+
+5、官方教程
+
+https://miloyip.gitbooks.io/rapidjson/content/zh-cn/doc/tutorial.zh-cn.html

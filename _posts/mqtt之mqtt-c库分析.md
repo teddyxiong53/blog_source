@@ -146,6 +146,46 @@ mqtt_connect
 
 
 
+如果clientid是空的，那么就必须带上CLEAR_SESSION的标志。
+
+因为也没有办法来维护session。
+
+
+
+# 问题解决
+
+## mqtt_init_reconnect
+
+使用mqtt_init_reconnect来做的时候，不要自己另外调用mqtt_connect。没有必要，而且会导致问题。
+
+mqtt_init_reconnect这个的初始化连接，也是靠注册的reconnect函数来做的。
+
+## 运行中自己重连了
+
+打印如下：
+
+```
+[ERROR][mqtt.c][mqtt_sync][41]:                                                      
+mqtt error is MQTT_ERROR_ACK_OF_UNKNOWN, now try to reconnect                        
+[ERROR][DossMqttClient.cpp][reconnect_client][192]:                                  
+init reconnect fail                                                                  
+[ERROR][DossMqttClient.cpp][reconnect_client][201]:                                  
+reconnect_client: called while client was in error state "MQTT_ERROR_ACK_OF_UNKNOWN" 
+```
+
+## 发送太快太频繁，导致重连
+
+```
+ [ERROR][DossMqttClient.cpp][reconnect_client][192]:                                      
+ init reconnect fail                                                                      
+ [ERROR][DossMqttClient.cpp][reconnect_client][201]:                                      
+ reconnect_client: called while client was in error state "MQTT_ERROR_SEND_BUFFER_IS_FULL"
+ [DEBUG][DossMqttClient.cpp][openSocketNonBlock][61]:                                     
+ connect to 172.16.2.123:1883                                                             
+```
+
+
+
 参考资料
 
 1、

@@ -22,10 +22,30 @@ GAP也是一种Profile。
 
 
 
-从上面这张图，我们可以看到GAP基本上包括了所有层。
+**从上面这张图，我们可以看到GAP基本上包括了所有层。**
 
 
 
+因此，BLE协议栈定义了一个称作Generic Access（通用访问）的profile，以实现如下功能：
+1）定义GAP层的蓝牙设备角色（role）
+和3.3中的Link Layer的role类似，只不过GAP层的role更接近用户（可以等同于从用户的角度看到的蓝牙设备的role），包括：
+Broadcaster Role，设备正在发送advertising events；
+Observer Role，设备正在接收advertising events；
+Peripheral Role，设备接受Link Layer连接（对应Link Layer的slave角色）；
+Central Role，设备发起Link Layer连接（对应Link Layer的master角色）。
+
+2）定义GAP层的、用于实现各种通信的操作模式（Operational Mode）和过程（Procedures），包括：
+Broadcast mode and observation procedure，实现单向的、无连接的通信方式；
+Discovery modes and procedures，实现蓝牙设备的发现操作；
+Connection modes and procedures，实现蓝牙设备的连接操作；
+Bonding modes and procedures，实现蓝牙设备的配对操作。
+
+3）定义User Interface有关的蓝牙参数，包括：
+蓝牙地址（Bluetooth Device Address）；
+蓝牙名称（Bluetooth Device Name）；
+蓝牙的pincode（Bluetooth Passkey）；
+
+蓝牙的class（Class of Device，和发射功率有关）；
 
 
 用来保证不同的蓝牙设备之间可以相互发现并访问对方。
@@ -105,3 +125,7 @@ https://blog.csdn.net/XG_2013/article/details/80864527
 5、蓝牙 4.0 中的 GAP Advertising 简介 
 
 https://blog.csdn.net/hongprove/article/details/50903151
+
+6、
+
+https://blog.csdn.net/zwc1725/article/details/80704678

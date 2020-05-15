@@ -63,6 +63,17 @@ bluez/lib/hci.h里：
 
 
 
+handle是什么？唯一标志一个连接。相当于一个socket的fd。
+
+```
+/**
+ * @brief hci connection handle type
+ */
+typedef uint16_t hci_con_handle_t;
+```
+
+
+
 # 命令
 
 命令包的结构是：
@@ -181,6 +192,200 @@ hci 的out buffer也是。
 
 
 
+
+
+# sdptool browse抓包
+
+下面是内容是通过sdptool browse命令配合hcidump -t -X -w 1.txt命令来进行抓包分析。
+
+这个操作相当于手机打开蓝牙，点击刷新的操作。可以扫描出周围有哪些蓝牙设备。
+
+hci的OGF为0x01的比较常见，这个表示hci cmd。
+
+OCF为0x01的时候，表示inquiry。
+
+```
+const hci_cmd_t hci_inquiry = {
+OPCODE(OGF_LINK_CONTROL, 0x01), "311"
+};
+```
+
+![1589440817116](../images/random_name/1589440817116.png)
+
+
+
+
+
+hci inquiry代表了什么行为？
+
+inquiry是从协议栈下发的一个HCI命令。
+
+格式如下：
+
+```
+ogf | ocf | param(lap, inquiry len, num_response)| return params
+```
+
+inquiry len这个是表示inquiry持续的时间。
+
+值的范围是0x01到0x30。单位是1.28秒。所以表示的时间范围是1.28秒到61.44秒。
+
+host向controller下发了这个cmd之后，controller回复的event是什么呢？
+
+
+
+hci的cmd有多少种？hci event又有多少种？
+
+在bluez/tools/parser/hci.c里，有这样的一个数组：
+
+那么就是说明有77种hci event。这个还可以从btstack/bluetooth.h头文件里的HCI_EVENT_INQUIRY_COMPLETE这些宏可以看出。
+
+```
+#define EVENT_NUM 77
+static char *event_str[EVENT_NUM + 1] = {
+	"Unknown",
+	"Inquiry Complete",
+	"Inquiry Result",
+	"Connect Complete",
+	"Connect Request",
+	"Disconn Complete",
+	"Auth Complete",
+	"Remote Name Req Complete",
+	"Encrypt Change",
+	"Change Connection Link Key Complete",
+	"Master Link Key Complete",
+	"Read Remote Supported Features",
+	"Read Remote Ver Info Complete",
+	"QoS Setup Complete",
+	"Command Complete",
+	"Command Status",
+	"Hardware Error",
+	"Flush Occurred",
+	"Role Change",
+	"Number of Completed Packets",
+	"Mode Change",
+	"Return Link Keys",
+	"PIN Code Request",
+	"Link Key Request",
+	"Link Key Notification",
+	"Loopback Command",
+	"Data Buffer Overflow",
+	"Max Slots Change",
+	"Read Clock Offset Complete",
+	"Connection Packet Type Changed",
+	"QoS Violation",
+	"Page Scan Mode Change",
+	"Page Scan Repetition Mode Change",
+	"Flow Specification Complete",
+	"Inquiry Result with RSSI",
+	"Read Remote Extended Features",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Unknown",
+	"Synchronous Connect Complete",
+	"Synchronous Connect Changed",
+	"Sniff Subrate",
+	"Extended Inquiry Result",
+	"Encryption Key Refresh Complete",
+	"IO Capability Request",
+	"IO Capability Response",
+	"User Confirmation Request",
+	"User Passkey Request",
+	"Remote OOB Data Request",
+	"Simple Pairing Complete",
+	"Unknown",
+	"Link Supervision Timeout Change",
+	"Enhanced Flush Complete",
+	"Unknown",
+	"User Passkey Notification",
+	"Keypress Notification",
+	"Remote Host Supported Features Notification",
+	"LE Meta Event",
+	"Unknown",
+	"Physical Link Complete",
+	"Channel Selected",
+	"Disconnection Physical Link Complete",
+	"Physical Link Loss Early Warning",
+	"Physical Link Recovery",
+	"Logical Link Complete",
+	"Disconnection Logical Link Complete",
+	"Flow Spec Modify Complete",
+	"Number Of Completed Data Blocks",
+	"AMP Start Test",
+	"AMP Test End",
+	"AMP Receiver Report",
+	"Short Range Mode Change Complete",
+	"AMP Status Change",
+};
+```
+
+而hci cmd的种类，可以在btstack/hci_cmd.h里看出。
+
+```
+// HCI Commands - see hci_cmd.c for info on parameters
+extern const hci_cmd_t hci_accept_connection_request;
+extern const hci_cmd_t hci_accept_synchronous_connection;
+extern const hci_cmd_t hci_authentication_requested;
+extern const hci_cmd_t hci_change_connection_link_key;
+extern const hci_cmd_t hci_change_connection_packet_type;
+//后面省略了。
+```
+
+可以看到扫描过程中，这里有发送ACL数据。src是一个手机。dest是本机。
+
+![1589442582698](../images/random_name/1589442582698.png)
+
+
+
+sdp browse local。这样是不会进入协议栈，所以这样抓不到数据包的。
+
+然后看看本机进入蓝牙配网模式时的包。
+
+会读取本机蓝牙地址。
+
+会读取本机的buffer size。
+
+![1589443425601](../images/random_name/1589443425601.png)
+
+读取本机的class。
+
+读取本机的name。
+
+读取本机voice设置。
+
+写入连接accept超时时间为20秒。
+
+![1589443555735](../images/random_name/1589443555735.png)
+
+读取ble的read buffer size。是251个字节。
+
+![1589443591103](../images/random_name/1589443591103.png)
+
+写入simple pair mode。
+
+然后一些其他的操作，不关注。
+
+然后写入ble 广播数据。
+
+![1589443765729](../images/random_name/1589443765729.png)
+
+
+
+然后是设置扫描答复数据。
+
+![1589443818947](../images/random_name/1589443818947.png)
+
+配网的service 的uuid设置。
+
+![1589443897618](../images/random_name/1589443897618.png)
+
+
+
 # 参考资料
 
 1、HCI层数据包格式
@@ -198,3 +403,7 @@ https://www.cnblogs.com/rockyching2009/p/10610288.html
 4、蓝牙底层HCI驱动的实现
 
 https://blog.csdn.net/sunjing_/article/details/53007005
+
+5、蓝牙inquiry流程之HCI_Inquiry_Result_With_RSSI和HCI Extended Inquiry Result处理
+
+https://www.cnblogs.com/libs-liu/p/9243500.html

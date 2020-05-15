@@ -16,6 +16,31 @@ tags:
 
 通过select设置超时来达到为connect设定超时的目的. 
 
+自己封装一下connect函数。用SO_SNDTIMEO来设置连接时间。
+
+```
+int timeout_connect(int sockfd, struct sockaddr *addr, int len, struct timeval *timeout)
+{
+    int ret = 0;
+    socklen_t n = sizeof(*timeout);
+    ret = setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, timeout, n);
+    if(ret < 0) {
+        myloge("set socket send timeout fail, reason:%s", strerror(errno));
+        return -1;
+    }
+    ret = connect(sockfd, addr, len);
+    if(ret < 0) {
+        if(errno == EINPROGRESS) {
+            myloge("connect timeout");
+            return -1;
+        }
+        myloge("other connect error, reason:%s", strerror(errno));
+        return -1;
+    }
+    return 0;
+}
+```
+
 
 
 参考资料
