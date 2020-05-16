@@ -268,6 +268,27 @@ mach-mini2440.c
 
 
 
+# 内核文档分析
+
+legacy的接口是gpio_xx。
+
+新的接口，是基于gpio_desc的，函数前缀是gpiod_xx的。
+
+## 基于gpio的驱动
+
+```
+leds-gpio
+gpio-keys
+gpio_mouse
+gpio-beeper
+i2c_gpio
+spi_gpio
+gpio-fan
+gpio-nand
+```
+
+
+
 # 参考资料
 
 1、linux内核中的GPIO系统之（1）：软件框架

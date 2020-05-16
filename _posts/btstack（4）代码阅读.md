@@ -5,15 +5,84 @@ tags:
 	- 蓝牙
 ---
 
+1
 
+# 循环机制实现
+
+现在以libusb的实现作为分析对象，因为这个可以用一个usb蓝牙在我的Ubuntu笔记本上做实验验证。
+
+```
+    } else {
+        log_info("Async using timers:");
+
+        usb_timer.process = usb_process_ts;
+        btstack_run_loop_set_timer(&usb_timer, ASYNC_POLLING_INTERVAL_MS);
+        btstack_run_loop_add_timer(&usb_timer);
+        usb_timer_active = 1;
+    }
+```
+
+libusb方式，并没有使用添加事件源的方式，而是全部用定时器来做了。
+
+这个效果就等价于这种形式了：
+
+```
+while(1) {
+	sleep(1ms);
+	proc_timer();
+}
+```
+
+相当于一个单片机的后台循环模式了。
+
+那么就主要是依靠timer来驱动的。
+
+
+
+收到event，是怎样的处理过程呢？
+
+这个还是要从hci_transport_h2_libusb.c里看。
+
+还是靠中断来驱动的。
+
+```
+    for (c = 0 ; c < EVENT_IN_BUFFER_COUNT ; c++) {
+        // configure event_in handlers
+        libusb_fill_interrupt_transfer(event_in_transfer[c], handle, event_in_addr, 
+                hci_event_in_buffer[c], HCI_ACL_BUFFER_SIZE, async_callback, NULL, 0) ;
+```
+
+
+
+async_callback
+
+
+
+```
+hci_emit_event
+	这个里面会遍历event_handlers链表。
+	这个函数只在hci.c里被调用了，但是被十几个地方调用。
+	被hci.c里的event_handler调用。
+```
+
+hci.c里
+
+```
+packet_handler
+	这个就是被注册给libusb的函数。所有数据通过它来走。
+	这里面区分处理了event_handler、acl_handler、sco_handler。
+	
+```
+
+
+
+# a2dp_sink_demo
 
 我觉得奇怪，为什么avdtp的直接调用了l2cap_send函数呢？
 
 这样怎么体现分层呢？
 
 各个层都看到有对L2CAP的函数的调用。
-
-# a2dp_sink_demo
 
 初始化代码：
 

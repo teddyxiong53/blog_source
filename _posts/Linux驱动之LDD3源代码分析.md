@@ -312,6 +312,28 @@ sudo insmod ./hellop.ko whom=teddy howmany=3
 
 这个是故意在驱动里加一个写空指针的语句。
 
+```
+测试方法：
+insmod faulty.ko
+cat /proc/devices # 查看主设备号是多少
+mknod -m 644 /dev/faulty c 244 0 # 上一步看到主设备号是244
+cat /dev/faulty # 这样可以进行读取。
+echo 1 > /dev/faulty # 这个会挂掉。因为write函数里直接写空指针。
+```
+
+dmesg看到的信息：
+
+```
+[101943.290727] BUG: unable to handle kernel NULL pointer dereference at           (null)
+[101943.290856] IP: faulty_write+0x8/0x20 [faulty]
+[101943.290939] PGD 800000008a272067 
+[101943.290940] P4D 800000008a272067 
+[101943.291020] PUD 4f64c067 
+[101943.291124] PMD 0 
+```
+
+
+
 4、seq。
 
 这个是演示通过seq来输出内容到用户空间。
@@ -343,6 +365,22 @@ sudo insmod ./hellop.ko whom=teddy howmany=3
 11、scullv。v表示使用虚拟地址。
 
 12、snull。网络设备。
+
+# scull
+
+scullpipe，这个才有阻塞的读和写。算是比较实用的。
+
+开2个shell参考，一个cat /dev/scullpipe0 ，另外一个echo 123 > /dev/scullpipe0.
+
+dmesg查看得到：
+
+```
+[106110.555422] scull: "cat" reading: going to sleep
+[106120.494907] scull: Going to accept 4 bytes to ffff8970d9d40000 from 00000000006c21e0
+[106120.494924] scull: "zsh" did write 4 bytes
+[106120.494979] scull: "cat" did read 4 bytes
+[106120.495004] scull: "cat" reading: going to sleep
+```
 
 
 
@@ -459,57 +497,7 @@ ssize_t faulty_write (struct file *filp, const char __user *buf, size_t count,
 }
 ```
 
-还是创建节点，对设备节点进行echo操作。
 
-查看dmesg。
-
-```
-[460514.119114] BUG: unable to handle kernel NULL pointer dereference at           (null)
-[460514.119384] IP: faulty_write+0x8/0x20 [faulty]
-[460514.119528] PGD 8000000011189067 
-[460514.119530] P4D 8000000011189067 
-[460514.119755] PUD b53a8067 
-[460514.119868] PMD 0 
-
-[460514.120229] Oops: 0002 [#1] SMP PTI
-[460514.120342] Modules linked in: faulty(OE) xt_nat xt_tcpudp veth ipt_MASQUERADE nf_nat_masquerade_ipv4 xfrm_user xfrm_algo iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 xt_addrtype iptable_filter ip_tables xt_conntrack x_tables nf_nat br_netfilter bridge stp llc overlay aufs cfg80211 nf_conntrack_netlink vboxsf(OE) nf_conntrack libcrc32c nfnetlink binfmt_misc crct10dif_pclmul crc32_pclmul ghash_clmulni_intel pcbc snd_intel8x0 snd_ac97_codec ac97_bus aesni_intel aes_x86_64 crypto_simd glue_helper cryptd joydev snd_pcm snd_seq_midi snd_seq_midi_event snd_rawmidi snd_seq snd_seq_device snd_timer snd vboxvideo(OE) soundcore input_leds intel_rapl_perf ttm serio_raw i2c_piix4 drm_kms_helper vboxguest(OE) drm fb_sys_fops syscopyarea sysfillrect sysimgblt mac_hid ib_iser rdma_cm iw_cm ib_cm ib_core
-[460514.121650]  iscsi_tcp libiscsi_tcp libiscsi scsi_transport_iscsi parport_pc ppdev lp parport nfsd auth_rpcgss nfs_acl lockd grace sunrpc autofs4 hid_generic usbhid hid video e1000 psmouse ahci libahci pata_acpi [last unloaded: complete]
-[460514.122430] CPU: 3 PID: 31590 Comm: zsh Tainted: G           OE   4.13.0-45-generic #50~16.04.1-Ubuntu
-[460514.122694] Hardware name: innotek GmbH VirtualBox/VirtualBox, BIOS VirtualBox 12/01/2006
-[460514.122980] task: ffff8b0287a68000 task.stack: ffffaa1dc2b2c000
-[460514.123125] RIP: 0010:faulty_write+0x8/0x20 [faulty]
-[460514.123329] RSP: 0018:ffffaa1dc2b2feb0 EFLAGS: 00010246
-[460514.123452] RAX: 0000000000000000 RBX: 0000000000000002 RCX: ffffaa1dc2b2ff18
-[460514.123591] RDX: 0000000000000002 RSI: 00000000006c21e0 RDI: ffff8b032d640500
-[460514.123720] RBP: ffffaa1dc2b2fec0 R08: ffffffffc0717000 R09: ffff8b032da8e428
-[460514.123860] R10: 0000000000000001 R11: ffff8b0287a68000 R12: ffffaa1dc2b2ff18
-[460514.123989] R13: 00000000006c21e0 R14: ffff8b032d640500 R15: 0000000000000001
-[460514.124127] FS:  00007fe3b4476700(0000) GS:ffff8b033b380000(0000) knlGS:0000000000000000
-[460514.124376] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[460514.124532] CR2: 0000000000000000 CR3: 0000000006d6c006 CR4: 00000000000606e0
-[460514.124669] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[460514.124870] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-[460514.124999] Call Trace:
-[460514.126666]  ? __vfs_write+0x1b/0x40
-[460514.128139]  vfs_write+0xb8/0x1b0
-[460514.129640]  ? entry_SYSCALL_64_after_hwframe+0xb1/0x139
-[460514.131149]  SyS_write+0x55/0xc0
-[460514.132179]  ? entry_SYSCALL_64_after_hwframe+0x79/0x139
-[460514.133142]  entry_SYSCALL_64_fastpath+0x24/0xab
-[460514.134119] RIP: 0033:0x7fe3b36822c0
-[460514.135104] RSP: 002b:00007ffef4644698 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
-[460514.136071] RAX: ffffffffffffffda RBX: 0000000000000004 RCX: 00007fe3b36822c0
-[460514.137024] RDX: 0000000000000002 RSI: 00000000006c21e0 RDI: 0000000000000001
-[460514.137991] RBP: 0000000000000004 R08: 00007fe3b3951780 R09: 00007fe3b4476700
-[460514.138927] R10: 0000000000000001 R11: 0000000000000246 R12: 0000000000000000
-[460514.139874] R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
-[460514.140773] Code: <c7> 04 25 00 00 00 00 00 00 00 00 48 89 e5 5d c3 0f 1f 84 00 00 00 
-[460514.141751] RIP: faulty_write+0x8/0x20 [faulty] RSP: ffffaa1dc2b2feb0
-[460514.142606] CR2: 0000000000000000
-[460514.143475] fbcon_switch: detected unhandled fb_set_par error, error code -16
-[460514.145795] fbcon_switch: detected unhandled fb_set_par error, error code -16
-[460514.148135] ---[ end trace 81f268ce846bc754 ]---
-```
 
 # hellop
 

@@ -10,14 +10,15 @@ linux下的设备文件处理这一块，在多年的发展过程中，经历了
 后来，从内核2.3.46版本开始，采用了devfs，一个基于内核的动态设备文件系统。
 但是devfs有比较严重的限制，于是，从内核2.6.13版本起，devfs又被移除了。替换为现在要说的udev。
 devfs的缺点有很多，主要有这些：
+
 * 不确定的设备映射。你的设备名字跟你插入的顺序有关。
 * 主设备号和从设备号不够用，它们的数值都是最大为255 。
 * 内核内存使用，devfs会消耗大量的内核内存。
 相比于前辈们，udev很好地解决了设备的热拔插问题，还有解决了devfs的设备号短缺的问题，这一点对于有上千个硬盘的系统非常关键。
 
-
 udev的配置文件是`/etc/udev/udev.conf`。
 在树莓派上，该文件的内容如下所示，是空的。
+
 ```
 # see udev(7) for details
 #
@@ -82,6 +83,7 @@ E: USEC_INITIALIZED=76296
 
 udev的命名规则保存在`/etc/udev/rules.d`目录下。目录下的脚本名字是用数字来编号。从数字小的开始执行，一旦发现匹配的规则，则停止执行返回。
 树莓派的Raspbian系统的该目录下，就一个`99-com.rules`文件。内容如下：
+
 ```
 SUBSYSTEM=="input", GROUP="input", MODE="0660"
 SUBSYSTEM=="i2c-dev", GROUP="i2c", MODE="0660"
@@ -119,3 +121,80 @@ KERNEL=="ttyS0", PROGRAM="/bin/sh -c '\
 
 mdev是udev在busybox里的精简版本。
 
+
+
+buildroot里udev
+
+在/etc/init.d/S10udev里进行的。往proc/sys/kernel/hotplug   写入了0，是说明不支持热插拔吗？
+
+```
+ printf "Populating %s using udev: " "${udev_root:-/dev}"      
+ printf '\000\000\000\000' > /proc/sys/kernel/hotplug          
+ $UDEV_BIN -d || { echo "FAIL"; exit 1; }                      
+ udevadm trigger --type=subsystems --action=add                
+ udevadm trigger --type=devices --action=add                   
+ udevadm settle --timeout=30 || echo "udevadm settle failed"   
+ echo "done"                                                   
+```
+
+对应的配置文件是在/etc/udev目录下。
+
+```
+/etc/udev # ls                   
+hwdb.d     这个下面有很多文件。
+rules.d   空的
+udev.conf  这个是空的
+```
+
+
+
+udev是一个通用的内核设备管理器。它以守护进程的方式运行于Linux系统，并监听在新设备初始化或设备从系统中移除时，内核（通过netlink socket）所发出的uevent。
+
+## udev系统架构：
+
+udev系统可以分为三个部分：
+
+- libudev函数库，可以用来获取设备的信息。
+- udevd守护进程，处于用户空间，用于管理虚拟/dev
+- 管理命令udevadm，用来诊断出错情况。
+
+
+
+# udevadm命令
+
+
+
+```
+/etc # udevadm info --query=all --name=rk_led_ctrl       
+P: /devices/platform/pwm_leds@0/misc/rk_led_ctrl         
+N: rk_led_ctrl                                           
+E: DEVNAME=/dev/rk_led_ctrl                              
+E: DEVPATH=/devices/platform/pwm_leds@0/misc/rk_led_ctrl 
+E: MAJOR=10                                              
+E: MINOR=0                                               
+E: SUBSYSTEM=misc                                        
+```
+
+
+
+使用udev实现USB，SD卡设备的重命名、自动挂载、自动卸载。
+
+
+
+自动创建设备节点，靠class机制就可以做到了。
+
+我们在刚开始写[Linux](http://lib.csdn.net/base/linux)设备驱动程序的时候，很多时候都是利用mknod命令手动创建设备节点，实际上Linux内核为我们提供了一组函数，可以用来在模块加载的时候自动在/dev目录下创建相应设备节点，并在卸载模块时删除该节点，当然前提条件是用户空间移植了udev。
+
+
+
+内核中定义了struct class结构体，顾名思义，一个struct class结构体类型变量对应一个类，内核同时提供了class_create(…)函数，可以用它来创建一个类，这个类存放于sysfs下面，一旦创建好了这个类，再调用device_create(…)函数来在/dev目录下创建相应的设备节点。**这样，加载模块的时候，用户空间中的udev会自动响应device_create(…)函数，去/sysfs下寻找对应的类从而创建设备节点。**
+
+参考资料
+
+1、udev udevadm介绍及linux设备重命名和自动挂载应用实例分析
+
+https://blog.csdn.net/li_wen01/article/details/89435306
+
+2、linux下自动创建设备文件节点---class
+
+https://www.cnblogs.com/Ph-one/p/6720087.html

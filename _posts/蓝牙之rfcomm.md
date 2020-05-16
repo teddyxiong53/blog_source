@@ -231,6 +231,36 @@ Can't create RFCOMM TTY: Address already in use
 
 
 
+# btstack里的实现
+
+spp_counter这个例子。运行正常。
+
+效果是：Ubuntu上运行spp_counter，手机打开蓝牙spp这个app，连接到电脑。然后电脑这边每秒向手机通过rfcomm发送一个自增的计数值。
+
+看spp_counter的代码。
+
+```
+To provide an SPP service, the L2CAP, RFCOMM, and SDP protocol layers 
+are required. After setting up an RFCOMM service with channel nubmer
+RFCOMM_SERVER_CHANNEL, an SDP record is created and registered with the SDP server.
+```
+
+要提供一个spp服务，需要L2CAP，RFCOMM，SDP这3个层被初始化。
+
+表现在代码里，就是：
+
+```
+l2cap_init();
+
+    rfcomm_init();
+    rfcomm_register_service(packet_handler, RFCOMM_SERVER_CHANNEL, 0xffff);  // reserved channel, mtu limited by l2cap
+
+    // init SDP, create record for SPP and register with SDP
+    sdp_init();
+```
+
+
+
 #参考资料
 
 1、RFCOMM

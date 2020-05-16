@@ -37,7 +37,14 @@ acl，既可以支持对称连接，也可以支持不对称连接（也就是�
 **在寻找到有效的远端蓝牙设备后，开始建立ACL连接，**这里仅仅反应HCI层的数据包，对于LM层和Baseband层的数据可能需要抓取FW的log进行查看。
 
 
-  
+
+对主设备而言，最多可同时存在7台从设备，则，最多可同时存在7条ACL链路；但是仅能保证有3条SCO链路连接。
+
+但每一个主从设备连接，支持1个ACL连接和3个SCO连接。
+
+不过要注意，在ACL方式下使用的轮询机制：由主设备控制链路带宽，负责从设备带宽的分配，从设备依轮询发送数据。
+
+
 
 # 参考资料
 
@@ -48,3 +55,11 @@ https://www.plantronics.com/us/en/support/knowledge-base/kb-article-page?type=Pr
 2、蓝牙物理链路类型：SCO和ACL链路与A2DP
 
 https://blog.csdn.net/android_lover2014/article/details/88421594
+
+3、android 蓝牙ACL通讯详解
+
+https://blog.csdn.net/jonch_hzc/article/details/80570826
+
+4、蓝牙ACL链路和SCO链路的最大个数
+
+https://blog.csdn.net/software_wyq/article/details/103456464
