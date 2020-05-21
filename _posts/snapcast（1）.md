@@ -1098,6 +1098,10 @@ https://github.com/badaix/snapcast/blob/master/doc/json_rpc_api/v2_0_0.md
 
 snapcast可以通过1705端口上的json-rpc  api来进行控制。
 
+**消息的结束符是`\n`。**
+
+Single JSON Messages are new line delimited ([ndjson](http://ndjson.org/)).
+
 一个最简单的验证如下：
 
 ```
@@ -1108,6 +1112,232 @@ Escape character is '^]'.
 {"id":8,"jsonrpc":"2.0","method":"Server.GetRPCVersion"}
 {"id":8,"jsonrpc":"2.0","result":{"major":2,"minor":0,"patch":0}}
 ```
+
+假设有A、B、C这3个从机，连接到主机M。
+
+A对M进行了Set操作。A会收到Response。而B和C会收到Notification。
+
+Set可以批量进行发送，那么收到的Response也是一起的。Notification也是一起的。
+
+这样就可以一次性控制所有的从机的的音量。
+
+从机可以通过调用`Server.Status`来获取整个系统的信息。
+
+
+
+消息分为2大类：
+
+Request和Notification
+
+## Request
+
+```
+Client
+	Client.GetStatus
+		
+	Client.SetVolume
+	Client.SetLatency
+	Client.SetName
+Group
+	Group.GetStatus
+	Group.SetMute
+	Group.SetStream
+	Group.SetClients
+	Group.SetName
+	
+Server
+	Server.GetRPCVersion
+	Server.GetStatus
+	Server.DeleteClient
+Stream
+	Stream.AddStream
+	Stream.RemoveStream
+```
+
+## Notification
+
+```
+Client
+	Client.OnConnect
+	Client.OnDisconnect
+	Client.OnVolumeChanged
+	Client.OnLatencyChanged
+	Client.OnNameChanged
+	
+Group
+	Group.OnMute
+	Group.OnStreamChanged
+	Group.OnNameChanged
+Stream
+	Stream.OnUpdate
+Server
+	Server.OnUpdate
+```
+
+
+
+从机之间的控制信息，都是通过主机来进行转发的。
+
+这一点可以从Client.GetStatus这个字符串，只正在snapcast/server/stream_server.cpp里出现得到验证。
+
+在主机里，一个从机的信息，是用ClientInfo这个类来表示的。
+
+转成json表示是这样：
+
+```
+json toJson()
+    {
+        json j;
+        j["id"] = id;
+        j["host"] = host.toJson();
+        j["snapclient"] = snapclient.toJson();
+        j["config"] = config.toJson();
+        j["lastSeen"]["sec"] = lastSeen.tv_sec;
+        j["lastSeen"]["usec"] = lastSeen.tv_usec;
+        j["connected"] = connected;
+        return j;
+    }
+```
+
+
+
+# config层次关系
+
+下面是在/var/log/snapserver/server.conf里的内容。这个文件是在运行中生成的。记录了服务端的信息。
+
+当前只有本机通过127.0.0.1连接上来。
+
+```
+{
+	"ConfigVersion": 2,
+	"Groups": [{
+		"clients": [{
+			"config": {
+				"instance": 1,
+				"latency": 0,
+				"name": "",
+				"volume": {
+					"muted": false,
+					"percent": 100
+				}
+			},
+			"connected": true,
+			"host": {
+				"arch": "aarch64",
+				"ip": "127.0.0.1",
+				"mac": "54:a4:93:a0:01:53",
+				"name": "rockchip",
+				"os": "Buildroot 2018.02-rc3"
+			},
+			"id": "54:a4:93:a0:01:53",
+			"lastSeen": {
+				"sec": 18,
+				"usec": 768383
+			},
+			"snapclient": {
+				"name": "Snapclient",
+				"protocolVersion": 2,
+				"version": "0.17.1"
+			}
+		}],
+		"id": "524281fb-9790-f313-9598-f855f79b802c",
+		"muted": false,
+		"name": "",
+		"stream_id": "default"
+	}]
+}
+```
+
+现在我用手机来进行连接。可以看到多一个client的信息。
+
+```
+{
+	"ConfigVersion": 2,
+	"Groups": [{
+		"clients": [{
+			"config": {
+				"instance": 1,
+				"latency": 0,
+				"name": "",
+				"volume": {
+					"muted": false,
+					"percent": 100
+				}
+			},
+			"connected": true,
+			"host": {
+				"arch": "aarch64",
+				"ip": "127.0.0.1",
+				"mac": "54:a4:93:a0:01:53",
+				"name": "rockchip",
+				"os": "Buildroot 2018.02-rc3"
+			},
+			"id": "54:a4:93:a0:01:53",
+			"lastSeen": {
+				"sec": 1589773028,
+				"usec": 448161
+			},
+			"snapclient": {
+				"name": "Snapclient",
+				"protocolVersion": 2,
+				"version": "0.17.1"
+			}
+		}],
+		"id": "524281fb-9790-f313-9598-f855f79b802c",
+		"muted": false,
+		"name": "",
+		"stream_id": "default"
+	}, {
+		"clients": [{
+			"config": {
+				"instance": 1,
+				"latency": 0,
+				"name": "",
+				"volume": {
+					"muted": false,
+					"percent": 100
+				}
+			},
+			"connected": true,
+			"host": {
+				"arch": "arm64-v8a",
+				"ip": "172.16.3.222",
+				"mac": "b4:0b:44:ed:fc:0d",
+				"name": "jianguo-Pro-2",
+				"os": "Android 7.1.1"
+			},
+			"id": "ffffffff-9851-c6d8-ffff-ffff95cb096d",
+			"lastSeen": {
+				"sec": 1589773030,
+				"usec": 553698
+			},
+			"snapclient": {
+				"name": "Snapclient",
+				"protocolVersion": 2,
+				"version": "0.17.1"
+			}
+		}],
+		"id": "467032bb-f8ad-aa92-18bc-5c8dc57d2204",
+		"muted": false,
+		"name": "",
+		"stream_id": "default"
+	}]
+}
+```
+
+看代码里，是在收到hello消息后，新建了一个client的信息。
+
+```
+bool newGroup(false);
+GroupPtr group = Config::instance().getGroupFromClient(streamSession->clientId);
+if (group == nullptr)
+{
+group = Config::instance().addClientInfo(streamSession->clientId);
+newGroup = true;
+}
+```
+
+每个从机的id，是一个随机的uuid。
 
 
 

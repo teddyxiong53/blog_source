@@ -108,19 +108,29 @@ jsonrpc有1.0和2.0 这2个版本。二者有差别。我们只看2.0的。
 
 
 
-# python例子
+使用
 
-安装依赖
+Parser的parse函数里，就进行了回调函数的调用。只有Notification和Request这2个会调用回调，因为只有他们有回调函数。
 
-```
-pip install python-jsonrpc
-```
-
-server.py
+parse函数的本质是：把json字符串，构造成对应的Entity类对象。
 
 ```
-
+inline entity_ptr Parser::do_parse_json(const Json& json)
+{
+    try
+    {
+        if (is_request(json))
+            return std::make_shared<Request>(json);
+        if (is_notification(json))
+            return std::make_shared<Notification>(json);
+        if (is_response(json))
+            return std::make_shared<Response>(json);
+        if (is_batch(json))
+            return std::make_shared<Batch>(json);
+    }
 ```
+
+
 
 
 

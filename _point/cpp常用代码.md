@@ -2,23 +2,34 @@
 http://cpp.sh/
 这个网站可以在线测试c++代码，挺方便的。
 
+### 双层vector遍历
 
-双层vector遍历
+```
 for(auto it: grapes) {
 	for(auto it1: it) {
 		cout << it1 << endl;
 	}
 }
-vector定义的时候，就预留好一定的空间。
+```
+
+
+
+### vector定义的时候，就预留好一定的空间。
+
+```
 int n;
 cin >> n;
 vector<int> nums(n);
+```
+
+
 也可以用reserve函数来预留。
 如果不预留，访问会挂掉的。
 
 arrays.push_back(v);
 这样的时候，就不要前面保留，不然保留的那部分不会被使用的。
 
+```
 int main()
 {
     vector<int> nums;
@@ -31,19 +42,49 @@ int main()
         cout << it << endl;
     }
 }
+```
+
+
+
+### 增强for循环里不是迭代器
 
 auto it=vec.begin();
 跟
 for(auto it: vec )  不一样。
 	这个for循环里的不是迭代器啊。
+
+```
 int main() {
     vector<int> vec = {1,2,3};
     for(auto it=vec.begin(); it != vec.end(); it++) {
         cout << *it << endl;
     }
 }
+```
 
-# 读取文件
+
+
+### 智能执行typedef
+
+```
+using entity_ptr = std::shared_ptr<Entity>;
+using request_ptr = std::shared_ptr<Request>;
+
+typedef std::shared_ptr<ClientInfo> ClientInfoPtr;
+typedef std::shared_ptr<Group> GroupPtr;
+```
+
+这种风格也还可以。
+
+### 枚举类继承基本类型
+
+```
+enum class entity_t : uint8_t
+```
+
+
+
+### 读取文件
 ```
 	std::ifstream infile;	
 	infile.open("../config.json");
@@ -62,6 +103,8 @@ int main() {
 
 
 
+### 使用头文件
+
 尽量不要用带h的头文件。
 c标准库的，有c++的版本，在名字前面加上了c。
 
@@ -70,13 +113,16 @@ c标准库的，有c++的版本，在名字前面加上了c。
 #include<stdio.h>// 标准化以前C++中的C标准库     
 ```
 
-# 头文件分布
+### 头文件分布
 1、C库
 2、容器
 3、io
 4、多线程
 5、其他
 
+
+
+```
 1、C库
 	<cassert>
 		里面就一个函数assert。
@@ -97,7 +143,8 @@ c标准库的，有c++的版本，在名字前面加上了c。
 	<ciso646>
 		定义一些逻辑操作宏。
 		例如 and对应&&
-		
+```
+
 	<climits>
 		INT_MAX这些宏。
 	<clocale>
@@ -120,6 +167,8 @@ c标准库的，有c++的版本，在名字前面加上了c。
 	<cwchar>
 	<cwctype>
 2、容器
+
+```
 	<array>
 		类：array
 			std::array<int,10> a{{1,2,3}}
@@ -148,8 +197,10 @@ c标准库的，有c++的版本，在名字前面加上了c。
 			for(auto i : a) {
 				std::cout << i << std::endl;
 			}
-			
 			std::sort(a.begin(), a.end());
+```
+
+			
 			
 	<deque>
 		类：
@@ -271,19 +322,18 @@ c标准库的，有c++的版本，在名字前面加上了c。
 	<unordered_map>
 	<unordered_set>
 	<vector>
-	
-3、io
-	<fstream>
-		继承关系
-		ios_base
-			basic_ios
-				basic_istream
-					basic_ifstream
-		ifstream自己的函数：
-			open
-			close
-			is_open
-			
+
+	3、io
+		<fstream>
+			继承关系
+			ios_base
+				basic_ios
+					basic_istream
+						basic_ifstream
+			ifstream自己的函数：
+				open
+				close
+				is_open
 		继承自istream的函数
 			有格式输入：
 				>>
@@ -309,22 +359,23 @@ c标准库的，有c++的版本，在名字前面加上了c。
 	<ostream>
 	<sstream>
 	<streambuf>
-	
-4、多线程
-	<atomic>
-	condition_variable>
-	<future>
-	<mutex>
-	<thread>
-5、其他
-	<algorithm>
-	<chrono>
-		类：
-			duration：表示一段时间。
-				using jiffies = std::chrono::duration<int, std::centi>;//centi是百分之一。
-				std::chrono::duration sec(1);
-				std::cout << jiffies(sec).count();
+
+
 				
+	4、多线程
+		<atomic>
+		condition_variable>
+		<future>
+		<mutex>
+		<thread>
+	5、其他
+		<algorithm>
+		<chrono>
+			类：
+				duration：表示一段时间。
+					using jiffies = std::chrono::duration<int, std::centi>;//centi是百分之一。
+					std::chrono::duration sec(1);
+					std::cout << jiffies(sec).count();
 			system_clock
 				常用功能：
 				获取当前时间：
@@ -364,8 +415,8 @@ c标准库的，有c++的版本，在名字前面加上了c。
 	<system_error>
 	<tuple>
 	<utility>
-	
-	
+
+
 常用算法
 std::swap
 	交换vector，或者2个数值。
@@ -468,7 +519,6 @@ c++要求，凡是可以放入到标准容器里的类型，必须具有值语�
 
 值语义是c++语言的三大约束之一。
 c++的设计初衷是让class可以跟int一样工作，具有同等的地位。
-
 
 相比于epoll，poll的好处是：
 它的调用是上下文无关的，可以很好地用strace来进行跟踪。

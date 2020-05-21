@@ -62,6 +62,12 @@ int main()
 
 
 
+
+
+# 清空操作
+
+
+
 参考资料
 
 1、vector的下标索引与at的区别
@@ -71,3 +77,7 @@ https://blog.csdn.net/heroesjun/article/details/48415863
 2、【C++】判断两个vector是否相等～直接用“==”呀～
 
 https://blog.csdn.net/liuchuo/article/details/52486206
+
+3、C++ vector清空元素的三种方法
+
+https://blog.csdn.net/weixin_30897079/article/details/97119054

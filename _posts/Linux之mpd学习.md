@@ -843,9 +843,11 @@ Output 2 (output_alsa) is disabled
 
 ## 调试问题
 
-进来不用用send接口，用run接口。
+## 不要用send接口，用run接口
 
-song的tag获取。
+send发送不严格。run做了严格的检查。
+
+## song的tag获取
 
 ```
 std::string MpdPlayer::getTag(const struct mpd_song *song, enum mpd_tag_type type)
@@ -864,7 +866,42 @@ std::string MpdPlayer::getTag(const struct mpd_song *song, enum mpd_tag_type typ
 
 酷狗通过dlna传递过来的歌曲，获取不到title等tag信息。
 
+## 报错
 
+在使用中，碰到了这些错误。
+
+```
+reason:Cannot send a new command while receiving another response
+```
+
+这个还比较常见。
+
+看代码，就是在mpd_run_check里做的。
+
+```
+mpd_run_check(struct mpd_connection *connection)
+{
+	assert(connection != NULL);
+
+	if (mpd_error_is_defined(&connection->error))
+		return false;
+
+	if (connection->sending_command_list) {
+		mpd_error_code(&connection->error, MPD_ERROR_STATE);
+		mpd_error_message(&connection->error,
+```
+
+这个是因为还在等待回复的时候，又发了下一条命令导致的错误。
+
+要避免非常频繁地发送命令。
+
+
+
+播放完当前歌曲自动切换到下一首的时候，怎么主动对外报告这个信息？
+
+mpd有没有主动向外报告这个事件？
+
+没有这个事件。
 
 
 

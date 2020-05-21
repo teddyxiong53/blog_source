@@ -236,9 +236,36 @@ goto menu_choose
 
 
 
+
+
+现在有一个需求，就是批量格式化SD卡，然后拷贝一些文件进去。
+
+这个可以分解为：
+
+1、格式化磁盘。
+
+dos下面的命令有：diskpart。这个是交互式的命令。能不能直接执行呢？
+
+可以，后面可以跟一个脚本。
+
+```
+diskpart [/s <script>] [/?]
+```
+
+脚本的内容，就是把后面的输入的内容一行行写到脚本里就好了。
+
+
+
 # 参考资料
 
-
+1、
 
 https://blog.csdn.net/qq_16559905/article/details/78575147
 
+2、DOS命令格式化磁盘方法
+
+https://jingyan.baidu.com/article/e9fb46e140a04a7521f766d4.html
+
+3、windows下如何实现类似awk获取文件字段值功能
+
+https://jingyan.baidu.com/article/0320e2c10ca7c31b87507bce.html

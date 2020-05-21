@@ -161,6 +161,14 @@ void test3()
 
 
 
+如果要读源代码，就到github上多个头文件的版本。这个会清晰一下，单独一个头文件的很难读。
+
+https://github.com/nlohmann/json
+
+这个的复杂度，也不亚于rapidjson。
+
+
+
 参考资料
 
 1、json for modern c++的使用

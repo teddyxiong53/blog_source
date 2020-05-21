@@ -58,6 +58,16 @@ select
 每次重新循环的时候，要重新设置一下timeval，不然就没有时间限制作用。
 ```
 
+```
+    while(1) 
+   { 
+        FD_ZERO(&fds); //每次循环都要清空集合，否则不能检测描述符变化
+        FD_SET(sock,&fds); //添加描述符
+        FD_SET(fp,&fds); //同上
+        maxfdp=sock>fp?sock+1:fp+1;    //描述符最大值加1
+        switch(select(maxfdp,&fds,&fds,NULL,&timeout))   //select使用
+```
+
 
 
 pollhup
@@ -77,5 +87,7 @@ pollpri
 
 https://blog.csdn.net/21aspnet/article/details/6582021
 
+2、
 
+https://www.cnblogs.com/zhengAloha/p/8661762.html
 
