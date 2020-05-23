@@ -903,6 +903,25 @@ mpd有没有主动向外报告这个事件？
 
 没有这个事件。
 
+## 经验
+
+mpd_connection_new来创建一个到mpd的连接。
+
+mpd_connection_free来释放这个连接。
+
+大部分函数都是返回bool类型来表示成功失败，要看具体的错误细节，用下面这些函数：
+
+```
+mpd_connection_get_error
+	返回枚举。
+mpd_connection_get_error_message
+	返回字符串。
+mpd_connection_get_server_error
+	返回枚举，这个是mpd端的错误，而不是客户端的错误。
+```
+
+不严重的错误，可以用mpd_connection_clear_error来清除。
+
 
 
 # mpd协议

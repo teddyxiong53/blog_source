@@ -118,10 +118,32 @@ mqtt协议最多允许用4个字节来表示剩余长度。那么最大长度是
 
 # 具体消息分析
 
-消息内容，按字节排布：
+## connect
 
-```
-0x10 表示connect消息 
 
-```
 
+![1590214928766](/images/random_name/1590214928766.png)
+
+## connack
+
+![1590215035300](/images/random_name/1590215035300.png)
+
+## ping req
+
+![1590215064590](/images/random_name/1590215064590.png)
+
+## ping resp
+
+![1590215078467](/images/random_name/1590215078467.png)
+
+## publish
+
+![1590215149577](/images/random_name/1590215149577.png)
+
+## sub
+
+![1590215196497](/images/random_name/1590215196497.png)
+
+## sub ack
+
+![1590215209216](/images/random_name/1590215209216.png)

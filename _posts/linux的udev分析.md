@@ -189,6 +189,14 @@ E: SUBSYSTEM=misc
 
 内核中定义了struct class结构体，顾名思义，一个struct class结构体类型变量对应一个类，内核同时提供了class_create(…)函数，可以用它来创建一个类，这个类存放于sysfs下面，一旦创建好了这个类，再调用device_create(…)函数来在/dev目录下创建相应的设备节点。**这样，加载模块的时候，用户空间中的udev会自动响应device_create(…)函数，去/sysfs下寻找对应的类从而创建设备节点。**
 
+
+
+# buildroot里的udevd
+
+是在eudev目录下，而不是udevd目录下。
+
+
+
 参考资料
 
 1、udev udevadm介绍及linux设备重命名和自动挂载应用实例分析

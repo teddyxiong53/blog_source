@@ -238,6 +238,11 @@ SYSLOGD_ARGS="-n -O /data/messages -s 20 -S"
 
 
 
+# Android中syslog的实现
+
+Android中没有syslogd和klogd，但为了兼容使用syslog的程序，在bionic目录下有syslog函数的实现。这里的syslog函数会将打印内容输出到/dev/log，即logcat中；也有版本是输出到/dev/kmsg，也就是最终调用prink作为内核log输出。
+
+
 # 参考资料
 
 1、
@@ -255,3 +260,7 @@ https://blog.csdn.net/yangxuan12580/article/details/51497069
 4、busybox syslog介绍
 
 http://www.mamicode.com/info-detail-2284735.html
+
+5、关于Linux log机制的一些整理
+
+https://blog.csdn.net/walkingman321/article/details/7459562

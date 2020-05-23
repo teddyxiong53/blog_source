@@ -101,6 +101,28 @@ enum class entity_t : uint8_t
 	}
 ```
 
+### 去掉字符串里的空白字符
+
+```
+using namespace std;
+int main(int argc, char const *argv[])
+{
+    string s = "\r\n\t \t这是随便写的一句话。\t\t";
+    size_t n = s.find_last_not_of( " \r\n\t");
+    if ( n != string::npos)
+    {
+        s.erase( n + 1 , s.size() - n );
+    }
+       n = s.find_first_not_of ( " \r\n\t");
+    if (n!=string::npos)
+    {
+        s.erase(0,n);
+    }
+    cout << s << endl;
+    return 0;
+}
+```
+
 
 
 ### 使用头文件
@@ -200,8 +222,8 @@ c标准库的，有c++的版本，在名字前面加上了c。
 			std::sort(a.begin(), a.end());
 ```
 
-			
-			
+
+​			
 	<deque>
 		类：
 			deque
@@ -322,7 +344,7 @@ c标准库的，有c++的版本，在名字前面加上了c。
 	<unordered_map>
 	<unordered_set>
 	<vector>
-
+	
 	3、io
 		<fstream>
 			继承关系
@@ -361,7 +383,7 @@ c标准库的，有c++的版本，在名字前面加上了c。
 	<streambuf>
 
 
-				
+​				
 	4、多线程
 		<atomic>
 		condition_variable>

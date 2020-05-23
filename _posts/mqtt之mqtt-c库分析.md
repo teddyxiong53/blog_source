@@ -184,6 +184,21 @@ reconnect_client: called while client was in error state "MQTT_ERROR_ACK_OF_UNKN
  connect to 172.16.2.123:1883                                                             
 ```
 
+## bufsize变成一个很大的数值
+
+```
+#1  0x0000000000408cd4 in mqtt_pack_publish_request (
+    buf=0x7fa23e05a0 <malloc> "b\006", bufsz=548182821640,
+```
+
+使用中出现了死机。
+
+bufsz=548182821640 这个明显是异常值。为什么会这样呢？
+
+后面试了，又难以复现。
+
+从加的打印看，对buf的使用，是用完再一次统一释放。
+
 
 
 参考资料
