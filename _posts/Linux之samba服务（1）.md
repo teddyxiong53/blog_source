@@ -12,6 +12,75 @@ tags:
 
 所以需要对samba进行一个深入的认识。
 
+smb协议是微软和intel在1987年制定的一个协议。
+
+是一个开放的协议。可以支持扩展。这就导致协议到现在变得非常复杂。
+
+后来微软又把smb升级为cifs。Common Internet FileSystem。加入了更多的特性。
+
+smb是在netbios基础上进行实现的。
+
+netbios是在tcp层之上的。
+
+当安装TCP/IP协议时，NetBIOS 也被Windows作为默认设置载入，我们的计算机也具有了NetBIOS本身的开放性。某些别有用心的人就利用这个功能来攻击服务器，使管理员不能放心使用文件和打印机共享。
+
+![image-20200527203915417](../images/random_name/image-20200527203915417.png)
+
+
+
+在netbios出现后，微软就基于netbios实现了一个网络文件/打印服务系统。
+
+这个系统基于netbios设定了一套文件共享协议。
+
+微软称之为smb协议。
+
+后来这个协议被微软用来做lan manager和Windows NT服务器系统里。
+
+而微软的普通电脑系统里，都包含客户端。
+
+所以这个协议在局域网系统里影响非常大。
+
+随着Internet的流行，微软希望把这一套系统推广到internet上。
+
+就升级成了CIFS。
+
+为了让Windows和unix系统更好地互相通信。最好的办法就是在unix里安装smb的协议软件。
+
+这样Windows电脑这边，什么都不用改，就可以把unix当做Windows服务器一样来使用了。
+
+smb协议带有非常浓厚的微软的色彩。
+
+
+
+在smb协议里，计算机为了访问网络资源，就需要了解网络上的资源的列表。
+
+这个机制，就做浏览（browse）。
+
+在smb协议里，经常使用广播的方式。
+
+但是如果每次都使用广播的方式来了解网络里的资源的情况。会导致大量的数据包。
+
+因此，最好在网络里维护一个网络资源列表。
+
+只有必要的时候，才重新查找资源。
+
+但是没有必要每台计算机都维护一份资源列表。
+
+在一个网络里，只需要几台计算机维护就好了。
+
+这些特殊的计算机，被称为browser。
+
+browser并不是认为指定的，而是计算机之间协商推举产生的。
+
+多个browser里，一个是主browser，其余为备份browser。
+
+
+
+这是由于系统的默认配置
+Default: guest account = nobody 默认将guest访问，映射到系统nobody用户的访问
+和我们设定的
+map to guest = Bad User 使用无效密码的用户登录将被拒绝，除非用户名不存在，在这种情况下，它将被视为访客登录并映射到 guest account
+
 # samba和SMB关系
 
 samba是一个软件的名字。
@@ -214,6 +283,60 @@ smbclient  //172.16.2.121/homes -U hlxiong@123456
 
 
 
+# 匿名共享
+
+在global下面：
+
+```
+[global]
+	security = share
+[public] # 这个是共享名
+	public = yes
+	path = /share #绝对路径
+```
+
+
+
+浏览器打开是这样：
+
+```
+\\172.16.2.121
+```
+
+然后浏览器帮你转成了
+
+```
+file://172.16.2.121
+```
+
+这个视频教程讲了匿名访问的，挺好的。
+
+https://www.bilibili.com/video/BV1GW411j7TG?p=3
+
+
+
+file://和smb://的区别
+
+
+
+
+
+samba主要用于在windows和unix之间共享资源。资源包括文件、打印机等等。
+
+NFS主要用于在UNIX/LINUX上。
+
+从配置来看，samba比较复杂，nfs比较简单。
+
+samba能解决win和linux,linux和linux之间的共享，但是SMB协议是MS的，SMB的高级特性是和windows的特性联系紧密的。但NFS更简洁，方便，更原生，兼容性更好。
+
+这个是带密码的smb链接写法。
+
+```
+smb://Administrator:P%40ss@msmith1/c/WINDOWS/Desktop/foo.txt
+```
+
+这个符合我的需求了。
+
 
 
 参考资料
@@ -253,3 +376,19 @@ https://wiki.archlinux.org/index.php/samba
 8、Samba客户端配置
 
 https://yq.aliyun.com/articles/175133
+
+9、SMB协议
+
+https://baike.baidu.com/item/SMB%E5%8D%8F%E8%AE%AE
+
+10、
+
+https://www.jianshu.com/p/15893eece2ee
+
+11、
+
+https://zhidao.baidu.com/question/2121939832608350307.html
+
+12、samba数据源类似file的调用---SmbFile
+
+https://blog.csdn.net/q790006739/article/details/88817473
