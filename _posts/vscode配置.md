@@ -250,7 +250,13 @@ https://blog.csdn.net/Lean_on_Me/article/details/84552487
 
 1、安装Remote Development插件。
 
+2、服务器配置了ssh免密码登陆。这个我当前就是好的。
 
+3、打开vscode的命令面板。深入Remote SSH，会出现一些提示，选择其中的connect to host。然后会让你输入一个ssh xx@xx -A的命令，填入，就可以正常连上进行开发了。还是很简单的。
+
+
+
+# vscode原理
 
 这里分享一个小知识——Eclipse核心部分的开发者就是早期的VS Code团队。嗯，所以他们没有两次踏入同一条河流。**与Eclipse不同，VS Code选择了把插件关进盒子里**。
 

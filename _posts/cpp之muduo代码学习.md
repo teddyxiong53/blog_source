@@ -88,3 +88,9 @@ include  lib
 
 
 
+可以直接在Linux下，使用vscode来图形界面方式调试代码。
+
+配置好bin的路径就好。然后把stopAtEntry从false改成true。这样就会自动停在main函数处，不用自己去下断点了。
+
+
+
