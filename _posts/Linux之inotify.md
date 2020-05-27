@@ -6,163 +6,178 @@ tags:
 
 ---
 
+1
+
+Linux的桌面体验，比不上macos和windows。
+
+为了提升Linux的桌面使用体验。开源社区对内核提出了需求，要求内核提供一些机制，让用户态可以及时了解到内核或者硬件发生了什么变化。
+
+从而可以更好地管理设备，为用户提供更好的服务。
+
+hotplug、udev、inotify这3种机制，就是在这个背景下诞生的。
+
+其中，inotify是一种文件系统的变化通知机制，文件的变化，可以及时通知到用户态。
+
+对应的头文件是`<sys/inotify.h>`。
+
+```
+IN_ACCESS：文件被访问
+IN_MODIFY：文件被修改
+IN_ATTRIB，文件属性被修改
+```
 
 
-inotify可以监测linux下的文件系统变化。
 
-对应头文件是linux/inotify.h。
+里面主要是3个接口.
 
-里面主要就是一个结构体inotify_event和几个宏。
+```
+inotify_init
+inotify_add_watch
+inotify_rm_watch
+```
+
+## inotify_init
+
+```
+原型：
+	int inotify_init(void);
+返回值：
+	一个fd。表示一个inotify实例。
+```
+
+一个inotify实例，对应了一个独立的排序的队列。
+
+文件系统的变化，是一个watch事件。队列里放的就是这种watch事件。
+
+一个watch事件，是一个二元组。包括：目标、mask。目标可以是目录和文件。
+
+mask表示事件类型，例如创建、删除、修改等。
+
+## inotify_add_watch
+
+```
+原型：
+	int inotify_add_watch(int fd, const char *pathname, uint32_t mask);
+参数1：
+	fd。就是inotify_init得到的fd。
+参数2：
+	pathname。
+参数3：
+	x。
+返回值：
+	> 0表示成功，-1表示失败。具体错误码用errno来表示。
+	返回值在rm的时候需要用到。
+函数作用：
+	1、添加或者修改。
+```
+
+一个fd，可以添加多个wd。
+
+所以在你的应用进程里，只需要一个fd。然后根据需要add一些你关注的文件或者目录就好了。
+
+
+
+## inotify_rm_watch
+
+```
+原型：
+	int inotify_rm_watch(int fd, int wd);
+参数1：
+	fd。inotify_init的返回值。
+参数2：
+	wd：inotify_add_watch的返回值。
+```
+
+
+
+## inotify_event
 
 ```
 struct inotify_event {
   s32 wd;//watch fd
   u32 mask;
   u32 cookie;
-  u32 len;
-  char name[0];
+  u32 len;//表示name字段的长度。
+  char name[0];//会4字节对齐。len也包括对齐增加的字节数在内。
 };
 ```
 
-宏就是指定监控的行为，例如：
+name 为被监视目标的路径名，**该结构的 name 字段为一个桩，**它只是为了用户方面引用文件名，文件名是变长的，它实际紧跟在该结构的后面，文件名将被 0 填充以使下一个事件结构能够 4 字节对齐。注意，len 也把填充字节数统计在内。
+
+
+
+
+
+
+
+## 操作
 
 ```
-IN_ACCESS
-IN_MODIFY这些。
+size_t len = read(fd, buf, BUF_LEN);
 ```
 
-
-
-示例程序：
+一次read，可以获得多个事件，只要提供的buf足够大。
 
 ```
 #include <stdio.h>
-#include <stdlib.h>
+#include <sys/inotify.h>
 
-#include <linux/inotify.h>
-
-
-int watch_inotify_events(int fd)
+int main(int argc, char const *argv[])
 {
-	int ret;
-	char event_buf[512];
-	struct inotify_event *event;
-	int event_pos = 0;
-	int event_size = 0;
-	ret = read(fd, event_buf, sizeof(event_buf));
-	while(ret >= sizeof(struct inotify_event)) {
-		event = (struct inotify_event *)(event_buf + event_pos);
-		if(event->len) {
-			if(event->mask & IN_CREATE) {
-				printf("create file:%s\n", event->name);
-			} else if(event->mask & IN_DELETE) {
-				printf("delete file:%s\n", event->name);
-			}
-		}
-		event_size = sizeof(struct inotify_event) + event->len;
-		ret -= event_size;
-		event_pos += event_size;
-	}
-	return 0;
-}
+    int fd = inotify_init();
+    printf("fd:%d\n", fd);
+    int wd = inotify_add_watch(fd, "./1.txt", IN_MODIFY);
+    printf("wd:%d\n", wd);
+    char buf[1024] = {0};
+    printf("before read:\n");
+    size_t len = read(fd, buf, 1023);
+    printf("read len:%d, sizeof(inotify_event):%d\n", len, sizeof(struct inotify_event));
+    struct inotify_event *event = (struct inotify_event *)buf;
+    printf("event->wd:%d, event->mask:0x%x, event->cookie:%d, event->len:%d, event->name:%s\n",
+        event->wd, event->mask, event->cookie, event->len, event->name);
 
-
-int main(int argc, char **argv)
-{
-	int fd;
-	if(argc != 2) {
-		printf("%s <dir> \n", argv[0]);
-		return -1;
-	}
-	fd = inotify_init();
-	if(fd == -1) {
-		printf("init fail\n");
-		return -1;
-	}
-	int ret;
-	ret = inotify_add_watch(fd, argv[1], IN_CREATE | IN_DELETE);
-	watch_inotify_events(fd);
-	if(inotify_rm_watch(fd, ret) == -1) {
-		printf("rm watch fail\n");
-		return -1;
-	}
-	close(fd);
-	return 0;
-}
-
-```
-
-```
-teddy@teddy-ubuntu:~/work/test/c-test$ ./a.out ./
-create file:xx
-```
-
-嵌入式编译，应该用sys/inotify.h。而不是linux/inotify.h。不然编译不过。
-
-
-
-只能监听目录，而不是文件。
-
-一个实用写法是这样。
-
-```
-int watch_inotify_events(int fd)
-{
-	int ret;
-	char event_buf[512] = {0};
-	struct inotify_event *event;
-	int event_pos = 0;
-	int event_size = 0;
-	//syslog(LOG_INFO, "watch before read");
-	ret = read(fd, event_buf, sizeof(event_buf));
-
-	//syslog(LOG_INFO, "watch after read");
-
-	while(ret >= sizeof(struct inotify_event)) {
-		event = (struct inotify_event *)(event_buf + event_pos);
-		if(event->len) {
-			syslog(LOG_INFO, "inotify event: %s", event->name);
-			if(event->mask & IN_CREATE) {
-				syslog(LOG_INFO, "create file:%s", event->name);
-				switch_debug(1, event->name);
-			} else if(event->mask & IN_DELETE) {
-				syslog(LOG_INFO,"delete file:%s", event->name);
-				switch_debug(0, event->name);
-			}
-		}
-		event_size = sizeof(struct inotify_event) + event->len;
-		ret -= event_size;
-		event_pos += event_size;
-	}
-	return 0;
-}
-
-void *debug_watch_file(void *arg)
-{
-	#define DEBUG_DIR "/data/doss/debug"
-	pthread_detach(pthread_self());
-	int watch_fd = inotify_init();
-	syslog(LOG_INFO, "watch fd:%d", watch_fd);
-	if(watch_fd < 0) {
-		syslog(LOG_ERR, "watch file init fail");
-		return NULL;
-	}
-	if(access(DEBUG_DIR, F_OK) != 0) {
-		mkdir(DEBUG_DIR, 0777);
-	}
-	int ret = inotify_add_watch(watch_fd, DEBUG_DIR, IN_CREATE | IN_DELETE);
-	if(ret < 0) {
-		syslog(LOG_ERR, "add watch fail");
-		return NULL;
-	}
-	while(1) {
-		watch_inotify_events(watch_fd);
-	}
-	return NULL;
+    return 0;
 }
 ```
+
+运行：
+
+```
+fd:3
+wd:1
+before read:
+read len:16, sizeof(inotify_event):16
+event->wd:1, event->mask:0x2, event->cookie:0, event->len:0, event->name:
+```
+
+为什么name是空的呢？
+
+
+
+# 问题
+
+我使用inotify来监听mpd的/var/lib/mpd/state文件的变化。
+
+但是发现只能检查到第一次的变化。这就奇怪了。
+
+后面发现是因为state这个文件每次有变化是被删除重新创建的。
+
+用stat查看。可以看到inode一直在变化。
+
+这个inotify就没法解决了。
+
+
+
+
 
 
 
 # 参考资料
 
+1、Linux inotify详解
+
+https://blog.csdn.net/breakout_alex/article/details/8902886
+
+2、inotify 心得
+
+https://www.cnblogs.com/mywebnumber/p/5826767.html

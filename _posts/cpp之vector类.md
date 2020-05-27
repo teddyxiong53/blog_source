@@ -68,6 +68,12 @@ int main()
 
 
 
+# 在vector里搜索pair
+
+这个需要使用find_if，而不是find。
+
+
+
 参考资料
 
 1、vector的下标索引与at的区别
@@ -81,3 +87,11 @@ https://blog.csdn.net/liuchuo/article/details/52486206
 3、C++ vector清空元素的三种方法
 
 https://blog.csdn.net/weixin_30897079/article/details/97119054
+
+4、对vector中的pair进行多次find操作
+
+https://blog.csdn.net/j_cou/article/details/83044739
+
+5、
+
+https://stackoverflow.com/questions/15499590/find-in-stdvectorstdpair

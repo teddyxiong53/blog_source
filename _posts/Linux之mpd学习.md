@@ -1022,6 +1022,558 @@ delete start:end
 
 
 
+## 窍门
+
+有时候，用户有这种需求：
+
+当前是用random方式进行播放，但是想要把一首歌曲插到当前歌单的最前面进行播放。
+
+mpd可以支持这种操作。
+
+实现的方式是给歌曲一个优先级。
+
+对应的命令是priod和priodid。
+
+默认情况下，优先级都是0.
+
+
+
+操作歌单里的歌曲，有两种方式：
+
+1、通过songid来操作。
+
+2、通过song在playlist里的pos来操作。
+
+使用songid的方式更安全一些。
+
+```
+mpc play [pos]
+mpc playid [songid]
+```
+
+
+
+```
+mpc add http://1.mp3
+mpc addid http://1.mp3 1
+```
+
+```
+mpc delete 0
+mpc deleteid 12
+
+mpc move 0 1
+mpc moveid 2 3 
+```
+
+```
+mpc prio 1 1 
+mpc prioid 1 2
+```
+
+
+
+查询mpd状态
+
+clearerror
+
+清除当前的status里的错误信息。每次调用播放相关命令的时候，会自动执行这个。
+
+currentsong
+
+显示当前歌曲的信息。获取tag信息就靠这个了。
+
+
+
+
+
+mpd里有个consume的概念，这个具体是指什么？
+
+我从名字上理解，感觉是把当前播放完的歌曲移除掉。如果可以实现这个功能，那么我插播一些信息就可以很方便地进行实现了。
+
+实际测试了一些，的确是这种效果。
+
+```
+consume {STATE} [2]
+Sets consume state to STATE, STATE should be 0 or 1. When consume is activated, each song played is removed from playlist.
+```
+
+
+
+# mpd支持dlna
+
+看配置文件里，有这个：
+
+```
+ifeq ($(BR2_PACKAGE_MPD_UPNP),y)
+MPD_DEPENDENCIES += expat libupnp
+MPD_CONF_OPTS += --enable-upnp
+else
+MPD_CONF_OPTS += --disable-upnp
+endif
+```
+
+mpd直接进行dlna播放，是否可行呢？
+
+用“mpd dlna”做关键字进行搜索。找到的还是upmpdcli这个作为mpd的前端来进行dlna支持的。
+
+# 播放aac
+
+mpd安装默认的配置编译出来，是不能正常播放aac文件的。
+
+我用ffmpeg插件来看看。编译后，播放aac文件，没有声音。
+
+查看/var/log/mpd.log文件里：
+
+```
+ffmpeg/aac: Estimating duration from bitrate, this may be inaccurate
+```
+
+从网上搜索，这个是ffmpeg解码aac的问题。
+
+
+
+mpd的插件里，选配上faad2的插件就可以解码aac的了。
+
+FAAD2 is an open source MPEG-4 and MPEG-2 AAC decoder
+
+
+
+ffmpeg系列-解决ffmpeg获取aac音频文件duration不准
+
+https://blog.csdn.net/u013470102/article/details/80880079
+
+
+
+# playlist处理
+
+现在需要保存多个歌单，播放过程中根据需要在不同的playlist之间切换。
+
+/var/lib/mpd/state  这个文件，在mpc clear的时候，会变化。
+
+```
+/ # cat /var/lib/mpd/state            
+sw_volume: 100                        
+audio_device_state:1:output_snapfifo  
+state: stop                           
+random: 0                             
+repeat: 0                             
+single: 0                             
+consume: 0                            
+crossfade: 0                          
+mixrampdb: 0.000000                   
+mixrampdelay: -1.000000               
+playlist_begin                        
+playlist_end                          
+```
+
+执行mpc ls | mpc add的时候，lizhi.aac是放在music目录下。default是一个歌单的名字。
+
+```
+May 26 10:09 : client: process command "add "lizhi.aac""
+May 26 10:09 : client: command returned 0
+May 26 10:09 : client: process command "add "default""
+May 26 10:09 : exception: No such directory
+```
+
+play/pause这些操作，会触发/var/lib/mpd/state的变化。
+
+我应该是可以用inotify来监听这个文件的变化，来得到mpd的状态变化事件。
+
+```
+播完歌单的事件。
+播放完成的时候，mpd.log里记录了。
+May 26 13:20 : player: played "https://api.testiot.dossav.com/storage/mp3/030920200924465e659ade933ac.aac"
+
+在state文件里记录了：
+playlist_begin
+song_begin: https://api.testiot.dossav.com/storage/mp3/030920200924465e659ade933ac.aac
+mtime: 0
+song_end
+song_begin: https://api.testiot.dossav.com/storage/mp3/030920200924465e659ade933ac.aac
+mtime: 0
+song_end
+song_begin: https://api.testiot.dossav.com/storage/mp3/030920200924465e659ade933ac.aac
+mtime: 0
+song_end
+playlist_end
+```
+
+可以读取最后一行。看看是不是playlist_end。
+
+每次按播放，这个state文件内容都会被清空。
+
+所以这个内容不会很长。
+
+经实际测试，不能用inotify来监听state文件的变化。
+
+因为state文件变化时，inode也变化了。
+
+所以inotify无法跟踪这样的变化。
+
+
+
+现在就只能尝试进行更加细致的歌单操作来达到目的。
+
+
+
+优先级从0到255，数字越大，优先级越高。默认都是0 。
+
+A priority is an integer between 0 and 255. The default priority of new songs is 0.
+
+优先级只在random模式下有效。
+
+
+
+# mpd支持samba
+
+现在有个需求，就是让板端直接播放samba服务器上的文件。
+
+samba服务器还是有密码的。
+
+```
+ifeq ($(BR2_PACKAGE_MPD_LIBSMBCLIENT),y)
+MPD_DEPENDENCIES += samba4
+MPD_CONF_OPTS += --enable-smbclient
+else
+MPD_CONF_OPTS += --disable-smbclient
+endif
+```
+
+配置上是要求这个。
+
+我先配置上编译跑一下看看，然后先用不需要密码的samba服务器测试一下。
+
+先用vlc来测试一下samba上的文件是否可以播放。
+
+在一台已经通过用户名和密码验证连接了目标samba服务器的电脑上。使用vlc直接播放下面的地址：
+
+```
+smb://172.16.2.3/public/music/1.mp3
+```
+
+可以正常播放。
+
+而在一台没有保存过目标samba服务器的电脑上用vlc播放这个地址，则报错：
+
+```
+open failed for '172.16.2.3/public/music/1.mp3' (Permission denied)
+```
+
+所以进行正常播放的前提，就是板端需要先进行连接认证，保存这个认证信息。
+
+
+
+所以，当前是先要搞清楚，Linux作为samba 客户端，连接其他的samba服务器的时候，应该怎样操作。
+
+我在板端执行执行：
+
+```
+ smbclient -L //172.16.2.3
+```
+
+提示下面的错误：
+
+```
+smbclient: Can't load /etc/samba/smb.conf - run testparm to debug it
+```
+
+所以，首先是需要生成一个smb.conf。
+
+我先在我的笔记本上做实验。基本通路通了再看板端的情况。
+
+现在在笔记本的mpd.conf里，配置：
+
+```
+music_directory  "smb://172.16.2.121/homes/music"
+```
+
+重新启动mpd。看mpd.log里打印这个：
+
+```
+smbclient: smbc_opendir('smb://SAMBA') failed: Invalid argument
+```
+
+当前认证操作肯定是还没有。
+
+但是也不知道知道在哪里填认证信息。
+
+当前为什么打印“smb://SAMBA”呢？不是应该打印我填入的ip地址吗？
+
+mpd依赖了libsmbclient。
+
+这个库是samba4-4.7.4下的一部分。
+
+
+
+# mpc更新到最新版本
+
+在阅读官网文档的时候，发现有些命令，在当前我的版本上是找不到的。
+
+我当前的是0.27的。
+
+到官网看，mpc的最新版本是0.33的。
+
+下载源代码。这个编译体系是meson+ninja。
+
+```
+meson . output
+ninja -C output
+sudo ninja -C output install
+```
+
+meson是通过pip来安装，依赖python3。所以我把默认Python改成python3才行。
+
+ninja也需要升级到最新版本。到官网下载二进制文件，放到/usr/bin目录下就好。
+
+
+
+# 官网文档
+
+mpd的编译需要c++14、boost的支持。
+
+还有对应的插件库。
+
+使用meson和ninja进行编译。
+
+## 配置文件写法
+
+每一行的格式是：
+
+```
+key "value"
+```
+
+value要用引号括起来。
+
+可以include其他的配置文件。
+
+
+
+## 配置music目录
+
+当你播放本地文件的时候，你需要把文件放在music目录下。
+
+默认情况下，mpd运行在music目录下使用软连接。
+
+除了使用本地文件，你还可以使用storage插件来访问服务器上的文件。
+
+例如，配置在smb服务器上的music，可以这样：
+
+```
+music_directory "smb://ip/music_dir"
+```
+
+你还可以使用多个存储插件来组成一个虚拟的music目录。访问分布在不同的位置的music。
+
+## 配置数据库插件
+
+当一个music目录被配置的食盒，一个数据库插件也就被使用了。
+
+可以在mpd.conf里这样配置：
+
+```
+database {
+	plugin "simple"
+	path "/var/lib/mpd/db"
+}
+```
+
+## 配置neighbor插件
+
+所有的neighbor插件默认都是禁用的。
+
+要使能的话，这样进行配置：
+
+```
+neighbors {
+	plugin "smbclient"
+}
+```
+
+## 配置input插件
+
+```
+input {
+	plugin "curl"
+	proxy "socks://120.0.0.1:1080"
+}
+```
+
+## 配置input cache
+
+input cache，就是用来提前缓存要播放的歌曲。
+
+是缓存到内存里。这样可以避免网络导致的卡顿，也可以让硬盘不用一直工作。
+
+```
+input_cache {
+	size "1 GB"
+}
+```
+
+mpd通过监听SIGHUP信号来情况这个input_cache。
+
+## 配置解码插件
+
+大部分的解码插件不需要配置，默认的配置就能正常工作。
+
+如果要配置的话，如下：
+
+```
+decoder {
+	plugin "wildmidi"
+	config_file "/etc/timidity/timidity.cfg"
+}
+```
+
+## 配置编码插件
+
+比较少用。
+
+## 配置audio output
+
+这个很常用。
+
+```
+audio_output {
+	type "alsa"
+	name "my alsa device"
+	device "default"
+}
+```
+
+## 配置filter
+
+这个是用来修改audio stream的。
+
+```
+filter {
+	plugin "volume"
+	name "software volume"
+}
+```
+
+filter后续会被合并到audio output里面。
+
+## 配置playlist插件
+
+```
+playlist_plugin {
+	name "m3u"
+	enabled "true"
+}
+```
+
+
+
+## client connection
+
+是通过bind_to_address这个配置来做的。
+
+可以罗列多个bind_to_address来绑定到多个。
+
+
+
+## state文件
+
+state文件是mpd存储和恢复状态的。这样在重启的时候，就可以恢复之前的状态。
+
+这个不是必选项。
+
+有2个配置项：
+
+```
+state_file "/var/lib/mpd/state"
+state_file_interval "120"
+```
+
+## 资源限制
+
+```
+connection_timeout
+	默认60s，如果超过这个时间没有通信，则断开。
+max_connections
+	默认100个。
+max_playlist_length
+	playlist最多多少首歌曲。默认16384首。
+max_command_list_size
+	默认2M。
+max_output_buffer_size
+	默认8M。
+```
+
+
+
+## 高级配置
+
+
+
+## 使用mpd
+
+最简单的启动方式，就是
+
+```
+mpd
+```
+
+不带任何参数就可以启动。
+
+停掉的方式：
+
+```
+mpd --kill
+```
+
+从代码看，处理了这3个信号。
+
+```
+	SignalMonitorRegister(SIGINT, {&loop, HandleShutdownSignal});
+	SignalMonitorRegister(SIGTERM, {&loop, HandleShutdownSignal});
+
+	SignalMonitorRegister(SIGHUP, {nullptr, handle_reload_event});
+```
+
+你往music目录下放入一些文件，然后执行
+
+```
+mpd update
+```
+
+根据文件的多少和机器的速度，这个操作花费的时间不同。
+
+你可以把其他的路径挂载到music目录。
+
+```
+mpc mount my_nfs nfs://192.168.1.4/export/mp3
+mpc mount my_udisk udisks://uuid
+mpc umount my_udisk
+```
+
+查看neighbor
+
+```
+mpc listneighbors
+```
+
+我当前的版本不支持这个命令。
+
+## metadata
+
+当扫描或者播放一首歌曲的食盒，mpd会解析歌曲的metadata。
+
+## queue
+
+队列，就是当前的播放歌曲列表。
+
+mpc playlist查看到的就是。
+
+
+
+
+
+
+
 参考资料
 
 1、Arch Linux下使用Mpd+Mpc
@@ -1059,3 +1611,14 @@ https://wiki.gentoo.org/wiki/MPD
 8、mpd协议
 
 https://www.musicpd.org/doc/html/protocol.html
+
+9、用电脑小主机自己做数字播放器 – MPD+LMS篇 
+
+http://blog.sina.com.cn/s/blog_537a660c0102wa6r.html
+
+10、官网文档
+
+https://www.musicpd.org/doc/html/user.html
+
+
+

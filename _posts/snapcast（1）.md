@@ -1401,6 +1401,18 @@ template <typename T>
 
 
 
+# 把alsa数据重定向到snapfifo
+
+这个是对于那些没有板端播放可以重定向到snapfifo的情况。
+
+这个会导致运行snapserver的机器没有声音。
+
+并不符合我的需求。
+
+
+
+
+
 
 
 参考资料
