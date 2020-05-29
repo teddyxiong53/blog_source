@@ -13,5 +13,12 @@ udev的工作是靠kernel发出的uevent来驱动的，如果是删除的uevent�
 
 执行时，先看数字，后看字母，后执行的会覆盖先执行的。
 
+每一行代表一个规则，由多个键值对。
 
 
+
+参考资料
+
+1、udev规则
+
+http://blog.chinaunix.net/uid-26808060-id-4339831.html

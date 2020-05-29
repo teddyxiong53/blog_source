@@ -339,6 +339,8 @@ smb://Administrator:P%40ss@msmith1/c/WINDOWS/Desktop/foo.txt
 
 
 
+
+
 参考资料
 
 1、samba文件共享以及用法（访问控制）

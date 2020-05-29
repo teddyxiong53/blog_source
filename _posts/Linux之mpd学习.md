@@ -1306,6 +1306,22 @@ mpd依赖了libsmbclient。
 
 
 
+找到解决方法了。
+
+板端的mpc不需要改动配置。只需要编译时打开samba支持。
+
+然后下发的smb连接应该是这样格式：
+
+```
+smb://username:password@172.16.2.168/homes/music/UrlPlayer.mp3
+```
+
+注意后面的目录地址是以共享名为路径的。
+
+例如服务器上的/home/teddy对外共享名为homes。
+
+
+
 # mpc更新到最新版本
 
 在阅读官网文档的时候，发现有些命令，在当前我的版本上是找不到的。

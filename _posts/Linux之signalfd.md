@@ -24,7 +24,7 @@ int signalfd(int fd, const sigset_t *mask, int flags);
 
 第一个参数有点费解，这个函数不是要产生一个fd吗？它的参数fd是干什么用的？
 
-看ma手册里：
+看man手册里：
 
 ```
 If  the fd argument is -1, then the call creates a new file descriptor and associates the signal set specified in mask with that descriptor.  If fd is not -1, then it must spec‐
