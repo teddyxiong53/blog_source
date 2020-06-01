@@ -36,3 +36,7 @@ int main() {
 1、C++类型萃取之type_traits和type_info
 
 https://blog.csdn.net/wf19930209/article/details/79312006
+
+2、C++ — 类型萃取
+
+<https://blog.csdn.net/dawn_sf/article/details/70038126>

@@ -52,6 +52,12 @@ c++ primer在第五章里说了，编译器隐式执行的任何类型转化，�
 
 注意，static_cast不能转换掉const、volatile或者__unaligned属性。
 
+```
+float f = 1.0;
+int a = (int)f;//这个编译器会给出warning。
+int a = static_cast<int>(f);//这个不会有warning。
+```
+
 
 
 # reinterrupt_cast

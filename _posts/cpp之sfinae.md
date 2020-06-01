@@ -10,6 +10,14 @@ tags:
 
 1
 
+这个视频讲了这个知识点。
+
+SFINAE 的两种写法，应该记着，将来做主程的时候，写库要用。
+
+https://www.bilibili.com/video/BV1Zg4y1q7Rc
+
+
+
 什么是sfinae？
 
 这个是一个缩写：Substitution Failure Is Not A Error。字面意思是：替换失败不是错误。
