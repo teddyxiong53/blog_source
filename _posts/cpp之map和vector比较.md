@@ -12,6 +12,18 @@ tags:
 
 
 
+vector和set的比较
+
+vector相比于其他的容器，有一个很大的特点，就是它是顺序存储的。
+
+这个带来了可以下标访问，随机访问的好处。带来了插入效率低的坏处。
+
+**vector：擅长于解决某个位置是什么值的问题。**
+
+**set：擅长于解决某个元素在哪个位置的问题。**
+
+
+
 参考资料
 
 1、vector和map的效率简要比较
@@ -22,3 +34,6 @@ https://blog.csdn.net/bodybo/article/details/75220126
 
 https://blog.csdn.net/Think88666/article/details/89318449
 
+3、vector和set的区别
+
+https://blog.csdn.net/stone_flower_rain/article/details/82771820

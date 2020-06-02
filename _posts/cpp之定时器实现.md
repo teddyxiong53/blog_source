@@ -39,3 +39,7 @@ https://blog.csdn.net/Fallinlove520/article/details/93131930
 2、c++11实现异步定时器
 
 https://www.cnblogs.com/gtarcoder/p/4924097.html
+
+3、C++11实现简易定时器
+
+https://blog.csdn.net/u012234115/article/details/89857431
