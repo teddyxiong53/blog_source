@@ -13,7 +13,7 @@ libuv是一个高性能的、事件驱动的io库。
 
 libuv是封装了iocp和libev。
 
-nodejs的底层就用了libuv。
+**nodejs的底层就用了libuv。**
 
 libuv的核心工作就是提供一个eventloop。
 

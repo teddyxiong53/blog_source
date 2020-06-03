@@ -82,6 +82,27 @@ int main()
 
 
 
+# steady_clock和system_clock
+
+steady_clock就是单独递增的时间。就像体育老师手里的秒表。一般用来统计函数的耗时。
+
+system_clock，就是系统时间。
+
+high_resolution_clock。相当于steady_clock的高精度版本。
+
+```
+using namespace std::chrono;
+int main()
+{
+    steady_clock::time_point t1 = steady_clock::now();
+    sleep(1);
+    steady_clock::time_point t2 = steady_clock::now();
+    duration<double> diff = duration_cast<duration<double>>(t2-t1);
+    printf("time:%f\n", diff);
+    return 0;
+}
+```
+
 
 
 #参考资料

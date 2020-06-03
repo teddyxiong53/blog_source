@@ -46,6 +46,31 @@ StreamServer
 
 
 
+# snapclient
+
+这个都是使用boost.asio的同步接口来做的。
+
+snapserver则是使用的异步接口。
+
+snapclient的整体逻辑还是很简单清晰的，采取同步方式，就更方便分析。
+
+主要的cpp文件也就5个。
+
+```
+snapclient.cpp
+	入口。main函数。
+controller.cpp
+	主要类。
+client_connection.cpp
+	处理连接相关。
+stream.cpp
+	处理媒体数据块。
+time_provider.cpp
+	统计时间差。
+```
+
+
+
 参考资料
 
 1、

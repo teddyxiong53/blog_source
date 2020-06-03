@@ -71,7 +71,7 @@ timerfd_gettime
 	old_value：经常是设置为NULL.
 ```
 
-## timerfd_settime
+## timerfd_gettime
 
 ```
 原型：
