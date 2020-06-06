@@ -50,3 +50,7 @@ emplace的提升也没有想象的那么大。
 1、C++11 中的 emplace
 
 http://blog.guorongfei.com/2016/03/16/cppx-stdlib-empalce/
+
+2、c++11 之emplace_back 与 push_back的区别
+
+https://blog.csdn.net/p942005405/article/details/84764104

@@ -53,7 +53,7 @@ int main ()
 
 1、不需要专门初始化。应该构造函数干了这个活。
 
-2、notify不要lock，wait要lock。
+**2、notify不要lock，wait要lock。**
 
 
 
