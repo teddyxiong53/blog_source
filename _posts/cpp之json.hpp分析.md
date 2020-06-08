@@ -169,11 +169,164 @@ https://github.com/nlohmann/json
 
 
 
+# 创建json对象
+
+## 使用cin来输入
+
+这个需要注意的是输入要ctrl+d来结束。
+
+## 键值对赋值
+
+```
+// 创建一个json对象(null)
+    json j;
+
+    //添加一个存储为double的数字
+    j["pi"] = 3.141;
+
+```
+
+## 这样更好
+
+```
+json j2 = {
+  {"pi", 3.141},
+  {"happy", true},
+  {"name", "Niels"},
+  {"nothing", nullptr},
+  {"answer", {
+    {"everything", 42}
+  }},
+  {"list", {1, 0, 2}},
+  {"object", {
+    {"currency", "USD"},
+    {"value", 42.99}
+  }}
+};
+```
+
+我用这个架子来填充内容就好了。
+
+```
+json j2 =
+        {
+            {
+                "directive",
+                {
+                    {
+                        "header",
+                        {
+                            {"namespace", "AudioPlayer"},
+                            {"name", "Play"},
+                        },
+                    },
+                    {
+                        "payload",
+                        {
+                            {"deviceId", "1sddddd"}
+                        }
+                    }
+                }
+            }
+        };
+```
+
+
+
+# 把json对象转成字符串
+
+```
+std::string s = j.dump(); 
+```
+
+# 把字符串转成json对象
+
+这样来手动生成一个json对象。
+
+```
+// or even nicer with a raw string literal
+auto j2 = R"(
+  {
+    "happy": true,
+    "pi": 3.141
+  }
+)"_json;
+```
+
+解析函数：
+
+```
+auto j = json::parse(str);
+```
+
+
+
+# 获取json对象里的内容
+
+```
+mylogd("%s", j["name"].get<std::string>().c_str());
+```
+
+# 查找
+
+```
+可以用三种方式  find/at/下标
+
+j_object.find("two");
+json k = j.at("non-existing");
+```
+
+
+
+# 异常
+
+![1591596057933](../images/random_name/1591596057933.png)
+
+
+
+
+
+```
+类：
+	json
+函数：
+	对象检测：
+        j.dump()
+        j.type()
+        j.is_null(),j.is_number(),...
+	访问值
+		j.get()
+			返回当前对象。
+		j.get_ptr()
+			返回当前对象指针。
+		j.get_ref()
+			返回当前对象的引用。
+		j.value("name", 0);//获取key为name的值，如果没有，则返回0 。
+		
+```
+
+
+
+直接操作对象。
+
+
+
 参考资料
 
 1、json for modern c++的使用
 
 https://blog.csdn.net/fengxinlinux/article/details/71037244
 
+2、
 
+https://nlohmann.github.io/json/home/exceptions/
 
+https://nlohmann.github.io/json/doxygen/
+
+3、
+
+https://blog.csdn.net/wphkadn/article/details/97417700
+
+4、
+
+https://www.jianshu.com/p/69e57f2af904

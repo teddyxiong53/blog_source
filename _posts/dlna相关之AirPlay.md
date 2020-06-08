@@ -16,6 +16,10 @@ tags:
 
 比gmrender的表现要好不少。
 
+
+
+# shairport-sync
+
 https://github.com/mikebrady/shairport-sync
 
 这个也是AirPlay的一个实现。在buildroot里自带了。
