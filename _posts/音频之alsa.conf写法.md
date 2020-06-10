@@ -46,7 +46,7 @@ snd_config_update_r
     /usr/share/alsa/alsa.conf为alsa-api的主要入口点
 ```
 
-在alsa.conf中，通常还会引用 /etc/asound.conf 和 ~/.asoundrc这两个配置文件，
+**在alsa.conf中，通常还会引用 /etc/asound.conf 和 ~/.asoundrc这两个配置文件，**
 
 这两个文件通常是放置你个人需要特殊设置的相关参数。
 
@@ -651,6 +651,19 @@ plug:front
 default 
 
 hw
+
+
+
+# alsa.conf文件分析
+
+```
+@hooks [ # 这个是默认就会调用的。是一个数组，里面可以有多个对象。
+		# 对应的代码函数是：snd_config_hook_load_for_all_cards
+	{ # 当前只放了一个对象。
+		func load
+	}
+]
+```
 
 
 

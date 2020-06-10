@@ -48,7 +48,7 @@ EPIPE错误表示overrun错误。
 
 
 
-
+# plugin
 
 alsa的plugin是个什么概念？
 
@@ -60,12 +60,7 @@ https://alsa.opensrc.org/ALSA_plugins
 
 是用来创建虚拟设备，这些虚拟设备可以当成硬件设备来用。
 
-常见的plugin有：
 
-```
-adpcm
-	
-```
 
 在/etc/asound.conf和~/.asoundrc这2个配置文件里进行配置。
 
@@ -107,46 +102,32 @@ pcm.myplugdev {
 然后我们播放命令这样写：
 
 ```
-aplay -Dmyplugdev 1.wav
+aplay -D myplugdev 1.wav
 ```
 
 
 
-
-
-pcm插件扩展了pcm设备的特性和功能。
-
-
-
-还是要把官方文档仔细看一遍。
-
-配置文件语法
+hw也是一种插件。它表示直接跟Linux驱动通信的插件。
 
 ```
-简单格式，支持现代数据描述，例如嵌套和数组支持。
-空白。如果有有用的空白，用"A B"。引号来包含。
-注释用# 。
-
-标点符号：
-大括号
-中括号
-,
-;
-=
-.
-''
-""
-
+pcm.myplugdev {
+	type hw
+	card 0
+	subdevice 0
+}
 ```
 
-等号不是必须的，因为主要是靠空白进行分割的。
+有一个特别的插件，类型是plug。
 
-```
-a 1 # is equal to
-a=1 # is equal to
-a=1;    # is equal to
-a 1,
-```
+经常用到，它的作用是进行通道、采用率、格式的转化。
+
+
+
+
+
+
+
+
 
 
 
@@ -214,7 +195,38 @@ period_time = buffer_time / 4;
 
 
 
+# 接口列表
 
+```
+/proc/asound
+	信息接口。
+/dev/snd/controlC0
+	控制接口。
+/dev/snd/mixerC0D0
+	mixer接口。
+/dev/snd/pcmC0D0
+	pcm接口。
+/dev/snd/midiC0D0
+	rawmidi接口。
+/dev/snd/seq
+	时序器接口。
+/dev/snd/timer
+	时钟接口。
+	
+不一定要所有接口都有。seq、mixer很多时候可以没有。
+```
+
+
+
+https://www.alsa-project.org/wiki/ALSA_Library_API
+
+
+
+
+
+对于上面的架构，在某一时刻只能有一个程序打开声卡并占有它，此时其它程序打开的话，会返回busy.如要支持同时可 以多个应用程序打开声卡，需要支持混音功能，有些声卡支持硬件混音，但大部分声卡不支持硬件混音，需要软件混音。
+
+alsa自带了一个很简单的混音器dmix
 
 # 参考资料
 
@@ -295,3 +307,7 @@ https://www.cnblogs.com/hzl6255/p/8245578.html
 19、ALSA中PCM的使用
 
 https://blog.csdn.net/explore_world/article/details/51013942
+
+20、
+
+https://blog.csdn.net/sssuperqiqi/article/details/97033472

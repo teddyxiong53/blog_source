@@ -132,3 +132,11 @@ pcm.bluealsa {
 1、
 
 https://github.com/Arkq/bluez-alsa
+
+2、基于树莓派连接天猫精灵方糖
+
+https://www.xiangquba.cn/2020/03/29/raspberrypi_tmall_bot/
+
+3、bluez-alsa as the default device
+
+https://bbs.archlinux.org/viewtopic.php?id=221232
