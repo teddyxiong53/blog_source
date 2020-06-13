@@ -190,3 +190,12 @@ echo 1>  xxx的时候，就是改变这个int变量的值。
 
 一个是mode，文件的可读可写性。
 
+
+
+
+
+参考资料
+
+1、linux设备驱动模型架构分析 一
+
+https://blog.csdn.net/chqsy/article/details/80912481

@@ -8,6 +8,36 @@ tags:
 
 1
 
+![img](../images/random_name/v2-323ca01cf89d720b04b7df3d1f3026e3_720w.jpg)
+
+
+
+ALSA分为两部分：一部分是在Linux Kernel的声卡驱动，主要是对声卡硬件（支持的采样率、声道、格式等）的描述和抽象；另一部分是在User Space的alsa-lib，有一套插件机制，包括resampling、mixing、channel mapping等功能都可以通过插件实现。
+
+有ALSA还不够，比如说，对多个应用同时播放的支持，虽然可以通过ALSA的dmix插件实现，但不够好。所以PulseAudio作为一个Sound Server登场了，PulseAudio来接管各种音频的输入输出，包括ALSA音频、蓝牙音频、网络音频等；会自动切换声卡，比如有USB声卡接入，播放自动切到USB声卡；还有控制每个应用独立的音量，等等。现在Linux桌面发行版大多都默认安装了PulseAudio。
+
+
+
+另一个类似PulseAudio的Sound Server是JACK Audio Connection Kit，JACK针对的是实时性高、低延时的专业音频应用。还有一个正在火热开发的新项目叫PipeWire，其设计目标是集合PulseAudio + Jack两者的优点，加入权限管理的安全机制，另外添加了对视频（摄像头设备）分发和管理的支持。PipeWire看起来很有前景，值得关注一下。
+
+
+
+有了PulseAudio、JACK和PipeWire，他们都有提供各自的API，那么我们先要录音和播放，到底选择用哪种API呢？
+
+**对于大部分应用，最佳的选择依然是用ALSA的API。**
+
+
+
+ PCM设备与声卡设备有所不同，PCM设备可以由ALSA的插件产生。系统安装PulseAudio之后，ALSA pulse插件会生成名为`pulse`的PCM设备，且这pulse会被设为默认设备。 如果不用PulseAudio，想实现同时多个应用播放和录音可以使用`dmix`和`dsnoop`插件，这两个插件支持采样频率、通道和格式有限，通常会在这俩之上加上`plug`插件，多个插件可以（有限的）级联在一起使用的 。
+
+
+
+个人来说，最推荐前面直接用`aplay`和`arecord`重定向的方式，没什么依赖， 稳定可靠，重定向的pipe提供缓冲功能，而且是多进程跑。
+
+
+
+
+
 在alsa驱动这一层，目前为止，抽象出了4层设备：
 
 一是hw:0,0；
@@ -75,11 +105,11 @@ pcm.SOMENAME {
 }
 ```
 
-上面的语句，创建了一个名字叫SOMENAME的插件。类型是PLUGINTYPE。一个插件相当于一个pipe，它的后端就是slave里的东西。
+上面的语句，创建了一个名字叫SOMENAME的插件。类型是PLUGINTYPE。**一个插件相当于一个pipe，它的后端就是slave里的东西。**
 
 插件的名字，有些是已经被预定义了的，例如default，dmix 。
 
-slave，可以是另一个插件，也可以是硬件设备。例如可以是hw:0,0
+**slave，可以是另一个插件，也可以是硬件设备。例如可以是hw:0,0**
 
 （我是否可以这么理解：插件就是在硬件前面的预处理？）
 
@@ -123,7 +153,111 @@ pcm.myplugdev {
 
 
 
+## hw
 
+这个类型主要是给声卡设备起别名用的。
+
+With the 'PCM hw type' you are able to define aliases for your devices.
+
+```
+pcm.primary {
+        type hw
+        card 0
+        device 0
+}
+```
+
+## plug
+
+type plug的对type rate等几种类型的综合。
+
+## dmix
+
+在没有dmix之前，Linux上软件混音，只能靠artsd、esd、jack这些应用来完成。
+
+dmix就是提供一个底层的混音方案。
+
+实际上，还没有多少应用使用了这个特性。
+
+dmix插件不是基于client/server架构。
+
+它直接写入到声卡的DMA缓冲区。
+
+
+
+插件类型在alsalib代码里的体现：
+
+在alsalib/include/pcm.h里。
+
+```
+/** PCM type */
+enum _snd_pcm_type {
+	/** Kernel level PCM */
+	SND_PCM_TYPE_HW = 0,
+	/** Hooked PCM */
+	SND_PCM_TYPE_HOOKS,
+	/** One or more linked PCM with exclusive access to selected
+	    channels */
+	SND_PCM_TYPE_MULTI,
+	/** File writing plugin */
+	SND_PCM_TYPE_FILE,
+	/** Null endpoint PCM */
+	SND_PCM_TYPE_NULL,
+	/** Shared memory client PCM */
+	SND_PCM_TYPE_SHM,
+	/** INET client PCM (not yet implemented) */
+	SND_PCM_TYPE_INET,
+	/** Copying plugin */
+	SND_PCM_TYPE_COPY,
+	/** Linear format conversion PCM */
+	SND_PCM_TYPE_LINEAR,
+	/** A-Law format conversion PCM */
+	SND_PCM_TYPE_ALAW,
+	/** Mu-Law format conversion PCM */
+	SND_PCM_TYPE_MULAW,
+	/** IMA-ADPCM format conversion PCM */
+	SND_PCM_TYPE_ADPCM,
+	/** Rate conversion PCM */
+	SND_PCM_TYPE_RATE,
+	/** Attenuated static route PCM */
+	SND_PCM_TYPE_ROUTE,
+	/** Format adjusted PCM */
+	SND_PCM_TYPE_PLUG,
+	/** Sharing PCM */
+	SND_PCM_TYPE_SHARE,
+	/** Meter plugin */
+	SND_PCM_TYPE_METER,
+	/** Mixing PCM */
+	SND_PCM_TYPE_MIX,
+	/** Attenuated dynamic route PCM (not yet implemented) */
+	SND_PCM_TYPE_DROUTE,
+	/** Loopback server plugin (not yet implemented) */
+	SND_PCM_TYPE_LBSERVER,
+	/** Linear Integer <-> Linear Float format conversion PCM */
+	SND_PCM_TYPE_LINEAR_FLOAT,
+	/** LADSPA integration plugin */
+	SND_PCM_TYPE_LADSPA,
+	/** Direct Mixing plugin */
+	SND_PCM_TYPE_DMIX,
+	/** Jack Audio Connection Kit plugin */
+	SND_PCM_TYPE_JACK,
+	/** Direct Snooping plugin */
+	SND_PCM_TYPE_DSNOOP,
+	/** Direct Sharing plugin */
+	SND_PCM_TYPE_DSHARE,
+	/** IEC958 subframe plugin */
+	SND_PCM_TYPE_IEC958,
+	/** Soft volume plugin */
+	SND_PCM_TYPE_SOFTVOL,
+	/** External I/O plugin */
+	SND_PCM_TYPE_IOPLUG,
+	/** External filter plugin */
+	SND_PCM_TYPE_EXTPLUG,
+	/** Mmap-emulation plugin */
+	SND_PCM_TYPE_MMAP_EMUL,
+	SND_PCM_TYPE_LAST = SND_PCM_TYPE_MMAP_EMUL
+};
+```
 
 
 
@@ -228,6 +362,10 @@ https://www.alsa-project.org/wiki/ALSA_Library_API
 
 alsa自带了一个很简单的混音器dmix
 
+
+
+
+
 # 参考资料
 
 1、深入了解ALSA
@@ -311,3 +449,13 @@ https://blog.csdn.net/explore_world/article/details/51013942
 20、
 
 https://blog.csdn.net/sssuperqiqi/article/details/97033472
+
+21、Linux下录音和播放
+
+这篇文章非常好。
+
+https://zhuanlan.zhihu.com/p/58834651
+
+22、A Guide Through The Linux Sound API Jungle
+
+http://0pointer.de/blog/projects/guide-to-sound-apis.html

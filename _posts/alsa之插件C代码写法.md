@@ -18,5 +18,6 @@ https://wiki.voicen.io/voicen_os/
 
 参考资料
 
-1、
+1、ALSA resample插件－SRC
 
+https://blog.csdn.net/weixin_41965270/article/details/81272732
