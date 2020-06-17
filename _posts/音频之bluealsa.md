@@ -442,6 +442,237 @@ io.c
 
 
 
+# 加入状态控制
+
+希望可以通过按键来控制蓝牙的播放暂停。
+
+另外需要获取蓝牙的播放状态。
+
+在utils/aplay.c里，有一个pause_device_player函数。可以看到里面是使用dbus来执行暂停的。
+
+```
+	sprintf(obj, "/org/bluez/%s/dev_%2.2X_%2.2X_%2.2X_%2.2X_%2.2X_%2.2X/player0",
+			ba_interface, dev->b[5], dev->b[4], dev->b[3], dev->b[2], dev->b[1], dev->b[0]);
+	msg = g_dbus_message_new_method_call("org.bluez", obj, "org.bluez.MediaPlayer1", "Pause");
+```
+
+这里有python通过dbus来进行蓝牙控制的例子。
+
+https://github.com/elsampsa/btdemo
+
+这样可以调节蓝牙音量。
+
+```
+dbus-send --print-reply --system --dest=org.bluez /org/bluez/xxxx/yyyy/dev_zz_zz_zz_zz_zz_zz org.bluez.Control.VolumeUp
+```
+
+where "xxxx" **seems** to be the PID for *bluetoothd*, "yyyy" is the adapter (like "hci0"), "zz_zz_zz..." represents the MAC address of the controlled device (headset, speakers, etc.) separated by underscores, and '*VolumeUp*' is replaced with '*VolumeDown*' to decrease volume.
+
+所以，我的方法，就是不用跟bluealsa进行通信，只需要在自己的主进程新建一个dbus连接，直接跟bluez通信进行控制就好了。
+
+在bluez/test目录下有一个simple-player的python脚本。可以看看。
+
+
+
+dbus-send --system --print-reply --dest=org.bluez /org/bluez/hci0 org.freede
+sktop.DBus.Introspectable.Introspect
+
+
+
+```
+dbus-send --system --print-reply --type=method_call --dest='org.bluez' '/org/bluez/hci0/dev_C8_85_50_B1_C8_6B/fd0' org.freedesktop.DBus.Properties.Set string:"org.bluez.MediaTransport1" string:"Volume" variant:uint16:127
+```
+
+
+
+dbus-send --system --print-reply --dest=org.bluez /org/bluez/hci0/dev_54_A4_93_A0_00_08 org.bluez.MediaControl1.Play
+
+这个命令，格式上应该是对的。
+
+我看很多文章都是这么说的。
+
+但是当前不能工作，提示找不到方法。
+
+知道原因了。
+
+dev_后面跟的蓝牙地址，不是板端的蓝牙地址，而是手机的蓝牙地址。
+
+改了就可以正常播放了。
+
+bluez/tools下面还有一个bluetooth-player的工具。是交互式的。可以进行很方便的控制。
+
+```
+[bluetooth]# help
+Available commands:
+        list            List available players
+        show [player]   Player information
+        select <player> Select default player
+        play [item]     Start playback
+        pause           Pause playback
+        stop            Stop playback
+        next            Jump to next item
+        previous        Jump to previous item
+        fast-forward            Fast forward playback
+        rewind          Rewind playback
+        equalizer <on/off>      Enable/Disable equalizer
+        repeat <singletrack/alltrack/group/off> Set repeat mode
+        shuffle <alltracks/group/off>   Set shuffle mode
+        scan <alltracks/group/off>      Set scan mode
+        change-folder <item>    Change current folder
+        list-items [start] [end]        List items of current folder
+        search string   Search items containing string
+        queue <item>    Add item to playlist queue
+        show-item <item>        Show item information
+        quit            Quit program
+```
+
+我可以把这个整理一下。把代码整合到我的主进程里。
+
+不搞这么复杂了。
+
+直接拼接cmd来通过dbus-send来做。
+
+参考bluez/doc/media-api.txt文档。
+
+获取状态：
+
+```
+dbus-send --system --print-reply --dest=org.bluez /org/bluez/hci0/dev_08_D4_6A_78_68_D7/player0  org.freedesktop.DBus.Properties.Get  string:org.bluez.MediaPlayer1 string:Status 
+```
+
+暂停。
+
+```
+dbus-send --system --print-reply --dest=org.bluez /org/bluez/hci0/dev_08_D4_6A_78_68_D7 org.bluez.MediaControl1.Pause
+```
+
+但是还需要监听蓝牙的连接事件。这个所以最后还是用dbus来编程。
+
+buildroot里有一个dbus-cpp目录，就是http://downloads.sourceforge.net/project/dbus-cplusplus/dbus-c++/0.9.0
+
+
+
+```
+src/device.c:device_remove_connection() g_dbus_emit_property_changed, interface: org.bluez.Device1, name:Connected
+```
+
+
+
+碰到一下麻烦的死机问题，还是靠命令来做。
+
+在这个目录下，有生成这样的一些内容，应该可以利用。
+
+54:A4:93:A0:00:08 这个是板端的蓝牙地址。
+
+08:D4:6A:78:68:D7 这个是我手机的地址。
+
+还有两个是其他连接过本设备的设备地址。不管。
+
+```
+/userdata/cfg/lib/bluetooth # find -name "*"
+.
+./54:A4:93:A0:00:08
+./54:A4:93:A0:00:08/settings
+./54:A4:93:A0:00:08/cache
+./54:A4:93:A0:00:08/cache/08:D4:6A:78:68:D7
+./54:A4:93:A0:00:08/cache/A8:5B:78:6B:5C:7F
+./54:A4:93:A0:00:08/cache/00:1A:7D:DA:71:11
+./54:A4:93:A0:00:08/08:D4:6A:78:68:D7
+./54:A4:93:A0:00:08/08:D4:6A:78:68:D7/info
+./54:A4:93:A0:00:08/08:D4:6A:78:68:D7/attributes
+./54:A4:93:A0:00:08/A8:5B:78:6B:5C:7F
+./54:A4:93:A0:00:08/A8:5B:78:6B:5C:7F/info
+```
+
+settings，这个存放的板端蓝牙的信息。
+
+```
+[General]
+Discoverable=false
+```
+
+```
+/userdata/cfg/lib/bluetooth/54:A4:93:A0:00:08/08:D4:6A:78:68:D7 # cat attributes
+
+[1]
+UUID=00002800-0000-1000-8000-00805f9b34fb
+Value=1801
+EndGroupHandle=3
+
+[20]
+UUID=00002800-0000-1000-8000-00805f9b34fb
+Value=1800
+EndGroupHandle=26
+```
+
+```
+/userdata/cfg/lib/bluetooth/54:A4:93:A0:00:08/08:D4:6A:78:68:D7 # cat info
+[LinkKey]
+Key=2FB66E483917F783F80584C1FBAEE996
+Type=4
+PINLength=0
+
+[General]
+Name=cG-SOe6:niZa7XDL:b8Sii
+Class=0x5a020c
+SupportedTechnologies=BR/EDR;
+Trusted=false
+Blocked=false
+Services=00001105-0000-1000-8000-00805f9b34fb;0000110a-0000-1000-8000-00805f9b34fb;0000110c-0000-1000-8000-00805f9b34fb;0000110d-0000-1000-8000-00805f9b34fb;0000110e-0000-1000-8000-00805f9b34fb;00001112-0000-1000-8000-00805f9b34fb;00001116-0000-1000-8000-00805f9b34fb;0000111f-0000-1000-8000-00805f9b34fb;0000112f-0000-1000-8000-00805f9b34fb;00001132-0000-1000-8000-00805f9b34fb;00001200-0000-1000-8000-00805f9b34fb;00001800-0000-1000-8000-00805f9b34fb;00001801-0000-1000-8000-00805f9b34fb;
+
+[DeviceID]
+Source=1
+Vendor=196
+Product=5025
+Version=4096
+```
+
+看连接前后，attributes和info文件都没有变化。
+
+那么这里也没有什么利用价值。
+
+是在哪里指定这些文件的生成路径的呢？
+
+bluetoothd的main.conf，并没有放到板端。
+
+
+
+/usr/lib/bluetooth/plugins
+
+板端没有这个目录。是因为插件没有单独编译成so文件，而是跟bluetoothd打包在一起了。
+
+```
+hlxiong@hlxiong-VirtualBox:~/work2/rk3308_no_modify/buildroot/output/rockchip_rk3308_wb220b_release$ grep -nwr "rk_bt_sink_pause" .
+匹配到二进制文件 ./target/usr/lib/libDeviceIo.so
+./host/aarch64-rockchip-linux-gnu/sysroot/usr/include/DeviceIo/RkBtSink.h:27:int rk_bt_sink_pause(void);
+匹配到二进制文件 ./host/aarch64-rockchip-linux-gnu/sysroot/usr/lib/libDeviceIo.so
+```
+
+rk有一个包，在external/deviceio目录下。
+
+但是这个只有库文件和头文件。不具备通用性。
+
+先实现我的需求再说吧。可移植性以后再说。
+
+发现其实并不可用。估计rk自己都没有维护。
+
+还是回到用命令的方式。
+
+可用用`hcitool con`来查看连接状态。
+
+```
+Connections:
+        > ACL 08:D4:6A:78:68:D7 handle 1 state 1 lm MASTER AUTH ENCRYPT
+/userdata # hcitool con
+Connections:
+```
+
+搞定了。就用命令行的方式。
+
+
+
+
+
 参考资料
 
 1、
@@ -463,3 +694,11 @@ https://stackoverflow.com/questions/26202409/in-bluez-a2dp-how-can-i-modify-the-
 5、
 
 https://raspberrypi.stackexchange.com/questions/107097/bluealsa-couldnt-acquire-d-bus-name-org-bluealsa
+
+6、
+
+https://stackoverflow.com/questions/28191350/is-there-any-way-to-control-connected-bluetooth-device-volume-in-linux-using-com
+
+7、Playing BlueZ on the D-Bus
+
+https://www.landley.net/kdocs/ols/2006/ols2006v1-pages-421-426.pdf

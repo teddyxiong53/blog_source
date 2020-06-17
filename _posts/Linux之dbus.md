@@ -326,7 +326,7 @@ dbus_bus_get：获取一个dbus连接。
 
 dbus_bus_reques_name：为这个连接起名。这个名字就是后续进行远程调用的时候的服务名
 
-dbus_connection_read_write：进入监听循环。
+dbus_connection_read_write：进入监听循环。（一般不用这种方式，用mainloop的方式来做）
 
 然后在循环里，我们从bus上取出消息。dbus_connection_pop_message
 
@@ -509,6 +509,12 @@ https://www.linumiz.com/bluetooth-list-available-controllers-using-dbus/
 
 
 ## dbus-launch
+
+```
+/ # dbus-launch
+DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-UE021yKXGo,guid=caec9b667660f597a32dd7395ee97b4c
+DBUS_SESSION_BUS_PID=10467
+```
 
 
 
@@ -717,7 +723,7 @@ array里还可以放结构体。`a(ii)`。表示array里放了结构体，结构
 
 array还可以嵌套。`aai`。表示array，里面元素是int类型的array。
 
-variant的限制比较多。用字母v表示。后面只能有一个类型。
+**variant的限制比较多。用字母v表示。后面只能有一个类型。**
 
 而且长度不能超过64字节。
 

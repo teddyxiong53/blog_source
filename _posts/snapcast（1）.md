@@ -1115,7 +1115,7 @@ Escape character is '^]'.
 
 假设有A、B、C这3个从机，连接到主机M。
 
-A对M进行了Set操作。A会收到Response。而B和C会收到Notification。
+**A对M进行了Set操作。A会收到Response。而B和C会收到Notification。**
 
 Set可以批量进行发送，那么收到的Response也是一起的。Notification也是一起的。
 
@@ -1173,6 +1173,12 @@ Stream
 Server
 	Server.OnUpdate
 ```
+
+
+
+什么时候会产生Server.OnUpdate这个通知呢？
+
+
 
 
 
@@ -1410,6 +1416,35 @@ template <typename T>
 并不符合我的需求。
 
 
+
+# 蓝牙音频输入到snapfifo
+
+这个自己修改bluealsa-aplay里的代码把写入alsa的行为，修改为写入snapfifo即可。
+
+
+
+
+
+# AirPlay输入到snapfifo
+
+这个使用shairport-sync。
+
+只需要在配置文件里，配置pipe为/tmp/snapfifo。
+
+启动shairport-sync：
+
+```
+shairport-sync -o pipe
+```
+
+shairport-sync可以带这2个参数。
+
+```
+  printf("    -B, --on-start=PROGRAM  run PROGRAM when playback is about to begin.\n");
+  printf("    -E, --on-stop=PROGRAM   run PROGRAM when playback has ended.\n");
+```
+
+这样可以用来停止其他的播放器。
 
 
 

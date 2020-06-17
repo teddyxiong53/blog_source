@@ -180,3 +180,7 @@ key {
 这篇文章很好，讲得很清楚。
 
 https://blog.csdn.net/u013836909/article/details/94207781
+
+2、Pinctrl子系统之一了解基础概念
+
+https://blog.csdn.net/u012830148/article/details/80609337

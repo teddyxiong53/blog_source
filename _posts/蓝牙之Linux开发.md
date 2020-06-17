@@ -178,3 +178,7 @@ https://zzk.cnblogs.com/s?t=b&w=%E8%93%9D%E7%89%99Linux%E5%BC%80%E5%8F%91
 这个是系列文章，本链接是最原始的。网上很多是转载这里的。2009年写的。
 
 http://blog.sina.com.cn/s/blog_602f87700100e0vb.html
+
+6、Linux bluetooth setup with bluez and hcitool
+
+https://www.pcsuggest.com/linux-bluetooth-setup-hcitool-bluez/

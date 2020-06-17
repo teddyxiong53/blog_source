@@ -68,6 +68,10 @@ https://blog.csdn.net/songyulong8888/article/details/80572126
 
 
 
+重复按键的，驱动里有提供EV_REP事件。也是通过定时器来实现的。
+
+
+
 # 参考资料
 
 1、关于input设备的多次打开

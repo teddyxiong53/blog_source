@@ -894,6 +894,55 @@ CFLAGS_fdt.o := -DDEBUG
 
 head.S会把DTB的位置保存在变量__atags_pointer里，最后调用start_kernel
 
+
+
+# 内核里代码分析
+
+相关结构体：
+
+```
+struct device_node
+	这个是device结构体的成员。
+	对应设备树里的节点。
+```
+
+特殊节点：
+
+```
+extern struct device_node *of_root;
+extern struct device_node *of_chosen;
+extern struct device_node *of_aliases;
+extern struct device_node *of_stdout;
+```
+
+头文件：
+
+````
+linux/of.h
+	struct property 
+	struct device_node
+	操作函数。
+linux/of_irq.h
+linux/of_gpio.h
+	
+````
+
+
+
+````
+{
+	struct device_node *node = dev->of_node;
+	int n = of_get_child_count(node);
+	int rep = of_ge_property(node, "autorepeat", NULL);
+	struct device_node *pp;
+	for_each_child_of_node(node, pp) {
+	
+	}
+}
+````
+
+
+
 参考文章
 
 1、
@@ -910,3 +959,7 @@ https://blog.csdn.net/lq496387202/article/details/79421138
 4、韦东山
 
 https://blog.csdn.net/thisway_diy/category_8405722.html
+
+5、Linux设备树文件结构与解析深度分析
+
+https://www.cnblogs.com/Oude/p/12064017.html
