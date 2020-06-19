@@ -54,7 +54,33 @@ GATT基于ATT。
 
 **所有的ble profile一定是基于GATT。**
 
-也就是说所有的ble服务都是用ATT作为应用协议。
+也就是说所有的ble服务都是用**ATT作为应用协议。**
+
+GATT 就是使用了 ATT（Attribute Protocol）协议，ATT 协议把 Service, Characteristic遗迹对应的数据保存在一个查找表中，查找表使用 16 bit ID 作为每一项的索引。
+
+一旦两个设备建立起了连接，GATT 就开始起作用了，这也意味着，你必需完成前面的 GAP 协议。这里需要说明的是，GATT 连接，必需先经过 GAP 协议。
+
+GATT 连接需要特别注意的是：**GATT 连接是独占的**。也就是一个 BLE 外设同时只能被一个中心设备连接。一旦外设被连接，它就会马上停止广播，这样它就对其他设备不可见了。当设备断开，它又开始广播。
+
+
+
+中心设备和外设需要双向通信的话，唯一的方式就是建立 GATT 连接。
+
+GATT 通信的双方是 C/S 关系。外设作为 GATT 服务端（Server），它维持了 ATT 的查找表以及 service 和 characteristic 的定义。中心设备是 GATT 客户端（Client），它向 Server 发起请求。需要注意的是，所有的通信事件，都是由客户端（也叫主设备，Master）发起，并且接收服务端（也叫从设备，Slave）的响应。
+
+
+
+Service 是把数据分成一个个的独立逻辑项，它包含一个或者多个 Characteristic。每个 Service 有一个 UUID 唯一标识。 UUID 有 16 bit 的，或者 128 bit 的。**16 bit 的 UUID 是官方通过认证的，需要花钱购买**，128 bit 是自定义的，这个就可以自己随便设置。
+
+在 GATT 事务中的最低界别的是 Characteristic，Characteristic 是最小的逻辑数据单元，当然它可能包含一个组关联的数据，例如加速度计的 X/Y/Z 三轴值。
+
+
+
+与 Service 类似，每个 Characteristic 用 16 bit 或者 128 bit 的 UUID 唯一标识。你可以免费使用 Bluetooth SIG 官方定义的[标准 Characteristic](https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicsHome.aspx)，使用官方定义的，可以确保 BLE 的软件和硬件能相互理解。当然，你可以自定义 Characteristic，这样的话，就只有你自己的软件和外设能够相互理解。
+
+
+
+实际上，和 BLE 外设打交道，主要是通过 Characteristic。你可以从 Characteristic 读取数据，也可以往 Characteristic 写数据。这样就实现了双向的通信。**所以你可以自己实现一个类似串口（UART）的 Sevice，这个 Service 中包含两个 Characteristic，一个被配置只读的通道（RX），另一个配置为只写的通道（TX）。**
 
 
 
@@ -128,7 +154,7 @@ sensor相当于server，collector相当于client。
 
 **GATT层是真正传输数据所在的层。**
 
-一个GATT 服务器通过一个属性表的表格来组织数据。
+一个GATT 服务器通过**一个属性表的表格来组织数据。**
 
 一个属性包括：
 
@@ -183,3 +209,7 @@ https://www.secpulse.com/archives/75756.html
 9、实战智能门锁
 
 https://zhuanlan.zhihu.com/p/30393145
+
+10、Bluetooth: ATT and GATT
+
+https://epxx.co/artigos/bluetooth_gatt.html

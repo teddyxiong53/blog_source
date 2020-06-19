@@ -48,6 +48,8 @@ hci数据包分为4种：
 
 4、event。
 
+![1592550263711](../images/random_name/1592550263711.png)
+
 同步链路(SCO)类型和异步链路(ACL)类型。前者主要用于同步话音传送，后者主要用于分组数据传送。
 
 bluez/lib/hci.h里：
@@ -407,3 +409,7 @@ https://blog.csdn.net/sunjing_/article/details/53007005
 5、蓝牙inquiry流程之HCI_Inquiry_Result_With_RSSI和HCI Extended Inquiry Result处理
 
 https://www.cnblogs.com/libs-liu/p/9243500.html
+
+6、
+
+https://blog.csdn.net/yuanzhangmei1/article/details/25074059

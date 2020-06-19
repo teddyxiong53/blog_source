@@ -138,6 +138,48 @@ backend setting
 
 
 
+```
+avahi: service '25B3280FF49F@Rockchip' successfully added.
+
+连接的时候：
+New RTSP connection from 192.168.0.101:57800 to self at 192.168.0.102:5000 on conversation thread 0.
+断开的时候：
+RTSP conversation thread 0 terminated.
+再次连接：
+New RTSP connection from 192.168.0.101:57810 to self at 192.168.0.102:5000 on conversation thread 1.
+```
+
+点击播放时：
+
+```
+Output frame bytes is 4.
+Output bit depth is 16.
+Dithering will be enabled because the output volume is being altered in software
+Set initial volume to -18.000000.
+Using negotiated latency of 77175 frames and a static latency correction of 0
+Hammerton Decoder used on encrypted audio.
+Output written using MMAP
+```
+
+点击暂停几秒后：
+
+```
+Player thread exit on RTSP conversation thread 1.
+RTSP conversation thread 1 terminated.
+```
+
+从端口情况看，在手机上暂停，跟选择本机播放是一样的，都是断开了跟音箱端的rtsp在5000端口的连接。
+
+所以，AirPlay只能从手机这边发起控制，不能从板端控制手机的播放和暂停。
+
+
+
+再看延时问题。
+
+直接输出到alsa进行播放，这个看起来没有明显延迟。
+
+
+
 # AirPlay协议
 
 Bonjour是苹果为基于组播域名服务(multicast DNS)的开放性零设置网络标准所起的名字。使用Bonjour的设备在网络中自动传播它们自己的服务信息并聆听其它设备的服务信息，设备之间就象在打招呼，这也是命名为Bonjour(法语：你好)的原因。

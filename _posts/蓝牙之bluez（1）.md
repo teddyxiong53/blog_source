@@ -370,6 +370,8 @@ thinkpad
 
 感觉就是bluetoothctl的功能的一部分。
 
+## list-devices
+
 
 
 # 代码分析

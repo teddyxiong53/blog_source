@@ -12,7 +12,7 @@ L2CAP是Logic Link Control Adapter Protocol。
 
 逻辑链路控制和适配协议。
 
-重点是逻辑链路。逻辑二字。它的作用是为2个通信的蓝牙设备提供端到端的通道。
+重点是逻辑链路。逻辑二字。**它的作用是为2个通信的蓝牙设备提供端到端的通道。**
 
 主要的作用是：
 
@@ -87,6 +87,10 @@ Characteristic Descriptor则保存了一些和Characteristic Value相关的信�
 
 **以上除“Profile”外的每一个定义，Service、Characteristic、Characteristic Properties、Characteristic Value、Characteristic Descriptor等等，都是作为一个Attribute存在的，包括之前所描述的Attribute的所有特征：Attribute** 
 
+
+
+
+
 # 逻辑信道
 
 L2CAP的逻辑信道分配是这样：
@@ -154,13 +158,15 @@ len(2 bytes)| chn id(2 bytes) | payload |
 
 
 
+既然len是2个字节，那么最大的L2CAP包长度就是64K。
 
 
 
+L2CAP 基于 通道(channel) 的概念。 通道 (Channel) 是位于基带 (baseband) 连接之上的逻辑连接。每个通道以多对一的方式绑定一个单一协议 (single protocol)。**多个通道可以绑定同一个协议，但一个通道不可以绑定多个协议。** 
 
 
 
-
+L2CAP编程非常重要，它和HCI基本就是Linux Bluetooth编程的基础了。几乎所有协议的连接，断连，读写都是用L2CAP连接来做的。
 
 # 参考资料
 
@@ -187,3 +193,7 @@ https://www.baidu.com/link?url=SyC_Ni5xYoT_IjLarhImjibVcd5T5upVdgL0OTS_LkeMjAba9
 6、蓝牙协议系列之（四） L2CAP
 
 https://blog.csdn.net/zwc1725/article/details/80704678
+
+7、实战Linux Bluetooth编程（四） L2CAP层编程
+
+https://blog.csdn.net/rain0993/article/details/8533246

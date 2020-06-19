@@ -271,9 +271,9 @@ bus name有两种，
 
 
 
-dbus规范里标准化了一些接口。
+**dbus规范里标准化了一些接口。**
 
-这些接口对我们调用其他服务提供的dbus api很有帮助。
+**这些接口对我们调用其他服务提供的dbus api很有帮助。**
 
 我们看其中比较重要的两个。
 
@@ -364,7 +364,7 @@ dbus_connection_flush
 
 dbus_connection_send_with_reply。
 
-会阻塞等待调用执行完成。
+**会阻塞等待调用执行完成。**
 
 当这个句柄回传消息之后，我们从消息结构中分离出参数。
 
@@ -596,7 +596,7 @@ if __name__ == "__main__":
 
 ## 介绍
 
-dbus是一个低开销、易于使用的ipc通信机制。
+**dbus是一个低开销、易于使用的ipc通信机制。**
 
 低开销是因为它是二进制协议，它设计就是为了本机内部的通信。设计时避免round trip。允许异步操作。跟X Protocol有点像。
 
@@ -630,7 +630,7 @@ dbus协议在2006年就已经frozen了。只需要兼容性地扩展。
 
 dbus有一个类型系统。
 
-可以把不同类型的值，进行序列化。序列化的结果，叫做wire format。
+可以把不同类型的值，进行序列化。**序列化的结果，叫做wire format。**
 
 序列化，叫编码。
 
@@ -671,7 +671,7 @@ object path，一般是用域名倒着写作为开头，相当于一个namespace
 
 还包含一个interface version number。
 
-这样就可以实现多个service。以及同一个service的多个版本。
+**这样就可以实现多个service。以及同一个service的多个版本。**
 
 例如，xx.com公司在为一个播放器开发一个dbus api。则对应的object path设计为这样：
 
@@ -756,6 +756,97 @@ yyyyuua(yv)
 u32成员1：body的长度。
 u32成员2：消息的id。
 array成员：元素是结构体，这个需要重点看一下。
+```
+
+
+
+# 操作蓝牙
+
+```
+/ # dbus-send --system --print-reply --type=method_call --dest=org.bluez /org/bl
+uez/hci0 org.freedesktop.DBus.Properties.Get string:org.bluez.Adapter1 string:Ad
+dress
+method return time=1592534678.200347 sender=:1.2 -> destination=:1.15 serial=24 reply_serial=2
+   variant       string "54:A4:93:A0:00:08"
+```
+
+把dbus-send，都可以按照上面的格式来写。
+
+上面这一条获取本机蓝牙适配器地址的。
+
+--dest=org.bluez 这个固定不变，表示我要给bluez的daemon进程发消息。
+
+/org/bluez/hci0  这个要看bluez/doc下面的文档描述。这个就是object path。可以理解为找到要操作的对象。
+
+![1592534821851](../images/random_name/1592534821851.png)
+
+然后就是操作对象的接口。
+
+org.freedesktop.DBus.Properties.Get
+
+这个就是bluez实现的一个dbus标准接口。
+
+![1592535098065](../images/random_name/1592535098065.png)
+
+下面2个是org.freedesktop.DBus.Properties.Get接口的参数。
+
+string:org.bluez.Adapter1 
+
+string:Address
+
+
+
+还可以用GetAll方法一次性获取。
+
+```
+dbus-send --system --print-reply --type=method_call --dest=org.bluez /org/bl
+uez/hci0 org.freedesktop.DBus.Properties.GetAll string:org.bluez.Adapter1
+```
+
+
+
+```
+dbus-send --system --dest=org.bluez --print-reply / org.freedesktop.DBus.ObjectManager.GetManagedObjects
+```
+
+用在这个获取所有的对象的情况。总结如下：
+
+```
+/org/bluez
+	这个object path下面，
+	有3个interface
+		org.freedesktop.DBus.Introspectable
+		org.bluez.AgentManager1
+		org.bluez.ProfileManager1
+/org/bluez/hci0
+	org.freedesktop.DBus.Introspectable
+	org.bluez.Adapter1
+		有这些property
+		Address
+		AddressType
+		Name
+		Alias
+		Class
+		Powered
+		Discoverable
+		DiscoverableTimeout
+		Pairable
+		PairableTimeout
+		Discovering
+		UUIDs
+		Modalias
+	org.freedesktop.DBus.Properties
+	org.bluez.GattManager1
+	org.bluez.LEAdvertisingManager1
+		ActiveInstances
+		SupportedInstances
+		SupportedIncludes
+	org.bluez.Media1
+/org/bluez/hci0/dev_00_6A_8E_16_C7_48
+	org.freedesktop.DBus.Introspectable
+	org.bluez.Device1
+		有很多的property，跟上面Adapter的类似。
+	org.freedesktop.DBus.Properties
 ```
 
 

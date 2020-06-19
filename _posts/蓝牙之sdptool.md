@@ -12,9 +12,11 @@ tags:
 
 **sdp就是设备发现协议。它的重点就是查询机器的信息。**
 
+# sdp协议
 
 
-sdptool是控制和查询sdp server的。
+
+**sdptool是控制和查询sdp server的。**
 
 先用hcitool扫描一下附近的蓝牙设备。
 
@@ -123,3 +125,6 @@ https://www.linuxjournal.com/content/bluetooth-hacks
 
 https://blog.csdn.net/wang_shuai_ww/article/details/68927525
 
+4、蓝牙SDP协议概述
+
+https://www.cnblogs.com/libs-liu/p/9498952.html
