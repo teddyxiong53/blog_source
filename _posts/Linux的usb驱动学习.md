@@ -292,3 +292,8 @@ Linux内核为各种USB设备分配了对应的设备号，USB打印机的主设
 
 
 
+参考资料
+
+1、
+
+https://blog.csdn.net/qq_44884706/article/details/89278256

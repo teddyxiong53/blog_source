@@ -24,7 +24,7 @@ native世界。用C和C++开发的程序。
 
 上面这些疑问，都跟zygote和system_server有关系。这2个东西，就是本文要讨论的重点。
 
-这2个进程，撑起了Android系统里的java世界，任何一个进程崩溃，都导致java世界的崩溃。
+**这2个进程，撑起了Android系统里的java世界，任何一个进程崩溃，都导致java世界的崩溃。**
 
 
 
@@ -34,7 +34,7 @@ zygote本身是一个native程序。
 
 跟驱动、内核都没有关系。
 
-zygote是init进程根据init.rc的配置创建的。
+**zygote是init进程根据init.rc的配置创建的。**
 
 zygote最初的名字叫app_process。在运行的时候，通过prctrl把自己的名字改成了zygote。
 
@@ -52,7 +52,7 @@ Zygote的这个main函数虽很简单，但其重要功能却是由AppRuntime的
 
 
 
-Zygote是创建Android系统中Java世界的盘古，它创建了第一个Java虚拟机，同时它又是女娲，它成功地繁殖了framework的核心system_server进程。
+**Zygote是创建Android系统中Java世界的盘古，它创建了第一个Java虚拟机，同时它又是女娲，它成功地繁殖了framework的核心system_server进程。**
 
 SystemServer的进程名实际上叫做“system_server”，这里我们可将其简称为SS。SS做为Zygote的嫡长子，其重要性不言而喻。
 

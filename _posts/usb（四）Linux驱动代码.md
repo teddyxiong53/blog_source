@@ -172,11 +172,11 @@ struct usb_string_descriptor
 
 上面这些描述符都在include/uapi/linux/usb/ch9.h里。
 
-之所以叫ch9.h，是因为这些内容是根据usb协议文档第9章写的。
+**之所以叫ch9.h，是因为这些内容是根据usb协议文档第9章写的。**
 
 上面这些描述符都要声明为pack的，不能被编译器对齐。
 
-还定义了一个描述符头部的结构体。因为所有描述符的最前面都是这2个成员。
+**还定义了一个描述符头部的结构体。因为所有描述符的最前面都是这2个成员。**
 
 ```
 struct usb_descriptor_header {

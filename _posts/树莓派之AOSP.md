@@ -274,8 +274,120 @@ framework native，也是用的tab-pi修改的。这个改了些什么？
 
 
 
+# 配置分析
+
+以device/brcm/rpi3目录下的rpi3.mk来分析。
+
+```
+USE_OEM_TV_APP := true
+$(call inherit-product, device/google/atv/products/atv_base.mk)
+```
+
+这个表示继承谷歌的tv标准配置。
+
+atv_base.mk里的配置有：
+
+```
+PRODUCT_IS_ATV := true
+
+PRODUCT_PACKAGES := \
+    TvProvider \
+    TvSettings \
+    tv_input.default
+# 这个package在这个目录下：aosp-rpi3/packages/providers/TvProvider
+PRODUCT_COPY_FILES := \
+    device/google/atv/permissions/tv_core_hardware.xml:system/etc/permissions/tv_core_hardware.xml
+# 这个包括位置、画中画、语音识别等特征。
+DEVICE_PACKAGE_OVERLAYS := \
+    device/google/atv/overlay
+# 这个会覆盖。
+PRODUCT_PACKAGES += \
+    ContactsProvider \
+    DefaultContainerService \
+    UserDictionaryProvider \
+    
+PRODUCT_PACKAGES += \
+    BasicDreams \
+    CalendarProvider \
+    
+PRODUCT_PACKAGES += \
+    Bluetooth \
+    SystemUI \
+    librs_jni \
+    
+BOARD_SEPOLICY_DIRS += device/google/atv/sepolicy
+$(call inherit-product-if-exists, frameworks/base/data/sounds/AllAudio.mk)
+$(call inherit-product-if-exists, frameworks/webview/chromium/chromium.mk)
+$(call inherit-product, $(SRC_TARGET_DIR)/product/core_minimal.mk)
+```
+
+继续回到rpi3.mk
+
+```
+PRODUCT_NAME := rpi3
+PRODUCT_DEVICE := rpi3
+PRODUCT_BRAND := Android
+PRODUCT_MODEL := Raspberry Pi 3
+PRODUCT_MANUFACTURER := brcm
+```
+
+```
+# 这个定义了dalvik.vm的一些参数。
+include frameworks/native/build/tablet-7in-hdpi-1024-dalvik-heap.mk
+```
+
+```
+DEVICE_PACKAGE_OVERLAYS := device/brcm/rpi3/overlay
+PRODUCT_AAPT_PREF_CONFIG := tvdpi
+PRODUCT_CHARACTERISTICS := tv
+```
+
+
+
+# AOSP配置一个新的product
+
+看了上面rpi3的配置，再看看具体怎样配置一个新的产品。
+
+步骤1
+
+在vendor目录下新建一个company_name的目录。
+
+步骤2
+
+在company_name目录下再新建一个product目录。
+
+
+
+
+
+执行source build/envsetup.sh的时候，会搜索这些目录下的vendorsetup.sh脚本。
+
+````
+vendor/*/vendorsetup.sh 
+vendor/*/*/vendorsetup.sh 
+device/*/*/vendorsetup.sh
+````
+
+我们在vendorsetup.sh里添加这样三行：
+
+```
+add_lunch_combo rpi3-eng
+add_lunch_combo rpi3-userdebug
+add_lunch_combo rpi3-user
+```
+
+
+
 参考资料
 
 1、[ROM] [Testing] Tab-Pi | AOSP/Android TV for Raspberry Pi 3 android-7.1.2_r17
 
 https://forum.xda-developers.com/raspberry-pi/development/rom-tab-pi-aosp-android-tv-raspberry-pi-t3593506
+
+2、Configuring a New Product
+
+https://wladimir-tm4pda.github.io/porting/build_new_device.html
+
+3、Android Device
+
+https://elinux.org/Android_Device

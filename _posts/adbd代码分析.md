@@ -25,12 +25,29 @@ usbdevice目录下的文件有：
 └── usbdevice.mk
 ```
 
-靠这个来使能的。
+靠这个来使能的。可能使能不同的功能。现在使能的是adb功能。也可以使能mtp功能。
 
 ```
 /etc/init.d # cat .usb_config     
 usb_adb_en                        
 ```
+
+61-usbdevice.rules内容：
+
+```
+SUBSYSTEM=="udc",ACTION=="change",DRIVER=="configfs-gadget",RUN+="/usr/bin/usbdevice %E{DEVPATH}"
+```
+
+
+
+涉及的系统目录有：
+
+```
+/sys/kernel/config/usb_gadget
+/sys/class/android_usb
+```
+
+
 
 在系统里的选配是：BR2_PACKAGE_ANDROID_TOOLS_ADBD [=y] 
 
@@ -79,7 +96,63 @@ sudo apt-get install android-tools-adb  android-tools-adbd android-tools-fastboo
 
 
 
+use the USB Gadget ConfigFS to configure the USB peripheral port.
+
+操作是靠fd，ioctl来做的 。
+
+io是基于epoll来做的。
+
+
+
+adbd也是使用了libusb来跟usb进行通信的。不是，是有多种实现，但是编译的是usb_linux.c。
+
+```
+SRCS+= transport_usb.c
+SRCS+= usb_linux.c
+SRCS+= usb_vendors.c
+```
+
+实际上是用usb_linux_client.c。
+
+```
+void usb_init()
+{
+    if (access(USB_FFS_ADB_EP0, F_OK) == 0)
+        usb_ffs_init();//这个分支。
+    else
+        usb_adb_init();
+}
+```
+
+靠打开/dev/usb-ffs/adb目录下的这3个ep节点来操作。
+
+```
+# ls /dev/usb-ffs/adb/
+ep0  ep1  ep2
+```
+
+ep0是控制信息。
+
+ep2是输入数据。
+
+ep1是输出数据。
+
+```
+#define USB_FFS_ADB_EP0   USB_FFS_ADB_EP(ep0)
+#define USB_FFS_ADB_OUT   USB_FFS_ADB_EP(ep1)
+#define USB_FFS_ADB_IN    USB_FFS_ADB_EP(ep2)
+```
+
+ffs的functionfs的缩写。
+
+
+
+
+
+
+
 参考资料
 
 1、
 
+https://developer.toradex.com/knowledge-base/usb-device-mode-(linux)

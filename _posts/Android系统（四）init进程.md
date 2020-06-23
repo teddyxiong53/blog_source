@@ -26,3 +26,40 @@ Zygote进程是Android的核心进程之一。是Android Framework进程家族�
 
 Zygote是一个典型的C/S架构。其他的进程作为client向Zygote发起请求，Zygote就不断产生Activity进程。
 
+
+
+init.rc脚本的语法
+
+由6个部分组成：
+
+```
+commands
+	一些基本操作。
+	例如：
+		mkdir /system
+		devwait /dev/block/mmcblk0p1
+		mount ext4 /dev/block/mmcblk0p1
+actions
+	表示一系列的commands。
+	一般是放在trigger里面。
+	
+triggers
+	on init
+		loglevel 3
+	这个就是一个trigger的例子。
+services
+	一般是一个可执行程序。后面跟options，就是它的参数。
+options
+	services的参数。
+properties
+	setprop ro.HIDDEN_APP_MEM 5120 
+	
+```
+
+
+
+参考资料
+
+1、Android——init.rc脚本
+
+https://blog.csdn.net/Stephen_yu/article/details/7822916
