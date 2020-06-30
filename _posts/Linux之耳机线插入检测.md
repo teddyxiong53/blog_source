@@ -239,6 +239,32 @@ if and only if no GPIO has been assigned to the device/function/index triplet,
 
 ![1586487715912](../images/random_name/1586487715912.png)
 
+
+
+现在要把耳机输出改成line out。
+
+耳机和lineout的区别是什么？
+
+首先，二者都是模拟输出。直接用耳机插上去都有声音。
+
+区别在于：line out输出的模拟信号是没有经过功放放大的信号，是芯片将数字信号转成模拟信号后的最原始的信号。不包含额外的音染。
+
+也因为没有放大，所以功率极小，输出阻抗也很大，难以推动耳机。
+
+而耳机输出，及headphone out，是把最原始的信号，经过了功放放大，它的功率足以推动耳机。
+
+line out需要接有内部放大电路的有源音箱才能有声音。
+
+![img](../images/random_name/20180520222729833.jpg)
+
+![1592964447319](../images/random_name/1592964447319.png)
+
+那电路这里也需要改。
+
+并不是，LINEOUT接的就是板端的功放了。
+
+
+
 参考资料
 
 1、耳机插入检测学习总结
@@ -257,8 +283,12 @@ https://zhidao.baidu.com/question/1755332853391454548.html
 
 4、
 
-https://blog.csdn.net/tongbiaos/article/details/47442229?depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-1&utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-1
+https://blog.csdn.net/tongbiaos/article/details/47442229
 
-6、
+5、
 
-https://blog.csdn.net/sinat_34606064/article/details/77932816?depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-2&utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-2
+https://blog.csdn.net/sinat_34606064/article/details/77932816
+
+6、mic in、line in&line out、speaker out、headphone out　区别
+
+https://blog.csdn.net/zhangchao0426/article/details/102288311

@@ -74,6 +74,18 @@ void loop() {
 
 
 
+SmartConfig也叫快连。是一种配网手段。
+
+需要wifi模组支持这个功能才行。
+
+TI的实现方式是：往一个固定IP发送UDP包。
+
+大部分的都是通过组播方式来做。
+
+而微信的AirKiss则是全网广播的方式。
+
+主流的wifi模组都支持这个功能了。
+
 
 
 参考资料
@@ -82,3 +94,6 @@ void loop() {
 
 https://www.jianshu.com/p/db9dffa96470
 
+2、Wifi SmartConfig 一键配置
+
+https://www.jianshu.com/p/6ae128b04b25

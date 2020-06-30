@@ -80,6 +80,111 @@ make qemu
 
 
 
+# 其他在qemu里跑freertos的方式
+
+https://github.com/Victor-Y-Fadeev/vexpress-a9
+
+参考这个，在vexpress+qemu上跑freertos。
+
+我打算基于freertos打造一个自己的rtos简单框架。
+
+看.gitmodules里写着依赖xvisor。我把对应的工程复制到gitee.com上 。这样clone的时候就会快一些。
+
+依次执行下面的脚本：
+
+```
+$ ./scripts/install.sh
+$ ./scripts/xvisor.sh
+```
+
+然后执行：
+
+```
+$ ./scripts/make.sh
+$ ./scripts/qemu.sh
+```
+
+可以顺利运行，没有什么错误。
+
+只是起来后，没有shell。
+
+入口是在src/main.c里。
+
+```
+#include "FreeRTOS.h"
+#include "task.h"
+
+
+void app_main(void)
+{
+        basic_puts("xhl --- hello \n");
+        return;
+}
+```
+
+没有实现printf。
+
+打印是用basic_puts函数。
+
+运行效果。
+
+![1593421906072](/images/random_name/1593421906072.png)
+
+仔细看看这套方案的细节。
+
+## 脚本分析
+
+install.sh
+
+```
+这个没有什么特别的，就是安装工具链和qemu。
+gcc-arm-none-eabi qemu-system-arm
+还安装了genext2fs
+```
+
+xvisor.sh
+
+```
+先git clone xvisor
+然后打补丁，修改配置。
+patch -f $XVISOR/arch/arm/board/generic/dts/arm/vexpress-v2p-ca9.dts < $PATCH/vexpress-v2p-ca9.patch
+然后编译xvisor
+make ARCH=arm generic-v7-defconfig
+make
+```
+
+make.sh
+
+```
+把freertos的代码拷贝到xvisor目录下去编译。
+cp -rf $FREERTOS $XVISOR/tests/arm32/vexpress-a9/freertos
+cp -rf $PORT $XVISOR/tests/arm32/vexpress-a9/freertos
+cp -f $CONFIG $XVISOR/tests/arm32/vexpress-a9/freertos
+把src目录下的代码拷贝到xvisor的目录下去编译。
+# Copy application source
+cp -rf $SRC $XVISOR/tests/arm32/vexpress-a9/freertos
+执行make
+cd $XVISOR/tests/arm32/vexpress-a9/freertos
+if ! make ; then
+	exit 1
+fi
+生成disk.img文件
+genext2fs -B 1024 -b 32768 -d ./build/disk ./build/disk.img
+```
+
+qemu.sh
+
+```
+这个就是运行qemu。时延disk.img文件。
+
+qemu-system-arm -M vexpress-a9 -m 512M -nographic \
+	-kernel build/vmm.bin \
+	-dtb    build/arch/arm/board/generic/dts/arm/vexpress-v2p-ca9.dtb \
+	-initrd build/disk.img
+```
+
+vmm.bin 这个文件是作为kernel。应该相当于uboot的作用。
+
 
 
 # 参考资料
@@ -87,3 +192,7 @@ make qemu
 1、Lab32: QEMU + FreeRTOS
 
 http://wiki.csie.ncku.edu.tw/embedded/Lab32
+
+2、FreeRTOS 任务优先级说明
+
+https://blog.csdn.net/sty124578/article/details/80534276

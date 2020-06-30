@@ -368,6 +368,22 @@ vendor/*/*/vendorsetup.sh
 device/*/*/vendorsetup.sh
 ````
 
+代码实现是：
+
+```
+# Execute the contents of any vendorsetup.sh files we can find.
+for f in `test -d device && find -L device -maxdepth 4 -name 'vendorsetup.sh' 2> /dev/null | sort` \
+         `test -d vendor && find -L vendor -maxdepth 4 -name 'vendorsetup.sh' 2> /dev/null | sort` \
+         `test -d product && find -L product -maxdepth 4 -name 'vendorsetup.sh' 2> /dev/null | sort`
+do
+    echo "including $f"
+    . $f
+done
+unset f
+```
+
+
+
 我们在vendorsetup.sh里添加这样三行：
 
 ```
@@ -375,6 +391,35 @@ add_lunch_combo rpi3-eng
 add_lunch_combo rpi3-userdebug
 add_lunch_combo rpi3-user
 ```
+
+
+
+
+
+
+
+envsetup.sh执行过程分析：
+
+1、搜索device等目录，搜索vendersetup.sh，并source 执行。
+
+2、addcompletions。这个是检查bash版本要高于4，搜索sdk/bash_completion目录下以.sh结尾的文件，并source执行。当前这个目录下只有一个adb.sh文件。
+
+这一步的作用就是添加一下命令补全。
+
+这个文件写得并不太好读。函数和执行的脚本内容穿插着的。
+
+首先应该是这个：
+
+```
+add_lunch_combo aosp_arm-eng
+add_lunch_combo aosp_arm64-eng
+add_lunch_combo aosp_mips-eng
+add_lunch_combo aosp_mips64-eng
+add_lunch_combo aosp_x86-eng
+add_lunch_combo aosp_x86_64-eng
+```
+
+
 
 
 
