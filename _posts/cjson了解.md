@@ -136,3 +136,72 @@ hlxiong@hlxiong-VirtualBox:~/work/study/cJSON-1.0.2$ tree
 
 这个是rt-thread专用的。
 
+
+
+关于delete
+
+只需要对root对象进行delete就好了。不会有内存泄漏。
+
+不能delete子节点。无论是放在delete root之前或之后，都会导致端错误。
+
+
+
+测试数组
+
+```
+void test_array()
+{
+	char text[] = "\
+	{\n \
+	\"responses\":\n \
+	[\n \
+		{\n \
+			\"header\": {\n \
+				\"name\": \"aaa\"\n \
+			},\n \
+			\"payload\": {\n \
+				\"timestamp\": 1\n \
+			}\n \
+		}, \
+		{\n \
+			\"header\": {\n \
+				\"name\": \"bbb\"\n \
+			},\n \
+			\"payload\": {\n \
+				\"timestamp\": 2\n \
+			}\n \
+		}\
+	]\n \
+	}";
+	cJSON *root = cJSON_Parse(text);
+
+	cJSON *responses = cJSON_GetObjectItem(root, "responses");
+	int n = cJSON_GetArraySize(responses);
+	printf("array size:%d\n", n);
+	cJSON_Delete(root);
+}
+```
+
+
+
+# int类型长度
+
+cjson里，把int类型，只是32位的。
+
+我看iflyos里，云端的时间戳是用int表示的。
+
+这个还是会有溢出的风险的。
+
+为什么JsonCpp里面为什么没有64位整数？Json起源于javascript，在js中数字的表示可能与高级语言中不一样， 如果一位数字32位表示不了那么js中应该一律都是用double表示， 所以说js中 大整数其实也是double， 这也就能解释为什么在jsoncpp中为什么没提供64为整数转化的方法。
+
+
+
+参考资料
+
+1、
+
+http://www.fly63.com/article/detial/3770
+
+2、jsoncpp 不能处理long类型数据
+
+https://blog.csdn.net/chenlei0630/article/details/39644189

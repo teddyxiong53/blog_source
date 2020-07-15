@@ -293,12 +293,217 @@ device_code 这个是设备授权码。
 对我的这个情况就是：
 
 ```
-https://auth.iflyos.cn/oauth/device?user_code=885845
+https://auth.iflyos.cn/oauth/device?user_code=010594
 ```
 
 这个有时间限制，过期就失效的，失效了就重新执行上一步。
 
 然后在电脑的浏览器打开这个url。是一个手机号登陆的界面。
+
+点击授权，然后马上把下面的内容粘贴到命令行执行。
+
+然后就可以提示授权成功了。
+
+```
+curl -X POST \
+  https://auth.iflyos.cn/oauth/ivs/token \
+  -H 'content-type: application/json' \
+  -d '{
+	"client_id": "e3150fb6-592e-47ca-80fd-c737e245f077",
+	"grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+	"device_code": "gg_4cKOCfNrMNgnkxeguwunt8qD-1pnbtOgM2Cc3B-6ULOuwKGB1NsHDOhHA-lrm"
+}'
+```
+
+结果是这样：
+
+```
+{"token_type":"bearer","refresh_token":"tn7YIMJ-ZbBzesRmQtoHZAY_Uqyz14r6JUL15en3OfUkWpkR8C7NgGOiekVFXCk8","expires_in":8640000,"created_at":1594002501,"access_token":"dNRAcNtbOeCrRDOgnWKFYw6blQ73mhTHMjwANoUnhqjLdfi5vQGhuDwKhXCXQTZC"}
+```
+
+现在信息是这样：
+
+```
+设备类型：evs-test
+client id
+e3150fb6-592e-47ca-80fd-c737e245f077
+device id：20200001
+user_code：010594
+device_code：gg_4cKOCfNrMNgnkxeguwunt8qD-1pnbtOgM2Cc3B-6ULOuwKGB1NsHDOhHA-lrm
+access_token：dNRAcNtbOeCrRDOgnWKFYw6blQ73mhTHMjwANoUnhqjLdfi5vQGhuDwKhXCXQTZC
+refresh_token：tn7YIMJ-ZbBzesRmQtoHZAY_Uqyz14r6JUL15en3OfUkWpkR8C7NgGOiekVFXCk8
+```
+
+
+
+然后就是建立跟服务端的websocket连接。
+
+```
+wss://ivs.iflyos.cn/embedded/v1?token={access_token}&device_id={device_id}
+```
+
+
+
+
+
+- iFLYOS 系统提供两种闹钟能力，云端闹钟和本地闹钟**只能二选一**。为了降低设备开发成本，iFLYOS 建议你使用云端闹钟。
+- 为了更好的用用户体验，我们约定，无论实现设备闹钟还是本地闹钟，在闹钟响起后，设备均应该在语音唤醒或按键操作之后停止闹钟。
+- 纯软件项目无需实现闹钟能力（无论云端闹钟还是设备闹钟）。
+
+在请求时，context中不包含`alarm`对象，则代表设备使用云端闹钟。
+
+
+
+一个请求的模板：
+
+```
+data = {
+    "iflyos_header": {
+        "authorization": "dNRAcNtbOeCrRDOgnWKFYw6blQ73mhTHMjwANoUnhqjLdfi5vQGhuDwKhXCXQTZC",
+        "device": {
+            "device_id": "20200001",
+            "ip": "192.168.0.101",
+            "location": {
+                "latitude": 132.56481,
+                "longitude": 22.36549
+            },
+            "platform": {
+                "name": "Linux",
+                "version": "4.13"
+            }
+        }
+    },
+    "iflyos_context": {
+        "system": {
+            "version": "1.3",
+            "software_updater": true,
+            "power_controller": true,
+            "device_modes": true,
+            "factory_reset": true,
+            "reboot": true
+        },
+        "recognizer": {"version": "1.1"},
+        "speaker": {
+            "version": "1.0",
+            "volume": 10,
+            "type": "percent"
+        },
+        "audio_player": {
+            "version": "1.2",
+            "playback": {
+                "state": "PLAYING",
+                "resource_id": "xxx",
+                "offset": 60000,
+            }
+        },
+        "playback_controller": {"version": "1.0"}
+
+    },
+    "iflyos_request": {
+        
+    }
+}
+```
+
+一个回复的模板
+
+```
+{
+
+    "iflyos_meta": {
+        "trace_id": "xxxxxx",  # 本次交互的跟踪标识，提技术支持工单时可能会用到，建议打印在系统日志中
+        "request_id": "xxxxx",  # 当云端主动发送response时，该字段不会出现
+        "is_last": true  # 标记这组回复是不是这个request_id关联的最后一组回复
+    },
+    "iflyos_responses": [
+        {
+            "header": {
+                "name": "xxx"
+            },
+            "payload": {...}
+        },
+        {
+            "header": {...},
+            "payload": {...}
+        }
+    ]
+}
+```
+
+**除基础约定和音频焦点管理等基础实现外**，如果你已经有一套完善的，成体系的，有经验的设备体验规范，你并不需要完全遵循本规范进行实现。
+
+设备进入网络配置模式时，若设备已经联网，不断开当前的网络连接，直到连接上新的网络。
+
+设备断网(没有联网)时，每5min进行一次网络重连，遍历尝试设备本地的WiFi名和密码是否能够连接网络。
+
+设备联网，但所连网络无法建立与IVS的连接时，每10s发送一次建立连接的请求。
+
+
+
+发送语音数据
+发送完音频上传指令之后，客户端应尽快开始发送二进制语音数据。除非平台硬件有特殊限制，请使用 20ms 采样（对PCM格式来说即640个字节语音数据，其余格式见上表）封装到一个 websocket binary 消息中发送。如果打开了服务端 vad ，那么在收到服务端recognizer.stop_capture时，应该结束本地录音；如果没有打开服务端 vad，那么客户端可以根据本地 vad 或者按键请求等，自己确定什么时候结束录音。
+
+
+
+用cjson来构造请求字符串。
+
+
+
+发送语音数据，结束以及取消。
+
+```
+    writeVoice(voice){
+        this.ws.send(voice, {binary:true});
+    }
+
+    /**
+     * end current writing voice stream
+     */
+    endVoice(){
+        log('> __END__');
+        this.ws.send("__END__");
+    }
+
+    cancelVoice(){
+        log('> _CANCEL_');
+        this.ws.send("__CANCEL__");
+    }
+```
+
+看Linux版本的唤醒回调函数。
+
+做了多个条件判断，
+
+```
+1、是否在配网中。
+2、授权状态。
+3、跟云端的连接状态。
+4、如果当前音量是0，修改为10
+5、执行recognize函数。
+```
+
+
+
+```
+// 当设备被用户在app中删除时
+        this.capSystem.on('device_removed', () => {
+            this.authStatus = 'auth_expired';
+            this.soundPlayer.play('tts_登录状态失效，请打开APP重新登录');
+            this.client.stop();
+        });
+```
+
+更新token后要重新连接？是的，因为token是url的一部分。
+
+```
+// 旧的access token失效后，重新获取到新的并更新至client
+        this.authMgr.on('access_token', (token) => {
+            log('update access token with ', token);
+            this.authStatus = 'authorized';
+            this.client.updateToken(token);
+            this.client.startServerConnection();
+        });
+```
 
 
 

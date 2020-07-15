@@ -68,6 +68,74 @@ Nginx 自从 1.3 版本就开始支持 WebSocket 了，并且可以为 WebSocket
 
 
 
+# nopoll分析
+
+nopoll是一个C语言写的很小的websocket库。
+
+io复用机制是select的。
+
+nopoll是linux常用的开源的websocket的实现。
+
+安装成功后，只需要在我们的源文件中包含头文件nopoll.h
+
+如果在多个线程中同时调用nopoll的api，需要设置4个回调用以执行nopoll的创建，销毁和上锁和解锁。
+
+```
+noPollPtr nopoll_freertos_mutex_create(void)
+{
+	OS_Mutex_t *mutex  = nopoll_new(OS_Mutex_t, 1);
+	if (mutex == NULL)
+		return NULL;
+
+	if (OS_MutexCreate(mutex) == OS_OK)
+		return mutex;
+	else
+		return NULL;
+}
+
+void nopoll_freertos_mutex_destroy(noPollPtr mutex)
+{
+	if (OS_MutexDelete(mutex) == OS_OK)
+		nopoll_free(mutex);
+}
+
+void nopoll_freertos_mutex_lock(noPollPtr mutex)
+{
+	OS_MutexLock(mutex, 10000);
+}
+
+void nopoll_freertos_mutex_unlock(noPollPtr mutex)
+{
+	OS_MutexUnlock(mutex);
+}
+
+int nopoll_freertos_gettimeofday(struct timeval *tv, noPollPtr notUsed)
+{
+	return gettimeofday(tv, NULL);
+}
+```
+
+
+
+使用nopoll接口创建一个简单的websocket server。
+
+```
+noPollConn *listener = nopoll_listener_new(ctx, "0.0.0.0", 1234);
+if(!nopoll_conn_is_ok(listener)) {
+	
+}
+nopoll_ctx_set_on_msg(ctx, listener_on_message, NULL);
+nopoll_loop_wait(ctx, 0);
+```
+
+从websocket的链接上接收数据：
+
+使用nopoll_loop_wait()循环等待，设置消息接收的处理函数（nopoll_ctx_set_on_msg 和nopoll_conn_set_on_msg）.
+
+
+
+
+
 参考资料
 
 1、WebSocket
@@ -89,3 +157,7 @@ https://blog.csdn.net/weixin_37264997/article/details/80341911
 5、WebSocket 结合 Nginx 实现域名及 WSS 协议访问
 
 https://www.cnblogs.com/mafly/p/websocket.html
+
+6、使用nopoll实现websocket的接口点用流程
+
+https://blog.csdn.net/u010299133/article/details/91491344
