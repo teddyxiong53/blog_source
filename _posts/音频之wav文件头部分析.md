@@ -62,6 +62,43 @@ struct wav_header {
 
 
 
+# 简单的wav库
+
+dr_wav
+
+https://mackron.github.io/dr_wav
+
+dr是作者名字*David Reid*的缩写。
+
+所有代码只是一个头文件，你只需要包含头文件就好了。
+
+不过头文件有3000行左右。
+
+下面的例子就是从wav文件读取数据出来。
+
+```
+#define DR_WAV_IMPLEMENTATION
+#include "dr_wav.h"
+
+int main()
+{
+    drwav wav;
+    if (!drwav_init_file(&wav, "my_sound.wav", NULL)) {
+        return -1;
+    }
+
+    int32_t* pSampleData = (int32_t*)malloc((size_t)wav.totalPCMFrameCount * wav.channels * sizeof(int32_t));
+    drwav_read_pcm_frames_s32(&wav, wav.totalPCMFrameCount, pSampleData);
+
+    // At this point pSampleData contains every decoded sample as signed 32-bit PCM.
+
+    drwav_uninit(&wav);
+    return 0;
+}
+```
+
+
+
 参考资料
 
 1、wav文件头分析

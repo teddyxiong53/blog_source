@@ -84,6 +84,26 @@ sudo apt install gcc-arm-none-eabi
 
 编译通过。
 
+```
+CC build/kernel/libcpu/arm/common/backtrace.o
+CC build/kernel/libcpu/arm/common/div0.o
+CC build/kernel/libcpu/arm/common/showmem.o
+CC build/kernel/libcpu/arm/cortex-a/cache.o
+AS build/kernel/libcpu/arm/cortex-a/context_gcc.o
+AS build/kernel/libcpu/arm/cortex-a/cp15_gcc.o
+CC build/kernel/libcpu/arm/cortex-a/cpu.o
+CC build/kernel/libcpu/arm/cortex-a/gic.o
+CC build/kernel/libcpu/arm/cortex-a/interrupt.o
+CC build/kernel/libcpu/arm/cortex-a/mmu.o
+CC build/kernel/libcpu/arm/cortex-a/pmu.o
+CC build/kernel/libcpu/arm/cortex-a/stack.o
+AS build/kernel/libcpu/arm/cortex-a/start_gcc.o
+CC build/kernel/libcpu/arm/cortex-a/trap.o
+AS build/kernel/libcpu/arm/cortex-a/vector_gcc.o
+```
+
+
+
 # 板子对应的资料
 
 http://infocenter.arm.com/help/topic/com.arm.doc.dui0448i/DUI0448I_v2p_ca9_trm.pdf

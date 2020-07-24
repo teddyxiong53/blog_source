@@ -8,6 +8,26 @@ tags:
 
 1
 
+MP3是利用人耳对高频声音信号不敏感的特性，
+
+**将时域波形信号转换成频域信号，**
+
+**并划分成多个频段，**
+
+**对不同的频段使用不同的压缩率，**
+
+对高频加大压缩比（甚至忽略信号）对低频信号使用小压缩比，保证信号不失真。
+
+这样一来就相当于**抛弃人耳基本听不到的高频声音，**
+
+只保留能听到的低频部分，从而将声音用1∶10甚至1∶12的压缩率压缩。
+
+由于这种压缩方式的全称叫MPEG Audio Player3，所以人们把它简称为MP3。
+
+最高参数的MP3(320Kbps)的音质较之CD的,FLAC和APE无损压缩格式的差别不多，其优点是压缩后占用空间小，适用于移动设备的存储和使用。
+
+
+
 mp3全称是MPEG Audio Layer 3。
 
 是一种高效的音频编码方案。
@@ -128,6 +148,22 @@ https://github.com/lieff/minimp3
 
 
 
+时域和频域是信号的基本性质，这样可以**用多种方式来分析信号**，每种方式提供了不同的角度。
+
+解决问题的最快方式不一定是最明显的方式，**用来分析信号的不同角度称为域**。时域频域可清楚反应信号与互连线之间的相互影响。
+
+
+
+
+
+https://github.com/toots/shine
+
+https://github.com/cpuimage/tinymp3
+
+
+
+
+
 参考资料
 
 1、
@@ -153,3 +189,15 @@ https://blog.csdn.net/qq_24004499/article/details/79584495
 6、
 
 https://blog.csdn.net/zhenglie110/article/details/78654410
+
+7、mp3
+
+https://baike.baidu.com/item/mp3/23904
+
+8、时域频域
+
+https://baike.baidu.com/item/%E6%97%B6%E5%9F%9F%E9%A2%91%E5%9F%9F/9399325#2
+
+9、MP3 编码解码 附完整c代码
+
+https://www.cnblogs.com/cpuimage/p/9427457.html

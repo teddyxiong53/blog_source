@@ -187,6 +187,26 @@ vmm.bin 这个文件是作为kernel。应该相当于uboot的作用。
 
 
 
+# 配置
+
+```
+节拍是1ms的。
+配置抢占。
+最大优先级为7 
+最小的栈配置为128字节。
+使用时间片
+使用mutex和递归mutex
+不使用idle hook
+不使用tick hook
+
+#define vPortSVCHandler		SVC_Handler
+#define xPortPendSVHandler	PendSV_Handler
+#define xPortSysTickHandler	SysTick_Handler
+
+```
+
+
+
 # 参考资料
 
 1、Lab32: QEMU + FreeRTOS
@@ -196,3 +216,7 @@ http://wiki.csie.ncku.edu.tw/embedded/Lab32
 2、FreeRTOS 任务优先级说明
 
 https://blog.csdn.net/sty124578/article/details/80534276
+
+3、
+
+https://www.cnblogs.com/iot-dev/p/11681067.html

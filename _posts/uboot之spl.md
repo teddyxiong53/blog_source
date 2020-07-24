@@ -10,7 +10,7 @@ tags:
 
 spl是Secondary Program Loader的缩写。表示第二阶段加载器。
 
-所谓第二阶段，是相当于soc本身的BROM（boot rom）来说的。brom的大小一般32KB左右。
+**所谓第二阶段，是相当于soc本身的BROM（boot rom）来说的。**brom的大小一般32KB左右。
 
 soc启动的时候，最先执行的就是brom里固化的程序。
 
@@ -22,13 +22,13 @@ brom就相当于pc系统里的bios的作用。
 
 
 
-看最新版本的uboot代码里，spl也支持从nand flash、SD卡等多种设备里启动了。
+**看最新版本的uboot代码里，spl也支持从nand flash、SD卡等多种设备里启动了。**
 
 对应的文档在u-boot/doc/README.SPL。
 
 为了统一所有的当前有的spl实现，uboot增加了spl framework，方便后续的其他芯片添加。
 
-作为spl的所有obj文件，是单独编译的，并且放在一个叫spl的目录下。生成的对应文件是u-boot-spl和u-boot-spo.bin。
+**作为spl的所有obj文件，是单独编译的，并且放在一个叫spl的目录下**。生成的对应文件是u-boot-spl和u-boot-spo.bin。
 
 对应的开关是CONFIG_SPL_BUILD。
 
@@ -75,7 +75,39 @@ TPL是Third Program Loader。第三阶段加载器。
 
 
 
-tq2440板子，没有打开spl这个功能的。
+**tq2440板子，没有打开spl这个功能的。**
+
+
+
+
+
+SPL（Secondary programloader）是uboot第一阶段执行的代码。
+
+主要负责搬移uboot第二阶段的代码到系统内存（System Ram，也叫片外内存）中运行。
+
+SPL是由固化在芯片内部的ROM引导的。
+
+我们知道很多芯片厂商固化的ROM支持从nandflash、SDCARD等外部介质启动。
+
+**所谓启动，就是从这些外部介质中搬移一段固定大小（4K/8K/16K等）的代码到内部RAM中运行。**
+
+这里搬移的就是SPL。
+
+在最新版本的uboot中，可以看到SPL也支持nandflash，SDCARD等多种启动方式。
+
+当SPL本身被搬移到内部RAM中运行时，它会从nandflash、SDCARD等外部介质中搬移uboot第二阶段的代码到系统内存中。
+
+SPL复用的是uboot里面的代码.
+
+
+
+上文中说道“SPL复用的是uboot里面的代码”，那要生成我们所需要的SPL目标文件，我们又该如何下手呢？
+
+很容易想到，通过编译选项便可以将SPL和uboot代码分离、复用。
+
+这里所说的编译选项便是CONFIG_SPL_BUILD，在make Kconfig的时候使能。
+
+最终编译生成的SPL二进制文件有u-boot-spl，u-boot-spl.bin以及u-boot-spl.map。
 
 
 
@@ -84,3 +116,7 @@ tq2440板子，没有打开spl这个功能的。
 1、
 
 https://blog.csdn.net/rikeyone/article/details/51646200	
+
+2、ARM U-Boot SPL过程浅析
+
+https://blog.csdn.net/jxgz_leo/article/details/52098776

@@ -196,6 +196,8 @@ cjson里，把int类型，只是32位的。
 
 
 
+
+
 参考资料
 
 1、
@@ -205,3 +207,7 @@ http://www.fly63.com/article/detial/3770
 2、jsoncpp 不能处理long类型数据
 
 https://blog.csdn.net/chenlei0630/article/details/39644189
+
+3、cJSON: 只能处理 utf-8 编码的 json
+
+https://www.cnblogs.com/personnel/p/12365180.html
