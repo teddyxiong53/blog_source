@@ -26,7 +26,7 @@ nums.emplace_back(1);
 
 这二者的区别是什么呢？
 
-emplace最大的作用就是避免临时变量的产生。
+**emplace最大的作用就是避免临时变量的产生。**
 
 因为它可以完成in place的构造。
 

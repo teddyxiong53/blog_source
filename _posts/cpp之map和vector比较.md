@@ -8,7 +8,7 @@ tags:
 
 1
 
-首先，不管是vector还是map，请尽量存取指针，否则在存取时会有数据拷贝带来不必要的时间损失。通常用int和string做key的场景比较普遍（我的项目即如此），能用int作key就用int作key，效率比string高。
+首先，不管是vector还是map，**请尽量存取指针，否则在存取时会有数据拷贝带来不必要的时间损失**。通常用int和string做key的场景比较普遍（我的项目即如此），**能用int作key就用int作key，效率比string高。**
 
 
 

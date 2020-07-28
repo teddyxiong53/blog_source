@@ -227,7 +227,7 @@ A a = new A;
 
 2、调用A()构造函数。
 
-分配内存的操作是靠operator new(size_t)来完成的。
+**分配内存的操作是靠operator new(size_t)来完成的。**
 
 类A可以选择自己是否对new这个操作符进行重载。
 
@@ -245,7 +245,7 @@ void* operator new(size_t size) {
 ::operator new(size_t)
 ```
 
-全局的new，由C++运行时默认提供。
+**全局的new，由C++运行时默认提供。**
 
 
 

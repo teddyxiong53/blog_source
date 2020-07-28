@@ -181,3 +181,13 @@ WAV Writer: Written 5410 frames to wav file: avdtp_sink.wav
 1、libusb安装
 
 https://github.com/bluekitchen/btstack/tree/master/port/libusb
+
+2、第06节-开源蓝牙协议BTStack框架分析
+
+这个作者总结了韦东山的蓝牙视频笔记。挺好的。
+
+https://www.cnblogs.com/-glb/p/11617659.html
+
+3、
+
+https://blog.csdn.net/happygrilclh/article/details/100743580

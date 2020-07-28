@@ -132,6 +132,70 @@ cache中的N个位置出现，N可能是2，4，8，12，或其他值。
 
 如今直接映射机制正在逐渐退出舞台。
 
+
+
+单核处理器，使用Dcache 只存在一个问题，即与 DMA 会数据不一致的问题。
+
+CPU 读取 RAM 数据，如果 Dcache 命中，则读取 Dcache 中的值，未命中则读取 RAM 中的值。写数据时，有两种方式： write through 和 write back。
+
+write through 方式：CPU 将数据同时写回到 Dcache 和 RAM 中，这个过程与不开 Dcache 消耗的时间一样。
+
+write back 方式： CPU 将数据写到 Dcache 中，并将该数值标志为 dirty， 当 Dcache 释放该数据时，将值写回到 RAM 中。这个过程是比较快捷的。
+
+
+
+DMA 通常负责外设与 RAM 的通信，是不经过 CPU 的。
+
+当 DMA 修改 RAM 中的数据时，CPU 是不知道的。
+
+
+
+Cache的容量很小，它保存的内容只是主存内容的一个子集，且Cache与主存的数据交换是以块为单位的。
+
+**为了把信息放到Cache中，必须应用某种函数把主存地址定位到Cache中，这称为地址映射**。
+
+在信息按这种映射关系装入Cache后，CPU执行程序时，会将程序中的主存地址变换成Cache地址，这个变换过程叫做地址变换。
+
+
+
+Cache的地址映射方式有直接映射、全相联映射和组相联映射。假设某台计算机主存容量为1MB，被分为2048块，每块512B；Cache容量为8KB，被分为16块，每块也是512B。下面以此为例介绍三种基本的地址映射方法。
+
+
+
+直接映射，是dram里的一个块只能映射到cache里的某一个特定块。
+
+```
+第0块、第16块、第32块等等dram，只能映射到第0块cache。
+第1块、第17块、第33块等等dram，只能映射到第1块cache。
+依次类推。
+```
+
+这个存在的问题是，例如你的程序，重复使用了dram的第0块和第16块，就会导致这2个反复被换入换出。
+
+
+
+全相联映射
+
+是dram里的任何一个块，都可以映射到cache里的任何一个块上。
+
+这个电路设计复杂。也不合适。
+
+
+
+所以选择折中的方案，组相联映射。
+
+具体是这么做的，先对dram和cache都进行分组。
+
+dram一个组内的块数跟cache的分组数相同。
+
+**组间采用直接映射，组内采用全相联映射。**
+
+例如，dram分为256组，每组8块，cache分为8组，每组2块。
+
+
+
+
+
 # 参考资料
 
 1、cache为什么分为i-cache和d-cache以及Cache的层次设计
@@ -149,3 +213,19 @@ https://zhidao.baidu.com/question/135827484.html
 4、Cache基本原理之：结构
 
 https://www.jianshu.com/p/2b51b981fcaf
+
+5、（试图）深入理解 Cache
+
+https://jcf94.com/2018/09/04/2018-09-04-cache/
+
+6、Cache控制器设计
+
+https://blog.csdn.net/Zhongzi_L/article/details/51607457
+
+7、MMU、Icache、Dcache
+
+https://blog.csdn.net/iodoo/article/details/8954014
+
+8、Cache直接映射、组相连映射以及全相连映射（转载）
+
+https://www.cnblogs.com/east1203/p/11572500.html

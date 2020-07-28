@@ -148,6 +148,12 @@ ChannelID，缩写为CID。
 
 2、L2CAP是协议栈里的重要中枢。
 
+btstack代码里：
+
+```
+#define COMPLETE_L2CAP_HEADER (HCI_ACL_HEADER_SIZE + L2CAP_HEADER_SIZE)
+```
+
 
 
 包头是这样：
