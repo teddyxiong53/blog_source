@@ -203,3 +203,10 @@ OF_ALIAS_0=i2c1
 pi@raspberrypi:/sys/class/i2c-adapter/i2c-1$ 
 ```
 
+
+
+参考资料
+
+1、Linux I2C工具查看配置I2C设备
+
+https://blog.csdn.net/zjy900507/article/details/78655384

@@ -134,6 +134,22 @@ nopoll_loop_wait(ctx, 0);
 
 
 
+碰到一个棘手的问题。
+
+就是设备端被服务端主动断开连接后。
+
+nopoll函数会卡死。找到解决方法了。还是要使用nopoll_conn_is_ok和nopoll_conn_is_ready进行检查。
+
+
+
+把nopoll的client例子都看一遍。
+
+nopoll_conn_send_ping：这个是
+
+```
+nopoll_log_enable (ctx, debug);
+```
+
 
 
 参考资料
