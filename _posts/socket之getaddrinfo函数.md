@@ -18,7 +18,7 @@ getaddrinfo是为ipv6加入的。
 
 这几个函数都是在netdb.h头文件里。
 
-后面我自己统一只时延getaddrinfo这个函数。
+后面我自己统一只使用getaddrinfo这个函数。
 
 ```
 原型：

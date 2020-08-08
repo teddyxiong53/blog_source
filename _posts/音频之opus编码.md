@@ -37,6 +37,30 @@ mp3的延迟比较大，不适合流媒体。
 
 
 
+https://opus-codec.org/
+
+从官网下载libopus。运行里面的opus_demo。
+
+基本用法：
+
+```
+./opus_demo [-e] <application> <sample_rate> <channels> <bits per second> <input> <output>
+```
+
+-e：表示只使用encoder。
+
+Application：voip、audio、restricted-lowdelay这三种情况。
+
+举例：
+
+```
+./opus_demo -e voip 16000 1 16000 1.pcm 1.opus
+```
+
+这里写opus文件的时候。
+
+
+
 # 参考资料
 
 1、opus
