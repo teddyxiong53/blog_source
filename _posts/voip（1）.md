@@ -8,16 +8,25 @@ tags:
 
 1
 
-freeswitch 
+WebRTC很有发展前景，它首先是开源项目。WebRTC在实时音视频传输的时候，特别是对于网络NAT技术，网络穿越技术解决方案上都有很独到的地方。WebRTC对于音视频本身的编解码，音频的前处理都有一些相关的方案，WebRTC在很多场景都是很不错的解决方案。
 
-https://freeswitch.com/
+两个场景不一样，直播的时候可能会跳动，或者VOD播放的时候如果延时比较大也没有关系，延时超过200毫秒，500毫秒，甚至1秒都没事，直播虽然晚一秒也不妨碍观看和体验。
 
-FreeSWITCH can unlock the telecommunications potential of any device.
+但是实时语音通信就不可以，超过300毫秒，甚至打电话1秒之后才回过来这肯定不行。
 
-https://www.cnblogs.com/Braveliu/p/10943511.html
+我不觉得它们会用RTC技术，它们还是会用RTMP推流，或者HLS切包发送这样的技术，
+
+因为虽然会带来延时，但是在网络抖动处理，包括其他很多方面都能处理得更好。
+
+所以适用的场景不一样，未来做不同技术的考虑点也会不一样。
+
+
 
 
 
 参考资料
 
-https://www.v2ex.com/t/254228
+1、腾讯会议突围背后：端到端实时语音技术是如何保障交流通畅的？
+
+https://www.e-learn.cn/topic/3528085	
+

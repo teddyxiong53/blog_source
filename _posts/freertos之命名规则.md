@@ -44,6 +44,14 @@ configUSER_PREEMPTION
 
 
 
+```
+projdefs.h
+这个里面的是pd开头的。
+例如pdFALSE，pdTRUE
+```
+
+
+
 # 参考资料
 
 1、FreeRTOS学习记录1-熟悉FreeRTOS的命名规则

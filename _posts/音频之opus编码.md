@@ -54,10 +54,20 @@ Application：voip、audio、restricted-lowdelay这三种情况。
 举例：
 
 ```
-./opus_demo -e voip 16000 1 16000 1.pcm 1.opus
+./opus_demo -e voip 16000 1 16000 1.pcm 2.opus
 ```
 
-这里写opus文件的时候。
+得到的opus文件，没法直接播放。因为并没有封装ogg文件头。
+
+但是可以在转码成pcm来播放。
+
+```
+./opus_demo -d  16000 1  2.opus 3.pcm
+```
+
+3.pcm可以正常播放。
+
+
 
 
 
