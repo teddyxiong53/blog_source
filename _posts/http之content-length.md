@@ -46,6 +46,8 @@ content-length只对post请求有用。是post的body部分的长度。
 
 不包含header的长度。
 
+post必须要有content-length。保险起见，自己计算这个长度。
+
 
 
 参考资料
