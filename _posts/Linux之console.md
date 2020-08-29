@@ -28,6 +28,37 @@ If no console device is specified, the first device found capable of acting as a
 
 也可以配置网络作为console。
 
+看printk.c代码里。
+
+有一个register_console函数。在内核里搜索一下。
+
+```
+./arch/arm/kernel/early_printk.c:42:    register_console(&early_console_dev);
+```
+
+```
+static struct console early_console_dev = {
+	.name =		"earlycon",
+	.write =	early_console_write,
+	.flags =	CON_PRINTBUFFER | CON_BOOT,
+	.index =	-1,
+};
+
+static int __init setup_early_printk(char *buf)
+{
+	early_console = &early_console_dev;
+	register_console(&early_console_dev);
+	return 0;
+}
+
+early_param("earlyprintk", setup_early_printk);
+
+```
+
+```
+__setup("console=", console_setup);
+```
+
 
 
 参考资料

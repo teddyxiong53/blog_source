@@ -203,6 +203,104 @@ spinlock在不同情况下的表现：
 
 
 
+对于单处理器系统，在不打开调试选项时，spinlock_t实际上是一个空结构，
+
+把上面两个函数展开后，实际上就只是调用preempt_disable()和preempt_enable()，
+
+对于单处理器系统，关掉抢占后，其它线程不能被调度运行，所以并不需要做额外的工作，
+
+除非中断的到来，不过内核提供了另外的变种函数来处理中断的问题。
+
+
+
+对于多处理器系统，spinlock_t**实际上等效于内存单元中的一个整数，**
+
+内核保证spin_lock系列函数对该整数进行原子操作，
+
+除了调用preempt_disable()和preempt_enable()防止线程被抢占外，
+
+还必须对spinlock_t上锁，这样，如果另一个CPU的代码要使用该临界区对象，就必须进行自旋等待。
+
+
+
+对于中断和普通线程都要访问的对象，内核提供了另外两套变种函数：
+
+- spin_lock_irq(spinlock_t *lock)；
+- spin_unlock_irq(spinlock_t *lock)；
+
+和：
+
+- spin_lock_irqsave(lock, flags)；
+- spin_lock_irqrestore(lock, flags)；
+
+
+
+我们可以按以下原则使用上面的三对变种函数（宏）：
+
+- 如果只是在普通线程之间同时访问共享对象，使用spin_lock()/spin_unlock()；
+- 如果是在中断和普通线程之间同时访问共享对象，并且确信退出临界区后要打开中断，使用spin_lock_irq()/spin_unlock_irq()；
+- 如果是在中断和普通线程之间同时访问共享对象，并且退出临界区后要保持中断的状态，使用spin_lock_irqsave()/spin_unlock_irqrestore()；
+
+
+
+在2.6.33之后的版本，内核加入了raw_spin_lock系列，使用方法和spin_lock系列一模一样，
+
+只是参数有spinlock_t变为了raw_spinlock_t。
+
+而且在内核的主线版本中，spin_lock系列只是简单地调用了raw_spin_lock系列的函数，
+
+但内核的代码却是有的地方使用spin_lock，有的地方使用raw_spin_lock。是不是很奇怪？
+
+
+
+解答这个问题，我们要回到2004年，
+
+MontaVista Software, Inc的开发人员在邮件列表中提出来一个Real-Time Linux Kernel的模型，
+
+旨在提升Linux的实时性，之后Ingo Molnar很快在他的一个项目中实现了这个模型，
+
+并最终产生了一个Real-Time preemption的patch。
+
+
+
+该模型允许在临界区中被抢占，
+
+而且申请临界区的操作可以导致进程休眠等待，
+
+这将导致自旋锁的机制被修改，
+
+**由原来的整数原子操作变更为信号量操作**。
+
+当时内核中已经有大约10000处使用了自旋锁的代码，
+
+**直接修改spin_lock将会导致这个patch过于庞大**，
+
+于是，他们决定只修改哪些真正不允许抢占和休眠的地方，而这些地方只有100多处，这些地方改为使用raw_spin_lock
+
+但是，因为原来的内核中已经有raw_spin_lock这一名字空间，用于代表体系相关的原子操作的实现，于是linus本人建议：
+
+- 把原来的raw_spin_lock改为arch_spin_lock；
+- 把原来的spin_lock改为raw_spin_lock；
+- 实现一个新的spin_lock；
+
+
+
+对于没有打上Linux-RT（实时Linux）的patch的系统，
+
+spin_lock只是简单地调用raw_spin_lock，实际上他们是完全一样的，
+
+如果打上这个patch之后，spin_lock会使用信号量完成临界区的保护工作，
+
+带来的好处是同一个CPU可以有多个临界区同时工作，
+
+而原有的体系因为禁止抢占的原因，一旦进入临界区，其他临界区就无法运行，
+
+新的体系在允许使用同一个临界区的其他进程进行休眠等待，而不是强占着CPU进行自旋操作。
+
+写这篇文章的时候，内核的版本已经是3.3了，主线版本还没有合并Linux-RT的内容，说不定哪天就会合并进来，也为了你的代码可以兼容Linux-RT，最好坚持上面三个原则。
+
+
+
 # 参考资料
 
 1、
@@ -212,3 +310,7 @@ http://blog.chinaunix.net/uid-20543672-id-3252604.html
 2、linux spinlock之使用
 
 https://blog.csdn.net/xiaoyao1004/article/details/83858953
+
+3、自旋锁spin_lock和raw_spin_lock
+
+https://www.cnblogs.com/hadis-yuki/p/5540046.html

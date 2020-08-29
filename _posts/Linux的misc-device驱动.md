@@ -97,6 +97,16 @@ hw_random           network_throughput
 memory_bandwidth    tun
 ```
 
+常用的misc设备有：
+
+```
+看门狗 130
+温度传感器 131
+rtc 135
+nvram 144
+
+```
+
 
 
 参考资料

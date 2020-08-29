@@ -206,7 +206,7 @@ platform_bus_init
 	
 ```
 
-到这里，bus、devices、platform的基础模型就建立好了。现在就等设备来注册了。
+到这里，bus、devices、platform的基础模型就建立好了。**现在就等设备来注册了。**
 
 ```
 struct platform_device test_device = {
@@ -332,9 +332,9 @@ kset和ktype都可以用来指导kobject建立目录的位置，而kset的优先
 
 ##subsystem
 
-这个结构体就是kset再加一个semaphore，现在已经没有了。
+**这个结构体就是kset再加一个semaphore，现在已经没有了。**
 
-完全被kset取代了。
+**完全被kset取代了。**
 
 ------
 
