@@ -52,8 +52,24 @@ WebRTC易于使用，只需极少步骤便可建立媒体会话。有些消息�
 2、web服务器向浏览器M返回带有webrtc js的网页。
 3、浏览器L请求网页。
 4、web服务器向浏览器L返回带有webrtc js的网页。
-5、M决定跟L通信，所以通过js代码把自己的
+5、M决定跟L通信，所以通过js代码把自己的session对象（offer、提议）发送到web服务器。
+6、web服务器把M的session对象发送到L的js。
+7、L上的js将L的session对象（answer、应答）发送到web服务器。
+8、web服务器转发应答到M的js。
+9、M和L开始交互，确定访问对方的最佳方式。
+10、M和L开始协商通信秘钥。
+11、M和L交换语音和视频数据。
 ```
+
+
+
+webrtc中的媒体
+
+webrtc的代码：
+
+https://github.com/JumpingYang001/webrtc
+
+编译：
 
 
 

@@ -6,6 +6,29 @@ tags:
 
 ---
 
+1
+
+有3个相关的宏。
+
+```
+#define RT_USING_LIBC
+/* RT_USING_PTHREADS is not set */
+/* RT_USING_POSIX is not set */
+```
+
+代码目录下的C库看起来有好几个。是如何进行配置的呢？
+
+```
+armlibc/  
+	这个是用keil的时候用。
+dlib/  
+	这个是IAR工具链时用的。
+minilibc/  
+	这个gcc时用。
+newlib/
+	也是gcc用，依赖RT_USING_NEWLIB
+```
+
 
 
 rt-thread的libc系统初始化是libc_system_init。

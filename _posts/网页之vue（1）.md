@@ -447,6 +447,29 @@ var app = new Vue({
 
 
 
+```
+v-text：改变dom对象的text内容。
+v-html：改变dom对象的innerHTML。
+v-bind
+	简写就是冒号。
+	<a v-bind:href="xxx"></a>
+	<a :href="xxx"></a>
+v-on
+	v-on:click="say" or v-on:click="say('参数', $event)"
+	简写：@click="say"
+v-model
+	实现form元素的双向数据绑定。
+	说明：监听用户的输入事件以更新数据
+v-for
+	推荐：使用 v-for 的时候提供 key 属性，以获得性能提升。
+	使用 key，VUE会基于 key 的变化重新排列元素顺序，并且会移除 key 不存在的元素。
+	
+提升性能：v-pre
+提升性能：v-once
+```
+
+
+
 #参考资料
 
 1、

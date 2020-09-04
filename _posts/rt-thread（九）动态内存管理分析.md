@@ -6,6 +6,38 @@ tags:
 typora-root-url: ..\
 ---
 
+1
+
+里面有几个东西看起来像是heap。
+
+有mem.c、memheap.c、slab.c。
+
+mem.c：默认的动态内存管理。需要下面2个宏同时满足。
+
+```
+#if defined (RT_USING_HEAP) && defined (RT_USING_SMALL_MEM)
+```
+
+可见，这个是适合管理比较小的内存。
+
+memheap.c：目前只在ramfs里用到。
+
+也可以把memheap.c作为默认的动态内存管理。
+
+需要打开下面这个宏。
+
+```
+RT_USING_MEMHEAP_AS_HEAP
+```
+
+slab.c
+
+这个应该适合管理比较大的内存。需要下面2个宏同时满足。
+
+```
+#if defined (RT_USING_HEAP) && defined (RT_USING_SLAB)
+```
+
 
 
 rt-thread默认用的是mem.c里的代码。
