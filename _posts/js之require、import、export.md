@@ -6,7 +6,39 @@ tags:
 
 ---
 
+1
 
+ require是Commonjs的规范，node应用是由模块组成的，遵从commonjs的规范。
+
+require的核心概念：
+
+在导出的文件中定义module.exports，导出的对象类型不予限定（可为任意类型）。
+
+在导入的文件中使用require()引入即可使用。
+
+本质上，是将要导出的对象，
+
+**赋值给module这个对象的exports属性，**
+
+在其他文件中通过require这个方法来访问exports这个属性。
+
+
+
+import是es6为js模块化提出的新的语法，import （导入）要与export（导出）结合使用。
+
+
+
+## commonjs模块与ES6模块的区别
+
+​    1.commonjs输出的，是一个**值的拷贝**，而es6输出的是**值的引用；**
+
+​    2.commonjs是**运行时**加载，es6是**编译时**输出接口；
+
+
+
+我们都知道es6是绝对通用的规范，且会更新到es7、es8等。而既然es6有模块化的方法，那么`CommonJs规范`将逐步被替换。
+
+所以在`nodeJs`中如果不引入`babel`或其他方法来编译es5的话，依旧需要老老实实使用`CommonJs规范`。
 
 #require
 

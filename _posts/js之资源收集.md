@@ -26,6 +26,14 @@ ECMAScript 6 入门
 
 http://es6.ruanyifeng.com
 
+js基础
+
+这个非常好。讲得很细。
+
+https://wangdoc.com/javascript
+
+
+
 js常用函数，很好，很实用。
 
 https://www.kancloud.cn/ifeng/js100/622665

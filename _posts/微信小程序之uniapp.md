@@ -430,20 +430,103 @@ nvue的限制是：css有限制、动画性能不好。
 
 https://uniapp.dcloud.io/api/media/record-manager
 
+这里有很多新冠相关的app。都是开源的。可以直接部署使用的。
+https://gitee.com/dcloud/xinguan2020
+
+https://dcloud.io/ncp.html
+
+下载这个出入人员登记系统。
+
+https://gitee.com/dcloud/xinguan2020-alien-registration
+
+按照readme里的说明进行配置。使用了云开发。
+
+默认的登陆名和密码是：admin和123456
 
 
-# 使用H5+
 
-小程序及 H5 等平台是没有 HTML5+ 扩展规范的，因此在 `uni-app` 调用 HTML5+ 的扩展规范时，需要注意使用条件编译。否则运行到h5、小程序等平台会出现 `plus is not defined`错误。
+运行出入人员登记系统。
 
-**建议使用5+ API的属性方式获取imei、imsi、uuid信息的代码调整使用plus.device.getInfo方法**
+会报错。
 
-至于属性和方法的区别，可能普通程序员看不懂，但做底层的会知道，属性就是启动时就必须初始化的。
+```
+16:11:45.215 Error: Module build failed (from ./node_modules/sass-loader/dist/cjs.js):
+16:11:45.234 Error: Cannot find module 'D:\Downloads\HBuilderX.2.8.8.20200820.full\HBuilderX\plugins\compile-node-sass\node_modules\node-sass-china'
+16:11:45.253 at Function.Module._resolveFilename (module.js:547:15)
+```
 
-原来的plus.device.imei、plus.device.imsi、plus.device.uuid等属性方式的API不推荐使用，后续会逐步废弃。
-为了保证向下兼容，目前还可以使用，但不一定可以获取到正确的值。
+是需要自己手动安装这个插件。compile-node-sass
+
+这个在插件市场是找不到的。
+
+查看版本。
+
+```
+D:\Downloads\HBuilderX.2.8.8.20200820.full\HBuilderX\plugins\node
+λ  .\node.exe -p "[process.platform, process.arch, process.versions.modules].join('-')"
+win32-ia32-57
+```
+
+到这里下载符合的版本。
+
+https://github.com/sass/node-sass/releases
+
+下载这个。
+
+![1599294147572](../images/random_name/1599294147572.png)
+
+下载后，改名为binding.node，放到D:\Downloads\HBuilderX.2.8.8.20200820.full\HBuilderX\plugins\compile-node-sass\node_modules\node-sass-china 这个目录下。
+
+放进去还是不行。
+
+这次提示比较清楚了。
+
+```
+16:26:56.151 预编译器错误：代码使用了scss/sass语言，但未安装相应的编译器插件，请前往插件市场安装该插件:
+16:26:56.160 https://ext.dcloud.net.cn/plugin?name=compile-node-sass at components\uni-icons\uni-icons.vue:1
+```
+
+插件市场里还是有这个插件的。
+
+https://ext.dcloud.net.cn/plugin?name=compile-node-sass
+
+下载zip文件，然后解压放到plugins目录下。
+
+要把文件夹的名字从compile-node-sass_0.0.3改成compile-node-sass。
+
+然后就可以编译了。
+
+运行后，正常情况应该在我的这个tab下面，出现一个二维码。
+
+让其他人扫描这个二维码就可以进行登记操作。
+
+但是现在我手机上运行并没有出现。在内置浏览器运行可以出现二维码，但是扫描打不开。
+
+先不管。目前基本功能是正常的。
+
+```
+Vue.prototype.$cloud = uniCloud
+```
 
 
+
+
+
+
+
+这个是H5应用。需要开通云端托管，也是免费。测试一下。
+
+是查询新冠肺炎疫情形势的。
+
+https://ext.dcloud.net.cn/plugin?id=1284
+
+上传完了，会打印访问地址：
+
+https://static-0331bc48-72c7-4332-bd5c-cd490ea195a7.bspapp.com
+
+需要在url后面加上plague_query/index.html才能访问到。
+
+但是这个完全就只是一个网页而已。
 
 
 
