@@ -95,6 +95,22 @@ teddy@ubuntu:~/work/test/vue$ vue create hello-world
 
 
 
+npm run build得到dist目录下的index.html和static目录。
+
+把这个拷贝到nginx的目录下。
+
+访问对应的网址就可以了。
+
+
+
+vue.js有著名的全家桶系列，包含了vue-router，vuex， vue-resource，再加上构建工具vue-cli，就是一个完整的vue项目的核心构成。
+
+**vue-cli**这个构建工具大大降低了webpack的使用难度，支持热更新，有**webpack-dev-server**的支持，相当于启动了一个请求服务器，给你搭建了一个测试环境，只关注开发就OK。
+
+
+
+
+
 # 参考资料
 
 1、中文手册

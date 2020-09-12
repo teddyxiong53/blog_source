@@ -1,5 +1,5 @@
 ---
-title: 安卓分区规范
+title: Android系统之分区规范
 date: 2017-06-24 23:14:06
 tags:
 
@@ -53,3 +53,7 @@ vrcb --> p11
 1、Android Fastboot 与 Recovery 和刷机
 
 https://www.jianshu.com/p/d960a6f517d8
+
+2、分区布局
+
+https://source.android.com/devices/bootloader/system-as-root

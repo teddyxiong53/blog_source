@@ -16,7 +16,7 @@ AOSP是Android Open Source Project的缩写。
 
 3、注意原生ROM和AOSP的区别是：AOSP里没有集成谷歌服务。
 
-4、AOSP不包含任何驱动程序，需要你自己将驱动整合进去编译。
+4、**AOSP不包含任何驱动程序，需要你自己将驱动整合进去编译。**
 
 
 

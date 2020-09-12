@@ -41,3 +41,9 @@ print("hello jerry");
 
 简单看了一下，这个对我来说没有什么吸引力，暂时不关注了。
 
+这样编译，方便用gdb进行调试跟踪代码的运行。
+
+```
+python2 tools/build.py --debug  --all-in-one ON --logging ON   --line-info ON --jerry-debugger ON  --jerry-cmdline ON  --jerry-port-default ON 
+```
+

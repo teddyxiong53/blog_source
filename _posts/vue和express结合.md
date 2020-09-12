@@ -73,6 +73,131 @@ index.html里的内容是这样：
 
 
 
+# vue和express的前后端分离
+
+express是后端服务器，它是一个独立的服务器，vue启动的是前端服务器，vue-cli中已经集成了一个小型的express，这两个服务器是分开放的。
+
+可以都借助vue和express命令行工具来搭建最简单基本的环境。
+
+```
+vue init webpack myapp
+```
+
+```
+express server
+```
+
+这样就创建了2个目录，一个myapp。一个server。
+
+对myapp目录下做如下修改：
+
+在main.js里加上这两行。这个是为了引入axios。并指定axios请求的模板网址，这个网址就是express运行的地址。
+
+```
+Vue.prototype.$axios = axios
+axios.defaults.baseURL = 'http://localhost:3000'
+```
+
+把HelloWorld.vue改成下面这样。这个就是在创建页面的时候，去请求express的内容。因为默认打开了eslint。下面的代码不完全符合eslint的规则。所以需要在build/webpack.base.conf.js里，注释掉eslint那一行。
+
+`*...(config.dev.useEslint ? [createLintingRule()] : []),*`就是这一行。
+
+```
+<template>
+  <div>Hello World！</div>
+</template>
+<script>
+export default {
+  name: 'HelloWorld',
+  data() {
+    return {
+      msg: 'Welcome to Your Vue.js App',
+    };
+  },
+  methods: {
+    init() {
+      this.$axios
+        .get('/login')
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+  },
+  created() {
+    this.init();
+  },
+};
+</script>
+
+<!-- Add 'scoped' attribute to limit CSS to this component only -->
+<style >
+</style>
+```
+
+
+
+对于express这边做这些修改：
+
+在routes目录下，新增login.js。内容如下：
+
+```
+var express = require('express');
+var router = express.Router();
+
+/* GET login page. */
+router.get('/', function(req, res, next) {
+  // 处理一些业务并返回下面数据
+  res.json({name:'adoctors',pwd:'123'});
+});
+
+module.exports = router;
+```
+
+在app.js里，加上这些语句，要加到合适的位置上。
+
+需要安装cors模块。这个是实现跨域访问的。并允许从8080端口过来的访问（也就是托管前端代码的服务器地址）
+
+```
+var cors = require('cors')
+app.use(cors({
+  origin:['http://localhost:8080'],
+  methods:['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}))
+```
+
+还要加上login的。
+
+```
+var loginRouter = require("./routes/login")
+app.use('/login', loginRouter)
+```
+
+然后允许后端：
+
+```
+node ./bin/www
+```
+
+运行前端：
+
+```
+npm run dev
+```
+
+然后打开浏览器，访问http://localhost:8080，就可以在控制台看到后端返回的数据了。
+
+这样就实现了前后端分离。
+
+一般我们把前端就托管到80端口。后端托管到8080等不知名的端口。
+
+这样就是前端负责渲染，后端只负责提供json格式的数据就好了。
+
+
+
 
 
 参考资料
@@ -88,3 +213,7 @@ https://juejin.im/entry/5a6198c5518825734f52c71a
 3、express+mongodb+vue实现增删改查-全栈之路
 
 https://juejin.im/post/5aabc2caf265da239376d5ff
+
+4、
+
+https://www.cnblogs.com/adoctors/p/8911151.html

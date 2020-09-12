@@ -28,19 +28,21 @@ CC2540是ble单模芯片。是不兼容传统蓝牙的。
 
 
 
-# indicate和notify的区别
+大家可以理解为service就是java里的class，characteristic是class里的public方法。所以我们应该先找到class，再调用其方法。
 
-这么说吧，如果在连接参数相同的情况下（主要指connection interval），并且APP处理得当，那肯定是Notification快，因为indication要等回复才能发下一个包。
+再往下想，写和读肯定是两个方法，所以也会是两个characteristic。
 
-1、什么是indicate？
+service和characteristic的uuid都是通信之前双方约定好的。android端在上文说的discoverService之后，查看有没有对应的uuid，如果有，就可以发起通信了。
 
-答：indicate译为“指示”，它是服务器给客户端发送数据的方式。
 
-2、它与notify有什么不同？
 
-答：它在使用上比notify多一个应答的步骤，如下图：
 
-![img](../images/random_name/20151005204548451)
+
+![v4f6bxnfb3](../images/random_name/v4f6bxnfb3.jpeg)
+
+
+
+
 
 #参考资料
 
@@ -67,3 +69,7 @@ https://www.jianshu.com/p/2b4620c52d47
 6、
 
 https://e2echina.ti.com/question_answer/wireless_connectivity/bluetooth/f/103/t/111227
+
+7、Android蓝牙通信过程详解
+
+https://cloud.tencent.com/developer/news/216558

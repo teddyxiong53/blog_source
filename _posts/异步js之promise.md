@@ -6,6 +6,14 @@ tags:
 
 ---
 
+1
+
+代码可以看到shadownode里的promise.js的实现。只有300行代码。
+
+是从这个弄过来的。
+
+https://github.com/taylorhakes/promise-polyfill
+
 
 
 本来是在js之异步编程里讨论这个的。
@@ -68,16 +76,9 @@ Promise.resolve().then(()=> {
 
 
 
-我通过vscode看看Promise的定义。
 
-只有2个方法。
 
-```
-interface Promise<T> {
-	then
-	catch
-}
-```
+
 
 #什么是Promise？
 
@@ -88,34 +89,6 @@ interface Promise<T> {
 Promise把之前嵌套的回调函数，用then穿起来了。
 
 代码看起来清晰多了。
-
-
-
-#Promise A规范
-
-Promise表示一个最终值。这个值有一个操作完成时返回。
-
-Promise有三种状态：
-
-```
-1、未完成。
-2、完成。
-3、失败。
-```
-
-Promise只能从从未完成转换到完成，或者从未完成转换到失败。
-
-这个转换只发生一次。
-
-Promise有一个then方法，这个方法接受3个函数做参数。
-
-```
-1、完成时的回调。
-2、失败时的回调。
-3、进度信息回调。
-```
-
-# Promise B规范
 
 
 
@@ -179,7 +152,7 @@ runAsync();
 
 我们包装的函数，返回了一个Promise对象。
 
-这个对象可以执行then和catch函数。
+**这个对象可以执行then和catch函数。**
 
 ```
 runAsync().then(function(data) {
@@ -200,6 +173,94 @@ then达到的效果，跟普通的回调函数类型。
 
 但是写起来要清晰很多。
 
+所有接口：
+
+```
+原型方法：3个
+Promise.prototype.catch 
+	其实是调用了then。
+Promise.prototype.then 
+	返回了一个promise。
+Promise.prototype.finally
+	调用了then。所有也是返回了promise对象。
+	
+	
+类方法
+Promise.all
+	也是返回了一个promise。先把所有的promise执行。
+Promise.resolve 
+	也是返回promise。
+Promise.reject
+Promise.race
+
+总结：所有的promise方法，都是返回了promise对象。
+```
+
+
+
+`Promise.resolve()`用于将现有对象转换为`Promise`对象，从而控制异步流程。
+
+而立即`resolve`的`Promise`对象是在本轮“事件循环”（Event loop）的结束时，而不是在下一轮“事件循环”的开始时。
+
+下面的代码运行过程值得注意。
+
+```
+setTimeout(function () {
+    console.log('three');
+}, 0);
+
+Promise.resolve().then(function () {
+    console.log('two');
+});
+
+console.log('one');
+
+// one
+// two
+// three
+
+```
+
+
+
+自己写的例子。
+
+```
+var console = require('console')
+Promise.resolve().then(()=> {
+    return new Promise((resolve, reject) => {
+        setTimeout(()=> {
+            console.log("timeout")
+            resolve(111) //如果这里不resolve的话，后面就不会执行。
+        },2000)
+    })
+}).
+then(()=> {
+    return checkOta()
+}).then(()=> {
+    return checkAuth()
+}).then(()=> {
+    console.log("end promise")
+}).catch((e) => {
+    console.log("catch" + e)
+})
+
+function checkOta() {
+    return new Promise((resolve)=>{
+        console.log("in ota")
+        resolve("ota")
+    })
+}
+function checkAuth() {
+    return new Promise((resolve, reject)=> {
+        console.log("in auth")
+        // resolve("auth")
+        reject("auth")
+    })
+}
+console.log("end of code")
+```
+
 
 
 参考资料
@@ -215,3 +276,7 @@ https://zhuanlan.zhihu.com/p/32913092
 3、Promise对象是用来干嘛的?
 
 https://blog.csdn.net/Wbiokr/article/details/79490390
+
+4、Promise.resolve()
+
+https://www.jianshu.com/p/3bd1c6865bba

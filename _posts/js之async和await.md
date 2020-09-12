@@ -53,9 +53,9 @@ testAsync().then((v)=> {
 })
 ```
 
-如果一个async修饰的函数没有返回值，那么得到的是什么？
+**如果一个async修饰的函数没有返回值，那么得到的是什么？**
 
-是Promise.resolve(undefined)。
+**是Promise.resolve(undefined)。**
 
 
 

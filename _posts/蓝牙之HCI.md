@@ -76,6 +76,30 @@ typedef uint16_t hci_con_handle_t;
 
 
 
+hci 链路层 inquiry命令
+
+发送时是这样：
+
+```
+hci_send_cmd(&hci_inquiry, GAP_IAC_GENERAL_INQUIRY, duration, 0);
+```
+
+hci_inquiry定义：
+
+```
+OPCODE(OGF_LINK_CONTROL, 0x01), "311"
+```
+
+311表示后面的数据组成是：3字节+1字节+1字节。
+
+3字节部分是固定的3个字节。1字节是duration。1字节是设备数。
+
+
+
+2个设备之间，最多只有一个acl连接，但是可以有多个sco连接。
+
+
+
 # 命令
 
 命令包的结构是：

@@ -166,7 +166,7 @@ var person1 = new Person("xx", 10);
 3、没有return。
 ```
 
-一个匿名对象，会交给window对象接管。
+**一个匿名对象，会交给window对象接管。**
 
 ```
 Person("xx", 10);
