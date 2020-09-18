@@ -25,7 +25,7 @@ onPause和onResume
 
 这个是一个符合正常思考方式的设置。
 
-启动Activity：先onCreate，然后onStart，然后onResume，Activity进入到运行状态。
+**启动Activity：先onCreate，然后onStart，然后onResume，Activity进入到运行状态。**
 
 如果一个Activity被其他的Activity覆盖（例如出现确认窗口）或者手机被锁屏，则onPause被调用。
 

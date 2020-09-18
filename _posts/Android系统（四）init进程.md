@@ -90,7 +90,7 @@ zygote进程在启动时会创建一个dalvik虚拟机实例。
 
 当zygote孵化一个新的进程时，会把自己的dalvik虚拟机复制过去。
 
-这样每个进程都有自己独立的dalvik虚拟机。
+**这样每个进程都有自己独立的dalvik虚拟机。**
 
 
 
@@ -270,11 +270,17 @@ SystemServer进程在启动的过程中会启动PMS，
 
 PMS启动后会将系统中的应用程序安装完成，
 
-先前已经启动的AMS会将Launcher启动起来。
+**先前已经启动的AMS会将Launcher启动起来。**
 
 在SystemServer的startOtherServices()方法中，调用了AMS的systemReady()方法，
 
 此即为Launcher的入口，如下所示：
+
+
+
+SystemServer.java在：
+
+Z:\work3\aosp-rpi3\frameworks\base\services\java\com\android\server
 
 
 

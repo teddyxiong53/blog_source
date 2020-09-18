@@ -118,6 +118,61 @@ tx和rx的1个bit，为0表示是公共地址。为1表示是随机地址。
 
 ![1598942323935](../images/random_name/1598942323935.png)
 
+
+
+自`Android 5.0`更新蓝牙API后，手机可以作为外设广播数据。
+
+广播包有两种：
+
+- 广播包（Advertising Data）
+- 响应包（Scan Response）
+
+
+
+其中**广播包是每个外设都必须广播的，而响应包是可选的**。每个广播包的长度必须是**31个字节**，如果不到**31个字节** ，则剩下的全用**0**填充 补全，这部分的数据是无效的
+
+
+
+### 广播数据单元
+
+广播包中包含若干个广播数据单元，广播数据单元也称为 `AD Structure`。
+
+**广播数据单元 = 长度值Length + AD type + AD Data。**
+
+长度值`Length`只占**一个字节**，并且位于广播数据单元的**第一个字节**。
+
+概念的东西有些抽象，先看看下面的广播报文：
+
+![image](../images/random_name/1710b76eb9413076)
+
+
+
+![image](../images/random_name/1710b76ebafa1d1a)
+
+广播类型：
+
+https://www.bluetooth.com/specifications/assigned-numbers/generic-access-profile/
+
+例如，RK里配网时，广播是这样：
+
+```
+02 01 06 # 广播的第一个单元，长度是2个字节，类型是0x01，表示flags。flags的值为0x06，有2个bit置位了。表示LE发现模式使能，BR/EDR不支持。
+第二个单元
+11 07 后面跟16个字节的uuid。
+11是长度，表示后面的内容总共是0x11字节，就是17个字节。
+07是类型，如下图所示，表示128bit的完整uuid。
+```
+
+![1600334830517](../images/random_name/1600334830517.png)
+
+手机这边收到这样一个广播信息，会做一些什么呢？
+
+会从里面拿到service对应的uuid。
+
+然后进行连接。
+
+
+
 参考资料
 
 1、BLE 广播格式定义
@@ -129,3 +184,7 @@ https://www.jianshu.com/p/fbb36c73f148
 这位作者的蓝牙系列写得非常好。
 
 https://www.cnblogs.com/zjutlitao/p/5037818.html
+
+3、android蓝牙BLE（三） —— 广播
+
+https://juejin.im/post/6844904030645256205

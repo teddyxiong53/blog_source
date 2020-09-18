@@ -19,7 +19,7 @@ Android里的UserId跟Linux下的uid不是一个东西。
 uid = UserId *10000 + AppId
 ```
 
-usb连上书籍，搜索微信相关进程。
+usb连上手机，搜索微信相关进程。
 
 ```
 osborn:/ $ ps |grep tencent.mm

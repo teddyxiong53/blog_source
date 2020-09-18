@@ -29,7 +29,7 @@ Brillo是2015年Google IO大会上推出的。谷歌基于这个系统推出过�
 
 2、AndroidThings 的SDK 是Android SDK的子集。
 
-3、可以通过Google Cloud石永红Firebase，极大地加快了数据的处理速度。
+3、可以通过Google Cloud使用Firebase，极大地加快了数据的处理速度。
 
 4、集成了weave协议。
 

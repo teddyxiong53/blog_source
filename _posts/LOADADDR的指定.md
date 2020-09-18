@@ -15,3 +15,4 @@ tags:
 LOADADDR是给uboot用的，前面要预留32K的空间。
 uboot传递给kernel的参数在内存最前面的位置往后偏移0x100字节的位置。
 在kernel的Documents目录下有Booting文件，有提到这个。
+

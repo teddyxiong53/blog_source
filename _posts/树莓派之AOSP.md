@@ -272,6 +272,26 @@ hlxiong@hlxiong-VirtualBox:~/work3/aosp-rpi3/device/brcm/rpi3$ tree -L 1
 
 framework native，也是用的tab-pi修改的。这个改了些什么？
 
+# adb调试
+
+我找了一条双公头的usb线连接上去。并不能发现adb设备。
+
+所以我就采用局域网的方式来进行。
+
+我的跑Linux的笔记本电脑跟树莓派连接到同一个路由器下。
+
+https://www.jianshu.com/p/636a60706bfa
+
+笔记本上执行：
+
+```
+adb connect 192.168.0.101:5555
+```
+
+直接就成功了。默认是以root身份连接上来的。
+
+
+
 
 
 # 配置分析
@@ -518,7 +538,9 @@ Android系统自带的apk文件都在`out/target/product/generic/system/apk`目�
 
 
 
-### Android 的功能模块绝大部分是 C/S 架构
+
+
+# Makefile分析
 
 
 
@@ -733,6 +755,364 @@ Decorator模式在Android中随处可见，除了Context类簇，还有Window类
 - **第二条主线**：应用界面Activity的Context构建过程
 
 
+
+# AndroidProduct.mk分析
+
+看看树莓派选配了哪些模块的编译。
+
+```
+USE_OEM_TV_APP := true
+$(call inherit-product, device/google/atv/products/atv_base.mk)
+```
+
+这个表示继承了Android的默认的tv的配置。
+
+atv_base.mk里配置的
+
+```
+PRODUCT_PACKAGES := \
+    TvProvider \
+    TvSettings \
+    tv_input.default
+```
+
+首先是这3个包。
+
+TvProvider：aosp-rpi3\packages\providers\TvProvider目录。
+
+TvSettings：aosp-rpi3\packages\apps\TvSettings
+
+tv_input.default：aosp-rpi3\hardware\libhardware\modules\tv_input
+
+```
+PRODUCT_COPY_FILES := \
+    device/google/atv/permissions/tv_core_hardware.xml:system/etc/permissions/tv_core_hardware.xml
+```
+
+把这个文件拷贝到system目录下的permissions目录。
+
+```
+DEVICE_PACKAGE_OVERLAYS := \
+    device/google/atv/overlay
+```
+
+这个下面是一些图片和xml文件。例如系统的默认壁纸就放在这个下面。
+
+```
+# From build/target/product/core_base.mk
+PRODUCT_PACKAGES += \
+    ContactsProvider \
+    DefaultContainerService \
+    UserDictionaryProvider \
+    libaudiopreprocessing \
+    libfilterpack_imageproc \
+    libgabi++ \
+    libkeystore \
+    libstagefright_soft_aacdec \
+    libstagefright_soft_aacenc \
+    libstagefright_soft_amrdec \
+    libstagefright_soft_amrnbenc \
+    libstagefright_soft_amrwbenc \
+    libstagefright_soft_avcdec \
+    libstagefright_soft_avcenc \
+    libstagefright_soft_flacenc \
+    libstagefright_soft_g711dec \
+    libstagefright_soft_gsmdec \
+    libstagefright_soft_hevcdec \
+    libstagefright_soft_mp3dec \
+    libstagefright_soft_mpeg2dec \
+    libstagefright_soft_mpeg4dec \
+    libstagefright_soft_mpeg4enc \
+    libstagefright_soft_opusdec \
+    libstagefright_soft_rawdec \
+    libstagefright_soft_vorbisdec \
+    libstagefright_soft_vpxdec \
+    libstagefright_soft_vpxenc \
+    mdnsd \
+    requestsync
+```
+
+DefaultContainerService：aosp-rpi3\frameworks\base\packages\DefaultContainerService
+
+frameworks\base\packages这个下面也有不少的文件。
+
+service的很多是放在这里。
+
+UserDictionary：Z:\work3\aosp-rpi3\packages\providers\UserDictionaryProvider
+
+libaudiopreprocessing：这个找不到目录，只有生成的so文件。
+
+```
+hlxiong@hlxiong-VirtualBox:~/work3/aosp-rpi3$ find -name "Android.mk" | xargs grep -nwr "libaudiopreprocessing" 
+./frameworks/av/media/libeffects/preprocessing/Android.mk:6:LOCAL_MODULE:= libaudiopreprocessing
+```
+
+
+
+是因为这个名字，跟目录名字不一致。需要先找到谁配置了生成名字为libaudiopreprocessing的Android.mk文件。
+
+```
+# From build/target/product/core.mk
+PRODUCT_PACKAGES += \
+    BasicDreams \
+    CalendarProvider \
+    CaptivePortalLogin \
+    CertInstaller \
+    ExternalStorageProvider \
+    FusedLocation \
+    InputDevices \
+    KeyChain \
+    PicoTts \
+    PacProcessor \
+    PrintSpooler \
+    ProxyHandler \
+    SharedStorageBackup \
+    VpnDialogs \
+    com.android.media.tv.remoteprovider \
+    com.android.media.tv.remoteprovider.xml
+```
+
+Z:\work3\aosp-rpi3\build\target\product
+
+这个目录下有很多mk文件，就是各种情况的包的配置。我们可以从这里拷贝一些来修改。
+
+BasicDreams：没有一个目录名字叫做这个的。搜索，是screensavers/Basic
+
+```
+hlxiong@hlxiong-VirtualBox:~/work3/aosp-rpi3/packages$ find -name "Android.mk" | xargs grep -nwr "BasicDreams" 
+./screensavers/Basic/Android.mk:9:LOCAL_PACKAGE_NAME := BasicDreams
+```
+
+com.android.media.tv.remoteprovider.xml：/home/hlxiong/work3/aosp-rpi3/frameworks/base/media/lib/tvremote目录。
+
+```
+# From build/target/product/generic_no_telephony.mk
+PRODUCT_PACKAGES += \
+    Bluetooth \
+    SystemUI \
+    librs_jni \
+    audio.primary.default \
+    audio_policy.default \
+    clatd \
+    clatd.conf \
+    local_time.default \
+    screenrecord
+```
+
+这一部分是从generic_no_telephony.mk里拷贝出来的。
+
+表示不带电话功能的包。
+
+Bluetooth：Z:\work3\aosp-rpi3\packages\apps\Bluetooth。这个内容非常多。就是蓝牙功能的实现。
+
+SystemUI：Z:\work3\aosp-rpi3\frameworks\base\packages\SystemUI
+
+```
+PRODUCT_COPY_FILES += \
+    frameworks/av/media/libeffects/data/audio_effects.conf:system/etc/audio_effects.conf
+```
+
+拷贝音效配置文件。
+
+```
+$(call inherit-product-if-exists, frameworks/base/data/sounds/AllAudio.mk)
+$(call inherit-product-if-exists, external/svox/pico/lang/all_pico_languages.mk)
+$(call inherit-product-if-exists, frameworks/base/data/fonts/fonts.mk)
+$(call inherit-product-if-exists, external/google-fonts/dancing-script/fonts.mk)
+$(call inherit-product-if-exists, external/google-fonts/carrois-gothic-sc/fonts.mk)
+$(call inherit-product-if-exists, external/google-fonts/coming-soon/fonts.mk)
+$(call inherit-product-if-exists, external/google-fonts/cutive-mono/fonts.mk)
+$(call inherit-product-if-exists, external/noto-fonts/fonts.mk)
+$(call inherit-product-if-exists, external/roboto-fonts/fonts.mk)
+$(call inherit-product-if-exists, external/hyphenation-patterns/patterns.mk)
+$(call inherit-product-if-exists, frameworks/base/data/keyboards/keyboards.mk)
+$(call inherit-product-if-exists, frameworks/webview/chromium/chromium.mk)
+$(call inherit-product, $(SRC_TARGET_DIR)/product/core_minimal.mk)
+```
+
+继承了这些配置。这些里面大多是进行一次拷贝操作。
+
+继续 回到rpi3.mk
+
+```
+PRODUCT_NAME := rpi3
+PRODUCT_DEVICE := rpi3
+PRODUCT_BRAND := Android
+PRODUCT_MODEL := Raspberry Pi 3
+PRODUCT_MANUFACTURER := brcm
+```
+
+配置了产品的基本信息。
+
+```
+include frameworks/native/build/tablet-7in-hdpi-1024-dalvik-heap.mk
+```
+
+这个里面的就是配置dalvik的参数呢。就这几行。
+
+```
+PRODUCT_PROPERTY_OVERRIDES += \
+    dalvik.vm.heapstartsize=8m \
+    dalvik.vm.heapgrowthlimit=80m \
+    dalvik.vm.heapsize=384m \
+    dalvik.vm.heaptargetutilization=0.75 \
+    dalvik.vm.heapminfree=512k \
+    dalvik.vm.heapmaxfree=8m
+```
+
+```
+# application packages
+PRODUCT_PACKAGES += \
+    Launcher2 \
+    LeanbackLauncher \
+    Settings \
+    Browser2
+```
+
+这些是应用包。
+
+Launcher2：这个就是默认的launcher程序。
+
+LeanbackLauncher：这个找不到。
+
+```
+# system packages
+PRODUCT_PACKAGES += \
+    libGLES_mesa \
+    gralloc.$(TARGET_PRODUCT) \
+    hwcomposer.$(TARGET_PRODUCT) \
+    audio.primary.$(TARGET_PRODUCT) \
+    audio.usb.default \
+    wpa_supplicant \
+    wpa_supplicant.conf
+```
+
+这些是系统包。
+
+```
+# system configurations
+PRODUCT_COPY_FILES := \
+    hardware/broadcom/wlan/bcmdhd/config/wpa_supplicant_overlay.conf:system/etc/wifi/wpa_supplicant_overlay.conf \
+    frameworks/native/data/etc/android.hardware.ethernet.xml:system/etc/permissions/android.hardware.ethernet.xml \
+```
+
+这些是一些配置文件的拷贝操作。
+
+```
+DEVICE_PACKAGE_OVERLAYS := device/brcm/rpi3/overlay
+```
+
+这个是自定义的一些配置，会覆盖前面的同名内容。
+
+```
+PRODUCT_AAPT_PREF_CONFIG := tvdpi
+PRODUCT_CHARACTERISTICS := tv
+```
+
+```
+PRODUCT_LOCALES := en_US,ko_KR,ja_JP,zh_CN,hi_IN,en_GB,de_DE,fr_FR,it_IT,ru_RU,es_ES,pt_PT,nl_BE,nl_NL
+```
+
+配置支持的语言。
+
+# BoardConfig.mk分析
+
+```
+TARGET_NO_BOOTLOADER := true
+TARGET_NO_KERNEL := true
+TARGET_NO_RECOVERY := true
+```
+
+没有配置recovery分区。
+
+```
+TARGET_USERIMAGES_SPARSE_EXT_DISABLED := true
+TARGET_USERIMAGES_USE_EXT4 := true
+```
+
+配置userdata分区使用ext4.
+
+```
+USE_CAMERA_STUB := true
+```
+
+相机使用stub程序模拟。
+
+```
+BOARD_SEPOLICY_DIRS := \
+    device/brcm/rpi3/sepolicy
+```
+
+配置selinux。
+
+
+
+# 写一个测试tv app
+
+直接用Android studio新建一个tv的app。sdk版本选择为7.0的。
+
+名字叫test_rpi3。包名是com.baidu.test_rpi3。随性写的包名。
+
+build得到apk文件。
+
+```
+adb install debug.apk
+```
+
+但是安装后，在树莓派这边看不到快捷方式。
+
+用下面的命令启动：
+
+```
+am start com.baidu.test_rpi3/com.baidu.test_rpi3.MainActivity  
+```
+
+可以正常启动。
+
+查看对应的日志。
+
+```
+logcat --pid=`pidof com.baidu.test_rpi3`
+```
+
+这样就可以只看这个进程的日志。
+
+整个调试风格就跟我调试Linux进程一样了。
+
+生成的数据目录。
+
+```
+rpi3:/data/app/com.baidu.test_rpi3-1 # find -name "*"
+.
+./base.apk
+./lib
+./oat
+./oat/arm
+./oat/arm/base.odex
+```
+
+```
+screencap 1.png  
+```
+
+这个是截屏。
+
+还可以录屏。
+
+```
+screenrecord /sdcard/a.mp4
+```
+
+# 文件系统目录分析
+
+```
+rpi3:/sbin # ls -lh
+total 1.2M
+-rwxr-x--- 1 root root 716K 1970-01-01 00:00 adbd
+-rwxr-x--- 1 root root 527K 1970-01-01 00:00 healthd
+lrwxrwxrwx 1 root root    7 1970-01-01 00:00 ueventd -> ../init
+lrwxrwxrwx 1 root root    7 1970-01-01 00:00 watchdogd -> ../init
+```
 
 
 

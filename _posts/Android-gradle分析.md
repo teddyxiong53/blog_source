@@ -114,6 +114,18 @@ targetSdkVersion
 
 这个是最重要
 
+
+
+这样子很容易让人奇怪，为什么repositories要声明两次哪？buildscript代码块中的声明与下半部分声明有什么不同？
+
+其实答案非常简单。buildscript中的声明是gradle脚本自身需要使用的资源。
+
+可以声明的资源包括依赖项、第三方插件、maven仓库地址等。
+
+而在build.gradle文件中直接声明的依赖项、仓库地址等信息是项目自身需要的资源。
+
+
+
 参考资料
 
 1、打通Android Gradle编译过程的任督二脉

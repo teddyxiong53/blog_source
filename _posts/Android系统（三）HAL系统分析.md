@@ -14,13 +14,13 @@ Android系统的HAL层在用户空间运行。
 
 在Android系统中，推出hal层是为了保护一些硬件厂商的知识产权，用来避开linux的GPL协议的。
 
-谷歌的架构师的思路是吧控制硬件的动作都放到HAL层里。而Linux Driver进负责一些简单的数据交互。甚至把硬件寄存器都映射到用户控件来操作。
+谷歌的架构师的思路是把控制硬件的动作都放到HAL层里。而Linux Driver进负责一些简单的数据交互。**甚至把硬件寄存器都映射到用户控件来操作。**
 
-Android系统是基于Apache协议的，厂家可以只提供二进制的文件。所以Android只是一个开放平台，而不是一个开源平台。
+**Android系统是基于Apache协议的，厂家可以只提供二进制的文件。所以Android只是一个开放平台，而不是一个开源平台。**
 
 也因为Android不遵守GPL，linux内核维护者就把Android驱动从linux内核里移除了。不过后面Linux又把Android接纳进来了。
 
-GPL和硬件厂商之间的分歧很难弥合。
+**GPL和硬件厂商之间的分歧很难弥合。**
 
 # hal分类
 
@@ -87,6 +87,28 @@ id.varient.so
 例如：
 
 gralloc.msm7k.so
+
+```
+/**
+ * There are a set of variant filename for modules. The form of the filename
+ * is "<MODULE_ID>.variant.so" so for the led module the Dream variants 
+ * of base "ro.product.board", "ro.board.platform" and "ro.arch" would be:
+ *
+ * led.trout.so
+ * led.msm7k.so
+ * led.ARMV6.so
+ * led.default.so
+ */
+ static const char *variant_keys[] = {
+    "ro.hardware",  /* This goes first so that it can pick up a different
+                       file on the emulator. */
+    "ro.product.board",
+    "ro.board.platform",
+    "ro.arch"
+};
+```
+
+
 
 hal层的通用结构，可以总结为“321”结构。
 
@@ -196,6 +218,6 @@ hal层在：aosp\hardware\libhardware\modules\soundtrigger
 
 参考资料
 
-1、
+1、【Android】HAL层浅析
 
-https://blog.csdn.net/flappy_boy/article/details/81150290?depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2&utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2
+https://blog.csdn.net/flappy_boy/article/details/81150290

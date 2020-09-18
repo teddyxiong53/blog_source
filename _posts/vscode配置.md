@@ -319,6 +319,18 @@ vscode源码解析
 http://www.ayqy.net/blog/vs-code%E6%BA%90%E7%A0%81%E7%AE%80%E6%9E%90/
 
 
+
+# 提示需要java11才能正常解析java文件
+
+把插件降级到0.64.1就好了。
+
+如果有多余的插件，也去掉。
+
+https://stackoverflow.com/questions/63043585/visual-studio-code-showing-java-11-or-more-recent-is-required-to-run-please-do
+
+
+
+
 # 参考资料
 
 1、

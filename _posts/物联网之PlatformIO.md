@@ -13,7 +13,7 @@ https://platformio.org/
 
 官网上说是：一个开源生态系统，针对物联网开发。
 
-vscode可以继承platformio。
+vscode可以集成platformio。
 
 
 
