@@ -121,6 +121,14 @@ https://minhaskamal.github.io/DownGit/#/home?url=
 
 
 
+# workflow
+
+看一篇文章里，提到利用github的workflow来实现借助github的服务器资源来进行padavan的代码编译。
+
+了解一下这个过程。
+
+
+
 # 参考资料
 
 1、解决GitHub下载速度太慢的问题
