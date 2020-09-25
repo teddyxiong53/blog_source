@@ -941,6 +941,87 @@ linux/of_gpio.h
 }
 ````
 
+# pinctrl-0、pinctrl-name
+
+```
+Required properties:
+pinctrl-0:	List of phandles, each pointing at a pin configuration
+		node. These referenced pin configuration nodes must be child
+		nodes of the pin controller that they configure. Multiple
+		entries may exist in this list so that multiple pin
+		controllers may be configured, or so that a state may be built
+		from multiple nodes for a single pin controller, each
+		contributing part of the overall configuration. See the next
+		section of this document for details of the format of these
+		pin configuration nodes.
+
+		In some cases, it may be useful to define a state, but for it
+		to be empty. This may be required when a common IP block is
+		used in an SoC either without a pin controller, or where the
+		pin controller does not affect the HW module in question. If
+		the binding for that IP block requires certain pin states to
+		exist, they must still be defined, but may be left empty.
+
+Optional properties:
+pinctrl-1:	List of phandles, each pointing at a pin configuration
+		node within a pin controller.
+...
+pinctrl-n:	List of phandles, each pointing at a pin configuration
+		node within a pin controller.
+pinctrl-names:	The list of names to assign states. List entry 0 defines the
+		name for integer state ID 0, list entry 1 for state ID 1, and
+		so on.
+```
+
+```
+For example:
+
+	/* For a client device requiring named states */
+	device {
+		pinctrl-names = "active", "idle";
+		pinctrl-0 = <&state_0_node_a>;
+		pinctrl-1 = <&state_1_node_a &state_1_node_b>;
+	};
+
+	/* For the same device if using state IDs */
+	device {
+		pinctrl-0 = <&state_0_node_a>;
+		pinctrl-1 = <&state_1_node_a &state_1_node_b>;
+	};
+
+	/*
+	 * For an IP block whose binding supports pin configuration,
+	 * but in use on an SoC that doesn't have any pin control hardware
+	 */
+	device {
+		pinctrl-names = "active", "idle";
+		pinctrl-0 = <>;
+		pinctrl-1 = <>;
+	};
+```
+
+```
+#define PINCTRL_STATE_DEFAULT "default"
+#define PINCTRL_STATE_IDLE "idle"
+#define PINCTRL_STATE_SLEEP "sleep"
+```
+
+pinctrl-0 pinctrl-1 pinctrl-2 .....表示了该设备的一个个状态，
+
+这里我们定义了三个pinctrl-0 pinctrl-1 pinctrl-2，
+
+数字0、1、2就是pinctrl-names中对应的字符串数组的index。
+
+其中pinctrl-0就是“sleep”状态，
+
+pinctrl-1就是“default”状态，
+
+pinctrl-2就是“idle”状态。
+
+而xxx_state_sleep,xxx_state_default,xxx_state_idle就是驱动具体的pin配置项了，
+
+需要在pinctrl设备节点处定义:
+
 
 
 参考文章

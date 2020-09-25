@@ -106,8 +106,206 @@ luci界面的用户名和密码和这个一样。
 
 
 
+# 重新配置
+
+现在openwrt和lede又合并了。
+
+我下载树莓派最新的openwrt镜像。是19.07的。
+
+但是烧录后的配置，发现有不少坑。
+
+ 因为默认情况下、刚开始安装的时候，镜像默认将树莓派的有线网卡设置为 `br-lan` 模式，所以如果你想将树莓派作为 AP 的话，需要将树莓派连接到电脑上(相应网卡为 DHCP 获取 IP 地址），然后访问 `http://192.168.1.1` ，然后配置 root 密码。
+
+用笔记本有线直接跟树莓派的有线口进行直连。
+
+然后用192.168.1.1访问树莓派。
+
+配置开启无线AP。
+
+默认有线是作为了lan口。我们是需要改成wan口的。
+
+而要把无线作为lan口。
+
+直接在板端用串口配置文件。
+
+改/etc/config/network 和/etc/config/wireless这2个文件就好了。
+
+```
+root@OpenWrt:/# cat /etc/config/network 
+
+config interface 'loopback'
+        option ifname 'lo'
+        option proto 'static'
+        option ipaddr '127.0.0.1'
+        option netmask '255.0.0.0'
+
+config globals 'globals'
+        option ula_prefix 'fd9e:8e63:1927::/48'
+
+config interface 'lan'
+        option type 'bridge'
+
+config interface 'WAN'
+        option proto 'dhcp'
+        option ifname eth0
+```
+
+/etc/config/wireless后面改成这样。
+
+```
+config wifi-iface 'wifinet0'
+        option ssid 'OpenWrt'
+        option encryption 'none'
+        option device 'radio0'
+        option mode 'ap'
+        option network 'lan'
+```
+
+重启，板端的有线可以获取到ip地址。板端可以ping通百度。
+
+手机上可以搜索到openwrt的热点。但是连接是一直获取不到ip地址。
+
+是因为我把lan口没有配置ip。改成下面这样。
+
+```
+root@OpenWrt:/# cat /etc/config/network 
+
+config interface 'loopback'
+        option ifname 'lo'
+        option proto 'static'
+        option ipaddr '127.0.0.1'
+        option netmask '255.0.0.0'
+
+config globals 'globals'
+        option ula_prefix 'fd9e:8e63:1927::/48'
+
+config interface 'lan'
+        option type 'bridge'
+        option proto 'static'
+        option ipaddr '192.168.1.1'
+        option netmask '255.255.255.0'
+        option dns '114.114.114.114'
+        option ip6assign '60'
+
+config interface 'WAN'
+        option proto 'dhcp'
+        option ifname eth0
+```
+
+还是不行，继续修改wireless。
+
+```
+root@OpenWrt:/# cat /etc/config/wireless 
+
+config wifi-device 'radio0'
+        option type 'mac80211'
+        option channel '11'
+        option hwmode '11g'
+        option path 'platform/soc/3f300000.mmc/mmc_host/mmc1/mmc1:0001/mmc1:0001:1'
+        option disabled '0' # 加上这行。
+config wifi-iface 'wifinet0'
+        option ssid 'OpenWrt'
+        option encryption 'none'
+        option device 'radio0'
+        option mode 'ap'
+        option network 'lan'
+```
+
+现在重启，可以正常使用了。
+
+还不是完全正常。电脑连到树莓派，无法相互ping通。
+
+不是，是因为我的电脑的有线网段也是192.168.1.x网段的导致的干扰。
+
+我把有线网卡关闭就可以正常访问树莓派的管理界面了。
 
 
 
 
-​	
+
+![img](../images/random_name/112419_1223_Createarout1.png)
+
+# 更换国内源
+
+我发现不换，目前默认的源，速度还可以。先不换了。
+
+# 自动挂载分区
+
+默认只用了不到300M的sd卡空间。
+
+生效的20多G没有用。现在已经格式为一个主分区。现在有3个主分区。
+
+希望开机自动把最后的新分区挂载进来。
+
+怎么操作呢？
+
+靠在/etc/config目录下，新建一个fstab文件来做。
+
+依赖这个模块。
+
+```
+opkg install block-mount
+```
+
+执行下面的命令，就会自动读取分区信息，并写入到fstab文件里。
+
+```
+block detect | uci import fstab
+```
+
+内容如下：
+
+```
+root@OpenWrt:/etc/config# cat fstab 
+
+config global
+        option anon_swap '0'
+        option anon_mount '0'
+        option auto_swap '1'
+        option auto_mount '1'
+        option delay_root '5'
+        option check_fs '0'
+
+config mount
+        option target '/boot'
+        option uuid '49F7-A8CA'
+        option enabled '0'
+
+config mount
+        option target '/'
+        option uuid '57f8f4bc-abf4-655f-bf67-946fc0f9f25b'
+        option enabled '0'
+
+config mount
+        option target '/mnt/mmcblk0p3'
+        option uuid 'd2c1aede-708e-42fd-aa0b-7eba7513d4b6'
+        option enabled '0'
+```
+
+好像还是不能自动挂载。
+
+我直接在/etc/profile.d/下面加一个mount.sh文件。在这里面加上挂载。
+
+
+
+
+
+参考资料
+
+1、
+
+https://ld246.com/article/1579269396219
+
+2、
+
+参考这篇做的。直接shell改文件。很方便。
+
+https://blog.csdn.net/u012327058/article/details/77856112
+
+3、Create a routed Access Point with Raspberry Pi and OpenWrt
+
+https://gremaudpi.emf-informatique.ch/create-a-routed-access-point-with-raspberry-pi-and-openwrt/
+
+4、Fstab Configuration
+
+https://openwrt.org/docs/guide-user/storage/fstab
