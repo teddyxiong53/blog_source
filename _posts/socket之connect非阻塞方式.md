@@ -10,6 +10,10 @@ tags:
 
 我设置为非阻塞方式connect，直接就返回错误了。
 
+在一个TCP套接口被设置为非阻塞之后调用connect,connect会立即返回EINPROGRESS错误,表示连接操作正在进行中,但是仍未完成;同时TCP的三路握手操作继续进行;在这之后,我们可以调用select来检查这个链接是否建立成功;
+
+
+
 调用connect连接一般的超时时间是75s, 但是在程序中我们一般不希望等这么长时间采取采取动作。
 
  可以在调用connect之前设置套接字非阻塞,然后调用connect,此时connect会立刻返回, 如果连接成功则直接返回0（成功）， 如果没有连接成功，也会立即返回并且会设置errno为EINPROCESS,这并不是一个致命错误,仅仅是告知你已经在连接了,你只要判断是它就继续执行后面的逻辑就行了,比如select.
@@ -52,3 +56,7 @@ https://blog.csdn.net/abccheng/article/details/74216601
 2、设置socket connect超时时间的几种方法
 
 https://blog.csdn.net/xiongya8888/article/details/96996236
+
+3、UNIX网络编程--非阻塞connect的实现
+
+https://blog.csdn.net/yusiguyuan/article/details/23433569

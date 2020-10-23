@@ -48,7 +48,7 @@ ip::tcp::socket sock(server);
 sock.connect(ep);
 ```
 
-你的程序至少需要一个io_service实例。而且一般只需要一个io_service。
+**你的程序至少需要一个io_service实例。而且一般只需要一个io_service。**
 
 下面是使用同步方式的server的代码。
 
@@ -104,9 +104,9 @@ void handle_accept(socket_ptr sock, const boost::system::error_code err) {
 
 asio同时支持错误码和异步处理。
 
-所有的异步函数都有抛出异常和返回错误码这两种方式的重载。
+**所有的异步函数都有抛出异常和返回错误码这两种方式的重载。**
 
-当函数抛出错误的食盒，它通常抛出boost::system::system_error的错误。
+当函数抛出错误的时候，它通常抛出boost::system::system_error的错误。
 
 ```
 try {
@@ -126,9 +126,9 @@ if(err) {
 }
 ```
 
-异步函数从来都不抛出异常，因为这样做毫无意义。
+**异步函数从来都不抛出异常，因为这样做毫无意义。**
 
-所以异步函数，必须使用错误码的方式。
+**所以异步函数，必须使用错误码的方式。**
 
 
 
@@ -289,6 +289,362 @@ buff对应的内存在on_read里，已经失效了。
 
 
 
+# 错误
+
+```
+对‘boost::system::generic_category()’未定义的引用
+```
+
+需要加上：`-lboost_system`。
+
+
+
+# strand
+
+strand的主要作用是在asio中利用多线程进行事件处理的时候，
+
+如果涉及到多线程访问共享资源，
+
+借助于strand类，我们不需要显示的使用线程同步相关的类（比如mutex）
+
+就可以让**多个事件处理函数依次执行。**
+
+
+
+简而言之，strand定义了事件处理程序的严格顺序调用。
+
+我们知道，
+
+若多个线程调用了同一个io_context对象的run方法，
+
+那么该对象关联的多个事件处理函数 可能就会被不同的线程同时执行（即并发执行），
+
+若这些事件处理函数访问同一个非线程安全的共享资源时，就可能会产生线程同步问题。
+
+ 但是若我们将这些事件处理函数**bind到同一个strand对象上，**
+
+那么asio库保证在上一个事件处理函数处理完成之前是没法执行下一个事件处理函数的（相当于阻止了并发执行）。
+
+
+
+# 查看boost版本
+
+我现在编译代码不过。所以需要查看一下boost版本。
+
+```
+sudo dpkg -S /usr/include/boost/version.hpp
+```
+
+得到输出：
+
+```
+libboost1.58-dev:amd64: /usr/include/boost/version.hpp
+```
+
+官方默认只有1.58版本的。
+
+我的笔记本上是1.72版本的。
+
+就在笔记本上编译。
+
+
+
+# 实现echo
+
+异步方式来做。如果用同步的，就直接用socket就好了。
+
+下面的代码是才弄个snapcast里提取出来的。还无法完全正常工作。
+
+问题在于：async_read只有读取到指定长度的数据，才执行回调。这个对于echo这个场景不合适。
+
+```
+#include <iostream>
+#include <algorithm>
+#include <vector>
+#include "mylog.h"
+#include <array>
+#include <cctype>
+#include <bitset>
+#include <cstddef>
+
+#include <stdio.h>
+#include <cstdio>
+#include <deque>
+
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+#include <boost/asio/strand.hpp>
+
+using  boost::asio::ip::tcp;
+class EchoSession;
+
+using acceptor_ptr =  std::unique_ptr<tcp::acceptor>;
+using session_ptr = std::shared_ptr<EchoSession>;
+
+
+class MessageReceiver
+{
+public:
+    virtual void onMessageReceived(
+        EchoSession *session,
+        char *buffer
+    ) = 0;
+    virtual void onDisconnect(EchoSession *session) = 0;
+};
+
+class EchoSession: public std::enable_shared_from_this<EchoSession>
+{
+public:
+    EchoSession(boost::asio::io_context& ioc, MessageReceiver* messageReceiver,tcp::socket&& socket)
+    : m_strand(ioc),
+      m_socket(std::move(socket)),
+      m_bufferSize(2),
+      m_messageReceiver(messageReceiver)
+    {
+        m_buffer.resize(m_bufferSize);
+    }
+    void start();
+    void read_next();
+    void sendAsync(char *msg);
+    void send_next();
+private:
+    // boost::asio::io_context& m_ioContext;
+    //只需要用strand
+    boost::asio::io_context::strand m_strand;
+    tcp::socket m_socket;
+    std::vector<char> m_buffer;
+    size_t m_bufferSize;
+    std::deque<char*> m_messages;
+    MessageReceiver* m_messageReceiver;
+
+};
+void EchoSession::sendAsync(char *msg)
+{
+    m_strand.post(
+        [this, msg]() {
+            m_messages.push_back(msg);
+            send_next();
+        }
+    );
+}
+void EchoSession::send_next()
+{
+    std::shared_ptr<EchoSession> self;
+    self = shared_from_this();
+    char *msg = m_messages.front();
+    boost::asio::async_write(
+        m_socket,
+        boost::asio::buffer(m_buffer, m_bufferSize),
+        boost::asio::bind_executor(
+            m_strand,
+            [this, self](boost::system::error_code ec, std::size_t length) {
+                m_messages.pop_front();
+                if(!ec) {
+                    myloge("write error, %s", ec.message().c_str());
+                    m_messageReceiver->onDisconnect(this);
+                }
+                if(!m_messages.empty()) {
+                    send_next();
+                }
+            }
+        )
+
+    );
+}
+
+void EchoSession::read_next()
+{
+    std::shared_ptr<EchoSession> self;
+    self = shared_from_this();
+    boost::asio::async_read(
+        m_socket,
+        boost::asio::buffer(m_buffer, m_bufferSize),
+        boost::asio::bind_executor(
+            m_strand,
+            [this, self](boost::system::error_code ec, std::size_t length) mutable {
+                if(ec) {
+                    mylogd("read %d data fail, %s", length, ec.message().c_str());
+                    return;
+                }
+                mylogd("recv:%s", m_buffer.data());
+                //发送数据
+                //继续调用async_read
+                boost::asio::bind_executor(
+                    m_strand,
+                    [this, self](boost::system::error_code ec, std::size_t length) mutable {
+                        if(ec) {
+                            mylogd("read %d data fail, %s", length, ec.message().c_str());
+                            return;
+                        }
+                        read_next();
+                    }
+
+                );
+            }
+        )
+    );
+}
+void EchoSession::start()
+{
+    read_next();
+}
+
+
+class EchoServer: public MessageReceiver
+{
+public:
+    EchoServer(boost::asio::io_context& io_context)
+    : m_ioContext(io_context)
+    {
+
+    }
+    void start()
+    {
+        m_acceptor.reset(new tcp::acceptor(m_ioContext,
+            tcp::endpoint(
+                boost::asio::ip::address::from_string("0.0.0.0"),
+                2020
+            )
+        ));
+        startAccept();
+    }
+    virtual void onMessageReceived(
+        EchoSession *session,
+        char *buffer
+    ) override;
+    virtual void onDisconnect(EchoSession *session) override;
+private:
+    void startAccept();
+    void handleAccept(tcp::socket socket);
+    void cleanup();
+    session_ptr getSession(EchoSession *s);
+    boost::asio::io_context& m_ioContext;
+    acceptor_ptr m_acceptor;
+    std::mutex m_sessionMutex;
+    std::vector<std::weak_ptr<EchoSession>> m_sessions;
+
+};
+
+session_ptr EchoServer::getSession(EchoSession *s)
+{
+    std::lock_guard<std::mutex> lock(m_sessionMutex);
+    for(auto session: m_sessions) {
+        if(auto ss = session.lock()) {
+            if(ss.get() == s) {
+                return ss;
+            }
+        }
+
+    }
+    return nullptr;
+}
+
+void EchoServer::onMessageReceived(
+        EchoSession *session,
+        char *buffer
+    )
+{
+    session->sendAsync(buffer);
+
+}
+/*
+    移除对应的session。
+*/
+void EchoServer::onDisconnect(EchoSession *session)
+{
+    session_ptr s = getSession(session);
+    if(s == nullptr) {
+        mylogd("session is null");
+        return;
+    }
+    m_sessions.erase(
+        std::remove_if(
+            m_sessions.begin(),
+            m_sessions.end(),
+            [session](std::weak_ptr<EchoSession> es) {
+                auto s = es.lock();
+                return s.get() == session;
+            }
+        ),
+        m_sessions.end()
+    );
+    cleanup();
+
+}
+void EchoServer::cleanup()
+{
+    auto new_end = std::remove_if(
+        m_sessions.begin(),
+        m_sessions.end(),
+        [](std::weak_ptr<EchoSession> session) {
+            return session.expired();
+        }
+    );
+    auto count = std::distance(new_end, m_sessions.end());
+    if(count > 0) {
+        mylogd("removing %d session, total:%d", count, m_sessions.size());
+        m_sessions.erase(new_end, m_sessions.end());
+    }
+}
+void EchoServer::handleAccept(tcp::socket socket)
+{
+    struct timeval tv;
+    tv.tv_sec = 5;
+    tv.tv_usec = 0;
+    setsockopt(socket.native_handle(), SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+    setsockopt(socket.native_handle(), SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
+    socket.set_option(tcp::no_delay(true));
+    mylogd("accept connection from:%s", socket.remote_endpoint().address().to_string().c_str());
+    std::shared_ptr<EchoSession> session = std::make_shared<EchoSession>(m_ioContext, this, std::move(socket));
+    session->start();
+    std::lock_guard<std::mutex> lock(m_sessionMutex);
+    m_sessions.emplace_back(session);
+    cleanup();
+    startAccept();//handleAccept和startAccept互相递归调用
+}
+
+void EchoServer::startAccept()
+{
+    auto accept_handler = [this](boost::system::error_code ec, tcp::socket socket) {
+        if(!ec) {
+            handleAccept(std::move(socket));
+        } else {
+            myloge("accept fail %s", ec.message().c_str());
+        }
+    };
+    m_acceptor->async_accept(accept_handler);
+}
+
+
+int main(int argc, char const *argv[])
+{
+    boost::asio::io_context io_context;
+    std::unique_ptr<EchoServer> server(new EchoServer(io_context));
+    server->start();
+    io_context.run();//这里阻塞
+    return 0;
+}
+
+```
+
+
+
+这个只有读取到指定长度的内容了，函数才执行回调。
+
+```
+boost::asio::async_read
+```
+
+asio::async_read通常用户读取指定长度的数据，读完或出错才返回(会超指定buffer的长度，
+
+不信，你可有用ssl的方式写一个https的通信，用from-urlencoded方式传递下试试)
+
+建议使用async_read_some函数，一定不会出错，出错说明代码问题
+
+boost::asio::buffer里面的参数填string对象和vector<char>对象，有可能发生内存越界(使用async_read方法)
+
+
+
 参考资料
 
 1、Boost.Asio入门
@@ -298,3 +654,11 @@ https://mmoaay.gitbooks.io/boost-asio-cpp-network-programming-chinese/content/Ch
 2、asio::io_service被废弃的问题
 
 https://blog.csdn.net/liuqun69/article/details/93009475
+
+3、C++boost之asio strand
+
+https://blog.csdn.net/u010005508/article/details/82819000
+
+4、c++ boost::asio::async_read与Socket的async_read_some的区别
+
+https://blog.csdn.net/qq_33048069/article/details/105531494

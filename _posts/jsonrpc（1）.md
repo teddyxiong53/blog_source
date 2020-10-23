@@ -132,6 +132,56 @@ inline entity_ptr Parser::do_parse_json(const Json& json)
 
 
 
+# jsonrpc和restful api
+
+两者没有高下之分，无非是一种约定俗成的标准。习惯用RPC就用RPC，能理解REST就用REST。
+
+JSON-RPC比较符合直观，格式也相对宽松；
+
+REST最近正流行，有自己的一套设计规范。
+
+
+
+REST是一种设计风格，它的很多思维方式与RPC是完全冲突的。
+
+**RPC的思想是把本地函数映射到API，**
+
+**也就是说一个API对应的是一个function，**
+
+我本地有一个getAllUsers，远程也能通过某种约定的协议来调用这个getAllUsers。
+
+**至于这个协议是Socket、是HTTP还是别的什么并不重要；**
+
+
+
+RPC中的主体都是动作，是个动词，表示我要做什么。
+
+**而REST则不然，它的URL主体是资源，是个名词。**
+
+而且也仅支持HTTP协议，规定了使用HTTP Method表达本次要做的动作，类型一般也不超过那四五种。
+
+这些动作表达了对资源仅有的几种转化方式。
+
+这种设计思路是反程序员直觉的，因为在本地业务代码中仍然是一个个的函数，是动作，但表现在接口形式上则完全是资源的形式。
+
+
+
+当然，API怎么写是开发者的自由。但如果一个API在url里放一堆动词、资源设计混乱、各种乱用HTTP Method和Status Code，还自称RESTful API的话，那就像你养了一条狗，还管它叫猫一样。
+
+这种混搭产物，不如叫它REFU吧。
+
+（Remove Extension From Url：从url里去掉文件扩展名）
+
+
+
+简单来说：不管哪个“好”还是不“好”，RESTful API在很多实际项目中并不使用。
+
+因此真的做了项目，你可能会发现只能用HTTP+JSON来定义接口，无法严格遵守REST风格。
+
+为什么说不实际呢？因为这个风格太理想化了
+
+
+
 
 
 参考资料
@@ -147,3 +197,7 @@ https://blog.csdn.net/chenguolinblog/article/details/90607551
 3、python-jsonrpc框架实现JsonRPC协议的web服务
 
 https://www.cnblogs.com/liangzp/p/9088792.html
+
+4、WEB开发中，使用JSON-RPC好，还是RESTful API好？
+
+https://www.zhihu.com/question/28570307

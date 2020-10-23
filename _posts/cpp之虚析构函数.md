@@ -90,8 +90,24 @@ Base destruct
 
 
 
+每个人都知道，**基类的析构函数通常必须是虚拟的**。
+
+但是派生类的析构函数呢？
+
+在C++11中，我们使用关键字“override”和明确使用默认析构函数的能力。
+
+
+
+是。 如果基本析构函数不是虚拟的，则`override`标记将导致程序无法编译
+
+
+
 参考资料
 
 1、
 
 https://www.nowcoder.com/tutorial/93/8f38bec08f974de192275e5366d8ae24
+
+2、c++ 虚拟析构函数的默认覆盖
+
+http://www.voidcn.com/article/p-xsdkazio-bsy.html

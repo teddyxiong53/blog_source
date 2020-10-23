@@ -97,9 +97,9 @@ https://blog.csdn.net/saddyyun/article/details/85245135
 
 
 
-## 
+## 代码编译
 
-代码编译
+
 
 代码是vlc-3.0.4的。
 
@@ -159,6 +159,90 @@ make出错了。是PIC问题。
 ./configure --with-pic
 ```
 
+```
+configure: error: Could not find liba52 on your system: you may get it from http://liba52.sf.net/. Alternatively you can use --disable-a52 to disable the a52 plugin.
+```
+
+```
+./configure --with-pic --disable-a52
+```
+
+继续报错。
+
+```
+No package 'xcb-composite' found
+```
+
+
+
+```
+sudo apt-get install libxcb-composite0-dev libxcb-glx0-dev libxcb-dri2-0-dev libxcb-xf86dri0-dev libxcb-xinerama0-dev libxcb-render-util0-dev libxcb-xv0-dev
+```
+
+报错
+
+```
+configure: WARNING: Library libchromaprint >= 0.6.0 needed for chromaprint was not found
+checking for protoc... no
+checking for CHROMECAST... yes
+configure: error: protoc compiler needed for chromecast was not found
+```
+
+遇到这个问题的时候，可以在./configure后面加上–disable-chromecast.在这里能这样做
+
+现在这样配置：
+
+```
+./configure --with-pic --disable-a52 --disable-chromecast
+```
+
+这样configure就成功了。
+
+编译报错。
+
+```
+/usr/bin/ld: /usr/local/lib/libavformat.a(allformats.o): relocation R_X86_64_32 against `.bss' can not be used when making a shared object; recompile with -fPIC
+/usr/local/lib/libavformat.a: error adding symbols: Bad value
+collect2: error: ld returned 1 exit status
+```
+
+那就不能with-pic。
+
+这样配置：
+
+```
+./configure  --disable-a52 --disable-chromecast
+```
+
+还是不行。
+
+可能是我的ffmpeg安装有问题。
+
+我重新编译安装ffmpeg。
+
+
+
+## 代码目录分析
+
+```
+teddy@thinkpad:~/work/vlc/vlc-3.0.4$ tree -L 1 -d
+.
+├── autotools
+├── bin  vlc等工具的入口代码。
+├── compat 一些函数的封装。
+├── contrib 
+├── doc
+├── extras
+├── include
+├── lib
+├── m4
+├── modules
+├── po
+├── share
+├── src
+└── test
+```
+
 
 
 参考资料
@@ -174,3 +258,11 @@ https://blog.csdn.net/fengbingchun/article/details/90450017
 3、怎么用VLC播放器将m3u8链接视频下载到本地
 
 https://blog.csdn.net/saddyyun/article/details/85245135
+
+4、Compiling VLC on Linux: Error couldnt find Lua
+
+https://stackoverflow.com/questions/9925363/compiling-vlc-on-linux-error-couldnt-find-lua
+
+5、
+
+https://blog.csdn.net/c_guolin/article/details/38537687

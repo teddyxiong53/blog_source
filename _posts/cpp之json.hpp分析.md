@@ -311,6 +311,20 @@ json k = j.at("non-existing");
 
 
 
+# 代码分析
+
+这个代码用了很多高级技巧。值得学习。
+
+## 模板默认值
+
+```
+using json = basic_json<>;
+```
+
+basic_json是一个复杂模板，但是里面的类型，都给了默认值，所以可以不填入模板类型。
+
+
+
 参考资料
 
 1、json for modern c++的使用

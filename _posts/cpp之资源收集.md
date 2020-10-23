@@ -53,13 +53,23 @@ https://code.google.com/archive/p/chenshuo/downloads
 
 
 
-#c++开源代码
+# c++开源代码
 
 很多都推荐SGI 的STL实现。说这个代码质量很高，适合阅读。
 
-webrtc
+## srpc
 
-qt
+搜狗开源的rpc框架。
+
+
+
+## sogou-cpp-workflow
+
+搜狗的服务器引擎
+支撑搜狗几乎所有后端 C++ 在线服务，包括所有搜索服务、云输入法与在线广告等，每日处理超百亿请求。这是一个设计轻盈优雅的企业级程序引擎，可以满足大多数 C++ 后端开发需求。
+https://www.oschina.net/p/sogou-cpp-workflow
+
+跟muduo是类似的东西。
 
 
 

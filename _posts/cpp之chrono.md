@@ -14,13 +14,56 @@ chrono是一个时间库，来自于boost。现在已经是c++的标准。
 
 是一个模板库。
 
+跟其他的标准库略有不同的是，这个的类，都是在std::chrono命名空间下，而不是之间在std命名空间。
+
+
+
 主要涉及3个概念：
 
-1、duration。表示时间段。
+1、duration。表示时间段。例如：1分钟。1小时。
 
 2、time_point。表示时间点。
 
 3、clock。表示时间戳。
+
+
+
+类有这些：
+
+时间段和时间点。
+
+```
+template <class Rep, class Period = ratio<1> >
+class duration;
+
+template <class Clock, class Duration = typename Clock::duration>
+class time_point;
+```
+
+clock
+
+```
+system_clock
+steady_clock
+high_resolution_clock
+```
+
+函数有：
+
+```
+duration_cast
+time_point_cast
+```
+
+为了便于使用的类实例化typedef
+
+```
+hours
+minutes
+seconds
+```
+
+
 
 # duration
 
@@ -103,9 +146,44 @@ int main()
 }
 ```
 
+## system_clock
+
+```
+内部类型
+rep
+period
+duration
+time_point
+
+成员常量
+is_steady
+	bool类型。
+static成员函数
+now()
+to_time_t()
+from_time_t()
+```
+
+函数串起来用，如下：
+
+```
+int main()
+{
+    using std::chrono::system_clock;
+    std::chrono::duration<int, std::ratio<60*60*24>> one_day;
+    system_clock::time_point today = system_clock::now();
+    system_clock::time_point tomorrow = today+one_day;
+    std::time_t tt;
+
+    tt = system_clock::to_time_t(today);
+    std::cout << "today is :" << ctime(&tt) << " \n";
+    return 0;
+}
+```
 
 
-#参考资料
+
+# 参考资料
 
 1、C++11 std::chrono库详解
 

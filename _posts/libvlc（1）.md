@@ -155,6 +155,20 @@ gcc test.c -lvlc
 
 vlc的src目录下，只有240个文件左右。不多。
 
+![img](../images/random_name/group__libvlc.png)
+
+
+
+
+
+总体来说，我觉得嵌入式上，vlc没有什么优势。
+可能在pc上播放器开发，vlc有些用。
+vlc相比与我自己用ffmpeg封装简单播放器，就显得比较复杂。
+引入了太多我并不需要的东西。
+我还得另外学习一套接口的使用。
+而且引入的东西还比较复杂。
+那我不如用mpd。
+
 
 
 参考资料
@@ -166,3 +180,4 @@ https://blog.csdn.net/leixiaohua1020/article/details/42363079
 2、
 
 https://www.videolan.org/developers/vlc/doc/doxygen/html/modules.html
+

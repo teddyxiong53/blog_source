@@ -61,3 +61,24 @@ snd_pcm_abort
 	丢掉数据。在销毁播放器的时候。
 	
 snd_pcm_writei
+
+
+snd_pcm_delay
+	获取delay值，是frame帧数。表示有几帧的延迟。
+对于播放，delay被定义为在数据写入到buffer里之后，经过多长时间声音可以被实际听到。
+对于录音，delay被定义为信号被数字化后，多久可以从buffer里取得对应的pcm数据。
+
+
+
+int snd_device_name_hint	(	int 	card,
+const char * 	iface,
+void *** 	hints 
+)	
+拿到设备名字。
+card：声卡号。-1表示所有声卡。
+ifce：接口名字。pcm、rawmidid、timer、seq
+典型用法：
+void **hints, **n;
+int ret;
+ret = snd_device_name_hints(-1, "pcm", &hints);
+
