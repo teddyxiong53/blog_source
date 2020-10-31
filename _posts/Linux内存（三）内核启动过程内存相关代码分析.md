@@ -8,7 +8,7 @@ tags:
 
 
 
-###汇编里的我先不管，从start_kernel看起。
+### 汇编里的我先不管，从start_kernel看起。
 
 第一个相关的是setup_arch函数里。
 

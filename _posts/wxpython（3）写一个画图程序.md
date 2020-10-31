@@ -8,7 +8,7 @@ tags:
 
 
 
-#初始版本的程序
+# 初始版本的程序
 
 放在这里了：https://github.com/teddyxiong53/Python/tree/master/wxpython/wxpython_in_action/sketch/v1
 
@@ -20,7 +20,7 @@ tags:
 
 常用的窗口修饰有：status bar、menu、toolbar。
 
-##状态栏
+## 状态栏
 
 我们先增加一个状态栏，可以显示当前鼠标的位置。
 

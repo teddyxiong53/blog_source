@@ -384,6 +384,21 @@ PyAudio的open方法，返回的就是一个Stream对象。
 
 
 
+# windows下安装
+
+windows下安装，还不是一件容易的事情。
+
+因为需要编译。
+
+用pipwin来安装反而是比较快的。
+
+```
+pip install pipwin
+pipwin install pyaudio
+```
+
+
+
 # 参考资料
 
 1、PyAudio 官网

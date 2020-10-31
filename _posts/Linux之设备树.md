@@ -24,7 +24,7 @@ arm处理器没有bios，linux内核只能靠自己来做。
 
 
 
-#代码角度看问题
+# 代码角度看问题
 
 我们从实际代码的角度来理解这个演化的过程。
 
@@ -350,7 +350,7 @@ start_kernel
 
 
 
-Linux在开机启动阶段，会解析DTS文件，保存到全局链表allnodes中，在调用.init_machine时，会跟据allnodes中的信息注册平台总线和设备。
+**Linux在开机启动阶段，会解析DTS文件，保存到全局链表allnodes中，在调用.init_machine时，会跟据allnodes中的信息注册平台总线和设备。**
 
 值得注意的是，加载流程并不是按找从树根到树叶的方式递归注册，而是只注册根节点下的第一级子节点，第二级及之后的子节点暂不注册。
 
@@ -362,9 +362,9 @@ Documentation/devicetree/bindings/arm/gic.txt
 
 
 
-#设备树的意义
+# 设备树的意义
 
-##对于soc厂家
+## 对于soc厂家
 
 减少arch/arm/mach-*这种目录的存在。把精力放在驱动的开发上。
 
@@ -372,7 +372,7 @@ Documentation/devicetree/bindings/arm/gic.txt
 
 1、努力减少所需要的端口。
 
-2、不需要为每种板子申请一个机器ID了。用设备树的命名空间来替代。
+**2、不需要为每种板子申请一个机器ID了。用设备树的命名空间来替代。**
 
 ## 对于嵌入式linux生态系统
 
@@ -731,7 +731,7 @@ root node的子节点的地址信息，是没问题的。
 };
 ```
 
-这个machine有一个中断控制器。lable intc是用来注册一个phandle到interrupt-parent属性。
+这个machine有一个中断控制器。label intc是用来注册一个phandle到interrupt-parent属性。
 
 interrupts有2个uint32数字，第一个表示中断号。第二个表示中断的触发方式，例如高电平、低电平、上升沿等。
 
@@ -848,9 +848,23 @@ skeleton.dtsi的内容是这样的：
 
 # 关于phandle
 
-```
-有的时候在一个节点中需要引用另外一个节点，比如某个外设的中断连在哪个中断控制器上。在讲节点那一节我们说过，可以通过节点的全路径指定是哪个节点，但这种方法非常繁琐。'phandle'属性是专门为方便引用节点设计的，想要引用哪个节点就在该节点下边增加一个'phandle'属性，设定值为一个 u32，如'phandle = <1>'，引用的地方直接使用数字1就可以引用该节点，如'interrupt-parent = <1>'。以上是规范中描述的方法，实际上这样也不方便，我在实际的代码中没有看到这么用的。还记得节点那节说过节点名字前边可以定义一个标签吧，实际情况是都用标签引用，比如节点标签为intc1，那么用'interrupt-parent= <&intc1>'就可以引用了。
-```
+有的时候在一个节点中需要引用另外一个节点，比如某个外设的中断连在哪个中断控制器上。
+
+在讲节点那一节我们说过，可以通过**节点的全路径**指定是哪个节点，但这种方法非常繁琐。
+
+'phandle'属性是专门为方便引用节点设计的，
+
+想要引用哪个节点就在该节点下边增加一个'phandle'属性，设定值为一个 u32，如'phandle = <1>'，
+
+引用的地方直接使用数字1就可以引用该节点，如'interrupt-parent = <1>'。
+
+以上是规范中描述的方法，实际上这样也不方便，我在实际的代码中没有看到这么用的。
+
+还记得节点那节说过节点名字前边可以定义一个标签吧，
+
+实际情况是都用标签引用，比如节点标签为intc1，
+
+那么用'interrupt-parent= <&intc1>'就可以引用了。
 
 
 
@@ -886,13 +900,13 @@ CFLAGS_fdt.o := -DDEBUG
 
 1、语法是新的，而且很晦涩难懂。
 
-2、设备树在编译的时候，不进行检查，只有在运行时才能发现问题。
+2、**设备树在编译的时候，不进行检查，只有在运行时才能发现问题。**
 
 3、对于树莓派派这种外面连接扩展板的情况支持不够好，后面拓展了overlay的语法。
 
 
 
-head.S会把DTB的位置保存在变量__atags_pointer里，最后调用start_kernel
+**head.S会把DTB的位置保存在变量__atags_pointer里，最后调用start_kernel**
 
 
 
@@ -1024,6 +1038,256 @@ pinctrl-2就是“idle”状态。
 
 
 
+
+
+arm系统包含了管理功耗的硬件能力。
+
+cpu核心可以进入到不同的低功耗状态。从简单的wfi状态到power gating状态。
+
+这个取决于os的pm策略。
+
+arm cpu的状态有这些：
+
+```
+- Running
+- Idle_standby
+- Idle_retention
+- Sleep
+- Off
+```
+
+
+
+# 代码分析
+
+代码主要在drivers/of目录下。
+
+头文件：include/linux/of.h
+
+主要结构体：
+
+```
+struct device_node 
+struct property
+
+typedef u32 phandle;
+```
+
+c文件
+
+```
+
+```
+
+入口of_core_init，在base.c里。
+
+```
+	for_each_of_allnodes(np) //这个就是遍历所有节点。创建sysfs下面的目录。
+		__of_attach_node_sysfs(np);
+```
+
+遍历设备树的函数：
+
+```
+struct device_node *__of_find_all_nodes(struct device_node *prev)
+{
+	struct device_node *np;
+	if (!prev) {
+		np = of_root;
+	} else if (prev->child) {
+		np = prev->child;
+	} else {
+		/* Walk back up looking for a sibling, or the end of the structure */
+		np = prev;
+		while (np->parent && !np->sibling)
+			np = np->parent;
+		np = np->sibling; /* Might be null at the end of the tree */
+	}
+	return np;
+}
+```
+
+
+
+
+
+linux/arch/arm/kernel/head.S文件定义了bootloader和kernel的参数传递要求：
+
+```
+MMU = off, D-cache = off, I-cache = dont care, r0 = 0, r1 = machine nr, r2 = atags or dtb pointer.
+```
+
+
+
+目前的kernel支持旧的tag list的方式，同时也支持device tree的方式。
+
+r2可能是device tree binary file的指针（bootloader要传递给内核之前要copy到memory中），
+
+也可以能是tag list的指针。
+
+在ARM的汇编部分的启动代码中（主要是head.S和head-common.S），
+
+machine type ID和指向DTB或者atags的指针被保存在变量`__machine_arch_type`和`__atags_pointer`中，
+
+这么做是为了后续c代码进行处理。
+
+对于如何确定HW platform这个问题，旧的方法是静态定义若干的machine描述符（struct machine_desc ），
+
+在启动过程中，通过machine type ID作为索引，
+
+在这些静态定义的machine描述符中扫描，找到那个ID匹配的描述符。
+
+在新的内核中，首先使用setup_machine_fdt来setup machine描述符，
+
+如果返回NULL，才使用传统的方法setup_machine_tags来setup machine描述符。
+
+传统的方法需要给出`__machine_arch_type`（bootloader通过r1寄存器传递给kernel的）和tag list的地址（用来进行tag parse）。
+
+__machine_arch_type用来寻找machine描述符；
+
+tag list用于运行时参数的传递。
+
+随着内核的不断发展，相信有一天linux kernel会完全抛弃tag list的机制。
+
+
+
+setup_machine_fdt函数的功能就是根据Device Tree的信息，找到最适合的machine描述符。
+
+具体匹配的算法倒是很简单，就是比较字符串而已，一个是root node的compatible字符串列表，一个是machine描述符的compatible字符串列表，**得分最低的（最匹配的）就是我们最终选定的machine type。**
+
+
+
+运行时参数传递
+
+运行时参数是在扫描DTB的**chosen node**时候完成的，
+
+具体的动作就是获取chosen node的bootargs、initrd等属性的value，
+
+并将其保存在全局变量（boot_command_line，initrd_start、initrd_end）中。
+
+使用tag list方法是类似的，通过分析tag list，获取相关信息，保存在同样的全局变量中。
+
+
+
+在系统初始化的过程中，我们需要将DTB转换成节点是device_node的树状结构，以便后续方便操作。
+
+具体的代码位于setup_arch->unflatten_device_tree中。
+
+
+
+在linux kernel引入统一设备模型之后，**bus、driver和device形成了设备模型中的铁三角。**
+
+在驱动初始化的时候会将代表**该driver的一个数据结构（一般是xxx_driver）挂入bus上的driver链表**。
+
+device挂入链表分成两种情况，
+
+一种是即插即用类型的bus，在插入一个设备后，总线可以检测到这个行为并动态分配一个device数据结构（一般是xxx_device，例如usb_device），之后，将该数据结构挂入bus上的device链表。
+
+bus上挂满了driver和device，那么如何让device遇到“对”的那个driver呢？那么就要靠缘分了，也就是bus的match函数。
+
+
+
+上面是一段导论，我们还是回到Device Tree。
+
+导致Device Tree的引入ARM体系结构的代码其中一个最重要的原因的太多的静态定义的表格。
+
+例如：一般代码中会定义一个static struct platform_device *xxx_devices的静态数组，在初始化的时候调用platform_add_devices。
+
+这些静态定义的platform_device往往又需要静态定义各种resource，这导致静态表格进一步增大。
+
+如果ARM linux中不再定义这些表格，那么一定需要一个转换的过程，也就是说，系统应该会根据Device tree来动态的增加系统中的platform_device。
+
+当然，这个过程并非只是发生在platform bus上，也可能发生在其他的非即插即用的bus上，例如AMBA总线、PCI总线。
+
+一言以蔽之，如果要并入linux kernel的设备驱动模型，那么就需要根据device_node的树状结构（root是of_allnodes）将一个个的device node挂入到相应的总线device链表中。
+
+只要做到这一点，总线机制就会安排device和driver的约会。
+
+
+
+当然，也不是所有的device node都会挂入bus上的设备链表，比如cpus node，memory node，choose node等。
+
+
+
+接下来，已gpio-keys为例，分析对设备树的解析使用。
+
+对应的设备树是：
+
+```
+gpio-keys {
+		compatible = "gpio-keys";
+		pinctrl-names = "default";
+		pinctrl-0 = <&gpio_key_default>;
+		status = "ok";
+
+		media-key {
+			gpios = <&gpio0 RK_PB2 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_MEDIA>;
+			label = "media key";
+			wakeup-source;
+			debounce-interval = <50>;
+		};
+
+		vol-down-key {
+			gpios = <&gpio0 RK_PA7 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_VOLUMEDOWN>;
+			label = "volume down";
+			debounce-interval = <50>;
+		};
+
+		micmute-key {
+			gpios = <&gpio0 RK_PB0 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_MICMUTE>;
+			label = "micmute";
+			debounce-interval = <50>;
+		};
+
+		download-key {
+			gpios = <&gpio0 RK_PA6 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_VOLUMEUP>;
+			label = "volume up";
+			debounce-interval = <50>;
+			download_key_gpio = <6>;
+		};
+	};
+```
+
+
+
+```
+static int gpio_keys_probe(struct platform_device *pdev)
+对于使用设备树的情况。
+pdata = dev_get_platdata(dev);
+这个pdata会是一个空指针。如果是写在代码里的，则这个不是空指针。
+然后我们就从设备树解析填充这个指针对应的结构体。
+pdata = gpio_keys_get_devtree_pdata(dev);
+
+我们从device结构体里的of_node开始进行解析。
+node = dev->of_node;
+看这个节点有及几个子节点。我们是4个按键，所以是4个子节点。
+nbuttons = of_get_child_count(node);
+拿到里面的一个属性，autorepeat，填充到结构体。
+pdata->rep = !!of_get_property(node, "autorepeat", NULL);
+然后循环解析子节点。
+for_each_child_of_node(node, pp) {
+找到对应的gpio号码。并解析出flags。
+是解析这一行：gpios = <&gpio0 RK_PA6 GPIO_ACTIVE_LOW>;
+button->gpio = of_get_gpio_flags(pp, 0, &flags);
+button->active_low = flags & OF_GPIO_ACTIVE_LOW;
+解析gpio对应的中断号。
+button->irq = irq_of_parse_and_map(pp, 0);
+
+解析对应的按键号。
+of_property_read_u32(pp, "linux,code", &button->code)
+解析label
+button->desc = of_get_property(pp, "label", NULL);
+看看是不是唤醒源
+of_property_read_bool(pp, "wakeup-source")
+
+```
+
+
+
 参考文章
 
 1、
@@ -1044,3 +1308,7 @@ https://blog.csdn.net/thisway_diy/category_8405722.html
 5、Linux设备树文件结构与解析深度分析
 
 https://www.cnblogs.com/Oude/p/12064017.html
+
+6、Device Tree（三）：代码分析
+
+https://my.oschina.net/fileoptions/blog/2864465

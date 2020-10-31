@@ -107,7 +107,7 @@ int main()
 
 # alsa音频设备驱动
 
-##为什么需要alsa？
+## 为什么需要alsa？
 
 因为oss虽然成熟，但是是商业软件，没有开源的。所以linux不再包含它的更新了。
 
@@ -115,7 +115,7 @@ alsa是Advanced Linux Sound Architecture就用来替代oss的。而且比oss更�
 
 
 
-##alsa组件
+## alsa组件
 
 1、alsa-driver。非常庞大，代码量达到几十万行以上。
 
@@ -341,6 +341,41 @@ pcm实例数量的**这种限制源于linux设备号所占用的位大小，**�
 ASoC正是为了解决上述种种问题而提出的，目前已经被整合至内核的代码树中：sound/soc。ASoC不能单独存在，他只是建立在标准ALSA驱动上的一个它必须和标准的ALSA驱动框架相结合才能工作。
 
 
+
+最重要的头文件就是sound/core.h
+
+这里面定义了结构体：
+
+```
+enum snd_device_type
+	声卡设备类型枚举。包括：pcm、bus、seq、timer、jack等。
+enum snd_device_state
+	声卡设备状态。有3种状态：build、registered、disconnected。
+struct snd_device 
+	这个用途是什么？包含了snd_card指针。
+struct snd_card
+	这个是主要结构体。
+	包含了struct device。
+	
+snd_card_xx函数
+snd_device_xx函数
+```
+
+sound/soc.h
+
+这个文件比较长，有1000多行。结构体都是snd_soc_xx格式的。
+
+```
+struct snd_soc_card
+```
+
+sound/soc/soc-core.c
+
+这个文件比较重要。
+
+
+
+声卡的建立流程
 
 
 

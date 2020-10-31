@@ -16,7 +16,7 @@ typora-root-url:..\
 
 主要参考《wxPython in Action》这本书。
 
-#最简单程序
+# 最简单程序
 
 新建一个test.py文件。内容如下。
 
@@ -261,7 +261,7 @@ wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX | wx.RESIZE_BORDER | wx.SYSTEM_MENU | wx.CAPTI
 
 # 给窗口增加部件
 
-我们前面的串口都是空白的，什么都没有。
+我们前面的窗口都是空白的，什么都没有。
 
 现在我们看看如何给窗口增加一个按钮。
 
@@ -406,3 +406,144 @@ if __name__ == '__main__':
     app.MainLoop()
 ```
 
+
+
+# Frame类
+
+wxFrame对象是最常用的顶层窗口。它是从 wxWindow 类派生的。
+
+wxFrame窗口可以包含任何帧(frame)而不只是一个对话或另一个帧(frame)。
+
+wxFormBuilder是一个开源，跨平台的所见即所得的图形用户界面生成器，可以翻译wxWidget GUI设计成C++，Python和PHP或XML格式。 
+
+Frame类的成员函数
+
+```
+CreateStatusBar()
+CreateToolBar()
+# MenuBar没有对应的Create函数，需要构造一个，然后setMenuBar设置过来。
+GetMenuBar()
+GetStatusBar()
+SetToolBar() #也可以构造，然后设置过来。
+SetStatusBar()
+# 设置状态栏的文字
+SetStatusText()
+# 设置窗口大小
+SetSize()
+# 设置位置
+SetPosition()
+# 设置标题
+SetTitle()
+```
+
+Frame绑定的事件
+
+```
+EVT_CLOSE
+EVT_MENU_OPEN
+EVT_MENU_CLOSE
+EVT_MENU_HIGHLIGHT
+```
+
+# Panel类
+
+Panel就相当于html里的div。没有也可以。但是有了，我们就操作起来更加方便。
+
+而且我们一般是作为布局的基本元素来用。
+
+
+
+小构件，如按钮，文本框等被放置在面板窗口。 
+
+wx.Panel类通常是被放在一个wxFrame对象中。
+
+**这个类也继承自wxWindow类。**
+
+虽然控件可以手动放置在面板指定屏幕坐标的位置，建议使用合适的布局方案，称为大小测定器(sizer)
+
+在wxPython中，为更好地控制布局和解决调整大小的问题。
+
+在wxPanel构造，父参数是wx.Frame对象，在面板中放置。
+
+id参数的默认值是wx.ID_ANY，而默认的样式参数是wxTAB_TRAVERSAL。
+
+# Sizer
+
+```
+BoxSizer
+	可设置水平或垂直布局，当控件超出窗体后不会自动换行
+StaticBoxSizer
+	在BoxSizer外面加了一个静态的边框以及标签，
+	他可以独立的存在也可以放到其他布局管理器中进行嵌套：
+FlexGridSizer
+	网格布局，特点是可以设置网格之间的显示比例
+```
+
+
+
+# 布局
+
+下面的代码，都在这个基础上进行添加。
+
+```
+import wx
+
+class MyFrame(wx.Frame):
+    def __init__(self, parent):
+        wx.Frame.__init__(self, parent, title="xx", size=wx.Size(800,600))
+app = wx.App()
+frame = MyFrame(None)
+frame.Show(True)
+app.MainLoop()
+```
+
+
+
+## 绝对布局
+
+```
+class MyFrame(wx.Frame):
+    def __init__(self, parent):
+        wx.Frame.__init__(self, parent, title="xx", size=(800,600))
+        panel = wx.Panel(self)
+        panel1 = wx.Panel(panel, pos=(0,0), size=(250, wx.EXPAND))
+        panel1.SetBackgroundColour("yellow")
+        panel2 = wx.Panel(panel, pos=(255,0), size=(wx.EXPAND, wx.EXPAND))
+        panel2.SetBackgroundColour("green")
+```
+
+效果是这样：
+
+![image-20201031114126972](/images/random_name/image-20201031114126972.png)
+
+
+
+## 使用Sizer进行布局
+
+![img](/images/random_name/2020011314571712.png)
+
+
+
+
+
+
+
+# 改动UI及时刷新
+
+因为我的调用是阻塞了ui线程的。
+
+所以调用过程中改动了ui元素，是不能马上显示出来的。
+
+怎么办？调用一下wx.Yield()就可以了。让ui有机会调度刷新一下。
+
+
+
+# 参考资料
+
+1、这个系列教程不错
+
+https://www.yiibai.com/wxpython/wxpython_hello_world.html
+
+2、wxPython各个布局的简单案例
+
+https://blog.csdn.net/lyhDream/article/details/103957751

@@ -8,6 +8,8 @@ tags:
 
 1
 
+# subprocess
+
 subprocess模块允许你spawn新的进程。连接它们的0、1、2的fd。
 
 获取它们的返回值。
@@ -71,7 +73,7 @@ subprocess相当于之前的其他模块，做了这些事情：
 1、subprocess基于popen2这个函数。
 ```
 
-
+# multiprocessing
 
 multiprocessing设计的目的是进行多进程操作的。
 

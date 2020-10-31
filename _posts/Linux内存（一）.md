@@ -17,7 +17,7 @@ typora-root-url: ..\
 | 开始          | 结束          | 用途                                                |
 | ------------- | ------------- | --------------------------------------------------- |
 | FFFF 8000     | FFFF FFFF     | 用于copy_user_page和clear_user_page                 |
-| FFFF 4000     | FFFF FFFF     | armv6及之后的CPU的cache混淆。                       |
+| FFFF 4000     | FFFF FFFF     | armv6及之后的CPU的cache。                           |
 | FFFF 1000     | FFFF 7FFF     | 保留。不能用。                                      |
 | FFFF 0000     | FFFF 0FFF     | CPU vector页。如果CPU支持vector重定位，映射到这里。 |
 | FFFE 0000     | FFFE FFFF     | XScale缓存冲刷区。这种CPU没有TCM                    |

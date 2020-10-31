@@ -1100,6 +1100,92 @@ std::unique_ptr func(int a)
 
 
 
+# Android 里的智能指针实现
+
+代码在aosp-rpi3/frameworks/rs/cpp/util/RefBase.h
+
+Android里的智能指针有3种：
+
+Light pointer。使用了简单的引用计数。
+
+Strong pointer。使用了强引用计数。
+
+weak pointer。使用了弱引用计数。
+
+```
+template <class T>
+class LightRefBase {
+public:
+	LightRefBase() : mCount(0){
+	
+	}
+	void incStrong(const void *id) {
+		inc(&mCount);
+	}
+	void decStrong(const void *id) {
+		dec(&mCount);
+	}
+private:
+	volative int32_t mCount;
+};
+```
+
+
+
+```
+template <typename T>
+class sp
+{
+public:
+    inline sp() : m_ptr(0) { }
+
+    sp(T* other);
+    sp(const sp<T>& other);
+    template<typename U> sp(U* other);
+    template<typename U> sp(const sp<U>& other);
+
+    ~sp();
+
+    // Assignment
+
+    sp& operator = (T* other);
+    sp& operator = (const sp<T>& other);
+
+    template<typename U> sp& operator = (const sp<U>& other);
+    template<typename U> sp& operator = (U* other);
+
+    //! Special optimization for use by ProcessState (and nobody else).
+    void force_set(T* other);
+
+    // Reset
+
+    void clear();
+
+    // Accessors
+
+    inline  T&      operator* () const  { return *m_ptr; }
+    inline  T*      operator-> () const { return m_ptr;  }
+    inline  T*      get() const         { return m_ptr; }
+
+    // Operators
+
+    COMPARE(==)
+    COMPARE(!=)
+    COMPARE(>)
+    COMPARE(<)
+    COMPARE(<=)
+    COMPARE(>=)
+
+private:
+    template<typename Y> friend class sp;
+    template<typename Y> friend class wp;
+    void set_pointer(T* ptr);
+    T* m_ptr;
+};
+```
+
+
+
 
 
 # 参考资料

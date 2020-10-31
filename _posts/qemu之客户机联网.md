@@ -12,7 +12,7 @@ tags:
 
 选择tap/tun的方案。
 
-#host执行操作
+# host执行操作
 
 1、我的host机器是Ubuntu16.04的。当qemu启动时，可以看到系统增加了一张网卡。
 
@@ -105,6 +105,8 @@ qemu提供了4种不同模式的网络
 3、qemu内置的usermode network。
 4、直接分配网络设备。
 ```
+
+
 
 
 

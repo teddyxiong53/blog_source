@@ -15,7 +15,7 @@ Uboot mainline 从 v1.1.3开始支持Device Tree，其对ARM的支持则是和AR
 在Uboot中，可以从NAND、SD或者TFTP等任意介质将.dtb读入内存，假设.dtb放入的内存地址为0x71000000，之后可在Uboot运行命令fdt addr命令设置.dtb的地址，如：
 U-Boot> fdt addr 0x71000000
 
-fdt的其他命令就变地可以使用，如fdt resize、fdt print等。
+fdt的其他命令就可以使用，如fdt resize、fdt print等。
 
 
 
