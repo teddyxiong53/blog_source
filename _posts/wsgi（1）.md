@@ -65,7 +65,7 @@ client <--> wsgi服务器（uwsgi、wsgiref）<--> application（flask）
 
 有两种模式：
 
-1、http模式。对应两次结构。
+1、http模式。对应两层结构。
 
 2、socket模式。对应三层结构。
 

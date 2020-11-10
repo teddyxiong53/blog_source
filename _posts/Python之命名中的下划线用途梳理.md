@@ -6,6 +6,12 @@ tags:
 
 ---
 
+1
+
+dunder名称：d表示double。表示双下划线。
+
+sunder名称：s表示single。表示单下划线。
+
 
 
 ![image-20200510205329827](../images/random_name/image-20200510205329827.png)
@@ -42,9 +48,9 @@ __aa__：系统定义名字。
 
 
 
-#python里类的保留方法
+# python里类的保留方法
 
-##类的基础方法
+## 类的基础方法
 
 1、新建一个类对象。
 
@@ -117,8 +123,28 @@ f.__exit__()
 
 
 
+
+
+本文介绍了Python中单下划线和双下划线（"dunder"）的各种含义和命名约定，
+
+名称修饰（name mangling）的工作原理，以及它如何影响你自己的Python类。
+
+
+
+单下划线和双下划线在Python变量和方法名称中都各有其含义。
+
+有一些含义仅仅是依照约定，被视作是对程序员的提示 
+
+而有一些含义是由Python解释器严格执行的。
+
+
+
 # 参考资料
 
 1、Python中下划线---完全解读
 
 https://www.cnblogs.com/skying555/p/6169110.html
+
+2、Python中下划线的5种含义
+
+https://zhuanlan.zhihu.com/p/36173202

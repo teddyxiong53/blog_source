@@ -38,7 +38,7 @@ hlxiong@hlxiong-VirtualBox:~/work/test/dueros/DuerOS-Python-Client$ cat ~/.duero
 
 
 
-#代码分析
+# 代码分析
 
 代码在这里。
 

@@ -901,6 +901,545 @@ GenericDesktop.Wheel ---> Relative.Wheel
 
 
 
+在kernel/samples/hidraw下面有个hid-example.c。
+
+是通过对/dev/hidraw0这个设备进行操作。
+
+操作有：
+
+```
+获取描述符大小
+ioctl(fd, HIDIOCGRDESCSIZE, &desc_size);
+获取report desc
+ioctl(fd, HIDIOCGRDESC, &rpt_desc);
+获取名字
+ioctl(fd, HIDIOCGRAWNAME(256), buf);
+设置feature
+	/* Set Feature */
+	buf[0] = 0x9; /* Report Number */
+	buf[1] = 0xff;
+	buf[2] = 0xff;
+	buf[3] = 0xff;
+	res = ioctl(fd, HIDIOCSFEATURE(4), buf);
+获取feature
+/* Get Feature */
+	buf[0] = 0x9; /* Report Number */
+	res = ioctl(fd, HIDIOCGFEATURE(256), buf);
+	
+发送report
+	/* Send a Report to the Device */
+	buf[0] = 0x1; /* Report Number */
+	buf[1] = 0x77;
+	res = write(fd, buf, 2);
+读取report
+	/* Get a report from the device */
+	res = read(fd, buf, 16);
+```
+
+
+
+https://www.kernel.org/doc/html/latest/hid/uhid.html
+
+还有一个 /dev/uhid设备。
+
+uhic是一个misc设备。
+
+通过struct uhid_event结构体来进行交互。
+
+
+
+# usb mouse驱动分析
+
+在linux/hid.h
+
+```
+//长item和短item的flag
+#define HID_ITEM_FORMAT_SHORT	0
+#define HID_ITEM_FORMAT_LONG	1
+//item的类型。
+#define HID_ITEM_TYPE_MAIN		0
+#define HID_ITEM_TYPE_GLOBAL		1
+#define HID_ITEM_TYPE_LOCAL		2
+#define HID_ITEM_TYPE_RESERVED		3
+//item的tag
+#define HID_MAIN_ITEM_TAG_INPUT			8
+#define HID_MAIN_ITEM_TAG_OUTPUT		9
+#define HID_MAIN_ITEM_TAG_FEATURE		11
+#define HID_MAIN_ITEM_TAG_BEGIN_COLLECTION	10
+#define HID_MAIN_ITEM_TAG_END_COLLECTION	12
+//report分类
+#define HID_INPUT_REPORT	0
+#define HID_OUTPUT_REPORT	1
+#define HID_FEATURE_REPORT	2
+
+#define HID_REPORT_TYPES	3
+```
+
+
+
+```
+struct hid_device 
+
+```
+
+
+
+```
+static struct bus_type hid_bus_type = {
+	.name		= "hid",
+	.dev_groups	= hid_dev_groups,
+	.match		= hid_bus_match,
+	.probe		= hid_device_probe,
+	.remove		= hid_device_remove,
+	.uevent		= hid_uevent,
+};
+```
+
+
+
+有了上面的了解，我们现在来写一个简单的usb鼠标驱动，我们的目标是：当按下左键时上报按键L，当按下右键时上报S，中键E。
+
+
+
+一个 USB 总线引出两个重要的链表，
+
+一个为 USB 设备链表，
+
+一个为 USB 驱动链表。
+
+设备链表包含各种系统中的 USB 设备以及这些设备的所有接口，
+
+驱动链表包含 USB 设备驱动程序（usb device driver）和 USB 驱动程序（usb driver）。
+
+
+
+**USB 设备驱动程序（usb device driver）和 USB 驱动程序（usb driver）的区别是什么？**
+USB 设备驱动程序包含 USB 设备的一些通用特性，将与所有 USB 设备相匹配。
+
+在 USB core 定义了：
+
+struct usb_device_driver 
+
+usb_generic_driver。
+
+usb_generic_driver 是 USB 子系统中唯一的一个设备驱动程序对象。
+
+而 USB 驱动程序则是与接口相匹配，接口是一个完成特定功能的端点的集合。
+
+
+
+```
+/*
+* 鼠标结构体，用于描述鼠标设备。
+*/
+struct usb_mouse
+{
+/* 鼠标设备的名称，包括生产厂商、产品类别、产品等信息 */
+char name[128];
+/* 设备节点名称 */
+char phys[64];
+/* USB 鼠标是一种 USB 设备，需要内嵌一个 USB 设备结构体来描述其 USB 属性 */
+struct usb_device *usbdev;
+/* USB 鼠标同时又是一种输入设备，需要内嵌一个输入设备结构体来描述其输入设备的属性 */
+struct input_dev *dev;
+/* URB 请求包结构体，用于传送数据 */
+struct urb *irq;
+/* 普通传输用的地址 */
+signedchar *data;
+/* dma 传输用的地址 */
+dma_addr_t data_dma;
+};
+```
+
+
+
+鼠标仅有一个 interrupt 类型的 in 端点，不满足此要求的设备均报错
+
+
+
+usbmouse.c代码完全注释
+
+https://www.cnblogs.com/image-eye/archive/2011/08/24/2152580.html
+
+
+
+目前无论是在PC、手持终端，还是在嵌入式领域，USB设备都被广泛应用。
+
+本文暂时抛开大量USB协议、概念等细节，
+
+从最基础的框架入手介绍如何设计设备驱动。
+
+在丰富细节功能的同时，逐步介绍涉及到的概念。
+
+
+
+要开始USB设备驱动设计，首先需要有个USB设备。
+
+对于刚开始进行设备驱动开发学习的同学而言，不太容易找到现成的物理USB设备来做为练习使用；
+
+即是手头上有现成的优盘、音视频小设备，也会因为不清楚厂商的设计细节，无法拿来练手。
+
+出于这种目的，我专门针对模拟器设计了一个USB Sample的设备，
+
+将它实现一个通用输入输出功能（General IO）设备。
+
+基本功能比较简单：
+
+可进行基本设置与信息获取（速率，环回），可以将数据送出，并获取其接收到的数据。
+
+
+
+如何在模拟器上模拟出一个USB设备，不是本文的主要内容（或许在下一篇专栏文章中介绍）。
+
+需要强调的是，使用软件方式模拟设备的做法在很多场景下非常有用，
+
+能够大大加速产品设计、开发进度；
+
+能够在真正投产（流片）之前，便完成功能设计、验证等工作。
+
+
+
+![img](../images/random_name/v2-c5db3fef5a8c65dedf01cb4f3f9e6506_720w.jpg)
+
+
+
+某些设备，会有多种配置、多种接口；
+
+**多数设备则往往只有一种配置，一个接口，若干个端点。**
+
+这里，
+
+配置可以理解为设备的工作模式，
+
+接口专指功能，
+
+端点表征传输通道。
+
+举例说明这种功能，
+
+某一个USB视音频卡，只存在一个配置，
+
+接口0负责视频处理传输，接口1负责音频处理传输；
+
+两个接口分别有三个端点：
+
+控制端点、输入端点、输出端点。
+
+**所以在Linux内核驱动中，probe函数接受的是usb_interface对象而不是usb_device对象：**
+
+**接口才表征了一个独立的功能。**
+
+
+
+USB Sample设备（以下简称usample设备）设计功能如下：
+
+设备只包含一个配置（Configuration），
+
+该配置中只包含一个接口（Interface），
+
+该接口中除控制端点之外，还包含两个端点（Endopint），
+
+端点1的属性为入向（in）批传输类型（bulk transfer），
+
+端点2的属性为出向（out）批传输类型；
+
+传输的最大包长均为64字节。
+
+
+
+系统启动时，HCD（Host Controller Driver）驱动会对挂载在USB总线上的设备进行枚举（热插拔同样会触发这个过程），
+
+**对发现的设备将会创建一个usb_device设备对象**（device，interface，endpoint三者之间的关系见第一章描述）并记录下来。
+
+通过lsusb命令，我们可以看到设备信息：
+
+本例usample是处于第1号总线的第004号设备，其Vendor厂商ID为efb8，
+
+Product产品ID为f201（每个厂商都有向IEEE组织申请的唯一ID，这两个组合可以用于确定设备类型）。
+
+**此处，efb8以及f201为我们在模拟设备时指定的ID，取的数值偏大用来避开真实产品ID。**
+
+
+
+新注册驱动或者设备时，内核遍历设备或者驱动，进行ID匹配、探测处理。因此，我们并不用担心驱动注册或者设备发现两个事件发生的先后时序关系。
+
+struct usb_driver 是针对 interface的.
+
+struct usb_device_driver 是和 usb_device 搭的.
+
+ 
+
+先扫 usb_device 再扫 interface. 在interface 中还要继续扫用的是 usb_driver 里的 probe.  运气好的话, 还可以继续扫.
+
+![image-20201103093049703](../images/random_name/image-20201103093049703.png)
+
+usb系统一般由三个部分组成，主机，一个或多个usb hub,以及与之些hub连接的usb设备。
+
+主机
+
+在任何的usb系统中仅有一个主机，主机系统中的usb接口即上图中的主机控制器，主机控制器可由硬件，软件或固件组成。主机主要负责:
+
+a.检测usb设备的连接与拆除
+
+b.管理主机与usb设备之间的控制流
+
+c.管理主机与usb设备之间的数据流
+
+d.收集状态和活动的统计
+
+e.为连接的usb设备提供电源
+
+
+
+(2)usb设备
+
+所有的usb设备都是通过地址来存取的，**这个地址在连接或枚举时分配**。
+
+**usb设备对usb系统来说是端点的集合**，一组端点实现一个接口。
+
+设备端点是usb设备中**唯一可寻址的部分**。
+
+它是主机与设备之间**通信流的结束点。**
+
+一系列的相互独立的端点构成了usb逻辑设备。
+
+**每个端点支持流进设备或者是流出设备。**
+
+主机与设备端点上的usb数据传输是通过管道的方式。
+
+
+
+(3)hub
+
+所有的usb device都连接在hub端口上。
+
+
+
+usb传输模式
+
+1、控制模式（control）。支持双向传输。用于控制命令发送、查询状态和确认命令。
+
+2、同步模式。对准确性要求不高，但是对实时性要求高的，例如视频和音频数据。
+
+3、中断模式。这个是对于没有规律的、数据量较小的。例如键盘和鼠标。
+
+4、批量传输。大量且准确的数据传输。例如数码相机。扫面议。
+
+
+
+usb设备类型
+
+```
+1：声音设备
+2：网卡
+3：hid
+4：无
+5：物理设备
+6：静止图形捕捉
+7：打印机
+8：存储
+9：usb hub
+0x0b：智能卡
+0x0e：视频设备
+0xff：厂商自定义
+```
+
+
+
+
+
+https://blog.csdn.net/qq_44884706/article/details/89278256
+
+
+
+
+
+**为什么一插上就有会提示信息?**
+
+是因为windows自带了USB总线驱动程序,
+
+
+
+**USB总线驱动程序负责:**
+
+识别USB设备,给USB设备找到对应的驱动程序
+
+新接入的USB设备的默认地址(编号)是0，在未分配新编号前，PC主机使用0地址和它通信。
+
+然后USB总线驱动程序都会给它分配一个地址(编号)
+
+PC机想访问USB总线上某个USB设备时，发出的命令都含有对应的地址(编号)
+
+USB是一种主从结构。主机叫做Host，从机叫做Device,所有的USB传输，都是从USB主机这方发起；USB设备没有"主动"通知USB主机的能力。
+
+例子：USB鼠标滑动一下立刻产生数据，但是它没有能力通知PC机来读数据，只能被动地等得PC机来读。
+
+
+
+要想成为一个USB主机,硬件上就必须要有USB主机控制器才行,USB主机控制器又分为4种接口:
+
+**OHCI（Open Host Controller Interface）:** 微软主导的低速USB1.0(1.5Mbps)和全速USB1.1(12Mbps),OHCI接口的软件简单,硬件复杂  
+
+**UHCI（Universal Host Controller Interface）:** Intel主导的低速USB1.0(1.5Mbps)和全速USB1.1(12Mbps), 而UHCI接口的软件复杂,硬件简单  
+
+**EHCI（Enhanced Host Controller Interface）：**高速USB2.0(480Mbps),
+
+**xHCI（eXtensible Host Controller Interface）：**USB3.0(5.0Gbps),采用了9针脚设计,同时也支持USB2.0、1.1等
+
+
+
+![img](../images/random_name/1182576-20171006192516771-827720039.png)
+
+
+
+从上面代码中分析到每次的地址编号是连续加的,USB接口最大能接127个设备,我们连续插拔两次USB键盘,也可以看出,如下图所示:
+
+
+
+这个作者的Linux驱动系列写得不错。是根据韦东山的视频总结记录的。
+
+https://www.cnblogs.com/lifexy/p/7631900.html
+
+https://www.cnblogs.com/lifexy/category/1076894.html?page=3
+
+
+
+由于USB是主从模式的结构，设备与设备之间、主机与主机之间不能互连，为解决这个问题，扩大USB的应用范围，出现了USB OTG，全拼 ON The Go。USB OTG 同一个设备，在不同的场合下可行在主机和从机之间切换。
+
+
+
+USB网络的基本拓扑结构是星型的。一个USB系统由一个或多个USB设备（外设）、一个或多个集线器（hub）和一个主机组成。计算机主机有时又叫作主控制器，在一个USB网络中只能有一个主机。主控制器内置了一个根集线器，提供主控制器上的初始附属点。USB是一种高速总线，它连接的设备数量最多可达127个。
+
+
+
+主机**定时**对集线器的状态进行**查询**。
+
+当一个新设备接入一个集线器时，这个集线器就会向主机报告状态改变，
+
+主机发出一个命令使端口有效并对其进行重新设置。
+
+位于这个端口上的设备进行响应，主机收到关于设备的信息。
+
+根据这些信息，主机的操作系统确定对这个设备使用哪种驱动程序，
+
+接着设备被分配一个唯一标识的地址，主机向它发出内部设置请求。
+
+当一个设备从总线上移走时，主机就从其可用资源列表中将这个设备删除。
+
+**主机对USB设备的探测和识别叫作总线列举（bus enumeration）。**
+
+
+
+
+
+前面介绍了Linux USB Gadget的软件结构与各软件层的整合过程。
+
+经过各种注册函数，Gadget功能驱动层，**USB设备层与UDC底层结合在了一起形成了一个完整的USB设备。**
+
+而这个设备已经准备好了接受主机的枚举。
+
+在介绍USB设备枚举之前。
+
+先熟悉一下各层通信所用的数据结构，**在USB主机端编写USB设备驱动程序，最重要的结构就是URB了，**
+
+我们只需要将各种URB提交给USB核心，核心就会自动给我们的数据发送到指定的设备。
+
+而对于设备端也有这样一个类似的重要的数据结构。
+
+**这个数据结构就是urt--usb_request。**
+
+每一个端点都有一个urt链表，上面挂着各种urt。
+
+在底层的UDC的中断处理程序中，针对不同的端点调用不同的处理函数，总之是处理端点上的urt链表，处理完一个urt就调用预先设置好的回调函数。
+
+这就是设备端数据处理的流程。下面分析一下usb_request结构：
+
+
+
+实例抓包分析USB鼠标枚举数据流
+
+https://blog.csdn.net/deep_pro/article/details/4692182
+
+
+
+所有USB通讯均为请求-->响应模式，USB设备不会主动向Host发送数据。
+
+写数据：USB设备驱动发送urb请求给USB设备，USB设备不需要回数据。
+
+读数据：USB设备驱动发送urb请求给USB设备，USB设备需要回数据。
+
+
+
+USB 设备驱动通过urb和所有的 USB 设备通讯。
+
+urb用 struct urb 结构描述（include/linux/usb.h ）。
+
+ urb 以一种异步的方式同一个特定USB设备的特定端点发送或接受数据。
+
+一个 USB 设备驱动可根据驱动的需要，分配多个 urb 给一个端点或重用单个 urb 给多个不同的端点。
+
+设备中的每个端点都处理一个 urb 队列, 所以多个 urb 可在队列清空之前被发送到相同的端点。
+
+
+
+ 一个 urb 的典型生命循环如下:
+ （1）被创建；
+ （2）被分配给一个特定 USB 设备的特定端点；
+ （3）被提交给 USB 核心；
+ （4）被 USB 核心提交给特定设备的特定 USB 主机控制器驱动；
+ （5）被 USB 主机控制器驱动处理, 并传送到设备；
+ （6）以上操作完成后，USB主机控制器驱动通知 USB 设备驱动。
+
+
+
+# stm32实现hid
+
+USB通信与串口通信相比，复杂得多。
+
+但从硬件上来说，对于支持 USB 的芯片来说，其电路又相对简单，而且成本更为便宜。
+
+使用UART通信，必须使用 USB 转串口芯片，为保证通信质量，还得使用一个价格昂贵的坦电容。
+
+而 USB 通信只需几个电阻就搞定了。
+
+另一方面，USB 无需安装驱动，UART 通信则需要安装 CH340 驱动，这就很有吸引力了，
+
+我们有什么理由不使用 HID 呢。
+
+HID 通信最常使用的地方就是鼠标和键盘，
+
+另外条码的扫码枪以及部分 RFID 读卡器也使用 HID 通信，
+
+**只要标注免驱的读卡器，其肯定是使用 HID 进行通信。**
+
+
+
+在 UART 通信中，信息是以字节为单位进行传送，下位机传一个字节，上位机接收一个字节，接收到多个字节后，上位机进行解析即可使用。
+
+**而 HID 通信中，信息以数据包（报告 report）的方式进行传送，**
+
+一个数据包可包含多个字节，你需要指定数据包中每个 Bit 及字节的格式及含义，这就是报告描述符。
+
+上位机根据报告描述符来解析数据包。
+
+鼠标和键盘的报告描述符是固定格式的，属于 HID 标准的一部分。
+
+这也是为什么大部分 USB 鼠标和键盘一插到你的电脑上就能使用的根本原因。
+
+说到这里，大家应该明白了，HID 是高级货，
+
+既然是高级货，那学习和使用起来就会困难一些。
+
+
+
+鼠标和键盘做完后，我们已经对 HID 设备有所了解，
+
+但大多数时候，我们希望使用 HID 设备象 UART 一样与上位机进行通信。
+
+本文我们就来讲讲如何定义自己的 HID 设备，并向上位机发送或接收上位机的数据。
+
+
+
 # 参考资料
 
 1、
@@ -988,3 +1527,15 @@ https://stackoverflow.com/questions/35162889/python-pyusb-hid-feature-report
 21、
 
 https://my.oschina.net/u/3846209/blog/1805792
+
+22、Linux USB 鼠标驱动程序详解
+
+https://zhuanlan.zhihu.com/p/158375269
+
+23、Linux USB设备驱动设计
+
+https://zhuanlan.zhihu.com/p/68425080
+
+24、stm32实现鼠标
+
+http://article.iotxfd.cn/Network%20programming/HID-Mouse

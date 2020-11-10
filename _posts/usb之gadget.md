@@ -14,7 +14,7 @@ composite英文意思是复合的意思，估计是编写usb gadget层设备驱�
 
 composite是一个可选的层，在gadget层之上。
 
-作用是简化构造一个复合设备的步骤，在一个configuration里支持多个功能。
+**作用是简化构造一个复合设备的步骤，在一个configuration里支持多个功能。**
 
 例如，一个只有一个Configuration的设备，同时支持网络连接和和大容量存储，就是一个复合设备。
 

@@ -15,13 +15,35 @@ pypress
 https://github.com/laoqiu/pypress
 ```
 
-1、修改配置。
 
-```
-pypress/config.cfg
-```
 
-改里面的内容。
+这个列表里有些项目值得学习
+
+https://github.com/tuvtran/project-based-learning#python
+
+下面是从这篇文章里提取出来的flask相关的内容
+
+这个是系列教程，从目录看似乎不错
+
+Build a Microblog with Flask
+
+https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world
+
+配套代码：
+
+https://github.com/miguelgrinberg/microblog.git
+
+Build a Todo List with Flask and RethinkDB
+
+https://realpython.com/blog/python/rethink-flask-a-simple-todo-list-powered-by-flask-and-rethinkdb/
+
+Build a RESTful Microservice in Python
+
+http://www.skybert.net/python/developing-a-restful-micro-service-in-python/
+
+
+
+
 
 
 
