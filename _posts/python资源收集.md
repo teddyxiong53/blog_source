@@ -9,7 +9,7 @@ tags:
 
 
 
-#cheatsheet
+# cheatsheet
 
 这个就一个文件。可以。
 
@@ -90,6 +90,10 @@ https://www.jb51.net/Special/663.htm
 https://github.com/teddyxiong53/beginning_python_source_code
 
 
+
+这个非常好。是在线电子书。质量很高。
+
+http://magic.iswbm.com/zh/latest/c01/c01_01.html
 
 
 

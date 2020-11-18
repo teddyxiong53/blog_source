@@ -56,7 +56,15 @@ select。
 
 
 
+# like和glob区别
 
+like不区分大小写， glob区分大小写
+
+
+
+like：  百分号（%）代表零个、一个或多个数字或字符。下划线（_）代表一个单一的数字或字符。
+
+glob： 星号（*）代表零个、一个或多个数字或字符。问号（?）代表一个单一的数字或字符。
 
 
 
@@ -66,3 +74,7 @@ select。
 1、sqlite教程
 
 http://www.runoob.com/sqlite/sqlite-intro.html
+
+2、Sqlite3 like和glob的区别
+
+https://blog.csdn.net/majiakun1/article/details/50635121

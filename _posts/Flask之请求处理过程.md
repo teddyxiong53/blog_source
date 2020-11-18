@@ -295,6 +295,136 @@ request只是一个变量名，真正的实例对象是Request（）。
 
 
 
+# context
+
+那么 **Werkzeug** 自己实现的 Local 和标准的 `threading.local` 相比有什么不同呢？我们记住最大的不同点在于
+
+> 前者会在 Greenlet 可用的情况下优先使用 Greenlet 的 ID 而不是线程 ID 以支持 Gevent 或 Eventlet 的调度，后者只支持多线程调度；
+
+
+
+Werkzeug 另外还实现了两种数据结构，一个叫 `LocalStack` ，一个叫做 `LocalProxy`
+
+`LocalStack` 是基于 `Local` 实现的一个栈结构。栈的特性就是**后入先出**。当我们进入一个 Context 时，将当前的的对象推入栈中。然后我们也可以获取到栈顶元素。从而获取到当前的上下文信息。
+
+`LocalProxy` 是代理模式的一种实现。在实例化的时候，传入一个 `callable` 的参数。然后这个参数被调用后将会返回一个 `Local` 对象。我们后续的所有操作，比如属性调用，数值计算等，都会转发到这个参数返回的 `Local` 对象上。
+
+为什么需要proxy呢？
+
+我们先看不用proxy的时候，是什么表现：
+
+```
+from werkzeug.local import LocalProxy, LocalStack
+
+test_stack = LocalStack()
+test_stack.push({
+    'name': 'aa'
+})
+test_stack.push({
+    'name': 'bb'
+})
+
+
+def get_item():
+    return test_stack.pop()
+
+
+item = get_item()
+print(item['name'])
+print(item['name'])
+```
+
+这个打印的都是bb。
+
+用proxy改造后如下：
+
+```
+item = LocalProxy(get_item) #就改这一行
+```
+
+然后就依次打印了bb和aa。
+
+我们每次取用，都自动进行了出栈。这样是符合我们的预期的。
+
+
+
+当 `app = Flask(__name__)` 构造出一个 Flask App 时，App Context 并不会被自动推入 Stack 中。所以此时 Local Stack 的栈顶是空的，current_app 也是 unbound 状态。
+
+```
+from flask import Flask
+from flask.globals import _app_ctx_stack, _request_ctx_stack
+
+app = Flask(__name__)
+
+print(_app_ctx_stack.top)
+print(_request_ctx_stack.top)
+try:
+    print(_app_ctx_stack())
+except Exception as e :
+    print(e)
+
+try:
+    print(_request_ctx_stack())
+except Exception as e :
+    print(e)
+```
+
+打印如下：
+
+```
+None
+None
+object unbound
+object unbound
+```
+
+作为 web 时，当请求进来时，我们开始进行上下文的相关操作。整个流程如下：
+
+![img](/images/random_name/v2-8dac250bd54b08853440c4e2953e7f26_720w.jpg)
+
+好了现在有点问题：
+
+
+
+1. 为什么要区分 App Context 以及 Request Context
+2. 为什么要用栈结构来实现 Context ？
+
+很久之前看过的松鼠奥利奥老师的博文[Flask 的 Context 机制](https://link.zhihu.com/?target=https%3A//blog.tonyseek.com/post/the-context-mechanism-of-flask/) 解答了这个问题
+
+> 这两个做法给予我们 多个 Flask App 共存 和 非 Web Runtime 中灵活控制 Context 的可能性。
+> 我们知道对一个 Flask App 调用 app.run() 之后，进程就进入阻塞模式并开始监听请求。此时是不可能再让另一个 Flask App 在主线程运行起来的。那么还有哪些场景需要多个 Flask App 共存呢？前面提到了，一个 Flask App 实例就是一个 WSGI Application，那么 WSGI Middleware 是允许使用组合模式的，比如：
+
+```python
+from werkzeug.wsgi import DispatcherMiddleware
+from biubiu.app import create_app
+from biubiu.admin.app import create_app as create_admin_app
+
+application = DispatcherMiddleware(create_app(), {
+    '/admin': create_admin_app()
+})
+```
+
+
+
+奥利奥老师文中举了一个这样一个例子，Werkzeug 内置的 Middleware 将两个 Flask App 组合成一个一个 WSGI Application。这种情况下两个 App 都同时在运行，只是根据 URL 的不同而将请求分发到不同的 App 上处理。
+
+
+
+但是现在很多朋友有个问题，就是为什么这里不用 Blueprint ？
+
+- Blueprint 是在同一个 App 下运行。其挂在 App Context 上的相关信息都是一致的。但是如果要隔离彼此的信息的话，那么**用 App Context 进行隔离，会比我们用变量名什么的隔离更为方便**
+- Middleware 模式是 WSGI 中允许的特性，换句话来讲，我们将 Flask 和另外一个遵循 WSGI 协议的 web Framework （比如 Django）那么也是可行的。
+
+**但是 Flask 的两种 Context 分离更大的意义是为了非 web 应用的场合。**
+
+
+
+这句话换句话说 App Context 存在的意义是针对一个进程中有多个 Flask App 场景，这样场景最常见的就是我们用 Flask 来**做一些离线脚本的代码**。
+
+
+
+
+
 # 参考资料
 
 1、Flask的核心机制！关于请求处理流程和上下文
@@ -328,3 +458,7 @@ https://www.zhihu.com/question/37397521
 8、flask多线程模式
 
 https://www.py.cn/kuangjia/flask/11395.html
+
+9、Flask 中的 Context 初探
+
+https://zhuanlan.zhihu.com/p/33847569

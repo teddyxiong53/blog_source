@@ -948,6 +948,57 @@ uhic是一个misc设备。
 
 
 
+Linux下，用libusb来做编程，需要做这些：
+
+1、使用命令行工具lsusb，**查看当前设备的通信端点的通信方式**。lsusb -v后，在Endpoint中的Transfer Type可以看到，我用的这个设备的通信方式为interrupt，中断模式。
+
+2、使用lsusb查看**输出端点和输入端点，记录端点号**。一般情况为，写设备为0x01(朋友的设备为0x02)，读设备为0x81.
+
+3、**查看输出缓冲区的大小**，在写设备时会用到---绊在这块时间比较久。
+
+
+
+完成了上述三点就可以进行编程了，示例代码如下：
+
+
+
+在Linux平台上与单片机等设备进行USB-HID通讯，一般是使用开源项目libusb 使用是最多，不像Windows 那样，直接使用win32 api 进行操作。既然如此，就是决定用libusb。
+
+
+
+
+
+# usb之python操作
+
+安装pyusb。
+
+```
+pip install pyusb
+```
+
+输出设备信息。
+
+```
+import usb
+import sys
+
+dev = usb.core.find(idVendor=0xe5b8, idProduct=0x0812)
+
+if dev is None:
+    raise ValueError('device not found')
+
+print(dev)
+```
+
+获取配置进行打印。
+
+```
+cfg = dev.get_active_configuration()
+print(cfg)
+```
+
+
+
 # usb mouse驱动分析
 
 在linux/hid.h
@@ -1437,6 +1488,40 @@ HID 通信最常使用的地方就是鼠标和键盘，
 但大多数时候，我们希望使用 HID 设备象 UART 一样与上位机进行通信。
 
 本文我们就来讲讲如何定义自己的 HID 设备，并向上位机发送或接收上位机的数据。
+
+
+
+
+
+Writing a Simple USB Driver
+
+https://www.linuxjournal.com/article/7353
+
+举例的上一个usb led灯。
+
+a simple USB lamp device work well with Linux
+
+the USB Visual Signal Indicator, 
+
+![img](../images/random_name/7353f1.inline.jpg)
+
+支持完整的usb协议。
+
+ship the entire USB protocol specification their devices use with the product
+
+还在网上提供了文档
+
+This documentation shows what commands the USB controller chip accepts and how to use them. 
+
+还提供了为windows dll文件。
+
+USB Snoopy
+
+可以用这个工具来分析。在windows下运行。抓usb通信包。
+
+如果只有Linux系统电脑，可以安装虚拟机，虚拟机里运行windows。这种方式不影响抓包。
+
+在usb/misc/usbled.c。就有代码。
 
 
 

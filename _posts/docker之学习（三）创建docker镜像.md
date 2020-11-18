@@ -12,7 +12,7 @@ tags:
 
 先看一个例子。
 
-#写Dockerfile
+# 写Dockerfile
 
 新建一个example目录。在里面新建一个Dockerfile。内容如下：
 

@@ -22,6 +22,8 @@ tags:
 
 修改/etc/docker/daemon.json。
 
+把下面的所有内容直接粘贴到shell执行
+
 ```
 sudo mkdir -p /etc/docker
 sudo tee /etc/docker/daemon.json <<-'EOF'

@@ -8,6 +8,25 @@ tags:
 
 1
 
+Blinker 是一个基于Python的**强大的信号库**，
+
+它既支持简单的对象到对象通信，也支持针对多个对象进行组播。
+
+Flask的信号机制就是基于它建立的。
+
+Blinker的内核虽然小巧，但是功能却非常强大，它支持以下特性：
+
+- 支持注册全局命名信号
+- 支持匿名信号
+- 支持自定义命名信号
+- 支持与接收者之间的持久连接与短暂连接
+- **通过弱引用实现与接收者之间的自动断开连接**
+- 支持发送任意大小的数据
+- **支持收集信号接收者的返回值**
+- 线程安全
+
+
+
  blinker是一个信号库，支持一对一、一对多的订阅发布模式。
 
 
@@ -33,7 +52,31 @@ print(initialized is signal('initialized'))
 
 因此这里signal方法使用了单例模式。
 
-订阅消息
+
+
+```
+import blinker
+from blinker import signal
+
+
+def subscriber(sender):
+    print('get a signal from {}'.format(sender))
+# 创建一个有名信号
+ready = signal('ready')
+# 给这个信号注册处理函数
+ready.connect(subscriber)
+
+x = 'xx'
+# 发送信号
+ready.send(x)
+```
+
+打印如下：
+
+```
+get a signal from xx
+
+```
 
 
 
