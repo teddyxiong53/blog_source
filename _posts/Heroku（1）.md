@@ -42,7 +42,7 @@ The domain qq.com has been blocked.
 
 还是换成gmail吧。
 
-
+密码长度有要求，我只能用最复杂的那个密码。
 
 https://devcenter.heroku.com/articles/heroku-cli
 

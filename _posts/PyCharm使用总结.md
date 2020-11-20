@@ -34,6 +34,8 @@ https://blog.csdn.net/sgfmby1994/article/details/77876873
 
 edu版本的，没有terminal，到设置里，搜索plugin，然后搜索terminal就可以找到安装。
 
+升级到2020.2版本默认就有terminal。这样的terminal才能正常使用venv的。
+
 
 
 # pycharm的代码提示

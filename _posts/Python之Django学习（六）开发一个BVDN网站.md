@@ -9,11 +9,11 @@ tags:
 
 
 
-#1.BVDN解释
+# 1.BVDN解释
 
 BVDN是Bootstrap、Vue、Django、Nginx的缩写。这是一整套常用的建站程序的组合。
 
-##Bootstrap
+## Bootstrap
 
 1、是一个前端框架。twitter开源的。非常火的一个框架。
 
