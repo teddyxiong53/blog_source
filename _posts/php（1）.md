@@ -14,7 +14,7 @@ tags:
 
 先在Ubuntu下搭建php的环境。
 
-#Ubuntu搭建php环境
+# Ubuntu搭建php环境
 
 1、先安装Apache。
 
@@ -58,7 +58,7 @@ sudo apt-get install libapache2-mod-php7.0
 
 # 基础语法
 
-##基本格式：
+## 基本格式：
 
 ```
 <?php
@@ -68,7 +68,7 @@ sudo apt-get install libapache2-mod-php7.0
 
 php文件里，一般包括html内容和php代码。
 
-##向浏览器输出内容的两种方式：
+## 向浏览器输出内容的两种方式：
 
 1、echo。可以输出多个字符串。没有返回值。速度比print块。
 
@@ -76,7 +76,7 @@ php文件里，一般包括html内容和php代码。
 
 
 
-##注释：
+## 注释：
 
 ```
 和C语言一样。
@@ -138,9 +138,9 @@ var x : var y : 10var x out: 5var y out:
 
 用global关键字，这个跟Python是一样的。
 
-php把全局变量放在一个叫$GLOBALS[]的数组里。
+**php把全局变量放在一个叫$GLOBALS[]的数组里。**
 
-访问是这样：
+**访问是这样：**
 
 ```
 $GLOBALS['x']
@@ -161,7 +161,7 @@ myfunc(5);
 ?>
 ```
 
-##数据类型
+## 数据类型
 
 字符串。
 
@@ -319,7 +319,7 @@ do {
 for() {
   
 }
-forear
+foreach
 ```
 
 ## 函数

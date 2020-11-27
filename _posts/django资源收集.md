@@ -13,6 +13,18 @@ tags:
 
 https://github.com/MeNsaaH/soMedia
 
+跟flask microblog项目类似。
+
+可以看一遍，以此来了解flask和django处理上的区别。
+
+requirements.txt都有问题。说明作者做得不用心啊。
+
+只需要安装django和Pillow就可以。
+
+可以正常运行。逻辑正常。就是界面比较简陋。
+
+就是发图片，发评论，关注。
+
 
 
 这个网站罗列了基于django的实际网站
@@ -60,6 +72,16 @@ https://www.cdtaogang.top/2019/11/07/Django%E9%A1%B9%E7%9B%AE%E4%B9%8BWeb%E7%AB%
 flask微电影
 
 https://github.com/guaosi/flask-movie
+
+
+
+Python Django开发实战
+
+https://wenku.baidu.com/view/ca1bb460690203d8ce2f0066f5335a8103d266b4.html?fr=search-1-aladdin-income1
+
+如何使用django框架开发一个牛逼的电商项目
+
+https://blog.csdn.net/wpb74521wrf/article/details/81269340
 
 
 
