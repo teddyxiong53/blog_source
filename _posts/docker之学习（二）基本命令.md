@@ -104,3 +104,39 @@ docker rm hello
 docker rmi ubuntu:12.04
 ```
 
+# 常用命令
+
+To clear containers:
+
+> ```
+> docker rm -f $(docker ps -a -q)
+> ```
+
+To clear images:
+
+> ```
+> docker rmi -f $(docker images -a -q)
+> ```
+
+To clear volumes:
+
+> ```
+> docker volume rm $(docker volume ls -q)
+> ```
+
+To clear networks:
+
+> ```
+> docker network rm $(docker network ls | tail -n+2 | awk '{if($2 !~ /bridge|none|host/){ print $1 }}')
+> ```
+
+
+
+- Container是在原先的Image之上新加的一层，称作Container layer，这一层是可读可写的（Image是只读的）。
+- Image跟Container的职责区别：Image负责APP的存储和分发，Container负责运行APP。 
+
+参考资料
+
+1、
+
+https://github.com/moby/moby/issues/23371

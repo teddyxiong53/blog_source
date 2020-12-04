@@ -158,6 +158,94 @@ fdfs_monitor /etc/fdfs/storage.conf
 
 
 
+然后安装redis和celery（包括rabbitmq）。
+
+然后编译安装nginx和fastdfs的nginx模块。
+
+这一步倒是有点麻烦。
+
+我还是把这个nginx安装到我的个人目录下，不要影响系统的nginx。
+
+或者我先把系统的nginx先卸载掉。
+
+当前是nginx都在/usr/local/nginx目录下，我直接把这个目录删掉就好了。
+
+当前的nginx也没有做什么。
+
+就下载当前要求的版本，避免版本不一致的问题而浪费时间。
+
+nginx就下载1.8.1的。
+
+https://github.com/nginx/nginx/tree/branches/stable-1.8
+
+https://github.com/happyfish100/fastdfs-nginx-module
+
+```
+./auto/configure --prefix=/usr/local/nginx/ --add-module=/home/teddy/work/dailyfresh_compile/fastdfs-nginx-module-master/src
+```
+
+然后make， sudo make install就好了。
+
+nginx就安装好了。
+
+把fastdfs-nginx-module-master下的mod_fastdfs.conf拷贝到/etc/fdfs目录下。
+
+然后修改这些：
+
+```
+connect_timeout=10
+tracker_server=192.168.1.102:22122
+url_have_group_name=true
+store_path0=/home/teddy/fastdfs
+```
+
+再拷贝fastdfs的配置文件到etc目录下。
+
+```
+teddy@thinkpad:~/tools/fastdfs$ sudo cp ./conf/http.conf /etc/fdfs/
+teddy@thinkpad:~/tools/fastdfs$ sudo cp ./conf/mime.types /etc/fdfs/
+```
+
+修改nginx的配置文件/usr/local/nginx/conf/nginx.conf
+
+增加一个server部分。原来的80还保留。
+
+```
+server {
+    listen       8888;
+    server_name  localhost;
+    location ~/group[0-9]/ {
+        ngx_fastdfs_module;
+    }
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+    root   html;
+    }
+}
+```
+
+
+
+启动ngxin
+
+```
+sudo /usr/local/nginx/sbin/nginx 
+```
+
+测试一下nginx，可以正常访问80端口。
+
+
+
+
+
+但是python依赖安装的时候，有些问题。
+
+暂时难以解决。
+
+所以还是只看代码，不尝试运行了。
+
+
+
 
 
 参考资料

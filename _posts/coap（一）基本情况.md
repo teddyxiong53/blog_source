@@ -18,7 +18,7 @@ coap协议的底层的udp协议。
 
 
 
-使用请求/相应的交互模型。
+使用请求/响应的交互模型。
 
 用于机器与机器的通信。
 
@@ -52,3 +52,10 @@ coap client通过get方法从server得到温度。
 
 uri为：coap://www.xxx.com/temp
 
+
+
+参考资料
+
+1、MQTT和CoAP协议比较
+
+https://blog.csdn.net/aa1215018028/article/details/82460597

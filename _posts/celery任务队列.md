@@ -91,6 +91,37 @@ Celery的[架构](http://lib.csdn.net/base/architecture)由三部分组成，***
  sudo apt-get install rabbitmq-server
 ```
 
+rabbitmq的具体设置，参考本目录下的《rabbitmq（1）》。
+
+安装celery
+
+```
+ python3 -m pip install celery
+```
+
+导入了celery，然后创建了celery 实例 app，实例化的过程中指定了任务名`tasks`（和文件名一致），传入了broker和backend。然后创建了一个任务函数`add`。
+
+tasks.py
+
+```
+from celery import Celery
+
+broker = 'redis://127.0.0.1:6379/5'
+backend = 'redis://127.0.0.1:6379/6'
+
+app = Celery('tasks', broker=broker, backend=backend)
+
+@app.task
+def add(x,y):
+    return x+y
+```
+
+
+
+```
+celery -A tasks worker --loglevel=info
+```
+
 
 
 参考资料

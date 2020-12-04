@@ -148,6 +148,20 @@ ufw disable
 
 
 
+# OpenWrt搭建frp
+
+我现在刷的OpenWrt上默认带了frp。而我做微信开发，又有frp的需求。
+
+看看怎么把这个环境弄好弄稳定，一次搞定，后面不要再折腾。
+
+没有公网ip，没办法做到。
+
+frps应该搭建在有公网ip的机器上。一般是一台vps上。
+
+
+
+
+
 参考资料
 
 1、使用 FRP 反向代理实现 Windows 远程连接
@@ -165,3 +179,7 @@ https://blog.csdn.net/cao0507/article/details/82758288
 4、
 
 https://blog.csdn.net/ocaihong123/article/details/80522220
+
+5、IT男的VPS系列教程 篇一：内网穿透（Frp）-拯救没有公网IP的你
+
+https://post.smzdm.com/p/566063/

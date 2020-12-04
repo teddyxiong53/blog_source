@@ -85,6 +85,56 @@ https://blog.csdn.net/wpb74521wrf/article/details/81269340
 
 
 
+自强学堂django教程，非常好
+
+https://code.ziqiangxuetang.com/django/django-tutorial.html
+
+bvdn：bootstrap vue  django nginx搭建网站
+
+https://www.jianshu.com/nb/20206270
+
+
+
+django博客。有3.4k个star。比较热门。更新也比较快。
+
+这个比较好。可以跑起来。运行效果很好。其实做实用的博客系统都是可以的。
+
+https://github.com/liangliangyy/DjangoBlog
+
+cms系统。8K个star。
+
+https://github.com/django-cms/django-cms
+
+一个电商系统
+
+https://github.com/django-oscar/django-oscar
+
+
+
+django做的ssr面板，这个就跟觅云的很像了。值得研究一下。
+
+但是我本地没有跑起来。代码看起来也不典型。
+
+不过对docker的使用值得学习。
+
+https://github.com/Ehco1996/django-sspanel
+
+一个堡垒机。
+
+https://github.com/jumpserver/jumpserver
+
+
+
+django官网也是django做的，也值得学习一下。
+
+https://github.com/django/djangoproject.com
+
+
+
+https://djangosnippets.org/
+
+
+
 参考资料
 
 https://github.com/wsvincent/awesome-django#projects
