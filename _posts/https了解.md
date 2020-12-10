@@ -122,7 +122,7 @@ https://letsencrypt.org/
 
 
 
-#自签名证书的生成和安装
+# 自签名证书的生成和安装
 
 有时候，我们在内部系统传输数据要用ssl协议，但是我们又不想花钱去申请CA。
 
@@ -133,6 +133,18 @@ https://letsencrypt.org/
 
 
 
+
+# 申请免费证书
+
+certbot就是一个命令行工具，用来帮我们从let's encrypt这个网站申请免费的https证书。
+
+```
+certbot-auto certonly --manual \
+-d *.only4u.tech \
+-d only4u.tech --agree-tos \
+--manual-public-ip-logging-ok --preferred-challenges \
+dns-01 --server https://acme-v02.api.letsencrypt.org/directory
+```
 
 
 

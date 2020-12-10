@@ -422,6 +422,318 @@ explorer.exe "https://gitee.com/teddyxiong53/playopenwrt/pages"
 
 
 
+# valine评论系统分析
+
+这个评论系统是怎么做的？数据我怎样进行保存呢？
+
+leancloud如果服务不能用了，我该怎么办？
+
+数据可以导出。
+
+代码在这里：
+
+https://github.com/xCss/Valine
+
+是基于nodejs写的。
+
+所以还是需要把hexo的代码框架看明白。
+
+了解一下主题是怎么写的。
+
+Valine 是一款样式精美，部署简单的评论系统， 第一次接触便被它精美的样式，无服务端的特性给吸引了。
+
+它最大的特色是基于 LeanCloud 直接在前端进行数据库操作而无需服务端，极大的缩减了部署流程，**仅需要在静态页引入 Valine SDK 即可。**
+
+
+
+以下是 Valine 官网提供的快速部署脚本，其中 `appId` 和 `appKey` 是你在 LeanCloud 上创建应用后对应的应用密钥。也正是基于这对密钥，Valine 在内部调用了 LeanCloud SDK 进行数据的获取，最终将数据渲染在 `#vcomments` 这个 DOM 上。这便是 Valine 的大概原理。
+
+```
+<head>
+  ..
+  <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+  ...
+</head>
+<body>
+  ...
+  <div id="vcomments"></div>
+  <script>
+    new Valine({
+      el: '#vcomments',
+      appId: 'Your appId',
+      appKey: 'Your appKey'
+    })
+  </script>
+</body>
+```
+
+# 部署到云服务器
+
+看了一下基本原理，是基于git的。
+
+我先用宝塔面板安装一下基本环境。
+
+网站现在等待备案。
+
+先把目录上传再说。
+
+原理是这样：
+
+![img](../images/random_name/701869-197dfe72f7db5163..png)
+
+git默认安装好了。
+
+添加git用户：
+
+```
+adduser git
+```
+
+会提示输入密码等信息。
+
+然后把git用户添加到sudoer里。
+
+```
+sudo visudo
+```
+
+在最后添加一行：
+
+```
+git     ALL=(ALL)       ALL
+```
+
+然后修改/etc/passwd文件
+
+```
+把git用户对应的那一行的/bin/bash改成/usr/bin/git-shell
+```
+
+这样git就不能通过bash进行的登陆。是为了安全。
+
+（这一步可以不做，我做了反而是无法登陆的，还是保持bash吧）。
+
+然后git服务器开启rsa认证。
+
+修改/etc/ssh/sshd_config文件。
+
+保证下面3个被设置。
+
+```
+RSAAuthentication yes
+PubkeyAuthentication yes
+AuthorizedKeysFile  .ssh/authorized_keys
+```
+
+![image-20201207103243209](../images/random_name/image-20201207103243209.png)
+
+然后切换到git用户。
+
+执行下面的操作。
+
+```
+su git
+mkdir ~/.ssh
+# 在windows本地电脑，把~/.ssh/id_rsa.pub的内容拷贝出来。
+# 然后粘贴到服务器上的~/.ssh/authorized_keys里面。（这个文件默认没有）
+chmod 600 ~/.ssh/authorized_keys
+chmod 700 ~/.ssh
+```
+
+但是还是不行。
+
+我还是得输入密码。
+
+
+
+也就说明权限异常
+
+1.查看文件权限
+
+```
+[boss@10-110-155-26 .ssh]$ ll -h
+-rw-r--r-- 1 boss boss 1.6K Feb  1 15:28 authorized_keys
+```
+
+由于安全原因，authorized_keys权限不能被其它用户所读取，而该文件因为为手动建立，所以权限为644，`chmod 600`将其权限变更
+
+将authorized_keys改为600权限后，然后发现ssh登录的时候，依然显示的目录权限异常
+
+2.查看文件目录权限
+
+```
+[boss@10-110-155-26 ~]$ ll -d .ssh/
+drwxr-xr-x 2 boss boss 99 Feb  1 16:38 .ssh/
+```
+
+将目录权限改为700，再次登陆，发现ssh ok。
+
+
+
+因为ssh安全的原因，所以不管是文件，还是目录，很多权限设定为都不能被group和other用户所读取，当权限不满足时，ssh认证会失败，即使ssh-key完全正确
+
+
+
+然后在git的home目录下，创建www.only4u.tech.git仓库。
+
+以git的身份。
+
+```
+git init --bare www.only4u.tech.git
+```
+
+```
+git@VM-0-17-ubuntu:~$ git init --bare www.only4u.tech.git
+Initialized empty Git repository in /home/git/www.only4u.tech.git/
+git@VM-0-17-ubuntu:~$ ls
+www.only4u.tech.git
+```
+
+然后进入仓库，在hooks目录下，新建一个post-receive脚本。
+
+```
+#!/bin/bash
+git --work-tree=/www/wwwroot/www.only4u.tech --git-dir=/home/git/www.only4u.tech.git checkout -f
+```
+
+给post-receive脚本加上可执行权限。
+
+```
+chmod 777 post-receive
+```
+
+服务端准备好了。
+
+然后是修改hexo的部署目标。
+
+```
+deploy:
+  type: git
+  repo: git@only4u.tech:/home/git/www.only4u.tech.git
+  branch: master
+  message: blog update
+```
+
+注意服务端把/www/wwwroot下面增加可写权限。
+
+现在可以成功了。
+
+```
+root@VM-0-17-ubuntu:/www/wwwroot/www.only4u.tech# ls
+2020  404.html  about  archives  categories  css  home  images  index.html  js  lib  search.xml  tags
+```
+
+我后续改了博客，只需要hexo g在hexo d就可以了。
+
+没有备案，只是域名解析不帮你做而已。你直接用ip地址访问是可以看到的。
+
+当前js文件什么的，都解析不到，导致格式都没有。
+
+我当前的url配置不对。
+
+改成这样：
+
+```
+url: http://www.only4u.tech
+root: /
+```
+
+重新部署就好了。
+
+现在环境搭建完成了。
+
+接下来就是认真写内容了。
+
+
+
+# 主题优化
+
+看了一下next主题的配置细节。
+
+可以把搜索打开，就用hexo自带的搜索，效果就非常好了。
+
+LeanCloud还可以支持阅读次数这些的统计。
+
+也加上。
+
+但是现在不行。
+
+阅读次数的可以了，关键就是LeanCloud里要创建一个class。
+
+阅读时长怎么做？
+
+是需要安装这个插件。
+
+https://github.com/willin/hexo-wordcount
+
+```
+npm i --save hexo-wordcount
+```
+
+然后在next主题配置文件里搜索wordcount，设置为enable为true就好了。
+
+# seo
+
+首先是要添加站点地图。
+
+需要安装这2个插件。
+
+```
+npm install hexo-generator-sitemap --save
+npm install hexo-generator-baidu-sitemap --save
+```
+
+然后在站点的config.yml文件里，添加sitemap。
+
+```
+sitemap:
+  path: sitemap.xml
+baidusitemap:
+  path: baidusitemap.xml
+```
+
+执行hexo g，就会生成这2个xml文件。
+
+然后在sources目录下新建robots.txt。
+
+写入下面的内容：
+
+```
+User-agent: *
+Allow: /
+Allow: /archives/
+Allow: /categories/
+Allow: /tags/
+Allow: /resources/
+Disallow: /vendors/
+Disallow: /js/
+Disallow: /css/
+Disallow: /fonts/
+Disallow: /vendors/
+Disallow: /fancybox/
+
+Sitemap: http://only4u.tech/sitemap.xml
+Sitemap: http://only4u.tech/baidusitemap.xml
+```
+
+最后的网址要改成自己的。
+
+然后是需要验证网站的是不是属于你。
+
+我的域名还没有备案通过。先暂停。
+
+
+
+# 建多个网站
+
+https://blog.csdn.net/weixin_44567104/article/details/102485265
+
+先放着，后面会用得上的。
+
+
+
+
+
 参考资料
 
 1、Hexo（NexT 主题）评论系统哪个好？
@@ -459,3 +771,27 @@ https://www.jianshu.com/p/3a05351a37dc
 9、
 
 https://www.joewsearch.com/2019/11/13/next-theme-set-tags/
+
+10、next主题的模板引擎swig语法介绍
+
+https://www.jianshu.com/p/c5d333e6353c
+
+11、基于 Serverless 的 Valine 可能并没有那么香
+
+https://www.mdeditor.tw/pl/poZY
+
+12、Hexo部署在阿里云服务器上
+
+https://www.jianshu.com/p/e1ccd49b4e5d
+
+13、Hexo Next主题 使用LeanCloud统计文章阅读次数、添加热度排行页面
+
+https://blog.qust.cc/archives/48665.html
+
+14、Hexo博客Next主题SEO优化方法
+
+https://hoxis.github.io/Hexo+Next%20SEO%E4%BC%98%E5%8C%96.html
+
+15、
+
+https://blog.csdn.net/weixin_44567104/article/details/102485265

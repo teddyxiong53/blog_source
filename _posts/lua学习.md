@@ -353,6 +353,230 @@ Lua5.1允许每个函数拥有一个子集的环境来查找全局变量，
 
 而且有免费的社区版本。非常好。
 
+# 点号和冒号的区别
+
+冒号的方式，无论是定义还是使用的时候，都是默认第一个参数是self。不要写出来。
+
+而点号的方式，定义的时候，要明确把self写出来。使用的时候，需要把自身作为第一个参数。
+
+开始只有点号方式，后面发现很麻烦，就新出了冒号方式。
+
+所以，我们尽量使用冒号方式，这样更加简洁，也符合其他语法的一贯做法。
+
+# table
+
+table是一种数据结构。
+
+作用是用来创建不同的数据类型。例如可以创建数组、字典。
+
+table使用的是关联数组。
+
+索引值可以是任意类型，除了nil。
+
+table大小的动态的。
+
+lua用table来做了这些事情：
+
+实现模块。实现package。实现object。
+
+
+
+## table的构造
+
+最简单的构造函数是{}，表示创建一个空表。
+
+可以用来初始化数组。
+
+```
+--初始化
+mytable = {}
+--指定值
+mytable[1] = "lua"
+--移除
+mytable = nil
+```
+
+## 常用操作
+
+```
+--连接
+table.concat(tab,sep,start,end) --只有tab是必须的。后面的可选。
+--插入
+table.insert(tab, [pos,] value) -- pos可选，默认在末尾。
+--移除
+table.remove(table[,pos])
+--排序
+table.sort(table[,comp]) --可以指定排序函数
+```
+
+例子
+
+```
+fruits = {"aa", "bb", "cc"}
+res = table.concat(fruits)
+print(res)
+res = table.concat(fruits, ", ")
+print(res)
+res = table.concat(fruits, ", ", 2, 3)
+print(res)
+```
+
+# metatable
+
+元表。
+
+前面我们讨论的table，都是在一个table内部的操作。
+
+在2个table之间进行操作，却没有提到。
+
+这个需要借助metatable来做。
+
+metatable这个翻译为元表。
+
+借助元表，我们可以定义2个table之间的相加这一类的操作。
+
+当lua试图对2个table进行相加操作时，会：
+
+1、检查table里是否有元素。
+
+2、检查是否有一个叫`__add`的方法。
+
+对于元表，有2个函数：
+
+设置：setmetatable(table, metatable)。
+
+获取：getmetatable(table)。
+
+举例：
+
+```
+mytable = {}
+mymetatable = {}
+setmetatable(mytable, mymetatable)
+```
+
+上面代码也可以简写为一行：
+
+```
+mytable= setmetatable({},{})
+```
+
+## `__index`
+
+当你通过key来访问一个table的时候，如果当前的table里找不到。
+就会去metatable里找。
+__index可以是一个函数。
+也可以是一个table。
+
+table的情况
+
+```
+other = {foo = 3}
+t = setmetatable({}, {__index=other})
+print(t.foo) --得到的是3
+```
+
+函数的情况
+
+```
+mytable = setmetatable({key1="value1"}, {
+    __index = function(mytable, key)
+        if key == 'key2' then
+            return "metatable value"
+        else
+            return nil
+        end
+    end
+})
+print(mytable.key1, mytable.key2)
+```
+
+## __newindex
+
+这个和`__index`的区别是，`__newindex`是对table进行更新，`__index`是进行访问。
+
+
+
+# package.seeall
+
+lua里规定。
+
+```
+module("test")
+--module这一句后面，看不到前面的全局变量了。
+```
+
+这样肯定是不方便的。
+
+这样我们连print函数都看不到了。
+
+如果我们想要打印，怎么处理？
+
+这样：
+
+```
+local print = print --这样相当于把全局的print变成了本地的print，后面还是可以看到
+module("test")
+```
+
+还可以这样：
+
+```
+local _G = _G --
+module("test")
+_G.print("这样也可以")
+```
+
+但是上面这两种方式，都有点麻烦。
+
+lua5.1开始，给module加入一个参数，package.seeall。
+
+```
+module("test", package.seeall) --这样后面就可以看到全局变量了。
+```
+
+module 与 package.seeall
+
+https://www.cnblogs.com/lightsong/p/5743188.html
+
+
+
+# 遍历table的方式
+
+lua常用的遍历方式有三种，使用ipairs遍历、使用pairs遍历、使用i=1,#xxx遍历
+
+```
+local util = require("luci.util")
+local sysinfo = util.ubus("system", "info")
+for key, value in pairs(sysinfo) do
+    print(key,value)
+end
+```
+
+需要递归迭代，因为有的里面的value还是table。
+
+需要这样一个条件就好了。
+
+```
+if (type(v) == "table") then
+```
+
+
+
+## 补充：lua 中pairs 和 ipairs区别
+
+常用用法：pairs用于迭代元素，ipairs用于迭代数组
+
+
+
+# tonumber函数
+
+这个是全局的。
+
+在luci里用得很多。
+
+
+
 
 
 参考资料
@@ -364,3 +588,7 @@ https://www.runoob.com/manual/lua53doc/contents.html
 2、`Lua中的函数环境、_G及_ENV`
 
 https://blog.csdn.net/whereismatrix/article/details/79704421
+
+3、Lua点号和冒号区别
+
+https://blog.csdn.net/stormbjm/article/details/38532413
