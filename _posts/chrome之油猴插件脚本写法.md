@@ -7,6 +7,59 @@ tags:
 
 1
 
+# 热门脚本
+
+就看这个网站的脚本就好。比较好。
+
+https://greasyfork.org/zh-CN/scripts
+
+## AC-baidu:重定向优化百度搜狗谷歌必应搜索_favicon_双列
+
+* 去掉百度、搜狗、谷歌搜索结果的重定向，回归为网站的原始网址
+
+- 默认移除百度百家号的内容--应广大群众的需求
+- 百度和谷歌搜索页面可以设置为单列、双列模式
+
+效果是这样：
+
+![image-20201211114753818](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201211114753818.png)
+
+在百度页面的右上角，增加了一个自定义按钮，可以进行设置。
+
+![image-20201211114919680](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201211114919680.png)
+
+## 百度文库破解加强、全网VIP视频破解，免费在线看、抖音去水印下载、知乎使用增强、CSDN使用增强，等多功能脚本
+
+1：百度文库文档免费下载、文档内容自由复制、广告过滤；
+
+2：CSDN阅读加强：CSDN自动展开、去广告、净化剪贴板、免登陆等；
+
+3：知乎使用增强：外链接直接跳出、内容自动展开、短视频下载等；
+
+4：抖音去水印原视频下载，非调用第三方；
+
+5：视频解析，支持大部分视频播放平台[支持优酷 | 腾讯 | 爱奇艺 | 哔哩哔哩等常用视频]；
+
+6：全网音乐直接下载；
+
+7：优惠券查询
+
+## 本地 YouTube 下载器
+
+https://greasyfork.org/zh-CN/scripts/369400-local-youtube-downloader
+
+不需要透过第三方的服务就能下载 YouTube 视频。
+
+此脚本只支援 Violentmonkey & Tampermonkey，请 Greasymonkey 的使用者注意一下。 
+
+### 为什么不用 `youtube-dl`?
+
+事实上 `youtube-dl` 确实比这个脚本可靠很多，因此如果你习惯的话继续使用 `youtube-dl` 是最好的选择。 然而，这个脚本的目的是为了让你能**简单**的一键下载 YouTube 影片，不用打开你的终端机去输入 `youtube-dl`。
+
+
+
+# 编写方法
+
 新建一个脚本，自动就有这个基本框架。
 
 在里面进行修改。

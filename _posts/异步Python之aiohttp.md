@@ -123,10 +123,16 @@ loop.close()
 
 
 
+# 做服务端
 
+所有的aiohttp服务器都围绕aiohttp.web.Application实例来构建。用于注册startup/cleanup信号，以及连接路由等。
 
 参考资料
 
 1、python异步编程之asyncio（百万并发）
 
 https://www.cnblogs.com/shenh/p/9090586.html
+
+2、
+
+https://blog.csdn.net/u014028063/article/details/88016405

@@ -154,7 +154,7 @@ config
 
 
 
-#模糊匹配
+# 模糊匹配
 
 ```
 $in
@@ -165,6 +165,40 @@ $or
 $not
 
 ```
+
+# Ubuntu下安装配置
+
+最简单的方式是下载二进制包，直接放到系统目录下。
+
+```
+wget https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1604-4.2.8.tgz 
+tar -zxvf mongodb-linux-x86_64-ubuntu1604-4.2.8.tgz                             
+mv mongodb-linux-x86_64-ubuntu1604-4.2.8  /usr/local/mongodb4                   
+```
+
+不能直接apt-get，需要添加额外的仓库。但是一般添加不成功。
+
+启动
+
+```
+mongod
+```
+
+报错，默认是已/data/db目录为数据库存放目录的。
+
+```
+exception in initAndListen: NonExistentPath: Data directory /data/db not found
+```
+
+这个目录当前不存在。
+
+创建这个目录，然后用普通用户的身份就可以运行。
+
+```
+
+```
+
+
 
 
 
@@ -185,3 +219,7 @@ http://www.mongoing.com/archives/2797
 4、mongo-查询（2）——比较/$in/$nin/$or/$not
 
 https://www.cnblogs.com/yuechaotian/archive/2013/02/04/2891506.html
+
+5、Ubuntu 18.04下 MongoDB的安装与基本配置
+
+https://juejin.cn/post/6844903779402252301
