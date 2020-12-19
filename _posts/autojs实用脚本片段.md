@@ -7,6 +7,8 @@ tags:
 
 1
 
+# 日志保存位置
+
 配置日志写入的文件。
 
 ```
@@ -22,6 +24,8 @@ console.show()
 ```
 
 这样还是可以很方便地观察总体的进度。比用toast要好。
+
+# 请求截屏权限
 
 ```
 images.requestScreenCapture(false)
@@ -45,6 +49,8 @@ for(var i = 0; i < 10; i++){
     sleep(1000);
 }
 ```
+
+# 抖音快手
 
 模拟看视频，5秒，在此基础上，得到一个-4到4的一个随机数。
 所以，最后就是1到9秒的。
@@ -83,8 +89,76 @@ let textViews = className("android.widget.ImageView").clickable(true).find();
 
 
 
+# 关于点击
+
+点击事件我们是常用的**控件本身的click事件**是不用点击屏幕的，
+
+比如id("btn_back").findOne().click();
+
+然而对于控件没有点击事件的我们只能使用click()事件，
+
+**这个事件是点击屏幕，所以当屏幕有遮挡这个点击事件将会失效，所以控制台console.show()要慎重使用。**
+
+# 没有id等属性值的情况
+
+很多控件没ID、text、desc无法直接查找，所以只能通过className遍历。
+
+这样遍历风险极高，很多比较NB的App同一个UI上的className元素的数量不一致。
+
+# 判断控件是否存在
+
+查找控件存不存在使用exists ()。
+
+一般情况下Autojs生成的代码是：
+
+if (text("刷视频赚").exists()) {}，
+
+不建议这样写，
+
+有很多时候找不到或者是有多个文字一样的内容故：
+
+let earnVideo= className("android.widget.TextView").text("刷视频赚").findOnce();这样写准确率更高。
+
+# 健壮性
+
+无论是find、findonce、findone后都需要判断一下是否是null。避免程序宕机。
+
+# 打包图片资源
+
+要使用网络资源，相对路径会有问题。
+
+
+
+# loop
+
+看有的代码里，有loop()这函数，但是我实际使用，提示这个接口已经过时，而且没有任何作用。
+
+我自己写了一个死循环，这样是不行的。
+
+因为js脚本都是单线程。死循环会导致事件无法响应。
+
+如果要循环，可以起一个线程。
+
+# findOne会阻塞
+
+找不到会阻塞。
+
+如果希望找不到就继续往下，应该使用findOnce函数。
+
+findOne可以带一个时间参数。表示超时时间。
+
+# 脚本最前面的"auto"
+
+您也可以在脚本开头使用`"auto";`表示这个脚本需要无障碍服务，但是不推荐这种做法，因为这个标记必须在脚本的最开头(前面不能有注释或其他语句、空格等)，我们推荐使用`auto()`函数来确保无障碍服务已启用。
+
+
+
 参考资料
 
 1、官网文档
 
 https://hyb1996.github.io/AutoJs-Docs
+
+2、AutoJs4.1.0开发心得
+
+https://www.cnblogs.com/zy0412326/p/12581335.html

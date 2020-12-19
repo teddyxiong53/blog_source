@@ -92,5 +92,9 @@ https://github.com/jaketon121/Online-Money-Making
 
 
 
-除非你可以将 小利益放大 比如 做工作室 比如 多台设备 要不然你不要想有多少收益 这是网赚的真实含义。
+autojs 跟vue结合
+
+https://github.com/yooge/robot
+
+
 
