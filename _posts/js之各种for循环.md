@@ -10,7 +10,7 @@ tags:
 
 js的for循环这些年来在不断变化。有这些for循环的形式。
 
-#基本for
+# 基本for
 
 最原始的方式：
 
@@ -21,7 +21,7 @@ for(var i=0; i<arr.length; i++) {
 }
 ```
 
-#forEach方法
+# forEach方法
 
 ES5加入了forEach方法。这个方法是Array.prototype里的。所以只有数组类型才能用。
 
@@ -34,7 +34,7 @@ arr.forEach(function(value) {
 })
 ```
 
-#for-in
+# for-in
 
 另外，还有for in循环。
 

@@ -5,7 +5,7 @@ tags:
 - 建站
 ---
 
-1
+
 
 已经看到不少的脚本使用了server酱的服务来进行消息推送。
 
@@ -64,6 +64,16 @@ https://sc.ftqq.com/{sckey}.send?text="xxx"&desp="yyy"
 作者的github
 
 https://github.com/easychen
+
+作者靠这个来集聚人气，然后以这个为依托，来买自己的课程。
+
+其实这个模式还是挺不错的。
+
+
+
+这里有个模仿server酱的开源实现。
+
+https://github.com/brucx/mp-push-leancloud
 
 
 

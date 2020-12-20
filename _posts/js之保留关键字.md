@@ -33,7 +33,7 @@ with
 
 把之前没有怎么了解的分析一下。
 
-#异常的4个关键字
+# 异常的4个关键字
 
 ```
 throw try catch finally
@@ -62,7 +62,7 @@ throw try catch finally
 
 
 
-#in
+# in
 
 这个主要是跟for一起做循环。
 

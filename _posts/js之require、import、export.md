@@ -40,7 +40,7 @@ import是es6为js模块化提出的新的语法，import （导入）要与expor
 
 所以在`nodeJs`中如果不引入`babel`或其他方法来编译es5的话，依旧需要老老实实使用`CommonJs规范`。
 
-#require
+# require
 
 require，后面跟的模块名，js后缀可以省略。
 
@@ -102,7 +102,7 @@ mod();
 
 
 
-#模块的初始化
+# 模块的初始化
 
 一个模块里的js代码只在第一次被使用的时候执行一次。并在执行过程中初始化模块的导出对象。
 
@@ -124,7 +124,7 @@ mod();
 
 
 
-#参考资料
+# 参考资料
 
 1、一文让你彻底搞清楚javascript中的require、import与export
 

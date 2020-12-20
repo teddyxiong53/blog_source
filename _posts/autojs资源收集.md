@@ -5,9 +5,9 @@ tags:
 - 自动化
 ---
 
-1
 
-## autojs脚本收集
+
+# autojs脚本收集
 
 官方例子
 
@@ -97,4 +97,16 @@ autojs 跟vue结合
 https://github.com/yooge/robot
 
 
+
+其他方案实现的蚂蚁森林
+
+https://www.ctolib.com/TonyJiangWJ-Ant-Forest.html
+
+
+
+# 视频教程
+
+这个up挺不错的。有不少实战视频。
+
+https://www.bilibili.com/s/video/BV1WV411r7K5
 
