@@ -12,6 +12,27 @@ body-parser是express非常常用的一个中间件。
 
 主要作用是对post的请求body进行解析。
 
+```
+const bodyParser = require('body-parser');
+//对body-parser进行配置
+app.use( bodyParser.urlencoded({extended: true}) )
+//设置完毕之后，会在req对象上面新增一个req.body的一个对象
+```
+
+4.7.2版本的express没有了bodyParser方法,需要另外安装body-parser模块
+
+```
+var express = require('express');
+var bodyParser = require('body-parser');
+var app = express();
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }));
+
+// parse application/json
+app.use(bodyParser.json());
+```
+
 
 
 # text/plain
@@ -137,3 +158,6 @@ server.listen(3000)
 
 https://www.cnblogs.com/chyingp/p/nodejs-learning-express-body-parser.html
 
+2、body-parse的简单使用
+
+https://blog.csdn.net/web_youth/article/details/80053187

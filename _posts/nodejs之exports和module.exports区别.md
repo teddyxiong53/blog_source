@@ -13,6 +13,34 @@ tags:
 3、require()函数返回的是module.exports。
 ```
 
+相当于这样：
+
+```
+module.exports = {
+}
+exports = module.exports
+```
+
+只要我们不改变exports指向新的对象，就不会改变二者的关系。
+
+这样是没有改变的：
+
+```
+exports.func1 = func1
+```
+
+这样就改变了：
+
+```
+exports = function func1() {
+
+}
+```
+
+
+
+
+
 我们经常看到这种写法：
 
 ```

@@ -32,5 +32,9 @@ https://github.com/hokein/electron-sample-apps
 
 
 
+xmind这个软件也是基于electron写的。
+
+
+
 
 

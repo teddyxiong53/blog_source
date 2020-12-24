@@ -80,7 +80,7 @@ Promise.resolve().then(()=> {
 
 
 
-#什么是Promise？
+# 什么是Promise？
 
 一个Promise对象表示一个目前还不可用，**但是在未来的某个时间点可以被解析的值。**
 
@@ -193,7 +193,7 @@ Promise.resolve
 Promise.reject
 Promise.race
 
-总结：所有的promise方法，都是返回了promise对象。
+总结：所有的promise方法，都是返回了promise对象。这样是为了进行链式调用。
 ```
 
 
@@ -201,6 +201,16 @@ Promise.race
 `Promise.resolve()`用于将现有对象转换为`Promise`对象，从而控制异步流程。
 
 而立即`resolve`的`Promise`对象是在本轮“事件循环”（Event loop）的结束时，而不是在下一轮“事件循环”的开始时。
+
+看js代码的时候，我们要时刻意识到，我们写的代码，是在这样一个死循环里运行的。
+
+```
+while(true) {
+	//我们看到的js代码
+}
+```
+
+
 
 下面的代码运行过程值得注意。
 

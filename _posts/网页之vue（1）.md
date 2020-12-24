@@ -30,7 +30,7 @@ vue只关注视图层。
 
 下面的内容，参考https://cn.vuejs.org/v2/guide/#%E5%A3%B0%E6%98%8E%E5%BC%8F%E6%B8%B2%E6%9F%93来写的。
 
-#声明式渲染
+# 声明式渲染
 
 ```
 <html lang="en">

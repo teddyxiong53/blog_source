@@ -722,7 +722,72 @@ Sitemap: http://only4u.tech/baidusitemap.xml
 
 我的域名还没有备案通过。先暂停。
 
+到这里提交你的链接。
 
+https://ziyuan.baidu.com/linksubmit/url
+
+就填入你的域名就可以了。
+
+## 百度
+
+主动推送最为快速的提交方式，是被百度收录最快的推送方式。主动推送可以通过安装插件实现：
+
+```
+npm install hexo-baidu-url-submit --save
+```
+
+修改网站的config.yml。增加下面的配置。
+
+```
+baidu_url_submit:
+  count: 5 ## 提交最新的五个链接
+  host:   ## 百度站长平台中注册的域名
+  token: your_token ## 准入秘钥
+  path: baidu_urls.txt ## 文本文档的地址， 新链接会保存在此文本文档里
+```
+
+token的获取方法：红色涂抹处就是。
+
+![image-20201222175121394](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201222175121394.png)
+
+
+
+最后deploy的时候，除了上传到你的网站外，还要上传给百度。
+
+```
+deploy:
+  - type: git
+    repo: git@only4u.tech:/home/git/www.only4u.tech.git
+    branch: master
+    message: blog update
+  - type: baidu_url_submitter ## 添加这里内容即可
+```
+
+然后hexo d就可以提交到百度了。
+
+## 谷歌
+
+https://search.google.com/search-console/welcome?hl=zh-CN
+
+
+
+# 增加百度统计
+
+http://tongji.baidu.com/sc-web/22248394/home/site/getjs?siteId=16142489
+
+到这里，代码里拿到一个key。
+
+填入到next主题的config.yml里。写在这一行冒号后面。
+
+```
+baidu_analytics:
+```
+
+然后重新生成和上传网页。
+
+点击检查。可以看到正常了。
+
+![image-20201222171006078](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201222171006078.png)
 
 # 建多个网站
 
@@ -803,3 +868,11 @@ https://hoxis.github.io/Hexo+Next%20SEO%E4%BC%98%E5%8C%96.html
 15、
 
 https://blog.csdn.net/weixin_44567104/article/details/102485265
+
+16、hexo的next百度统计
+
+https://www.jianshu.com/p/6eb068a68b17
+
+17、Hexo博客提交百度和Google收录
+
+https://www.jianshu.com/p/f8ec422ebd52

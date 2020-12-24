@@ -112,7 +112,7 @@ var _ = require("lodash")
 
 
 
-##N次循环
+## N次循环
 
 ```
 基础版本
@@ -151,9 +151,9 @@ _.times(5, function() {
 4、filter和reject。
 	过滤。参数是一个匿名函数。
 	这个2个效果是相反的。
-	_.filter([1,2], x => x=1)
+	_.filter([1,2], x => {return x>1})
 	得到的是[1]
-	_.reject([1,2], x => x=1)
+	_.reject([1,2], x => {return x>1})
 	得到的是[2]
 5、map
 	数组遍历。
