@@ -213,7 +213,7 @@ flask run
 	<FromUserName>
 	<CreateTime>
 	<MsgType>
-	<Conten>
+	<Content>
 	<MsgId>
 </xml>
 ```
@@ -380,8 +380,8 @@ import json
 
 # 微信的token令牌
 WECHAT_TOKEN = "xiong"
-WECHAT_APPID = "wx71fc3da373af6067"
-WECHAT_APPSECRET = "6e3327c8f36f9a3234141b2111d460ab"
+WECHAT_APPID = "wx71fc3da373a6067"
+WECHAT_APPSECRET = "6e3327c8f36f9a3234141b21d460ab"
 
 
 app = Flask(__name__)
