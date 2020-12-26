@@ -243,6 +243,34 @@ SYSLOGD_ARGS="-n -O /data/messages -s 20 -S"
 Android中没有syslogd和klogd，但为了兼容使用syslog的程序，在bionic目录下有syslog函数的实现。这里的syslog函数会将打印内容输出到/dev/log，即logcat中；也有版本是输出到/dev/kmsg，也就是最终调用prink作为内核log输出。
 
 
+
+# 长度限制
+
+现在我用syslog来记录收到的mqtt消息，消息比较长，结果内容就只能记录一部分。
+
+这个应该怎么做呢？
+
+我当然是希望可以把消息完整记录下来。
+
+消息最长有1000多字节。
+
+所以我希望syslog可以记录2048字节。
+
+或者有方法可以分段显示。总之消息要完整显示出来，不管有多长。
+
+
+
+# syslog协议
+
+有2个版本的协议。
+
+一个是bsd syslog 协议。这个限制是1024字节。
+
+一个是RFC5424 sylog协议。这个限制是2048字节。
+
+
+
+
 # 参考资料
 
 1、

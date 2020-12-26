@@ -151,9 +151,32 @@ examples目录值得看看。
 
 
 
+# express和connect关系
+
+connect的代码：https://github.com/senchalabs/connect/
+
+实际上只有一个文件。index.js。
+
+里面只有几个函数。
+
+![image-20201226105040739](../images/random_name/image-20201226105040739.png)
+
+```
+var proto = {}
+
+var createServer = function () {}
+
+proto.use = function () {}
+
+proto.handle = function () {}
+
+proto.listen = function () {}
+```
+
 
 
 参考资料
 
-1、
+1、深入理解connect/express
 
+https://segmentfault.com/a/1190000012714389

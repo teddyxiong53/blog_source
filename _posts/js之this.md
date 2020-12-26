@@ -174,6 +174,148 @@ this默认是global。
 
 
 
+# this instanceof 
+
+通过`this instanceof Vue`来判断有没有new这个关键字的使用。
+
+为什么可以这么做呢？
+
+在js里，this是动态绑定的，也叫运行时绑定。
+
+this可以是全局对象，当前对象或者任意对象。
+
+这取决于函数的调用方式。
+
+函数的调用方式有：
+
+1、作为对象方法调用。
+
+2、作为函数调用。
+
+3、作为构造函数调用。
+
+4、使用apply和call调用。
+
+作为对象方法调用是这样
+
+```
+var point = {
+    x:0,
+    y:0,
+    moveTo:function(x, y) {
+        this.x = x
+        this.y = y
+    }
+}
+```
+
+这里的this，就是当前对象，也就是point对象。
+
+作为函数调用
+
+```
+function test(y) {
+    this.x = y
+}
+log(x)//这个就是全局对象window.x
+```
+
+我们看另外一种情况
+
+```
+var point = {
+    x:0,
+    y:0,
+    moveTo: function(x,y) {
+        //内部函数
+        var moveX = function(x) {
+            this.x = x
+        }
+        var moveY  = function(y) {
+            this.y = y
+        }
+        moveX(x)
+        moveY(y)
+    }
+}
+point.moveTo(1,1)
+console.log("point.x:"+point.x)
+console.log("point.y:"+point.y)
+console.log("x:"+x)
+console.log("y:"+y)
+```
+
+得到的结果是：
+
+```
+point.x:0
+point.y:0
+x:1
+y:1
+```
+
+这内部函数的this，就是全局对象了。
+
+这是因为没有明确的调用对象。js就绑定到默认的全局对象了。
+
+为了解决这种问题，我们可以使用箭头函数。
+
+```
+//内部函数
+        var moveX = (x) =>{
+            this.x = x
+        }
+        var moveY  = (y)=> {
+            this.y = y
+        }
+```
+
+箭头函数是默认绑定外层的this的。
+
+也可以用apply。但是箭头函数更好。
+
+
+
+下面看看构造函数调用。
+
+new是运算符，它做了这些事情
+
+1、创建一个空的对象{}
+
+2、设置该对象的构造函数为另外一个对象，`o.__proto__=Point.prototype`
+
+3、将第一步的对象作为this的上下文。
+
+4、如果该对象没有返回对象，则返回this。
+
+
+
+apply和call，就是用来切换函数执行的上下文的。
+
+
+
+`this instanceof Vue`
+
+这句代码，我们可以这样分解
+
+`this.__proto__`和`Vue.prototype`。
+
+如果没有使用new，那么this指向全局对象。
+
+全局对象肯定不是Vue的实例。这个判断返回false。
+
+如果使用了new，我们应用上面new运算符的4个步骤。
+
+```
+o.__proto__ == this.__proto__  == Vue.prototype
+```
+
+
+
+
+
+
+
 
 
 参考资料
@@ -190,3 +332,6 @@ https://www.cnblogs.com/qiaojie/p/5746688.html
 
 https://blog.csdn.net/Mr_28/article/details/78344321
 
+4、从Vue源码学习JavaScript之this instanceof Vue
+
+https://segmentfault.com/a/1190000019017266
