@@ -194,11 +194,51 @@ exception in initAndListen: NonExistentPath: Data directory /data/db not found
 
 创建这个目录，然后用普通用户的身份就可以运行。
 
-```
+## 更好一些的安装方法
+
+到这里，选择你的系统版本，进行下载。
+
+https://www.mongodb.com/try
+
+下载chrome是可以支持下载的，qq浏览器不能正常下载。
+
+得到的deb包。
 
 ```
+sudo dpkg -i  xx.deb
+```
 
+然后这样没有安装到systemctl里。
 
+写这样一个文件。
+
+sudo vim /etc/systemd/system/mongodb.service
+
+```
+[Unit]
+Description=High-performance, schema-free document-oriented database
+After=network.target
+
+[Service]
+User=mongodb
+ExecStart=/usr/bin/mongod --quiet --config /etc/mongod.conf
+
+[Install]
+WantedBy=multi-user.target
+```
+
+然后启动还是失败，退出code是14
+
+执行下面3条命令。再启动就正常了。
+
+```
+sudo chown -R mongodb:mongodb /var/lib/mongodb
+sudo chown mongodb:mongodb /tmp/mongodb-27017.sock
+
+sudo service mongod restart
+```
+
+这样就安装启动成功了。
 
 
 
