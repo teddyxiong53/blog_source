@@ -175,8 +175,287 @@ proto.listen = function () {}
 
 
 
+讨论express，还是先从nodejs最基础的http模块开始。
+
+最简单的http服务器，就2行。
+
+```
+var http = require('http')
+http.createServer(function(req, res) {
+  res.end('hello http')
+}).listen(8080)
+```
+
+实际上，express是一个函数，运行后，可以构造出上面http.createServer所需要的回调函数。
+
+express所做的一切文章都是在这个回调函数上。
+
+在这个函数上，mixin了其他的能力，
+
+例如：req、res处理，模板引擎，静态文件服务，router能力。
+
+![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/v2-df324fff2a6e6ae252bc89b40aa13b1d_720w.jpg)
+
+
+
+app.use是往一个数组里push。
+
+所以顺序是有关系的。
+
+处理的时候，就遍历数组。
+
+通过next来执行下一个，如果没有next，流程就结束。
+
+
+
+# 实现自己的express
+
+写一个MyExpress.js文件
+
+```
+var http = require('http')
+
+function createApplication() {
+    //定义入口函数，初始化
+    var app = function(req, res) {
+
+    }
+    //定义监听方法
+    app.listen = function() {
+        var server = http.createServer(app)
+        server.listen(...arguments)
+    }
+    //返回该函数
+    return app
+}
+module.exports = createApplication
+```
+
+routes相当于一个堆栈。
+
+```
+---------------
+layer，一个route包括：method、path、handler这3个元素
+---------------
+layer
+---------------
+```
+
+我们在上面MyExpress.js的基础上，增加routes。
+
+```
+var http = require('http')
+
+function createApplication() {
+    //定义入口函数，初始化
+    var app = function(req, res) {
+
+    }
+    app.routes = []//定义路由数组
+    var methods = http.METHODS
+    methods.forEach(method=> {
+        method = method.toLowerCase()
+        app[method]= function(path, handler) {
+            let layer = {
+                method,
+                path,
+                handler
+            }
+            app.routes.push(layer)
+        }
+    })
+    //定义监听方法
+    app.listen = function() {
+        var server = http.createServer(app)
+        server.listen(...arguments)
+    }
+    //返回该函数
+    return app
+}
+module.exports = createApplication
+```
+
+现在我们把layer存入到routes里。
+
+接下来，我们需要根据path来查找handler进行处理。
+
+需要在`var app = function(req, res) {`这个大括号里加代码。
+
+```
+    var app = function(req, res) {
+        let reqMethod = req.method.toLocaleLowerCase()
+        let pathName = url.parse(req.url, true).pathname
+        console.log(app.routes)
+        app.routes.forEach(layer=> {
+            let {method, path, handler} = layer
+            if(method === reqMethod && path === pathName) {
+                handler(req, res)
+            }
+        })
+    }
+```
+
+然后，就是中间件。这个是重点。
+
+中间件的定义其实跟路由的差不多。也是存放在routes数组里。
+
+但是，必须放在所有路由layer的前面。（除了错误处理，这个放在路由的后面）
+
+中间件都有一个next方法。这个是中间件的核心。
+
+
+
+最后的代码是这样：
+
+```
+const e = require('express')
+var http = require('http')
+var url = require('url')
+
+function createApplication() {
+    //定义入口函数，初始化
+    var app = function(req, res) {
+        let reqMethod = req.method.toLocaleLowerCase()
+        let pathName = url.parse(req.url, true).pathname
+        let index = 0
+        function next(err) {
+            if(app.routes.length == index) {
+                return res.end(`can not ${reqMethod} ${pathName}`)
+            }
+            let {method, path, handler} = app.routes[index++]
+            if(err) {
+                console.log(handler.length)
+                if(handler.length === 4) {
+                    console.log(1)
+                    handler(err, req, res, next)
+                } else {
+                    next(err)
+                }
+            } else {
+                if(method === 'middle') {
+                    if(path === '/' || pathName===path ||
+                        pathName.startsWith('/')) {
+                        handler(req, res, next)
+                    } else {
+                        next()
+                    }
+                } else {
+                    if(method === reqMethod && path === pathName) {
+                        handler(req, res)
+                    } else {
+                        next()
+                    }
+                }
+            }
+        }
+        console.log(app.routes)
+        app.routes.forEach(layer=> {
+            let {method, path, handler} = layer
+            if(method === reqMethod && path === pathName) {
+                handler(req, res)
+            }
+        })
+        next() //需要调用一次，相当于触发执行。
+    }
+
+    app.routes = []//定义路由数组
+    var methods = http.METHODS
+    methods.forEach(method=> {
+        method = method.toLowerCase()
+        app[method]= function(path, handler) {
+            let layer = {
+                method,
+                path,
+                handler
+            }
+            app.routes.push(layer)
+        }
+    })
+    app.use = function(path, handler) {
+        if(typeof path === 'function') {
+            handler = path
+            path = '/'
+        }
+        let layer = {
+            method: 'middle',
+            handler,
+            path
+        }
+        app.routes.push(layer)
+    }
+    //定义监听方法
+    app.listen = function() {
+        var server = http.createServer(app)
+        server.listen(...arguments)
+    }
+    //返回该函数
+    return app
+}
+module.exports = createApplication
+```
+
+80行左右。
+
+测试代码：
+
+```
+var express = require('./MyExpress')
+var log = console.log
+var app = express()
+app.use(function(req, res, next) {
+  log("mid 1")
+  next()
+})
+app.use(function(req, res, next) {
+  log("mid 2")
+  next()
+})
+app.get('/', function(req, res) {
+  res.end('hello myexpress get /')
+})
+app.use(function(err, req, res, next) {
+  log('mid 3')
+  log("err:"+err)
+})
+app.listen(8080)
+
+```
+
+访问的打印：
+
+```
+[ { method: 'middle', handler: [Function], path: '/' },
+  { method: 'middle', handler: [Function], path: '/' },
+  { method: 'get', path: '/', handler: [Function] },
+  { method: 'middle', handler: [Function], path: '/' } ]
+mid 1
+mid 2
+[ { method: 'middle', handler: [Function], path: '/' },
+  { method: 'middle', handler: [Function], path: '/' },
+  { method: 'get', path: '/', handler: [Function] },
+  { method: 'middle', handler: [Function], path: '/' } ]
+mid 1
+mid 2
+mid 3
+err:[object Object]
+```
+
+之所以有2次的，是因为用浏览器访问，
+
+第一个访问网页，第二次访问icon。icon是访问不到的。所以有错误。
+
+
+
 参考资料
 
 1、深入理解connect/express
 
 https://segmentfault.com/a/1190000012714389
+
+2、NodeJS express框架核心原理全揭秘
+
+https://zhuanlan.zhihu.com/p/56947560
+
+3、
+
+https://segmentfault.com/a/1190000019607502

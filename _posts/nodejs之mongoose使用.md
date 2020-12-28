@@ -324,6 +324,40 @@ personSchema.virtual("fullName").get(function() {
 
 
 
+# 怎么保证只连接一次
+
+它底层已经做了保证，对一个url，执行多次connect操作，实际只有一次连接的效果。
+
+你连续这样调用。连接回调只有一次。
+
+```
+mongoose.connect('mongodb://192.168.1.102/test', { useNewUrlParser: true } )
+mongoose.connect('mongodb://192.168.1.102/test', { useNewUrlParser: true } )
+mongoose.connect('mongodb://192.168.1.102/test', { useNewUrlParser: true } )
+```
+
+# 连接多个mongodb
+
+我们一般使用的mongoose.connect，这种用法，只能连接一个mongodb。
+
+如果要同时连接多个mongodb，则需要使用createConnection这个函数。
+
+# 查找不到，就创建
+
+这个要用findOneAndUpdate这个函数。
+
+```
+let doc =  Character.findOneAndUpdate(filter, update, {
+  new: true
+});
+```
+
+返回的是更新之前的。
+
+new这个选项为true，就是找不到就创建的意思。
+
+
+
 参考资料
 
 1、官网教程
@@ -345,3 +379,11 @@ https://segmentfault.com/a/1190000004873740
 5、
 
 https://mongoosejs.com/docs/guide.html#virtuals
+
+6、Mongoose模块化实践
+
+https://blog.csdn.net/weixin_40629244/article/details/104915736
+
+7、nodejs连接多个mongodb数据库
+
+https://blog.csdn.net/m0_37263637/article/details/78963991

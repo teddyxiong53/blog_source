@@ -35,6 +35,12 @@ app.use(bodyParser.json());
 
 
 
+body-parser不能处理multipart的body。因为这个复杂。
+
+multipart的body，专门有中间件来处理，multer就是。
+
+
+
 # text/plain
 
 client.js
