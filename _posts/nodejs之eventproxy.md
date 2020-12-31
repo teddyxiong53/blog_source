@@ -9,162 +9,260 @@ tags:
 
 1
 
+通过事件实现异步协作是eventproxy的主要亮点。
+
+除此之外，它还是一个基本的事件库。
+
+有这些基本的api
+
+```
+on/addListener：设置事件监听
+emit：触发事件
+once：on的特例，这种事件只发生一次。
+removeListener：移除事件监听。
+removeAllListeners：移除所有事件监听。
+```
+
+为了方便不同的库的使用习惯，给上面这些基本api设置了别名。
+
+例如，对于jquery，把emit设置trigger别名。把on设置bind别名。
+
+# 一个例子
+
+下面的是之前的错误处理。是靠监听触发和监听error事件。
+
+看起来不够简洁优雅。
+
+```
+var eventproxy = require('eventproxy')
+
+function postProcess(error, content) {
+    if(error) {
+        console.log("error happens:", error)
+    } else {
+        console.log(content)
+    }
+}
+function getContent(callback) {
+    var ep = new eventproxy()
+    ep.all('tpl', 'data', function(tpl, data) {
+        callback(null, {
+            template: tpl,
+            data: data
+        })
+    })
+    ep.bind('error', function(err) {
+        ep.unbind()
+        callback(err)
+    })
+    setTimeout(() => {
+        ep.emit('tpl', 'aaa')
+    }, 1000);
+    setTimeout(()=> {
+        var i = Math.random()*100
+        console.log(i)
+        if(parseInt(i)%2 == 0) {
+            ep.emit('error', 'ccc')
+        }
+        ep.emit('data', "bbb")
+    }, 2000)
+
+}
+
+getContent(postProcess)
+```
+
+经过实践总结，得到下面更好的方式。
+
+```
+function getContent(callback) {
+    var ep = new eventproxy()
+    ep.all('tpl', 'data', function(tpl, data) {
+        callback(null, {
+            template: tpl,
+            data: data
+        })
+    })
+    ep.fail(callback)//添加错误处理
+
+    setTimeout(ep.done('tpl'), 1000);
+    setTimeout(ep.done('data'),1000);
+}
+```
+
+不同在于，使用ep.fail来处理出错。
+
+把ep.done直接作为回调。
+
+在done的内部，就已经处理了error的情况，在出错的时候，emit一个error事件。
+
+```
+  EventProxy.prototype.done = function (handler, callback) {
+    var that = this;
+    return function (err, data) {
+      if (err) {
+        // put all arguments to the error handler
+        return that.emit.apply(that, ['error'].concat(SLICE.call(arguments)));
+      }
+
+```
+
+```
+fs.readFile('1.txt', ep.done('content'))
+```
+
+等价于
+
+```
+fs.readFile('1.txt', function(err, content) {
+	if(err) {
+		return ep.emit('error', err)
+	}
+	ep.emit('content', content)
+})
+```
+
+done的内部，已经封装了error-first参数。
+
+
+
 代码在这里。
 
 https://github.com/JacksonTian/eventproxy
 
-自己写测试代码。
+# 自己实现
+
+实现一个最简单的版本。来帮助理解和分析。
+
+myeventproxy.js
 
 ```
-var EventProxy = require("./lib/eventproxy")
-var sleep = require("sleep")
-var counter = 0
-var ep = EventProxy.create('xhl-event', function(data) {
-    sleep.sleep(1)
-    counter += 1
-    console.log(data)
+'use strict'
+
+var SLICE = Array.prototype.slice
+var CONCAT = Array.prototype.concat
+
+var ALL_EVENT = '__all__'
+
+var EventProxy = function() {
+    if(!this instanceof EventProxy) {
+        return new EventProxy()
+    }
+    this._callbacks = {}
+    this._fired = {}
+    console.log('eventproxy created')
+}
+
+EventProxy.prototype.addListener = function(ev, callback) {
+    this._callbacks[ev] = this._callbacks[ev] || []
+    this._callbacks[ev].push(callback)
+    return this
+}
+EventProxy.prototype.on = EventProxy.prototype.addListener
+
+/*
+    因为一个eventname下面，挂的callback，是一个数组，所以需要指定移除某一个callback。
+    如果不指定callback，则把eventname下面所有的callback都移除。
+    如果不指定eventname，那么把所有的callback都移除。
+*/
+EventProxy.prototype.removeListener = function(eventname, callback) {
+    var calls = this._callbacks
+    if(!eventname) {
+        console.log('remove all listeners')
+        this._callbacks = {}
+    } else {
+        if(!callback) {
+            console.log('remove all listeners of ', eventname)
+            callback[eventname] = []
+        } else {
+            var list = calls[eventname]
+            if(list) {
+                var l = list.length
+                for(let i=0; i<l ;i++) {
+                    if(callback == list[i]) {
+                        console.log("remove a listener of ", eventname)
+                        list[i] = null
+                    }
+                }
+            }
+        }
+    }
+    return this
+}
+
+EventProxy.prototype.emit = function(eventname, data) {
+    var both = 2//为什么是2
+    var list, ev, callback, i, l
+    var calls = this._callbacks
+    while(both --) {
+        //如果both不为0，那么就
+        ev = both? eventname: ALL_EVENT
+        console.log('ev:',ev)
+        list = calls[ev]
+        if(list) {
+            for(i=0, l=list.length; i<l; i++) {
+                callback = list[i]
+                if(!callback) {//对应的回调是空的。从数组里清除掉。
+                    list.splice(i,1)
+                    i--
+                    l--
+                } else {
+                    var args = []
+                    var start = both ? 1 : 0
+                    for(var j=start; j<arguments.length; j++) {
+                        args.push(arguments[j])
+                    }
+                    callback.apply(this, args)
+                }
+            }
+        }
+    }
+    return this
+}
+
+module.exports = EventProxy
+```
+
+测试
+
+```
+var EventProxy = require('./myeventproxy')
+
+var proxy = new EventProxy()
+
+proxy.on('aaa', function(x, y,z) {
+  console.log('aaa happen')
+  console.log(x, y, z)
 })
-ep.emit('xhl-event','xhl-data')
-console.log("end")
+
+proxy.emit('aaa', 1,2,3)
+console.log('end')
 ```
 
-输出是这样：
+输出：
 
 ```
-xhl-data
+eventproxy created
+ev: aaa
+aaa happen
+1 2 3
+ev: __all__
 end
 ```
 
-所以这个是同步执行的特点。
+emit的时候，是直接把回调函数自己调用执行了。
+
+on和emit是一起的。
+
+bind和unbind是一起。
 
 
 
-使用bind和trigger
-
-```
-var EventProxy = require("./lib/eventproxy")
-var sleep = require("sleep")
-var counter = 0
-
-var ep = EventProxy.create()
-ep.bind("xhl-event", function(data) {
-    console.log(data)
-    counter += 1
-})
-ep.trigger("xhl-event", "xhl-data1")
-ep.trigger("xhl-event", "xhl-data2")
-console.log("counter=" + counter)
-```
-
-还可以unbind，unbind之后，trigger就没有用了。可以对一个event bind多个处理函数。
-
-还可以removeAllListeners。这个跟unbind效果类似。
-
-```
-ep.removeAllListeners("xhl-event")
-```
-
-headbind。是放到最前面处理。
-
-once。特点是绑定的函数只能被执行一次。本质上是在执行后，内部进行了unbind操作。
-
-immediate。这个是表示绑定的时候，马上触发一次。
-
-assign。这个比较复杂。
-
-after。在触发几次后执行函数。
-
-any。注册多个事件，任意一个发生了就触发函数调用。
-
-not。除了指定的这个事件外，其余事件都会触发。
-
-done。执行回调后，执行指定的函数。
-
-```
-var done_func = function(num) {
-	//
-}
-ep.bind("xhl-event", ep.done(done_func))
-//ep.done(arg) arg还可以是另外一个事件。
-```
-
-fail。就是在on error的时候执行。
 
 
+eventproxy的替代
 
-代码并不多，600行左右。
-
-bind这些函数，本质都是addListener。
-
-```
- EventProxy.prototype.bind = EventProxy.prototype.addListener;
- 
- EventProxy.prototype.unbind = EventProxy.prototype.removeListener;
- 
- EventProxy.prototype.emit = EventProxy.prototype.trigger;
- EventProxy.prototype.fire = EventProxy.prototype.trigger;
-```
-
-
-
-```
-(function() {
-    var count = 0;
-    var result = {};
-    setTimeout(function() {
-        count++;
-        result.a = 1;
-        handle();
-    }, 3000)
-    setTimeout(function() {
-        count++;
-        result.b = 1;
-        handle();
-    }, 2000)
-    setTimeout(function() {
-        count++;
-        result.c = 1;
-        handle();
-    }, 1000)
-    function handle() {
-        if(count == 3) {
-            console.log(result)
-        }
-    }
-})();
-```
-
-这个代码用eventproxy改造是这样：
-
-```
-var eventproxy = require('eventproxy')
-var ep = new eventproxy()
-
-ep.all("event1", "event2", "event3", function(data1, data2, data3) {
-    console.log(data1, data2, data3)
-})
-setTimeout(function() {
-    console.log("emit event1")
-    ep.emit("event1", "111")
-}, 3000)
-setTimeout(function() {
-    console.log("emit event2")
-    ep.emit("event2", "222")
-}, 2000)
-setTimeout(function() {
-    console.log("emit event3")
-    ep.emit("event3", "333")
-}, 1000)
-```
-
-结果是这样：
-
-```
-emit event3
-emit event2
-emit event1
-111 222 333
-```
+应该用await异步来可以替代。
 
 
 

@@ -39,6 +39,30 @@ body-parser不能处理multipart的body。因为这个复杂。
 
 multipart的body，专门有中间件来处理，multer就是。
 
+bodyParser会在req对象里，增加一个body成员。
+
+如果没有body内容，那么body是一个空的对象。
+
+content-type不匹配，有错误的时候，body也是空的对象。
+
+bodyParser.json(options)
+
+options的内容：
+
+```
+inflate
+	默认是true。默认解压。
+limit
+	body的大小。默认100kb。
+reviver
+strict
+	都是传递给json解析器的参数。
+type
+	默认是application/json
+verify
+	函数，格式：verify(req,res, buf, encoding)
+```
+
 
 
 # text/plain

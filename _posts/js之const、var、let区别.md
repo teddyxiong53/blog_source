@@ -32,7 +32,7 @@ let是新增的，既然是新增的，那么就是之前的var有某些问题�
 
 那么到底是什么问题呢？
 
-作用域不一样，var是函数作用域，而bailet是块作用域，
+作用域不一样，var是函数作用域，而let是块作用域，
 
 let不能在定义之前访问该变量，但是var是可以得。也就是说，let必须是先定义，再使用，而var先使用后声明也行，只不过直接使用但是没有却没有定义的时候，其值为undefined，这块要注意，这一块很容易出问题，这也是个人认为的let比var更好的地方，至于为啥会有这种区别呢，实际上var有一个变量提升的过程。
 
@@ -58,9 +58,95 @@ Javascript解析器要遍历这个代码两次。
 
 
 
-除了定义变量的新方式以外，还引入了一种新的作用域：块级作用域。块就是由花括号括起来的所有的内容。所以它可以是if，while或者是for声明中的花括号，也可以是单独的一个花括号甚至是一个函数（对，函数作用域是块状作用域）。let和const是块作用域。
+除了定义变量的新方式以外，还引入了一种新的作用域：块级作用域。
+
+块就是由花括号括起来的所有的内容。
+
+所以它可以是if，while或者是for声明中的花括号，
+
+也可以是单独的一个花括号甚至是一个函数（对，函数作用域是块状作用域）。
+
+let和const是块作用域。
 
 你想在在变量声明之前就使用变量？以后再也别这样做了。
+
+
+
+```
+for(var i = 0;i < 5; i++){
+    setTimeout(() => {
+        console.log(i);
+    }, 1000)
+}
+console.log("global i:",global.i) 
+```
+
+这个的输出是：
+
+```
+global i: undefined
+5
+5
+5
+5
+5
+```
+
+
+
+把上面的代码改一下。
+
+```
+for(var i = 0;i < 5; i++){
+    setTimeout(() => {
+        console.log(i);
+    }, 1000)
+    console.log("immediate i:", i)
+}
+console.log("global i:",global.i)
+```
+
+
+
+```
+immediate i: 0
+immediate i: 1
+immediate i: 2
+immediate i: 3
+immediate i: 4
+global i: undefined
+5
+5
+5
+5
+5
+```
+
+问题的根源是：global.i，导致了i变成了全局变量。
+
+而setTimeout的执行，在i变成全局变量之后。
+
+immediate i 打印则是在i变成全局变量之前。
+
+把上面的var改成let，就可以得到预期的输出了。
+
+```
+immediate i: 0
+immediate i: 1
+immediate i: 2
+immediate i: 3
+immediate i: 4
+global i: undefined
+0
+1
+2
+3
+4
+```
+
+
+
+函数内部的var，会被提升到函数的最前面。这个也会导致一些不符合预期的行为。
 
 
 
@@ -81,3 +167,7 @@ https://zhidao.baidu.com/question/329685205173520085.html
 4、Javascript基础之-var，let和const深入解析（一）
 
 http://www.lht.ren/article/15/
+
+5、麻麻，我的for循环里用var为什么出错了！
+
+https://juejin.cn/post/6844903717594988557

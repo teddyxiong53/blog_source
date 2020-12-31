@@ -358,6 +358,28 @@ new这个选项为true，就是找不到就创建的意思。
 
 
 
+# 实际用法
+
+看cnode的用法。
+
+一个models目录。
+
+```
+├── base_model.js
+├── index.js
+├── message.js
+├── reply.js
+├── topic_collect.js
+├── topic.js
+└── user.js
+```
+
+在app.js里，引入models。这里就是进行连接数据库。
+
+其他的文件也可以引入models。不怕mongoose.connect被多次调用。
+
+
+
 参考资料
 
 1、官网教程

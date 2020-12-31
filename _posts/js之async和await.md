@@ -61,7 +61,7 @@ testAsync().then((v)=> {
 
 await在等什么？
 
-在等一个sync函数完成。
+在等一个async函数完成。
 
 await后面可以跟一个直接量，任意变量都可以。
 
@@ -83,7 +83,7 @@ async function test() {
 test();
 ```
 
-如果await后面的不是一个Promise，那么await表达式的运算结果就是它等到的东西。
+**如果await后面的不是一个Promise，那么await表达式的运算结果就是它等到的东西。**
 
 如果await后面是一个Promise对象。
 
@@ -245,7 +245,7 @@ fs.readFile("1.txt", function(err, data) {
 
 开始读文件，是任务的第一段，读取完成，是任务的第二段。
 
-正是因为被拆成了两段，第一段跟第二段没法直接联系。
+**正是因为被拆成了两段，第一段跟第二段没法直接联系。**
 
 所以nodejs约定了，回调函数的第一个参数是error对象，通过这个来把错误传递过来。
 
@@ -259,9 +259,9 @@ fs.readFile("1.txt", function(err, data) {
 
 Promise就是为了解决回调地狱而出现的。
 
-Promise的问题是大量冗余。
+**Promise的问题是大量冗余。**
 
-用这种方式写的代码，一眼看过去都是then。
+**用这种方式写的代码，一眼看过去都是then。**
 
 
 

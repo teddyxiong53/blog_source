@@ -30,7 +30,7 @@ https://github.com/nswbmw/N-blog
 
 
 
-#七天学会NodeJS
+# 七天学会NodeJS
 
 http://nqdeng.github.io/7-days-nodejs/
 
@@ -38,13 +38,13 @@ http://nqdeng.github.io/7-days-nodejs/
 
 
 
-#nodejs + vue的外卖系统
+# nodejs + vue的外卖系统
 
 https://github.com/bailicangdu/node-elm
 
 
 
-#如何正确的学习Node.js
+# 如何正确的学习Node.js
 
 cnode网站可以多看看。
 
@@ -52,19 +52,37 @@ https://cnodejs.org/topic/5ab3166be7b166bb7b9eccf7
 
 
 
-#cnode网站源码
+# cnode网站源码
 
 https://github.com/cnodejs/nodeclub
 
+掌握express的用法，还是要靠这个。
+
+用的东西也很主流，mongoose、redis。
+
+也提供了api，你可以自己另外用vue来写界面，通过api获取数据进行渲染。
+
+这个值得吃透。
+
+还提供了注册和github这2种方式来进行登陆。
 
 
 
 
 
+# eventproxy
+
+这个代码简单实用。
+
+代码量不大，但是功能实用。
+
+设计思想值得学习。自己写一遍。
 
 
 
-#nodebb
+
+
+# nodebb
 
 https://github.com/NodeBB/NodeBB
 
@@ -135,6 +153,22 @@ ES6标准。
 iotjs
 
 shadownode
+
+
+
+# node-wechat
+
+github的一个project，包括了多个仓库。
+
+用于微信开发，代码不算复杂，但是很实用。值得学习。
+
+
+
+# mozilla的express示例
+
+在web开发上，Mozilla的文档还是比较权威的。严谨性比较好。
+
+https://developer.mozilla.org/zh-CN/docs/Learn/Server-side/Express_Nodejs/routes
 
 
 

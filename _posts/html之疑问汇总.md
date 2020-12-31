@@ -6,7 +6,7 @@ tags:
 
 ---
 
-##div和span关系
+## div和span关系
 
 div是块级元素。
 

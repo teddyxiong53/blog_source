@@ -365,9 +365,9 @@ server listen on 8080
 
 有什么规律？
 
-app.get相当于app.use的get方法版本。
+~~app.get相当于app.use的get方法版本。~~
 
-一般在很简单的时候用。
+~~一般在很简单的时候用。~~
 
 
 
@@ -424,6 +424,48 @@ GET /favicon.ico 404 21.055 ms - 1102
 
 
 
+# 设置engine
+
+设置html引擎
+
+```
+app.engine('html', ejs.__express);
+```
+
+设置视图引擎
+
+```
+app.set('view engine', 'html');
+```
+
+**修改的这些设置做了什么操作？**
+
+**为什么修改了视图引擎还要增加设置html引擎？**
+
+我们先看一下.engine()这个方法。
+
+## **app.engine(ext, callback);**
+
+Express默认使用jade模板。如果你尝试加载 "foo.jade" 文件，Express内部会调用如下操作。
+
+```
+app.engine('jade', require('jade').__express);
+```
+
+如果要使用其他模板引擎，如：将EJS模板映射至".html"文件：
+
+```
+app.engine('html', require('ejs').__express);
+```
+
+这行代码中，实际调用了EJS的.renderFile()方法，ejs.__express是该方法在EJS内部的另一个名字。
+
+## **app.set(name, value);**
+
+在.set()方法的参数中，有一项是'view engine'，表示没有指定文件模板格式时，默认使用的引擎插件。如果这里设置为html文件，设置路由指定文件时，只需写文件名，就会找对应的html文件
+
+
+
 # 参考资料
 
 1、Node.js Express 框架
@@ -433,3 +475,7 @@ http://www.runoob.com/nodejs/nodejs-express-framework.html
 2、
 
 https://blog.csdn.net/wthfeng/article/details/53366169
+
+3、Express使用html模板
+
+https://www.cnblogs.com/-nothing-/p/4943354.html
