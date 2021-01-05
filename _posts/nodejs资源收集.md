@@ -140,9 +140,19 @@ https://medium.mybridge.co/45-amazing-node-js-open-source-for-the-past-year-v-20
 
 
 
-这个系列文档很实用
+# 极客学院Node.js 实战心得
+
+alsatang写的。就是cnode的作者吧。写得挺好。
 
 http://wiki.jikexueyuan.com/project/node-lessons/
+
+# 从零开始nodejs系列文章
+
+这个也非常好。
+
+http://blog.fens.me/series-nodejs/
+
+
 
 需要收集的资料
 

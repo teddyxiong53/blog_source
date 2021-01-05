@@ -407,6 +407,53 @@ wx_sp_uid
 
 
 
+# 豆瓣同城分析
+
+关键就是这里一句：
+
+```
+webot.watch(app, { token: 'XXX', path: '/wechat' });
+```
+
+这个相当于注册了一个router。post到/wechat这个路径上的的消息。
+
+是xml的，然后转成json格式。
+
+挂到req的属性上：
+
+```
+req['webot_info'] = req.body
+```
+
+然后就调用reply来处理
+
+```
+webot.reply(req['webot_info'], function(err,info) {
+	res['webot_info'] = info
+	next()
+})
+```
+
+next就是send
+
+```
+  var send = options.send || function(req, res) {
+    res.json(res[prop]);
+  };
+```
+
+那么关键就是reply函数。
+
+总体是简单的。
+
+就是wait的逻辑需要仔细想想。
+
+wait，一个是加入，一个是取出。
+
+加入是靠wait函数。
+
+取出是在reply函数里。
+
 
 
 参考资料

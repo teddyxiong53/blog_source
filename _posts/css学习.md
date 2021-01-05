@@ -91,8 +91,108 @@ id用井号，class用的是点号。
 
 
 
+# css技巧
+
+less和scss这样的预处理器在工作的时候，需要绕的路比较长。
+
+直接使用css速度会更快。
+
+需要一些css技巧来减少重复规则。
+
+在布局中标准化样式流程。
+
+不仅可以帮助你高效地创建自己的框架，而且可以解决许多常见的问题。
+
+
+
+## 使用css重置
+
+css重置库，例如normalize.css。已经被使用了很多年了。
+
+它们可以为你的网站提供一个比较清晰的标准。
+
+来确保跨浏览器的一致性。
+
+大多数项目不需要这些库的所有规则，可以通过一条简单的规则来应用于所有的元素。
+
+删除所有margin、padding来改变浏览器默认的盒模型。
+
+```css
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0
+}
+```
+
+## 继承盒模型
+
+让盒模型从html继承
+
+```css
+html {
+	box-sizing: border-box;
+}
+*,*:before, *:after {
+    box-sizing: inherit;
+}
+```
+
+## body加入line-height样式
+
+不断的重复声明，会导致效率的降低。
+
+最好是嘴一下项目规划和组合规划。
+
+这样会让css更加流畅。
+
+要实现这个目标，就需要理解级联（cascade）。
+
+要让在通用选择器写的规则，可以被其他地方继承。
+
+行间距line-height 可以作为整个项目的一个属性。
+
+不仅可以减小代码量，而且可以给你的网站的样式一个标准的外观。
+
+```
+body {
+	line-height: 1.5;
+}
+```
+
+注意，上面没有指定单位，它的作用是：
+
+行间距为字体大小的1.5倍。
+
+## 垂直居中任何元素
+
+```
+html, body {
+	height: 100%;
+	margin: 0;
+}
+body {
+	align-items: center;
+	display: flex;
+}
+```
+
+## 使用svg图标
+
+svg适用于所有分辨率。
+
+所有浏览器都支持。
+
+所以可以丢弃png、jpg等。
+
+
+
 # 参考资料
 
 1、
 
 http://www.runoob.com/css/css-intro.html
+
+2、如何提升你的CSS技能，掌握这20个css技巧即可[完整版]
+
+https://www.imooc.com/article/283531

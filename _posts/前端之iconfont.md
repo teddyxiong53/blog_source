@@ -72,6 +72,103 @@ tags:
 
 http://fontstore.baidu.com/static/editor/index.html
 
+
+
+# 使用入门
+
+https://www.iconfont.cn
+
+打开这个网站，使用github账号进行登陆。
+
+在搜索框搜索“美女”。
+
+点击上面的购物车样式的图标，则是表示添加到库。
+
+![image-20210105141227765](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210105141227765.png)
+
+现在可以看到我们添加了3个图标到库了。
+
+![image-20210105141338445](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210105141338445.png)
+
+
+
+![image-20210105141414180](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210105141414180.png)
+
+下载到本地，解压开是这样。
+
+![image-20210105141448074](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210105141448074.png)
+
+打开demo_index.html文件。
+
+![image-20210105141706590](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210105141706590.png)
+
+可以看到，是有3种方式来引用这些图标的。
+
+方法1：直接使用unicode。
+
+优点是兼容性好，就跟文字是等价的，缺点是只能单色。
+
+而且Unicode很不直观，是一串十六进制的数字。
+
+```
+<span class="iconfont">&#x33;</span>
+```
+
+
+
+方法2：使用font class
+
+这个是Unicode的改进，就是要解决Unicode不直观的问题。
+
+```
+<link rel="stylesheet" href="./iconfont.css">
+<span class="iconfont icon-xxx"></span>
+```
+
+![image-20210105142541038](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210105142541038.png)
+
+方法3：使用symbol
+
+这是一种全新的方式，应该说这个才是未来的主流。
+
+也是推荐的用法。
+
+这种用法实际上是做了一个svg的集合。
+
+相比于前面两种方式，有如下特点：
+
+1、支持多色图标。
+
+2、通过一些技巧，支持像字体那样，通过font-size、color来调整样式。
+
+3、兼容性较差
+
+4、浏览器渲染svg的性能一般，还不如png。
+
+使用方法：
+
+```
+引入iconfont.js文件。
+<script src="./iconfont.js"></script>
+加入通用css代码，引入一次就可以了。
+<style>
+.icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}
+</style>
+
+挑选对应的图标，并获取类名。
+<svg class="icon" aria-hidden="true">
+  <use xlink:href="#icon-xxx"></use>
+</svg>
+```
+
+
+
 参考资料
 
 1、css3中，`&#xe66c;`这样的代码为什么会显示成图片？
@@ -81,3 +178,7 @@ https://segmentfault.com/q/1010000008327512
 2、iconfont字体图标的使用方法--超简单!
 
 https://www.cnblogs.com/hjvsdr/p/6639649.html
+
+3、Ionic使用Iconfont-阿里巴巴矢量图标库
+
+https://jingyan.baidu.com/article/14bd256e4bd36bbb6c26126e.html#5827690-tsina-1-80491-fe183374908e783f9dbfe7dcb7ed2bb5

@@ -44,6 +44,12 @@ https://github.com/mrvautin/expressCart
 
 https://github.com/whitsats/myBlog/issues/12
 
+
+
+https://github.com/madhums/node-express-mongoose-demo
+
+
+
 # 基于express框架的其他框架
 
 http://expressjs.com/en/resources/frameworks.html

@@ -131,6 +131,10 @@ r.incr("visit:12306:totals")
 
 
 
+redis的内容，可以跨进程共享。
+
+
+
 参考资料
 
 1、Redis应用场景

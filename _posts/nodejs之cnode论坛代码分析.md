@@ -11,6 +11,8 @@ tags:
 
 https://github.com/cnodejs/nodeclub
 
+# 本地运行
+
 先在本地跑起来。
 
 把config.default.js拷贝为config.js。
@@ -248,6 +250,105 @@ c：放function(req, res, next)函数
 # 消息实现
 
 怎么把@xx的内容，处理成消息？
+
+
+
+# 部署到服务器
+
+打算练习一下vue、微信小程序、uniapp这3个东西。
+
+所以把服务器部署到服务器上。
+
+域名用这个：
+
+cnode.only4u.tech
+
+宝塔新建这个网站。
+
+然后设置反向代理。指向：http://localhost:3000 
+
+可以访问到。
+
+把github登陆配置一下。
+
+配置了，但是登陆会出错。不知道是不是因为服务器无法访问github导致。
+
+把通过github登陆禁用掉。
+
+想要关闭掉debug。
+
+但是有问题。
+
+make build过不了。
+
+所以，暂时先保留debug的。
+
+需要把config.js里的host改成域名。不然激活邮件无法使用。
+
+现在跑起来。功能正常。
+
+放一些数据进去。作为测试数据。
+
+就放3个诗人，李白、杜甫、白居易的。
+
+每个人三首诗，分别放在分享、问答、招聘这3个板块。
+
+都尽量简单的。
+
+```
+李白
+	赠汪伦
+	静夜思
+	望庐山瀑布
+杜甫
+	绝句：两个黄鹂
+	山行：远上寒山石径斜
+	江畔独步寻花：黄四娘家花满蹊
+白居易
+	赋得古原草送别 
+	暮江吟
+	忆江南
+	
+杜甫对李白的3首诗都进行评论和收藏操作。
+管理员teddyxiong53
+对李白的赠汪伦进行加精。对静夜思进行置顶。对望庐山瀑布进行block锁定。
+把李白设置为star。
+```
+
+注册3个账号。
+
+用我自己的邮箱系统。
+
+```
+libai@only4u.tech
+dufu@only4u.tech
+baijuyi@only4u.tech
+```
+
+数据都设置好了。
+
+# vue来做前端
+
+把这个代码取下来。
+
+https://github.com/shinygang/Vue-cnodejs
+
+```
+npm i
+npm run dev
+```
+
+然后访问：http://ip:8020 ，就可以访问的cnode网站的内容。
+
+靠的是这样的代码来访问服务端的。
+
+![image-20210105113018390](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210105113018390.png)
+
+这个iconfont.css是从iconfont.cn网站，挑选图片生成的。具体方法我已经知道了。
+
+所以不要管里面的细节。
+
+![image-20210105145048681](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210105145048681.png)
 
 
 
