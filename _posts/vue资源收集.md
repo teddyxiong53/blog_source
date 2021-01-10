@@ -8,7 +8,7 @@ tags:
 
 
 
-#cheatsheet
+# cheatsheet
 
 https://vuejs-tips.github.io/cheatsheet/
 

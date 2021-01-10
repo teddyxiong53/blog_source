@@ -6,9 +6,241 @@ tags:
 
 ---
 
+--
+
 
 
 什么是vuex？和vue是什么关系？
+
+vuex集中管理和存储所有component的状态。
+
+并且保证状态已一种可预测的方式发生变化。
+
+```
+new Vue({
+  // state
+  data () {
+    return {
+      count: 0
+    }
+  },
+  // view
+  template: `
+    <div>{{ count }}</div>
+  `,
+  // actions
+  methods: {
+    increment () {
+      this.count++
+    }
+  }
+})
+```
+
+上面这个简单的计数器，包含了3个概念：
+
+state：这个是驱动应用的数据源。
+
+view：以声明的方式将state映射到视图。
+
+actions：用户在view上的操作导致的状态变化。
+
+![image-20210108144642101](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210108144642101.png)
+
+上面显示的是单向数据流。
+
+多个component之间进行状态共享的时候，单向数据流的简洁性很容易就被破坏。
+
+例如：
+
+1、多个视图依赖同一个状态。
+
+2、来自不同视图的action需要修改同一个状态。
+
+对于第一种情况，传参的方法，对于多层嵌套的component会非常繁琐，而且对于兄弟component无能为力。
+
+对于第二种情况，我们经常会采用父子组件直接引用或者通过事件来变更 状态的多份拷贝。
+
+上面的处理方式，都非常脆弱，导致代码难以维护。
+
+
+
+因此，我们就很自然的想到，为什么不把component的共享的状态都提取出来。
+
+用一个全局单例的模式进行管理呢？
+
+在这个模式下，组件树就可以看做一个大的视图。
+
+不管在树的哪个位置，任何component都可以set和get状态。
+
+
+
+上面就是vuex背后的设计思想。
+
+![vuex](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/vuex.png)
+
+
+
+vuex使用了单一状态树。
+
+也就一个对象，就包含了整个app的所有状态数据。
+
+每个app仅包含一个store实例。
+
+这种设计，让我们可以直接定位到任意一个特定的状态时刻。
+
+这种设计跟模块化并不冲突。
+
+```vue
+import Vue from 'vue'
+import App from './App'
+import router from './router'
+
+
+import Vuex from 'vuex'
+Vue.use(Vuex)
+const store = new Vuex.Store({
+  state: {
+    count: 0
+  },
+  mutations: {
+    increment: state=>state.count++,
+    decrement: state=>state.count--
+  }
+})
+Vue.config.productionTip = false
+
+/* eslint-disable no-new */
+new Vue({
+  el: '#app',
+  store,
+  computed: {
+    count() {//这里读取vuex里的状态。
+      return store.state.count
+    }
+  },
+  template: `
+  <div id="app">
+  <p>{{ count }}</p>
+  <p>
+    <button @click="increment">+</button>
+    <button @click="decrement">-</button>
+  </p>
+</div>
+  `
+  ,
+  methods: {
+    increment() {
+      store.commit('increment')
+    },
+    decrement() {
+      store.commit('decrement')
+    }
+  }
+})
+
+```
+
+
+
+从vuex里读取状态的最简单的方法就是在computed里返回store里的内容。
+
+在根component里注册store，store会被注入到所有的子component里，这样子component就可以直接用store了。是通过this.$store来进行使用。
+
+
+
+上面我们是通过计算属性里来获取状态的。
+
+如果状态有多种，这样写，就显得比较繁琐。
+
+mapState这个vuex里的辅助函数，就是用来帮我们生成computed代码的。
+
+我们上面是这样写的：
+
+```
+  computed: {
+    count() {//这里读取vuex里的状态。
+      return store.state.count
+    }
+  },
+```
+
+用mapState改造一下
+
+```
+computed: mapState({
+    count: state => state.count
+  }),
+```
+
+其实也没有什么太大的用处。
+
+mapState函数返回的是一个对象。
+
+如果我们要混用mapState跟基本的computed函数。就需要用对象展开符号来把对象进行展开。
+
+```
+computed: {
+	count1() {
+		//这个是基本的computed
+	},
+	...mapState({
+	//把这个对象展开。
+	})
+}
+```
+
+上面这种写法是最实用的。
+
+
+
+有的时候，我们需要从store的state里，抽取出一些状态，例如todolist应用里，我们希望获取到已经完成的事项的数目。
+
+```
+computed: {
+	doneTodosCount() {
+		return this.$store.state.todos.filter(todo=>todo.done).length
+	}
+}
+```
+
+如果有多个component都要用到这个属性，我们要么在多个文件里复制粘贴这个函数代码，要么放入到公共函数里，其他文件进行import。
+
+这两种处理方式都不够好。
+
+有没有更好的方式？
+
+vuex针对这种情况，在store里面，我们可以定义getter，就相当于store里面的计算属性。
+
+getter的返回值会根据它的依赖被缓存起来。
+
+只有依赖发生变化的时候，getter才重新计算。
+
+这样写：
+
+```
+const store = new Vuex.Store({
+  state: {
+    todos: [
+      {id:1, text:'aa', done:true},
+      {id:2, text:'bb', done:false},
+    ]
+  },
+  getters: {
+    doneTodos: state=> {
+      return state.todos.filter(todo=>todo.done)
+    }
+  }
+})
+```
+
+使用的时候，就用`this.$store.getters.doneTodos`
+
+
+
+
+
+
 
 vuex是对复杂应用进行状态管理用的。
 
@@ -17,6 +249,78 @@ vuex是对复杂应用进行状态管理用的。
 每一个vuex应用的核心就是store。
 
 store是一个容器，包含了你的应用里的大部分的state。
+
+```
+import Vuex from 'vuex';
+```
+
+这样得到的Vuex是一个实例。
+
+在应用里，是全局单例的。
+
+**Vuex 通过 `store` 选项，提供了一种机制将状态从根组件“注入”到每一个子组件中**
+
+```
+new Vue({
+    router,
+    store //在根组件里，把store传递进去，这样应用里所有的子组件都可以用。
+}).$mount('#app');
+```
+
+子组件用的时候，是通过this.$store来用。
+
+vuex管理的就是状态。
+
+Actions、Mutations都是辅助实现对状态的管理的。
+
+可以通过this.$store.state来直接获取状态。
+
+也可以通过vuex提供的mapState辅助函数把state映射到computed里去。
+
+
+
+当一个组件需要获取多个状态的时候，
+
+将这些状态都声明为计算属性会有很多重复。
+
+mapState函数可以帮助我们生成计算属性。
+
+具体是这么写的
+
+```
+export default {
+	computed: mapState({
+		//箭头函数可以更加简洁
+		count: state=>state.count,
+		//传递字符串，等同于state=>state.count
+		countAlias: 'count',
+		//如果要使用this，那么就使用常规的函数写法
+		countPlusLocalState(state) {
+			return state.count + this.localCount
+		}
+	})
+}
+```
+
+当映射的计算属性的名称跟state的子节点名称相同的时候，可以更简单。
+
+```
+computed: mapState({
+	'count'//映射this.count为store.state.count
+})
+```
+
+
+
+Getters的本质是对状态进行加工处理。
+
+Getters跟state的关系，就跟vue里面的computed跟data的关系一样。
+
+Getter的返回值会根据它的依赖被缓存起来。只有依赖发生变化的时候才重新计算。
+
+
+
+
 
 vuex跟普通的全局变量的区别在于：
 

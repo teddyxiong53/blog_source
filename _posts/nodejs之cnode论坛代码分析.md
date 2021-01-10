@@ -350,6 +350,170 @@ npm run dev
 
 ![image-20210105145048681](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210105145048681.png)
 
+自己来写一遍。
+
+```
+vue init webpack vue-cnode
+```
+
+生成的build和config目录差不多。
+
+主要就是写src目录下的东西。
+
+
+
+这个是另外一种实现方式，对比一下。
+
+https://github.com/lzxb/vue-cnode
+
+这个使用了vuet来替代vuex做状态管理。但是vuet已经不再维护了。
+
+这种个人项目麻烦就在于，说不维护就不维护了。还是官方的靠谱一点。
+
+这个是一个练习项目。有多种实现。可以看看。
+
+https://github.com/shuiRong/VueCnodeJS
+
+这个是mpvue版本的
+
+https://github.com/jaxQin/mpvue-cnode
+
+微信小程序版本
+
+https://github.com/coolfishstudio/wechat-webapp-cnode
+
+又一个版本，可以学习不同的风格
+
+https://github.com/beilunyang/cnodejs-vue
+
+先把上面这些代码看一下。
+
+
+
+## VueCnodeJS
+
+https://github.com/shuiRong/VueCnodeJS
+
+
+
+~~这个效果不太好。主要是css写得简单了。而且功能也不完整，没有用户登陆的功能。只是简单查看。~~
+
+~~使用了elementui。~~
+
+就是因为简单，所以对我进行学习是很有用的。
+
+我照着这个写了一遍。提取一个简单程序的模板。
+
+这个代码里还有带vuex的版本。看起来不错。
+
+也可以自己写一遍。
+
+还有nuxt.js版本。也值得看看。
+
+### 基础版本
+
+这样来import本地的，使用@符号。跟./有什么不一样？
+
+```
+import tab from '@/utils/tab'
+```
+
+对于时间字符串，使用了moment。
+
+```
+import moment from 'moment'
+moment.locale('zh-cn')
+Vue.prototype.$moment = moment
+```
+
+使用axios来读取数据。
+
+没有使用vuex。
+
+数据直接存到data里。
+
+使用elementui的步骤：
+
+在main.js里，引入：
+
+```
+import './plugins/element.js'
+```
+
+element.js里，是这样的内容：
+
+```
+import {
+  Button,
+  Card,
+    Message,
+  MessageBox,
+} from 'element-ui'
+
+Vue.use(Button)
+Vue.use(Card)
+Vue.prototype.$message = Message
+Vue.prototype.$confirm = MessageBox
+```
+
+只用了3个views界面：Home、Topic、User。
+
+Home就是对应文章列表。
+
+Topic，就是文章详情。
+
+User就是用户信息。
+
+在Home.vue里，对created和destroyed钩子函数进行了实现。
+
+```
+在created里，添加对滚动事件的监听，这样滚动到最后的时候，就会自动读取新的数据。
+window.addEventListener('scroll', this.scrollMethod);
+在destroyed里，移除了这个监听。
+window.removeEventListener('scroll', this.scrollMethod);
+```
+
+Home的构成：
+
+上面的导航栏，是el-tabs。
+
+```
+<el-tabs v-model="tab" @tab-click="tabChanged">
+      <el-tab-pane label="全部" name="all">
+        <Content :list="list" />
+      </el-tab-pane>
+```
+
+使用了Content这个component 。
+
+照着这个写一遍。
+
+尽量不引用外部css。自己写css部分，也尽量，看看默认样式效果怎么样。
+
+### vuex版本
+
+这个界面比较简陋。
+
+没有views目录，直接就在routes里进行组装component。
+
+给component还起了名字。
+
+![image-20210109161241812](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210109161241812.png)
+
+特别的地方就是，引入了vuex。
+
+而且这里，分了多个文件来做。
+
+![image-20210109161341190](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210109161341190.png)
+
+在index.js里
+
+![image-20210109161418896](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210109161418896.png)
+
+## mpvue-cnode
+
+https://github.com/jaxQin/mpvue-cnode
+
 
 
 参考资料

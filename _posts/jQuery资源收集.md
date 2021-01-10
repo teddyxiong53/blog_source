@@ -38,7 +38,7 @@ http://www.cnblogs.com/aaronjs/p/3279314.html
 
 
 
-#《锋利的jQuery》
+# 《锋利的jQuery》
 
 还是要看书才能深入理解。
 

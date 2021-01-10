@@ -190,7 +190,7 @@ export default new Vuex.Store({
 
 
 
-#参考资料
+# 参考资料
 
 1、webpack-dev-server
 

@@ -16,53 +16,39 @@ tags:
 
 也就是说，可以用在前端，也可以用在后端。
 
+
+
+axios是一个基于promise的http库。
+
+特性：
+
+1、拦截Request和response。
+
+2、转换Request数据和response数据。
+
+3、取消请求。
+
+4、自动转换json数据。
+
+
+
+get请求
+
 ```
-<div id="watch-example">
-        <p>
-        ask a yes/no question:
-        <input v-model="question">
-        </p>
-        <p>{{answer}}</p>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>
-    <script>
-        var watchExampleVM = new Vue({
-            el:"#watch-example",
-            data: {
-                question: "",
-                answer: "I cannot give you an answer until you ask a question"
-            },
-            watch: {
-                question: function(newQuestion, oldQuestion) {
-                    this.answer = "waiting until you stopping typing ..."
-                    this.debouncedGetAnswer()
-                }
-            },
-            created() {//_.debounce是lodash里的工具函数。
-                this.debouncedGetAnswer = _.debounce(this.getAnswer, 500)
-            },
-            methods: {
-                getAnswer:function() {
-                    if(this.question.indexOf("?") === -1) {
-                        this.answer = "questions usally contain a question mark"
-                        return
-                    }
-                    this.answer = "thinking ..."
-                    var vm = this
-                    axios.get("https://yesno.wtf/api").then(function(response) {
-                        vm.answer = _.capitalize(response.data.answer)
-                    })
-                    .catch(function(error) {
-                        vm.answer = "error, can not reach the api" + error;
-                    })
-                }
-            },
-        })
-    </script>
+axios.get('https://httpbin.org/get',{
+	//参数2是配置选项
+	a:1,
+	b:2
+})
+.then(function(res) {
+	console.log(res.data)
+})
+.catch(function(err) {
+	console.log(err)
+})
 ```
 
-# class与style绑定
+
 
 
 
@@ -71,3 +57,7 @@ tags:
 1、中文说明
 
 https://www.kancloud.cn/yunye/axios/234845
+
+2、中文文档
+
+http://axios-js.com/zh-cn/docs/index.html
