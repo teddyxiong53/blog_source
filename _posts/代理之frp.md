@@ -160,6 +160,174 @@ frps应该搭建在有公网ip的机器上。一般是一台vps上。
 
 
 
+# 0.18.0和0.34.3
+
+我之前是用0.18.0的，这个版本比较老，当前都还没有aarch64的机器。所以没有编译0.18.0的版本。
+
+所以我在树莓派上就找不到对应的执行文件。
+
+我的树莓派4上，安装的是0.34.3版本。这个也是当前的最新版本。
+
+服务端，使用精简的配置文件，里面就两行，指定端口为7000的。
+
+```
+[common]
+bind_port = 7000
+```
+
+客户端，是这样：
+
+```
+[common]
+server_addr = 服务器公网ip
+server_port = 7000
+
+[ssh]
+type = tcp
+local_ip = 127.0.0.1
+local_port = 22
+remote_port = 6000
+```
+
+然后服务端和客户端都启动，
+
+从另外一台电脑，执行：
+
+```
+ssh xx@公网ip -oPort=6000
+```
+
+xx是本地机器的用户名。
+
+这样就可以从任意位置访问到本地机器的ssh登陆。
+
+
+
+## 使用完整的配置
+
+到目前位置，我使用完整配置的，还没有成功过。
+
+完整配置里的东西
+
+```
+前面的端口定义没有什么。
+
+这个vhost，如果打开，在我的服务器上是跑不起来的。
+#vhost_http_port = 80
+#vhost_https_port = 443
+主要是应对什么场景呢？不管先。我用不上。
+然后是控制面板的端口，7500
+以及控制面板的用户名和密码。
+然后是token配置。
+```
+
+在客户端的full配置里，也有token配置，保持一致就好了。
+
+客户端配置的full版本力量，多了很多常用的应用场景配置。
+
+但是我都用不上。
+
+还是在精简版本的配置文件上，加入自己的需要的配置，这样可控一点，不会引入大量自己不清楚的东西。
+
+## 可行配置
+
+现在服务端
+
+```
+[common]
+bind_port = 7000
+dashboard_port = 7500
+dashboard_user = xx
+dashboard_pwd = xx
+log_file = /home/ubuntu/tools/frp/frps.log
+log_level = info
+
+log_max_days = 3
+
+# disable log colors when log_file is console, default is false
+disable_log_color = false
+
+authentication_method = token
+
+
+authenticate_heartbeats = false
+
+authenticate_new_work_conns = false
+
+token = 123
+
+allow_ports = 5000,6000-6010
+
+```
+
+客户端
+
+```
+[common]
+server_addr = xx
+server_port = 7000
+
+token = XX
+
+user = thinkpad
+
+log_file = /home/teddy/tools/frp/frpc.log
+
+log_level = info
+
+log_max_days = 3
+
+[ssh]
+type = tcp
+local_ip = 127.0.0.1
+local_port = 22
+remote_port = 6000
+
+[pyspider]
+type = tcp
+local_ip = 127.0.0.1
+local_port = 5000
+remote_port = 5000
+```
+
+现在可以访问控制面板（在7500端口），也可以正常看到统计的数据。
+
+![image-20210113103547949](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210113103547949.png)
+
+
+
+现在我的frp就基本正常了。
+
+
+
+# OpenWrt的frp客户端配置
+
+是从luci界面配置的。
+
+配置会被写入到/var/etc/frp/frpc.conf文件里。
+
+就配置本地的80端口到6001就可以了。
+
+之前不行，是因为我勾选了proxy-protocol。应该把这个勾选为停用。
+
+相当于在配置里加了这么一个条目。
+
+![image-20210113104915823](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210113104915823.png)
+
+现在可以正常在公网访问到树莓派的管理界面了。
+
+
+
+# 我的环境
+
+服务器：运行frps。
+
+笔记本：运行pyspider，暴露22和5000的pyspider端口。
+
+树莓派：作为nas和下载机，把webui对外可访问。还需要把ssh也暴露。因为webui的终端有时候刷不出来。
+
+
+
 
 
 参考资料

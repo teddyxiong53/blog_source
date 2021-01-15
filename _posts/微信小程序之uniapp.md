@@ -7,6 +7,8 @@ tags:
 
 1
 
+# 入门
+
 到这里下载app版本的hbuidlerx。
 
 https://www.dcloud.io/hbuilderx.html
@@ -40,6 +42,8 @@ dcloud的appi的用途
 ```
 
 进行快速测试，选择运行到chrome。可以看到效果。
+
+# 特点
 
 DCloud于2012年开始研发小程序技术，优化webview的功能和性能，并加入W3C和HTML5中国产业联盟，推出了HBuilder开发工具，为后续产业化做准备。
 
@@ -154,7 +158,7 @@ pages.json 文件用来对 uni-app 进行全局配置，决定页面文件的路
 app-plus
 配置编译到 App 平台时的特定样式，部分常用配置 H5 平台也支持。
 
-
+# 例子
 
 找一些简单实用的uniapp项目来看看。
 
@@ -354,7 +358,7 @@ xhl -- app vue at App.vue:15
 
 应该是在vue文件里，APP-NVUE 是没有定义的。而在nvue文件里，APP-NVUE是定义了的。
 
-
+# 对比
 
 这一年，小程序在用户规模及商业化方面都取得了极大的成功。微信小程序日活超过3亿，支付宝、百度、字节跳动小程序的月活也纷纷超过3亿。
 
@@ -422,7 +426,7 @@ nvue的限制是：css有限制、动画性能不好。
 
 为提升开发效率，HBuilderX将 `uni-app` 常用代码封装成了以 `u` 开头的代码块，如在 `template` 标签内输入 `ulist` 回车，会自动生成如下代码
 
-
+# 其他例子
 
 现在我并不关注复杂的页面布局，我只需要简单的布局就好了。
 
@@ -530,7 +534,213 @@ https://static-0331bc48-72c7-4332-bd5c-cd490ea195a7.bspapp.com
 
 
 
+# texticon
+
+使用官方的图标。
+
+https://ext.dcloud.net.cn/plugin?id=28
+
+用于展示移动端常见的图标，可自定义颜色、大小。
+
+使用方法：
+
+在script里
+
+```
+import uniIcons from "@/components/uni-icons/uni-icons.vue"
+export default {
+    components: {uniIcons}
+}
+```
+
+在template里
+
+```
+<uni-icons type="contact" size="30"></uni-icons>
+```
+
+有这些图标，我会比较常用。
+
+```
+箭头类
+arrowleft/right/up/down > 这样类型的
+arrowthinleft   -> 这样类型的
+back/forward    这2个是>这种箭头
+反色显示是xx-filled
+cart 购物车
+chat 
+chatboxes
+chatbubble
+close
+cloud-download 下载
+cloud-upload   上传
+email
+heart
+```
+
+图标预览在这里。
+
+https://hellouniapp.dcloud.net.cn/pages/extUI/icons/icons
+
+# 用户登陆
+
+可以用uniapp官方的，也可以自己做。
+
+自己做也不难。就在云端验证一下用户名和密码就好了。
+
+用官方的，还一些额外功能，例如可以推广。
+
+# 写代码的实践
+
+我觉得以hello例子为组件仓库。随时从这里进行参考有哪些组件，组件的基本用法。
+
+
+
+# 基本的scss
+
+默认生成的代码，uni.scss
+
+```
+颜色：
+定义了4种。
+主色。蓝色。
+辅助色。浅绿。
+警告色。橙色。
+错误色。红色。
+
+文字颜色
+基本色。浅黑。333
+反色。白色。fff
+辅助色。灰色。
+placeholder色。808080
+禁用色。c0 c0 c0
+
+背景色
+主色：ff
+灰色：f8
+hover：f1
+mask：白色。透明0.4
+
+边框颜色
+c8c7cc
+
+文字尺寸
+小：24rpx
+base：28
+大：32
+
+图片尺寸：
+小：40
+base：52
+大：80
+
+边框圆角：
+小：4
+base：6
+大：12
+圆：50%
+
+
+```
+
+要用起来，需要在App.vue里，加上
+
+```
+@import './uni.css'
+```
+
+# 引入axios
+
+这个其实是要搞清楚在uniapp里怎样使用npm包。
+
+还是常规用法：
+
+```
+npm init -y
+npm i -s axios
+```
+
+然后你就可以用了。
+
+https://blog.csdn.net/Mrs_chens/article/details/108417977
+
+
+
+# 使用list
+
+这个可以说是很常用的一个组件。应该认真研究。
+
+uni-list不包括下拉刷新和上拉翻页功能。
+
+依赖saas插件，需要手动安装。
+
+内部依赖uni-icons、uni-badge插件。
+
+可以使用插槽完全自定义内容。
+
+我看只有thumb属性，我想使用icon，应该怎么做呢？
+
+需要定制有名插槽来使用自定义的图标。
+
+我的需求，不要改，有选项可以满足。就是showExtraIcon这个。
+
+```
+<uni-list-item  title="全部" showExtraIcon="true"></uni-list-item>
+```
+
+默认是给一个联系人的icon。要修改的话，自己指定extraIcon属性。
+
+![image-20210112171404121](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210112171404121.png)
+
+我就这样写：
+
+template里，
+
+```
+<uni-list-item  title="登陆" :show-extra-icon="true" :extra-icon="iconUser"></uni-list-item>
+```
+
+script里的data
+
+```
+iconUser: {
+					type: 'contact',
+					color: '#000000',
+					size: 20
+				}
+```
+
+这样就可以正常显示图标了。
+
+现在需要点击进行跳转。
+
+先看跳转到登陆界面的。
+
+给uni-list-item设置这些属性
+
+```
+clickable link to="/pages/login/login"
+```
+
+没有作用。
+
+那就写click函数看看。
+
+这样可以。那就用click函数吧。只要有作用就行了。
+
+
+
 参考资料
+
+18 uniapp-个人中心页面开发（定制uni-list-item，浅谈vue的provide和inject)
+
+https://www.cnblogs.com/zhangmingyan/articles/12669987.html
+
+官网
+
+https://ext.dcloud.net.cn/plugin?id=24
+
+# 参考资料
 
 1、官网资料
 

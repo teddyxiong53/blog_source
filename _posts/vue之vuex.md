@@ -8,6 +8,18 @@ tags:
 
 --
 
+# 结论
+
+我的理解：
+
+本质上，vuex就是把对全局变量的修改集中到一个地方。方便进行跟踪对全局变量的修改情况。
+
+state和getters是对变量进行读取，getters里是对state的成员进行组合加工，得到一些更加符合要求的数据。例如state里放的是firstName和lastName，我们可以在getters里提供一个fullName方法，（没有必要在state里再提供一个fullName成员，这样是数据多余）
+
+而mutations和actions，都是对变量来进行修改。直接操作都是在mutations里来进行，mutations里都是简单的操作state的，同步的，不能异步操作 。如果有异步需要，在actions里做，然后actions通过commit再调用mutations。
+
+
+
 
 
 什么是vuex？和vue是什么关系？
@@ -234,7 +246,11 @@ const store = new Vuex.Store({
 })
 ```
 
-使用的时候，就用`this.$store.getters.doneTodos`
+使用的时候，就用`this.$store.getters.doneTodos`，后面不要带括号。
+
+vuex里的函数，我们都不直接调用的。
+
+
 
 
 
@@ -271,7 +287,7 @@ new Vue({
 
 vuex管理的就是状态。
 
-Actions、Mutations都是辅助实现对状态的管理的。
+**Actions、Mutations都是辅助实现对状态的管理的。**
 
 可以通过this.$store.state来直接获取状态。
 
@@ -338,7 +354,7 @@ vuex跟普通的全局变量的区别在于：
 
 这些值都将被挂载 数据和dom的双向绑定事件,
 
-也就是当你改变值的时候可以触发dom的更新.
+**也就是当你改变值的时候可以触发dom的更新.**
 
 虽然state和data有很多相似之处
 
@@ -485,6 +501,10 @@ new Vue({
 
 
 
+
+
+![image-20210111111716113](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210111111716113.png)
+
 # 核心概念
 
 ## state
@@ -556,6 +576,126 @@ Vuex 并不限制你的代码结构。但是，它规定了一些需要遵守的
 这里是购物车的例子。
 
 https://github.com/vuejs/vuex/tree/dev/examples/shopping-cart
+
+
+
+#  API分析
+
+构造函数
+
+```
+接受一个对象作为构造参数
+对象可以包括的成员：
+state：
+	可以是一个对象或者一个函数。
+mutations
+	给store注册mutation，处理函数总是以state作为第一个参数。
+actions
+	给store注册action。处理函数总是以context作为第一个参数。
+	context是一个这样的对象：
+	{
+		state,
+		rootState,
+		commit,
+		dispatch,
+		getters,
+		rootGetters
+	}
+getters
+	在store上注册getter。
+	getter接收state作为参数。
+	
+modules
+	可以包含子模块的。内容会被merge到当前的对象里。
+plugins
+	一个数组。
+	里面是一些应用在store上的方法。
+	插件方法，只有一个参数，就是store。
+	可以监听mutation，用于数据保存，日志等。
+	可以提交mutation，
+	
+strict
+	Boolean类型。
+	如果为true，那么处理mutation之外的对state的修改，都会报错。
+	
+```
+
+Vuex.Store实例属性
+
+```
+只有2个，
+state
+getters
+```
+
+Vuex.Store实例方法
+
+```
+commit
+	触发mutation
+dispatch
+	触发action。
+	action和mutation做的事情类似，一般在内部有异步操作的时候，用action。
+replaceState
+watch
+其他
+```
+
+辅助函数
+
+```
+mapState
+mapGetters
+mapActions
+mapMutations
+
+这4个map函数，一般都是里面放一个字符串数组就好了。
+```
+
+
+
+# 官方例子
+
+https://github.com/vuejs/vuex/blob/dev/examples/
+
+## counter例子
+
+这个足够简单直观，可以观察各个属性的用法。
+
+我在hbuilder里建一个uniapp的例子来测试。工作符合预期。
+
+![image-20210115104637691](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210115104637691.png)
+
+## 购物车例子
+
+cart.js
+
+```
+state
+	items。一个数组，放所有的商品。
+	checkoutStatus。一个对象，订单状态。
+	
+getters
+	2个函数：
+	cartProducts：获取购物车里所有的商品。返回对象数组。
+	cartTotalPrice：获取总的价格。
+	
+actions
+	checkout
+	addProductToCart
+		进行进行commit，commit最后是调用到mutation里的函数。
+mutations
+	pushProductToCart
+	incrementItemQuantity
+	setCartItems
+	setCheckoutStatus
+```
+
+运行，把仓库clone到本地。
+
+## todomvc
+
+
 
 # 参考资料
 

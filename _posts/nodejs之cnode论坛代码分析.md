@@ -516,6 +516,257 @@ https://github.com/jaxQin/mpvue-cnode
 
 
 
+# 写uniapp客户端
+
+界面就跟VudeCnodeJS一样，采用侧滑抽屉。不用下面的tabbar
+
+这样可以保证阅读面积最大，比较适合这种文章类的应用。
+
+这里是抽屉的演示。
+
+https://hellouniapp.dcloud.net.cn/pages/extUI/drawer/drawer
+
+这种风格其实也可以。
+
+![image-20210111140349110](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210111140349110.png)
+
+先做抽屉的。
+
+新建项目cnode-uniapp。
+
+从hello里拷贝common目录的uni.css和util.js到我的工程。
+
+那就还需要static目录下的uni.ttf文件。
+
+components下的uni开头的组件都拷贝过来，避免总是出错再去补充。
+
+现在侧滑抽屉有了。但是是通过按钮点击出来的，应该要让侧滑也可以。
+
+这一步也可以保证在手机上可以运行。
+
+滑动居然官方没有，需要自己判断。
+
+触摸事件是有的，然后判断坐标就好了。
+
+现在要加上一个header。
+
+大概是这样，左边的3杠，可以调出抽屉，中间是cnode的图片，右边可以放收到的消息，使用badge
+
+放一个信封图标就好。
+
+```
+三    cnode     消息
+```
+
+这样的一个导航栏，看看怎么做。
+
+```html
+uni-nav-bar
+```
+
+还是需要至少3个page。
+
+一个是显示所有的文章。
+
+一个是显示文章详情，一个是显示用户详情。
+
+在文章详情页，导航栏的左上角要改成返回键，而且这个页面的滑动也要做为返回。
+
+用uni-nav-bar，有点问题，就是标题长度，会影响左边和右边的布局位置。
+
+就是下面这样。
+
+![image-20210111160348118](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210111160348118.png)
+
+
+
+我对uni-nav-bar进行简单的修改，
+
+可以到这个效果。是我想要的。
+
+![image-20210111161801882](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210111161801882.png)
+
+修改方法，方框内是我修改的。
+
+![image-20210111161845009](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210111161845009.png)
+
+但是，如果标题没有，那么右边的消息图标位置会移动。
+
+这个放到后面再完善。现在不管。
+
+接下来，可以写抽屉的内容。
+
+```
+xxx/请登录（如果登录了，显示头像）
+	登录是跳转到登录界面
+	已经登录，则是跳转到用户详情页。
+全部
+精华
+分享
+问答
+招聘
+```
+
+采用向下滑动，然后读取新数据的方式，这样才符合现代app的风格。
+
+用分页的方式，则显得比较古老。
+
+现在加了登陆功能，需要引入vuex。
+
+参考VueCnodeJS的vuex版本代码来写。
+
+新建一个store目录。一个index.js文件，另外4个js文件：state.js、getters.js、mutations.js、actions.js。
+
+先只把userInfo放到里面。先只放loginname和avatar_url。
+
+统一都叫Topic，不要叫Article，这样跟服务端的名称统一。
+
+
+
+uni-app 如何判断/获取 左滑右滑上滑下滑 等手势事件。
+
+https://ask.dcloud.net.cn/article/38074
+
+uni-app导航栏开发指南
+
+https://ask.dcloud.net.cn/article/34921
+
+NavBar 导航栏
+
+https://ext.dcloud.net.cn/plugin?id=52
+
+
+
+# form-data方式post不行
+
+我在postman里测试post token，form-data方式不行。
+
+x-www-form-urlencoded可以。
+
+![image-20210114114210277](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210114114210277.png)
+
+这篇文章提到了类似的问题。
+
+https://stackoverflow.com/questions/30651484/req-body-not-populating-with-form-data
+
+大概意思是说，
+
+对form使用了错误的enctype。
+
+express默认不支持multipart。
+
+提交表单要这样
+
+```
+form(method='post', action='/signup', enctype='application/x-www-form-urlencoded')
+```
+
+
+
+用fiddler抓包，使用form-data的request是这样
+
+```
+POST http://cnode.only4u.tech/api/v1/accesstoken HTTP/1.1
+User-Agent: PostmanRuntime/7.26.8
+Accept: */*
+Cache-Control: no-cache
+Postman-Token: 63564e9d-b62e-4144-a511-23e7ba85c2f2
+Host: cnode.only4u.tech
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Content-Type: multipart/form-data; boundary=--------------------------429117788169361456270128
+Content-Length: 202
+
+----------------------------429117788169361456270128
+Content-Disposition: form-data; name="accesstoken"
+
+fd2341ab-ef1f-414e-bed4-d739272b03c1
+----------------------------429117788169361456270128--
+```
+
+回复的内容
+
+```
+HTTP/1.1 401 Unauthorized
+Server: nginx
+Date: Thu, 14 Jan 2021 05:21:26 GMT
+Content-Type: application/json; charset=utf-8
+Content-Length: 52
+Connection: close
+X-Powered-By: Express
+X-Frame-Options: SAMEORIGIN
+Vary: X-HTTP-Method-Override, Accept-Encoding
+Access-Control-Allow-Origin: *
+ETag: W/"34-Ipg/b7c0i/CkUKPzHtcmqjN1t34"
+X-Response-Time: 3.577ms
+
+{"success":false,"error_msg":"错误的accessToken"}
+```
+
+看看x-www-url-encoded的方式
+
+request
+
+```
+POST http://cnode.only4u.tech/api/v1/accesstoken HTTP/1.1
+User-Agent: PostmanRuntime/7.26.8
+Accept: */*
+Cache-Control: no-cache
+Postman-Token: 6322b0e0-d830-4f85-b83d-14af6fe8afe0
+Host: cnode.only4u.tech
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 48
+
+accesstoken=fd2341ab-ef1f-414e-bed4-d739272b03c1
+```
+
+回复
+
+```
+HTTP/1.1 200 OK
+Server: nginx
+Date: Thu, 14 Jan 2021 05:26:04 GMT
+Content-Type: application/json; charset=utf-8
+Content-Length: 153
+Connection: close
+X-Powered-By: Express
+X-Frame-Options: SAMEORIGIN
+Vary: X-HTTP-Method-Override, Accept-Encoding
+Access-Control-Allow-Origin: *
+ETag: W/"99-cbhneqF9+I6CDLY7iIg1u52t5lk"
+X-Response-Time: 3.060ms
+Expires: Thu, 14 Jan 2021 17:26:04 GMT
+Cache-Control: max-age=43200
+Cache-Control: no-cache
+
+{"success":true,"loginname":"teddyxiong53","avatar_url":"//gravatar.com/avatar/efa2a90d4561bb6a540a46dc8ebb6dee?size=48","id":"5ff2e6d6bd93ea18b7e0fe3c"}
+```
+
+
+
+那么现在问题就变成，express解析form-data的问题。
+
+目前服务端是不打算动的，不解析这种就不解析。
+
+还是想办法改客户端的请求方式。
+
+仔细看了一下，发现是我写错了变量名导致的。
+
+```
+export const login = (data) => {
+	console.log("data:", data)
+	return request({
+		url: "/accesstoken",
+		method: 'post',
+		params: data //之前把params写错了param，结果当然是没有传递数据过去。
+	})
+}
+```
+
+
+
 参考资料
 
 1、Express框架-母版ejs-mate

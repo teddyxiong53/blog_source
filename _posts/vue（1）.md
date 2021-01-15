@@ -1,5 +1,5 @@
 ---
-title: 网页之vue（1）
+title: vue（1）
 date: 2018-12-27 17:14:25
 tags:
 	- 网页
@@ -517,6 +517,29 @@ props down, events up
 
 父组件通过 props 向下传递数据给子组件；子组件通过 events 给父组件发送消息。
 
+## 什么是prop
+
+prop就是出现在标签里的东西。
+
+```
+<mycomp prop1="xx"></mycomp>
+```
+
+"xx"，引号里面是js表达式。
+
+一个实际一点的例子
+
+```
+<blog-post v-bind:is-published="post.isPublished">
+</blog-post>
+```
+
+prop只能从父组件传递给子组件。
+
+这样可以防止子组件意外改变父组件的内容。
+
+父组件更新prop后，子组件里会自动刷新。
+
 
 
 ## props和data区别
@@ -554,6 +577,111 @@ router-link可以渲染为任何元素，
 还有一个原因可能是因为a标签正常是链接的跳转的作用，
 
 点击a时可能会重载页面，使用router-link，此标签会被vue所监听，跳转链接时就不会刷新页面了。
+
+# provide和inject
+
+provider/inject：简单的来说就是在父组件中通过provider来提供变量，然后在子组件中通过inject来注入变量
+
+在vue的组件树里，任何一个组件，都可以通过`this.$root`来访问根节点。
+
+也可以通过`this.$parent`来访问自己的父节点。
+
+这是一种不太推荐的方式，用来在组件之间进行通信。（正常通信是用props来做）
+
+因为可能在多层嵌套后，出现这样的代码：
+
+```
+this.$parent.$parent.$parent.xx
+```
+
+这样代码无法维护。
+
+为了解决这种问题，vue提供了provide和inject这2个选项，用来实现依赖注入。
+
+provide是一个函数，写在父组件里，用来给子组件提供数据或者方法。
+
+```
+provide: function() {
+	return {
+		getData: this.getData
+	}
+}
+```
+
+在任意的后代组件里，可以使用inject选项来指定接收。
+
+```
+inject: ['getData']
+```
+
+在uniapp的uni-list和uni-list-item里，就使用了这个。
+
+父组件uni-list，把自己暴露给子组件。
+
+![image-20210112173801752](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210112173801752.png)
+
+子组件，接收
+
+![image-20210112173833624](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210112173833624.png)
+
+https://www.cnblogs.com/zhangmingyan/articles/12669987.html
+
+官网介绍provide
+
+https://cn.vuejs.org/v2/guide/components-edge-cases.html
+
+# ref
+
+ref是给你提供一个从js代码里操作一个dom控件的把手。
+
+
+
+# slot
+
+是在需要向组件传递内容的时候，在组件里放一个slot。这样传递尽量的内容，就会插入到slot的位置上。
+
+# 大小写
+
+组件名和prop名字，会有自动的大小写转换。
+
+事件名不会有这种转换。推荐使用连字符的方式，因为事件名不会作为js变量名。
+
+
+
+# .sync修饰符
+
+虽然不推荐，但是有时候还是有对一个prop进行“双向绑定”。
+
+真正的双向绑定会带来维护问题。
+
+所以这里用触发事件的方式来替代真正的双向绑定。
+
+例如，更新标题。
+
+在子组件里，
+
+```
+this.$emit('update:title', 'new title')
+```
+
+在父组件里
+
+```
+<text-document
+	v-bind:title="doc.title"
+	v-on:update:title="doc.title = $event"
+>
+</text-document>
+```
+
+这样看起来比较啰嗦，提供一种简写方式，就是sync修饰符。
+
+```
+<text-document
+	v-bind.title.sync="doc.title"
+>
+</text-document>
+```
 
 
 

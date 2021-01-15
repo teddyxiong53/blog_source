@@ -182,6 +182,10 @@ server.listen(3000)
 
 
 
+
+
+
+
 参考资料
 
 1、Nodejs 进阶：Express 常用中间件 body-parser 实现解析
@@ -191,3 +195,7 @@ https://www.cnblogs.com/chyingp/p/nodejs-learning-express-body-parser.html
 2、body-parse的简单使用
 
 https://blog.csdn.net/web_youth/article/details/80053187
+
+3、
+
+https://juejin.cn/post/6844903856225140743
