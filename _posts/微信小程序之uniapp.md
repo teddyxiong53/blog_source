@@ -740,6 +740,81 @@ https://www.cnblogs.com/zhangmingyan/articles/12669987.html
 
 https://ext.dcloud.net.cn/plugin?id=24
 
+
+
+# 页面之间传递数据
+
+从页面A跳转到页面B，需要传递一些数据过去。
+
+例如从文章列表页跳转到文章详情页。需要把文章的数据传递到文章详情页。
+
+应该怎么把这些数据传递过去？
+
+## 使用本地存储来传递
+
+一个页面写入：
+
+```
+uni.setStorage({
+	key:'xx',
+	data: {},
+	success() {
+	
+	}
+})
+```
+
+另外一个页面读取
+
+```
+uni.getStorage({
+	key:'xx',
+	success:()=> {
+		this.data= res.data
+	}
+})
+```
+
+## 使用uni.$emit和uni.$on
+
+emit的消息是app级别的，任意组件、page都可以接收。
+
+监听
+
+```
+uni.$on('update', (data)=> {
+	console.log(data.msg)
+})
+```
+
+发送
+
+```
+uni.$emit('update', {
+	msg: '更新'
+})
+```
+
+如果是一次性的事件，使用
+
+```
+uni.$once('update', (data)=> {
+
+})
+```
+
+## 通过vuex
+
+这个是我要用的方式。
+
+
+
+
+
+参考资料
+
+https://www.cnblogs.com/caijinghong/p/13404622.html
+
 # 参考资料
 
 1、官网资料

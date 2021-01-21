@@ -37,3 +37,6 @@ app.use(function (req, res, next) {
 
 https://itbilu.com/nodejs/npm/Ny0k0TKP-.html
 
+2、express中的res.locals和app.locals的使用
+
+https://blog.csdn.net/yunchong_zhao/article/details/107204817

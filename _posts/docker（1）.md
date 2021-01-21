@@ -9,17 +9,15 @@ tags:
 
 这个主要是把docker日常的疑问解答汇总起来。
 
-\1. 正确做法就是两个容器。每个容器只干一件事情
-\2. docker 有 log driver，可以接 rsyslog/logstash
-\3. nginx 用官方镜像，配置文件单独拿出来，同时发送配置文件 + docker-compose.yml 到远程服务器，在 docker-compose 里面用 volume 挂进去
+1. 正确做法就是两个容器。每个容器只干一件事情
+2. docker 有 log driver，可以接 rsyslog/logstash
+3. nginx 用官方镜像，配置文件单独拿出来，同时发送配置文件 + docker-compose.yml 到远程服务器，在 docker-compose 里面用 volume 挂进去
 
-\4. build 的 tag 不要用一样的 pho-fpm:v1，使用 my-project-php:commit_hash 或者 git tag 作为标记，每次不一样
+4. build 的 tag 不要用一样的 pho-fpm:v1，使用 my-project-php:commit_hash 或者 git tag 作为标记，每次不一样
 
 要进行精细管理，不要的容器和镜像都及时删除掉。
 
-```
 
-```
 
 
 

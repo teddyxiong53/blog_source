@@ -621,6 +621,12 @@ xxx/请登录（如果登录了，显示头像）
 
 统一都叫Topic，不要叫Article，这样跟服务端的名称统一。
 
+现在vuex的加进来了。也看懂了。
+
+把文章的内容也都放到vuex里。
+
+
+
 
 
 uni-app 如何判断/获取 左滑右滑上滑下滑 等手势事件。
@@ -634,6 +640,8 @@ https://ask.dcloud.net.cn/article/34921
 NavBar 导航栏
 
 https://ext.dcloud.net.cn/plugin?id=52
+
+
 
 
 
@@ -764,6 +772,232 @@ export const login = (data) => {
 	})
 }
 ```
+
+# 时间友好实现
+
+moment是一个比较常用的库。
+
+```
+  date = moment(date);
+
+  if (friendly) {
+    return date.fromNow();
+  } else {
+    return date.format('YYYY-MM-DD HH:mm');
+  }
+```
+
+# node-uuid
+
+有2个接口，一个是v1()（基于时间戳），一个是v4()（基于随机数）
+
+一般使用v1的。这样可以保证唯一性。
+
+# loader
+
+这个是jacksontian写的node静态资源加载器。
+
+分为两种模式，线上模式和线下模式。
+
+线上模式：输出合并和压缩后的地址。
+
+线下模式：输出原始的文件地址。
+
+好几年没有更新了。代码并不多，就一个文件loader.js。不到200行。
+
+逻辑也很简单，就是相当于宏展开的意思。
+
+主要提供的价值，就是方便在开发模式和生产模式的无缝切换。
+
+当前make build会失败。是因为fs.writeFile的第三个参数是一个回调，没有提供。我给一个空函数就好了。
+
+这执行的命令是：
+
+```
+@./node_modules/loader-builder/bin/builder views .
+```
+
+builder后面2个参数：
+
+参数1：view所在的目录。
+
+参数2：输出目录。
+
+这个打开后，响应速度的确是非常明显的提示。
+
+
+
+## loader-builder
+
+用于Loader的构建器。
+
+构建器用于扫描制定目录的视图文件，
+
+将Loader语法的调用提取出来，生成资源文件的关系映射。
+
+同时还对`.less`、`.styl`、`.coffee`、`.es`格式的文件进行编译，
+
+将其转换为普通的`.js`、`.css`文件。
+
+同时还会将编译好的文件通过`uglify`/`cleancss`进行压缩。
+
+对同一个Loader标签下的js和css文件，还会将其combo成一个文件，并计算出hash。
+
+# 自己简写服务端
+
+发现写ejs容易出错。安装这个工具看看。
+
+```
+npm install -g ejs-lint
+```
+
+使用
+
+```
+ejslint 1.html
+```
+
+可以检测出一部分问题。但是不能检测所有问题。
+
+当前检测不报错，但是运行报错。
+
+先写layout.html。然后把注册功能相关的东西做了。
+
+不断修改重启node app.js，然后我觉得nodemon的确是非常有必要的。
+
+安装nodemon。
+
+```
+npm install -g nodemon
+```
+
+现在就不能实时保存了。实时保存导致nodemon频繁重启程序，没有必要。
+
+手动保存。
+
+修改html的，不能导致nodemon重启。
+
+css有的没有生效，是less文件里的没有生效。
+
+因为我没有安装loader-connect。不报错。但是也没有效果。
+
+也是jacksontian写的。
+
+还是要自己动手来写，不然这些点，只是看代码的话，根本注意不到。
+
+接下来就是写数据库相关的。
+
+注册功能完成。
+
+现在再加上登录功能。
+
+登录就要用到session。把cookie-parser、express-session、connect-redis都用起来吧。
+
+还需要单独安装redis的node包。不然会报错：
+
+```
+ A client must be directly provided to the RedisStore
+```
+
+安装单独的redis node包。
+
+```
+npm i -s redis
+```
+
+还是报错。
+
+那就可能是版本导致的。
+
+现在写法改了。
+
+```
+store: new RedisStore({
+        client: redis.createClient(config.redis_port, config.redis_host)
+    }),
+```
+
+登录功能完成。
+
+接下来实现topic。
+
+先实现写topic的。这样才能插入数据。
+
+
+
+测试碰到的问题就是，需要登录的场景，重启程序后，登录就失效了。
+
+怎么提高这种场景的测试效率？
+
+
+
+现在登录没有起作用。
+
+登录后，auth.userRequired还是通不过。
+
+因为我当前的authUser函数还是留空的。
+
+代码里倒是有这样的mock_user，但是怎么操作呢？
+
+![image-20210120115135185](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210120115135185.png)
+
+需要把测试代码看一下。
+
+测试代码没有必要，很繁琐，还不如直接测试。
+
+其实重启node app.js，cookie都还在的。
+
+之前我有的地方把session单词写错了。所以不符合预期。
+
+现在发布主题可以了。
+
+接下来就在主页把主题读取显示出来。
+
+现在用户信息卡片这里，总是不行。
+
+partial的第二个参数可以这么用？
+
+```
+<%- partial('user/card',{ object: typeof(user) === 'undefined' ? current_user : user, as: 'user' }) %>
+```
+
+原版的ejs-mate是2.3.0的，我的是3.0.0的。
+
+看了一下partial函数，的确有大的改动。
+
+导致上面的写法，无法把current_user当成user传递到card这个模板里。
+
+现在的partial函数，只接收一个参数了。
+
+把ejs-mate降级。降级后的确就可以了。
+
+从这里可以看出，还是完全自己手写，不然这种问题，就不容易碰到。
+
+
+
+现在score是显示undefined的。
+
+可能是没有给默认值导致的。
+
+是的。
+
+
+
+# 测试代码分析
+
+看Makefile里怎么进行测试的。
+
+make test执行的
+
+```
+1、安装需要的包。
+2、如果没有config.js文件，则cp config.default.js config.js
+3、如果没有public/upload目录，创建这个目录。
+4、NODE_ENV=test ./node_modules/mocha/bin/mocha --report spec -r should -r test/env --timeout 10000 $(TESTS)
+$(TESTS)是把test目录下*.test.js文件都搜索出来的。
+```
+
+测试代码也是非常繁琐。
 
 
 

@@ -238,6 +238,18 @@ ffmpeg -i input.mp3 -af volume=-3dB output.mp3
 
 ```
 
+## 生成正弦波信号
+
+```
+ffmpeg -f lavfi -i "sine=frequency=16000:duration=2" 1.wav
+```
+
+但是为什么是44100的采样率呢？
+
+而且得到的波形不是正弦波。
+
+
+
 
 
 # 图片处理

@@ -189,6 +189,14 @@ total control直接控制手机进行直播。
 
 只要让后台可以杀掉autojs。就可以恢复正常。
 
+# taojinbi
+
+https://github.com/JavisPeng/taojinbi
+
+我之前自己也写过类似的。不过功能比较弱。
+
+看看这个怎么实现的。
+
 
 
 参考资料
