@@ -12,7 +12,88 @@ tags:
 
 jquery上手简单，但是要全面掌握并熟练运用也不容易。
 
+# 原理
 
+刚才我们说了，jquery将自己声明的变量全部都用外衣遮盖起来了，
+
+而我们平时使用的Jquery和$，却是真真实实的全局变量，这个是从何而来，谜底就在jquery的某一行代码，一般是在文件的末尾。
+
+```
+window.jQuery = window.$ = jQuery;
+```
+
+jquery最核心的功能，就是选择器。
+
+而选择器简单理解的话，其实就是在DOM文档中，寻找一个DOM对象的工具。
+
+```
+jQuery = function( selector, context ) {
+        return new jQuery.fn.init( selector, context, rootjQuery );
+    }
+```
+
+这里出现了jQuery.fn这样一个东西，它的由来可以在jquery的源码中找到，它其实代表的就是jQuery对象的原型。
+
+```
+jQuery.fn = jQuery.prototype;
+jQuery.fn.init.prototype = jQuery.fn;
+```
+
+这两句话，
+
+第一句把jQuery对象的原型赋给了fn属性，
+
+第二句把jQuery对象的原型又赋给了init对象的原型。
+
+也就是说，init对象和jQuery具有相同的原型，
+
+**因此我们在上面返回的init对象，就与jQuery对象有一样的属性和方法。**
+
+下面是LZ截取的一个jQuery对象的属性和方法截图，方法这里就不提了，
+
+对于属性来说，我们最需要关注的只有一个属性，就是[0]属性，[0]其实就是原生的DOM对象。
+
+![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/10232250-76e5662e08f84b8d8d98f6b61ced7749.jpg)
+
+
+
+很多时候，我们在jQuery和DOM对象之间切换时需要用到[0]这个属性。
+
+从截图也可以看出，jQuery对象其实主要就是把原生的DOM对象存在了[0]的位置，
+
+**并给它加了一系列简便的方法。**
+
+这个索引0的属性我们可以从一小段代码简单的看一下它的由来，
+
+下面是init方法中的一小段对DOMElement对象作为选择器的源码。
+
+```
+    // Handle $(DOMElement)
+    if ( selector.nodeType ) {
+        /*     可以看到，这里将DOM对象赋给了jQuery对象的[0]这个位置  */
+        this.context = this[0] = selector;
+        this.length = 1;
+        return this;
+    }
+```
+
+这一小段代码可以在jquery源码中找到，
+
+它是处理传入的选择参数是一个DOM对象的情况。
+
+可以看到，里面很明显的将jQuery对象索引0的位置以及context属性，都赋予了DOM对象。
+
+代码不仅说明了这一点，也同时说明了，
+
+**我们使用$(DOMElement)可以将一个DOM对象转换为jQuery对象，**
+
+从而通过转换获得jQuery对象的简便方法。
+
+
+
+
+
+# 简单实现
 
 jquery的代码用了很多的技巧，读起来没有那么容易，我们可以先看自己来模拟一下jquery库。
 
@@ -210,3 +291,7 @@ https://segmentfault.com/a/1190000003926465
 2、js菜鸟进阶-jQuery源码分析(1)-基本架构
 
 https://www.cnblogs.com/hrw3c/p/5304849.html
+
+3、jquery原理的简单分析，让你扒开jquery的小外套。
+
+https://www.cnblogs.com/zuoxiaolong/p/jquery1.html

@@ -20,7 +20,9 @@ http://c.biancheng.net/view/3130.html
 
 
 
+这个脚本可以作为学习dockerfile的材料。
 
+https://github.com/EvineDeng/jd-base/blob/v3/docker/gitee/Dockerfile
 
 
 

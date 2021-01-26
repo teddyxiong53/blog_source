@@ -263,7 +263,7 @@ Supported Rates:
 
 
 
-##把声音放大，缩小
+## 把声音放大，缩小
 
 操作之前，可以ctrl+A把音频进行选中，不选中是不能进行下面的操作的。
 
@@ -287,7 +287,7 @@ Supported Rates:
 
 然后我们可以把其中一个保存成文件就好了。
 
-##降噪
+## 降噪
 
 我们先随便录一段，可以感觉明显的噪音。现在看看怎么降噪。
 
@@ -296,6 +296,8 @@ Supported Rates:
 的确效果很明显。
 
 
+
+# 播放的时候同时录音
 
 
 
@@ -314,3 +316,7 @@ https://jingyan.baidu.com/album/25648fc18f24b29191fd0017.html?picindex=1
 3、Audacity 音频编辑器教程
 
 http://teliute.org/linux/Teauda/index.html
+
+4、如何使用audacity播放伴奏的同时录音？
+
+https://jingyan.baidu.com/article/19192ad8582d43a43f57070a.html

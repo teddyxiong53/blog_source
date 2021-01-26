@@ -185,7 +185,151 @@ svg适用于所有分辨率。
 
 所以可以丢弃png、jpg等。
 
+# css属性分类
 
+## 文本、字体、颜色
+
+字体
+
+```
+font-family
+	需要考虑客户机器上是否安装了字体文件。
+	可以排列多个字体，用逗号隔开。字体名字有空格的话，用引号括起来。
+	最后一个是兜底的，建议放一个通用的名字。
+	这个通用版名字，只有这么几个可以选择：
+		serif 
+		sans-serif
+		monospace
+font-size
+	字体大小。
+	有绝对大小，相对大小，长度，百分比。
+	建议采用相对大小。使用em。
+	
+font-style
+	有正常、斜体、倾斜体。
+font-weight	
+	粗体。
+font	
+	是把上面的都综合起来，一次性设置。
+	font-family是必须的，而且必须在最后。
+	font-size，如果有，必须是倒数第二个。
+	其余的顺序随意。
+	
+line-height
+	一个数字，一般是1.2 
+```
+
+文本
+
+```
+word-break	
+	取值：normal、break-all、keep-all、break-word。
+	normal：英文在空格处换行，中文任意地方都可以换行。
+vertical-align
+	上下对齐方式。
+	取值：baseline（默认）、super（上标）、sub（下标）、top、bottom、middle、
+text-align
+	左右对齐方式。
+	取值：left、right、center、justify（两侧对齐）。
+	
+text-transform
+	大小写转换。
+	取值：uppercase、lowercase、none、capitalize
+text-shadow
+	阴影设置。
+text-decoration
+	有几个：color、line、style。
+text-indent
+	缩进。段落的第一行。
+text-justify
+	这是之当text-align设置为两侧对齐的时候，是在单词（英文）前面加空格，还是字母前面加空格。
+text-overflow
+	文本溢出的截断。
+```
+
+颜色
+
+```
+background
+	下面有
+	-color
+	-image
+	-size
+	-position
+	-repeat
+	-attachment
+	-color必须是最后一个。
+	
+```
+
+鼠标的样式
+
+```
+cursor:help 鼠标显示问号。
+pointer 显示小手
+progress  请等待
+wait  系统繁忙。
+move 拖拽
+not-allowed 不能执行
+```
+
+
+
+## 大小、布局
+
+大小
+
+```
+width/height
+max-width
+min-width
+```
+
+盒模型
+
+```
+border
+outline
+margin
+padding
+
+```
+
+布局
+
+```
+float
+clear
+position
+top/left/bottom/right
+visibility
+overflow
+clip
+transform
+z-index
+```
+
+flex布局
+
+```
+display:flex
+flex-direction
+flex-wrap
+flex-flow
+align-items
+justify-content
+align-content
+```
+
+网格布局
+
+表格布局
+
+
+
+## 列表、表格
+
+## 动画
 
 # 参考资料
 
@@ -196,3 +340,7 @@ http://www.runoob.com/css/css-intro.html
 2、如何提升你的CSS技能，掌握这20个css技巧即可[完整版]
 
 https://www.imooc.com/article/283531
+
+3、
+
+https://www.cnblogs.com/xuanku/p/css_attr.html

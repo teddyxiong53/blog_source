@@ -446,7 +446,230 @@ err:[object Object]
 
 
 
-参考资料
+# req对象分析
+
+req的层级关系
+
+```
+req
+	http.IncomingMessage.prototype
+		stream.Readable 
+			extends Stream implements NodeJS.ReadableStream
+				ReadableStream extends EventEmitter
+```
+
+EventEmitter
+
+```
+跟eventproxy很像。
+就addListener、on、off、emit这些方法。
+```
+
+ReadableStream
+
+```
+属性：
+	readable
+	
+方法：
+	read
+	setEncoding
+	pause
+	resume
+	isPaused
+	pipe
+	unpipe
+	unshift
+	wrap
+```
+
+Stream
+
+```
+这个没有什么可说的，代码就这些。
+ class Stream extends internal {
+            constructor(opts?: ReadableOptions);
+        }
+```
+
+Readable
+
+```
+方式就是override了ReadableStream的内容。
+```
+
+IncomingMessage
+
+```
+属性
+	aborted
+	httpVersion
+	complete
+	
+	connection
+	socket
+	headers
+	tailers
+	method
+	url
+	statusCode
+	
+方法：
+	destroy
+```
+
+req本身的属性和方法
+
+```
+req.get = 
+req.header = function header(name) {
+	//这个是取得headers里的某个key对应的value。
+}
+
+req.range(size, options)
+
+req.param = function param(name, defaultValue) {
+
+}
+
+req.is('html')
+req.is('json')
+
+req.protocol == https/http
+req.secure 
+req.ip
+req.ips
+req.path
+req.hostname
+req.host
+
+req.xhr 是否是一个ajax请求。
+
+```
+
+
+
+# res对象分析
+
+层级关系
+
+```
+res
+	http.ServerResponse
+		OutgoingMessage
+			stream.Writable 
+				NodeJS.WritableStream
+					EventEmitter
+```
+
+WritableStream
+
+```
+writable
+write
+end
+```
+
+Writable
+
+```
+writable
+writableEnded
+writableFinished
+writableHighWaterMark
+writableLength
+writableObjectMode
+writableCorked
+
+destroyed
+write
+end
+cork
+uncork
+destroy
+```
+
+OutgoingMessage
+
+```
+upgrading
+chunkedEncoding
+shouldKeepAlive
+sendDate
+
+finished
+headersSent
+
+setTimeout
+setHeader
+getHeader
+
+
+```
+
+ServerResponse
+
+```
+statusCode
+statusMessage
+
+assignSocket
+detachSocket
+
+writeContinue
+writeHead
+writeProcessing
+```
+
+
+
+res
+
+```
+res.status = function status(code) {
+	this.statusCode = code
+	return this
+}
+
+res.send
+	这个函数内容较多。
+	最后调用的end函数。
+	  if (req.method === 'HEAD') {
+        // skip body for HEAD
+        this.end();
+      } else {
+        // respond
+        this.end(chunk, encoding);
+      }
+res.json
+	最后调用的send函数。
+	就是先设置了一下header为json。
+	this.set('Content-Type', 'application/json');
+	
+res.sendStatus
+	res.sendStatus(200); 这样用的。
+	
+res.sendFile 
+	直接发送静态文件，里面的内容不需要渲染的。
+	
+res.download
+	这个是让浏览器这边弹窗下载窗口。
+	
+res.type
+res.format
+res.attachment
+res.appendres.header
+res.clearCookie
+res.cookie
+res.location
+res.redirect
+res.render
+
+```
+
+
+
+# 参考资料
 
 1、深入理解connect/express
 

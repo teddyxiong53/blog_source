@@ -334,7 +334,7 @@ $("#xx")
 $(".xx")
 ```
 
-后去tagName
+取得tagName
 
 ```
 //普通js
@@ -358,7 +358,101 @@ $("p").append('<p>xxx</>');
 
 
 
+# 常用方法
 
+## 事件方法
+
+### bind
+
+格式：
+
+```
+$(sel).bind(event[, data], function[,map])
+```
+
+举例
+
+```
+$('p').bind('click', {x:1}, function(e) {
+	alert('click now:' + e.data.x)
+})
+```
+
+
+
+拿到input的值。
+
+```
+$('input').css('background-color', 'green')
+            .change(function() {
+                alert('改变了，改变后：' + $(this).val())
+            })
+```
+
+## 效果方法
+
+```
+toggle：在show和hidden之间切换。
+```
+
+## html和css方法
+
+这部分比较重要。
+
+```
+addClass
+	这个是给元素添加一个css的class。
+after
+	在选中元素的后面插入内容。
+append
+	也是在后面插入，但是不会换行。会紧跟着前面的元素。
+appendTo
+	这个跟append的区别是，插入的必须的html标签内容。
+attr
+	set或者get选中元素的属性值。
+before
+	在前面插入内容。
+css
+	set或者get css样式。
+	$('p').css('color', 'red')
+empty
+	清空选中元素。
+hasClass
+	判断选中元素是否有某个css class
+height
+	得到元素的高度。
+html
+	获取元素的html内容。
+insertAfter
+insertBefore
+prop
+	跟attr类似。但是不同。
+remove
+removeAttr
+removeClass
+removeProp
+text
+toggleClass
+
+```
+
+## 遍历方法
+
+```
+add	
+	这个是相当于把多个元素都进行选中。
+	$('h1').add('p').add('span').css('color', 'green')
+	这个就相当于把h1和p和span，都进行颜色设置。
+children
+	返回选中元素的所有子元素。
+each
+	为每次选中的元素执行函数。
+	
+```
+
+## ajax方法
+
+## 杂项方法
 
 
 
