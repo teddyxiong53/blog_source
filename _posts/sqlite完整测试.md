@@ -109,7 +109,7 @@ values (6, "fff", 26, "f city", 600);
 
 现在我们已经准备了基本数据，下面对这些数据进行操作。
 
-#select操作
+# select操作
 
 ```
 sqlite> .header on

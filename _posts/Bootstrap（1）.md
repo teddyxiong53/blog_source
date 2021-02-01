@@ -174,6 +174,62 @@ https://www.runoob.com/bootstrap/bootstrap-css-codeguide-html.html
 
 
 
+# 代码实例
+
+## tab
+
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+</head>
+<body>
+    <ul class="nav nav-tabs" id="mytab">
+        <li class="active"><a href="#aaa" data-toggle="tab">aaa</a></li>
+        <li ><a href="#bbb" data-toggle="tab">bbb</a></li>
+        <li class="dropdown">
+            <a class="dropdown-toggle" href="#" id="mytabDrop1" data-toggle="dropdown">ccc<b class="caret"></b></a>
+            <ul class="dropdown-menu" role="menu" aria-labelledby="mytabDrop1">
+                <li><a href="#ddd" tabindex="-1" data-toggle="tab">ddd</a></li>
+                <li><a href="#eee" tabindex="-1" data-toggle="tab">eee</a></li>
+            </ul>
+        </li>
+    </ul>
+    <div id="mytabContent" class="tab-content">
+        <div id="aaa" class="tab-pane fade active">
+            111
+        </div>
+        <div id="bbb" class="tab-pane fade">
+            222
+        </div>
+        <div id="ddd" class="tab-pane fade">
+            444
+        </div>
+        <div id="eee" class="tab-pane fade">
+            555
+        </div>
+    </div>
+</body>
+</html>
+```
+
+## tooltip
+
+提示工具（Tooltip）插件不像之前所讨论的下拉菜单及其他插件那样，它不是纯 CSS 插件。如需使用该插件，您必须使用 jquery 激活它（读取 javascript）。使用下面的脚本来启用页面中的所有的提示工具（tooltip）：
+
+```
+
+$(function () { $("[data-toggle='tooltip']").tooltip(); });
+```
+
+
+
 
 
 参考资料

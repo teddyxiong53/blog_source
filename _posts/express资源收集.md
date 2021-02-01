@@ -92,7 +92,7 @@ nedb可用看做精简版本的mongodb。
 
 # express+
 
-最近今年留下互联网+这样的提法。
+最近流行互联网+这样的提法。
 
 我也弄一个express+ 
 
@@ -112,13 +112,39 @@ https://github.com/search?q=express%E5%9C%A8%E7%BA%BF&type=repositories
 
 ## express+云盘
 
+### CloudDisk
+
 https://github.com/AllenOris/CloudDisk
+
+这个看起来可以实用。
+
+需要注意先用mysql把database/task下面的sql脚本执行一下，这样就创建了表格。
+
+上传一个文件，会自动放2份一样的。文件名是随机的字符串，保证不冲突。
+
+界面也比较漂亮。
+
+
+
+### meyer-tools
 
 https://github.com/gytai/meyer-tools
 
+这个比较坑。连注册接口都没有。
+
+自己写一个吧。
+
+### onlinedisk
+
 https://github.com/buggoing/onlinedisk
 
+这个界面非常简陋。
 
+没有前后端分离。
+
+### Person_Cloud
+
+这个可以跑起来。
 
 前端
 
@@ -127,6 +153,28 @@ https://github.com/sunpeer/person_cloud_vue2
 后端
 
 https://github.com/sunpeer/Person_Cloud
+
+注册用户不成功。
+
+```
+_t.$axios.get('/crypto_ready').
+```
+
+有这么几点需要修改，才能正常运行
+
+1、需要修改前端里的baseUrl。不知道为什么localhost不行，实际上就是本机。
+
+不然server根本收不到消息。
+
+```
+axios.defaults.baseURL='http://172.16.2.153:3000'
+```
+
+2、需要修改服务端的mysql_conn.js里的配置。创建对应的数据库。
+
+这样还不行，还有对应的表格需要手动创建。
+
+暂时不继续了。
 
 
 
@@ -166,17 +214,33 @@ https://github.com/search?q=express%E5%B0%8F%E7%A8%8B%E5%BA%8F&type=repositories
 
 https://github.com/search?q=express+mqtt&type=repositories
 
+### mqtt-realtime-chart-server
+
 Express.js - MQTT - Socket.io application for real-time streams
 
 https://github.com/NickJokic/mqtt-realtime-chart-server
+
+### mqtt-express-node
 
 MQTT client served by Node with Express
 
 https://github.com/junreycloudstrife/mqtt-express-node
 
+这个是浏览器里的mqtt客户端。
+
+![image-20210127173007199](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210127173007199.png)
+
+没有什么价值。直接本地网页就可以了吧。都没有必要使用express。
+
+### iok-express
+
 Open Source IoT Platform Built on Node.js for Creating Internet of Things Servers
 
 https://github.com/iokloud/iok-express
+
+这个安装会编译不少东西。
+
+出错了。暂时不管。
 
 
 
@@ -246,7 +310,21 @@ https://github.com/Xu-Angel/Girl
 
 ## express+音乐网站
 
+
+
+后端：
+
 https://github.com/hcyhehe/music_api
+
+前端：
+
+https://github.com/hcyhehe/nbPlayer
+
+上面这个可以跑起来。
+
+后端很简单，就是几个请求，返回json数据。
+
+
 
 Vue+vue-router+vuex音乐播放器，基于vue搭建在线音乐播放器，支持在线音乐播放，源自网易云音乐。后端使用express.
 
@@ -256,17 +334,67 @@ https://github.com/genaller/attitudeMusic
 
 ## express+视频网站
 
+### VideoServer
+
 以Node.js基于express以及爬虫实现的视频资源后端
+
+这个并没有什么。只是去爬取某些网站，而这些网站都已经下线了。
 
 https://github.com/XiqingLiu/VideoServer
 
+### video.github.io
+
 视频网站项目已实现功能： 首页导航栏，中部轮播图，以及电影列表的展现，底部导航链接 注册页面 视频播放页面 搜索页面 登录页面 用户管理页面 一键安装 电影抓取 等功能。基于NodeJS的Express框架开发的动态网站项目，下面也提供了本程序的相关演示站点。
 
+这个不错。看起来像那么回事。使用的mysql。
+
 https://github.com/xiugangzhang/video.github.io
+
+检查是否已经安装，这个方式简单且实用。
+
+```
+function checkInstall(req, res, next){
+    // 检查用户是否已经安装了程序
+    fs.exists("./config.properties",function(exists){
+        if(exists){
+            // 用户已经安装的话
+            return next();
+        }
+        return res.redirect('/install');
+    })
+}
+```
+
+在访问/的时候，
+
+```
+router.get('/', [checkInstall, indexController.showIndex]);
+```
+
+
+
+### musicVisual
 
 音频可视化
 
 https://github.com/eidonlon/musicVisual
+
+效果是这样。主要是前端的处理。
+
+效果挺好的。
+
+![image-20210127144144297](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210127144144297.png)
+
+就是用jquery操作dom来做的。
+
+```
+var box = $("#box")[0];
+var canvas = document.createElement("canvas");
+var ctx = canvas.getContext("2d");
+box.appendChild(canvas);
+```
+
+
 
 ## express+云计算
 
@@ -322,7 +450,11 @@ https://github.com/momodiy/nodemailer-SMTP-server
 
 ## express+翻译
 
+
+
 ## express+人脸识别
+
+
 
 ## express+在线游戏
 
@@ -330,7 +462,19 @@ https://github.com/Johnny-dot/loom_client
 
 ## express+在线相册
 
+### my-little-albums
+
 https://github.com/linqian123/my-little-albums
+
+简单。使用使用bootstrap。但是比较简陋
+
+### express-photo-gallery
+
+https://github.com/timmydoza/express-photo-gallery
+
+这个是一个express插件。基于jquery的gallery插件来做的。
+
+
 
 ## express+在线电子报
 
@@ -348,11 +492,23 @@ https://github.com/stopry/FangKaMaJiang
 
 https://github.com/youthcity/ReQS
 
+这个完善是比较完善，但是基于react。
+
+跟cnode其实是重叠的。不看了。
+
+
+
 ## express在线留言板
 
 这个看起来有点像看板。
 
+### Express-Stickynotes
+
 https://github.com/yym-yumeng123/Express-Stickynotes
+
+数据库用的sqlite。
+
+
 
 ## express+在线代码编辑器
 
@@ -362,23 +518,69 @@ https://github.com/songquanpeng/online-code-editor
 
 https://github.com/Niccce/E-Learning-system
 
+这个有3个系统，前端、后端、后台管理。
+
+前端和后端管理都是基于vue的。
+
+数据库表没有。
+
+后续自己把表整理出来再试一下。
+
+
+
 ## express+座位管理
 
 https://github.com/bajdcc/Seat
+
+这个欠缺数据文件。
+
+不过使用的技术可以了解一下。
+
+alasql
+
+graphql
+
+
 
 ## express+在线五子棋
 
 https://github.com/yygdeCode/wuziqi
 
+这个运行有点问题。
+
+index.ts里需要这样写：
+
+```
+(e.target as Element).classList;
+```
+
+现在运行没有报错。但是访问不到。
+
+用localhost可以访问到。
+
+
+
 ## express+在线拍卖
 
 https://github.com/dankerri/Auction-system
+
+在线看了一下程序结构，感觉很乱。不看这个了。
+
+
 
 ## express+在线小说
 
 https://github.com/shawbs/nodebook_my_react
 
-看小说。服务端：【Python+Flask+Mariadb】、【Node+Express+Mariadb】；客户端：【Vue+iview】、【微信小程序】、【Android原生开发(Java)】、【Flutter+Dio】、【Taro+Typescript】
+这个是使用react技术栈的。先不看。
+
+### py-novel
+
+看小说。
+
+服务端：【Python+Flask+Mariadb】、【Node+Express+Mariadb】；
+
+客户端：【Vue+iview】、【微信小程序】、【Android原生开发(Java)】、【Flutter+Dio】、【Taro+Typescript】
 
 https://github.com/dkvirus/py-novel
 
@@ -388,6 +590,8 @@ https://github.com/dkvirus/py-novel
 
 https://github.com/dearDreamWeb/node_shop
 
+比较乱。
+
 
 
 ## express+文件管理
@@ -396,9 +600,27 @@ Nodejs在线文件管理工具，Nodejs-Express-前后端分离-跨域
 
 https://github.com/Geek-LHJ/FlieManage-Nodejs-Express
 
+很简陋。没有价值。
+
+
+
 ## express+在线书籍租赁
 
 基于express.js + MongoDB实现的在线图书租赁商城的后端实现
 
 https://github.com/Aero-ku/book-rent-backend
+
+
+
+## express+投票
+
+### voteExpress
+
+https://github.com/jlmonteagudo/voteExpress
+
+这个不能直接用。有点老。
+
+express插件都还是express.xx的方式的。
+
+改不过来，依赖的库还有问题。看看实现就好了。
 

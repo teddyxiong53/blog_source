@@ -133,3 +133,7 @@ https://www.jb51.net/article/124442.htm
 2、NodeJS基础
 
 http://nqdeng.github.io/7-days-nodejs/
+
+3、Node中没搞明白require和import，你会被坑的很惨
+
+https://imweb.io/topic/582293894067ce9726778be9

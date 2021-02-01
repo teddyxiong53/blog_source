@@ -377,8 +377,66 @@ eventproxy的替代
 
 
 
-参考资料
+# 和async库的对比
+
+这里说的async库，不是js的async关键字。
+
+https://github.com/caolan/async
+
+```
+var fs = require('fs')
+var eventproxy = require('eventproxy')
+var ep = new eventproxy()
+
+ep.all(['read1', 'read2'], function(txt1, txt2) {
+    console.log('txt1:' + txt1)
+    console.log('txt2:' + txt2)
+})
+
+fs.readFile('1.txt', ep.done('read1'))
+fs.readFile('2.txt', ep.done('read2'))
+```
+
+ep.done还可以这样写。
+
+```
+fs.readFile('1.txt', ep.done(function(data) {
+    ep.emit('read1', data)
+}))
+```
+
+使用after
+
+```
+ep.after('read', 2, function(data) {
+    console.log(data)
+})
+ep.emit('read', '123')
+ep.emit('read', 'abc')
+```
+
+打印是这样：
+
+```
+[ '123', 'abc' ]
+```
+
+
+
+什么时候使用eventproxy，什么时候用async库？
+
+当需要去多个数据源获取数据，然后进行组合汇总的，这样的场景，用eventproxy更加方便。
+
+当需要用到队列，需要控制并发数的，或者需要方便使用函数式编程的时候，使用async。
+
+
+
+# 参考资料
 
 1、使用 eventproxy 控制并发
 
 http://wiki.jikexueyuan.com/project/node-lessons/eventproxy.html
+
+2、async和eventproxy在流程控制上哪个更优秀
+
+https://yijiebuyi.com/blog/1dcc27614c599b0f37a8aa5e1292a3ad.html
