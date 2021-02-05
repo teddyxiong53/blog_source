@@ -170,3 +170,7 @@ https://github.com/FantasyNJ/wy
 
 主要是前端，这个可以看到jquery可以实现的功能。
 
+# sspanel
+
+基于django的shadowsocks管理面板。
+

@@ -44,6 +44,47 @@ redis就是实现session持久化一个常用的方案。
 npm i -s redis connnect-redis express-session
 ```
 
+# cookie-session和express-session对比
+
+这2个都是express里可以使用的session中间件。
+
+它们分别有什么特点？区别是什么？
+
+express-session功能更完善。支持session存储到磁盘上。
+
+cookie-session简单，轻量，所有的数据都存放在浏览器这一边。
+
+所以它们的主要区别就是：session存放的位置。
+
+cookie-session适合的场景：
+
+1、服务端没有使用数据库的情况。
+
+2、简化某些负载均衡的场景。
+
+3、减轻服务端的负载。
+
+
+
+
+
+https://github.com/expressjs/cookie-session
+
+```
+A user session can be stored in two main ways with cookies: on the server or on the client. This module stores the session data on the client within a cookie, while a module like express-session stores only a session identifier on the client within a cookie and stores the session data on the server, typically in a database.
+```
+
+cookie-session用法
+
+```
+var cookieSession = require('cookie-session')
+app.use(cookieSession({
+	name: 'mysession',
+	keys: ['abcd'],
+	maxAge: 24*60*60*1000,//24h
+}))
+```
+
 
 
 参考资料
@@ -51,3 +92,7 @@ npm i -s redis connnect-redis express-session
 1、Express.js(Node.js) 配置Redis持久化存储Session会话
 
 https://itbilu.com/nodejs/npm/VJw-hEBhx.html
+
+2、What's difference with express-session and cookie-session?
+
+https://stackoverflow.com/questions/23566555/whats-difference-with-express-session-and-cookie-session

@@ -3,54 +3,29 @@ title: typescript资源收集
 date: 2018-12-27 17:38:25
 tags:
 	- typescript
-
 ---
 
 
 
-#这个学习d.ts写法
-
-https://github.com/DefinitelyTyped/DefinitelyTyped
 
 
+--
 
-# 官方示例
-
-https://github.com/Microsoft/TypeScriptSamples
-
-
-
-#gitbook
+typescript入门教程
 
 https://ts.xcatliu.com/advanced/class.html
 
 
 
-#书只有一本
+入门项目
 
-https://www.jb51.net/books/594495.html
-
-
-
-#awesome
-
-https://github.com/brookshi/awesome-typescript-projects
+https://docs.nestjs.cn/7/firststeps
 
 
 
-# 阮一峰
-
-https://github.com/xcatliu/typescript-tutorial
 
 
 
-# ts实现的设计模式
-
-https://github.com/torokmark/design_patterns_in_typescript
 
 
-
-#gitbook
-
-https://m.runoob.com/manual/gitbook/TypeScript/_book/doc/handbook/Triple-Slash%20Directives.html
 

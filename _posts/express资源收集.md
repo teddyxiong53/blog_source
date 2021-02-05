@@ -242,6 +242,8 @@ https://github.com/iokloud/iok-express
 
 出错了。暂时不管。
 
+其实不怎么样。就写了几个api。没有实用价值。
+
 
 
 ## express+物联网
@@ -253,6 +255,14 @@ https://github.com/nieheyong/myIot
 vue+express+raspberry PI4 物联网系统
 
 https://github.com/C2GitHub/rasp
+
+
+
+### node-red
+
+这个就是基于express的。
+
+
 
 ## express+社区
 

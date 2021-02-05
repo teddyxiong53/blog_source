@@ -5,7 +5,7 @@ tags:
 	- docker
 ---
 
-1
+--
 
 ```
  Cannot create container for service web: Conflict. The container name "/web" is already in use by container
@@ -118,6 +118,34 @@ FLUSH PRIVILEGES;
 切换到dev版本，问题还是一样的。
 
 暂时先不做了。
+
+
+
+# 重新搭建
+
+现在在我的笔记本上搭建顺利。
+
+要修改的就是.env里的配置。
+
+然后用docker-compose up来运行。
+
+目前在localhost上访问一切正常。
+
+邀请码怎样生成？
+
+发现问题还是有。
+
+访问8080端口不行。
+
+# sspanel-uim版本
+
+https://github.com/Anankke/SSPanel-Uim
+
+这个的人气更高。
+
+功能更完善。
+
+这个是php写的。
 
 
 

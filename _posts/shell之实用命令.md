@@ -6,13 +6,13 @@ tags:
 
 ---
 
-###找出当前目录下最占用空间的子目录
+### 找出当前目录下最占用空间的子目录
 
 ```
 du -h --max-depth=1 ./
 ```
 
-###同时查找多种文件
+### 同时查找多种文件
 
 ```
 find -name "Makefile" \
@@ -151,6 +151,22 @@ do
 	echo $line
 done < 1.txt
 ```
+
+今天碰到一个坑，就是比较复杂的一个行。
+
+一行数据是这样的，那么上面的方法工作不正常。
+
+```
+30 6,8,12,22 * * * node /scripts/jd_immortal.js >> /scripts/logs/jd_immortal.log 2>&1
+```
+
+需要在前面加上这样一行：
+
+```
+IFS=$'\n'       # make newlines the only separator
+```
+
+
 
 ## 文件名处理
 

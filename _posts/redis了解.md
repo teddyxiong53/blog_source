@@ -133,6 +133,25 @@ r.incr("visit:12306:totals")
 
 redis的内容，可以跨进程共享。
 
+# redis-cli用法
+
+就掌握2个命令，一个set、一个get。
+
+如下：
+
+```
+root@74cfe109ee76:/data# redis-cli 
+127.0.0.1:6379> get counter
+(nil)
+127.0.0.1:6379> set counter 100
+OK
+127.0.0.1:6379> get counter
+"100"
+127.0.0.1:6379> 
+```
+
+
+
 
 
 参考资料
