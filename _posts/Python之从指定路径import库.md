@@ -137,6 +137,30 @@ sys.reload可以用。
 
 
 
+这个还有点麻烦。
+
+
+
+其实这两个错误的原因归根结底是一样的：
+
+在涉及到相对导入时，
+
+package所对应的文件夹必须正确的被python解释器视作package，
+
+而不是普通文件夹。
+
+否则由于不被视作package，
+
+无法利用package之间的嵌套关系实现python中包的相对导入。
+
+文件夹被python解释器视作package需要满足两个条件：
+
+1、文件夹中必须有`__init__.py`文件，该文件可以为空，但必须存在该文件。
+
+2、不能作为顶层模块来执行该文件夹中的py文件（即不能作为主函数的入口）。
+
+
+
 # 参考资料
 
 1、ImportError:attempted relative import with no known parent package
@@ -146,3 +170,7 @@ https://blog.csdn.net/nigelyq/article/details/78930330
 2、Python import搜索的路径顺序
 
 https://blog.csdn.net/csdn912021874/article/details/83017425
+
+3、
+
+https://stackoverflow.com/questions/30669474/beyond-top-level-package-error-in-relative-import
