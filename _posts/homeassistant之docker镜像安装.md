@@ -47,6 +47,28 @@ http://192.168.0.100:8123
 
 
 
+# 重新再来
+
+现在我对docker用得比较多。
+
+树莓派4b上运行了一个带docker的openwrt。打算用这个作为家庭的智能中心。
+
+```
+mkdir -p /root/docker/homeassistant
+```
+
+安装并启动
+
+```
+docker run -d --name="home-assistant" \
+-v /root/docker/homeassistant:/config \
+-v /etc/localtime:/etc/localtime:ro \
+--net=host \
+homeassistant/home-assistant:stable
+```
+
+
+
 参考资料
 
 1、Installation Home Assistant on Docker
