@@ -44,7 +44,7 @@ service和characteristic的uuid都是通信之前双方约定好的。android端
 
 
 
-#参考资料
+# 参考资料
 
 1、普及一下什么是蓝牙和BLE，看完让你秒懂
 

@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 随着字符设备种类和数量的增加，设备号越来越紧张，为此Linux系统提出misc设备模型以解决此问题。
 
@@ -62,7 +62,9 @@ miscdevice就跟cdev结构体不一样了，它包含了device结构体了。
 	"-" __stringify(minor))
 ```
 
-##misc.c
+## misc.c
+
+### misc_init
 
 1、misc_init。这个是在系统初始化的时候调用的。
 

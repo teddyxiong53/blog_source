@@ -6,6 +6,8 @@ tags:
 
 ---
 
+--
+
 看Linux里struct cdev的定义，按照我的理解，cdev应该是一种特别的device，按道理应该包含一个device的成员变量才对，但是实际上并不是。这个改怎么理解？
 
 cdev和device是如何关联起来的？
@@ -20,9 +22,29 @@ cdev和device的联系纽带是dev_t的设备号。还有共有的kobject。
 
 
 
-cdev更适合理解为一种接口，而不是一种设备。
+**cdev更适合理解为一种接口，而不是一种设备。**
 
-cdev只是对kobject进行一次封装，属于比较底层的东西。
+**cdev只是对kobject进行一次封装，属于比较底层的东西。**
+
+
+
+cdev的主要作用在于提供file_operations结构体和设备号。
+
+leds-gpio.c代码里，为什么没有cdev相关代码？
+
+ledtrig-control-rk.c 这个里面有，
+
+作为一个misc设备。
+
+```
+ret = misc_register(&led_ctrl_miscdev);
+```
+
+是被leds-pwm.c里调用的。
+
+是靠/dev/rk_led_ctrl这个名字来打开操作的。
+
+也可以通过sysfs来操作。
 
 
 

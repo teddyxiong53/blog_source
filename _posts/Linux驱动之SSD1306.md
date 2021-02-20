@@ -165,7 +165,7 @@ Add to drivers/video/fbdev/Kconfig:   source "drivers/video/fbdev/fbtft/Kconfig"
 
 
 
-#fbtft_device.c
+# fbtft_device.c
 
 这个模块插入需要带的参数不少：
 

@@ -108,6 +108,146 @@ int main(int argc,char **argv)
 
 
 
+实际上这里实现的类似于对 kobject 的派生，
+
+**包含不同 kobj_type 的kobject 可以看做不同的子类。**
+
+通过实现相同的函数来实现多态。
+
+在这样的设计下，
+
+每一个内嵌Kobject的数据结构(如kset、device、device_driver等)，
+
+都要实现自己的 kobj_type ，并定义其中的回调函数。
+
+
+
+**总结，Ktype以及整个Kobject机制的理解。**
+
+Kobject的核心功能是：
+
+保持一个引用计数，当该计数减为0时，自动释放（由本文所讲的kobject模块负责） Kobject所占用的meomry空间。
+
+**这就决定了Kobject必须是动态分配的（只有这样才能动态释放）**。 
+
+而Kobject大多数的使用场景，
+
+是内嵌在大型的数据结构中（如Kset、device_driver等），
+
+因此这些大型的数据结构，也必须是动态分配、动态释放的。
+
+那么释放的时机是什么呢？
+
+是内嵌的Kobject释放时。
+
+但是Kobject的释放是由Kobject模块自动完成的（在引用计数为0时），那么怎么一并释放包含自己的大型数据结构呢？ 
+
+  这时Ktype就派上用场了。
+
+我们知道，Ktype中的release回调函数负责释放Kobject（甚至是包含Kobject的数据结构）的内存空间，那么Ktype及其内部函数，是由谁实现呢？
+
+是由上层数据结构所在的模块！
+
+因为只有它，才清楚Kobject嵌在哪个数据结构中，并通过Kobject指针以及自身的数据结构类型，找到需要释放的上层数据结构的指针，然后释放它。 
+
+  讲到这里，就清晰多了。
+
+所以，每一个内嵌Kobject的数据结构，例如kset、device、device_driver等等，都要实现一个Ktype，并定义其中的回调函数。
+
+同理，sysfs相关的操作也一样，必须经过ktype的中转，因为sysfs看到的是Kobject，而真正的文件操作的主体，是内嵌Kobject的上层数据结构！ 
+
+  **顺便提一下，Kobject是面向对象的思想在Linux kernel中的极致体现，但C语言的优势却不在这里，所以Linux kernel需要用比较巧妙（也很啰嗦）的手段去实现。**
+
+
+
+现在我们就要结合代码分析uevent机制了，
+
+而要分析这个机制我们就要从class_create和class_device_create这两个函数
+
+来分析这个过程是怎么实现的。
+
+我们现在先分析class_create：
+
+下面是**class_create函数的层级关系**：
+
+ 从上面我们可以看出kobject在sysfs中对应的是目录（dir），
+
+当我们注册一个kobject时，
+
+会调用kobject_add(&k->kobj);
+
+然后在其后创建class设备目录。
+
+而同时我们可以看出class_create函数是为class_device_create函数做了目录的准工作。
+
+
+
+下面我们从**class_device_create函数**开始分析，
+
+看他是如何走到kobject_uevent函数的。
+
+我们看class_device_create函数的层级关系：
+
+
+
+ uevent模块通过kmod上报uevent时，
+
+会通过call_usermodehelper函数，
+
+调用用户空间的可执行文件（或者脚本，简称uevent helper）处理该event。
+
+而该uevent helper的路径保存在uevent_helper数组中。
+
+可以在编译内核时，通过CONFIG_UEVENT_HELPER_PATH配置项，静态指定uevent helper。
+
+  **但这种方式会为每个event fork一个进程，**
+
+随着内核支持的设备数量的增多，
+
+**这种方式在系统启动时将会是致命的（可以导致内存溢出等）。**
+
+因此只有在早期的内核版本中会使用这种方式，现在内核不再推荐使用该方式。
+
+**因此内核编译时，需要把该配置项留空。**
+
+在系统启动后，大部分的设备已经ready，
+
+**可以根据需要，重新指定一个uevent helper，**
+
+**以便检测系统运行过程中的热拔插事件。**
+
+  这可以通过把helper的路径写入到"/sys/kernel/uevent_helper"文件中实现。
+
+实际上，内核通过sysfs文件系统的形式，将uevent_helper数组开放到用户空间，
+
+供用户空间程序修改访问，具体可参考"./kernel/ksysfs.c”中相应的代码。
+
+**在/etc/init.d/rcS脚本中添加 echo "/sbin/mdev" > /proc/sys/kernel/hotplug，**
+
+**会发现cat /sys/kernel/uevent_helper 即是/sbin/mdev。说明/proc/sys/kernel/hotplug中的可执行文件路径最终还是会写到/sys/kernel/uevent_helper中。**
+
+自己手动echo "/kernel/main" > uevent_helper(之前的/sbin/mdev会被覆盖)，
+
+当lsmod、rmmod时，/sys/kernel/uevent_helper中的/kernel/main会执行，表明事件已经上报给用户空间。
+
+
+
+轮到mdev出场了，前面的描述都是在sysfs文件系统中创建目录或者文件，
+
+**而应用程序访问的设备文件则需要创建在/dev/目录下。**
+
+该项工作由mdev完成。
+
+  mdev的原理是解释/etc/mdev.conf文件定义的命名设备文件的规则，
+
+并在该规则下根据环境变量的要求来创建设备文件。
+
+mdev.conf由用户层指定，因此更具灵活性。本文无意展开对mdev配置脚本的分析。
+
+
+
+
+
 参考资料
 
 1、内核Uevent事件机制 与 Input子系统
@@ -121,3 +261,7 @@ http://www.wowotech.net/device_model/uevent.html
 3、Netlink实现热拔插监控
 
 https://blog.csdn.net/findaway123/article/details/53122437
+
+4、
+
+https://blog.csdn.net/W1107101310/article/details/80211885

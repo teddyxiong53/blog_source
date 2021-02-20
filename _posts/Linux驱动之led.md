@@ -35,7 +35,7 @@ led驱动倒还没有想象的简单。有多了很多的东西。
 
 看drivers/led/leds-bcm6328.c。
 
-
+# 内核代码分析
 
 关键在于led_classdev_register这个函数。
 
@@ -79,6 +79,200 @@ static int __init nand_base_init(void)
 ```
 
 def_trigger这个属性值得注意。
+
+
+
+最后总结一下led、led_classdev、led_trigger的关系：
+
+![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/0_1306112332Y4Xo.gif)
+
+ 也就是说trigger好比是控制LED类设备的算法，
+
+这个算法决定着LED什么时候亮什么时候暗。
+
+LED trigger类设备可以是现实的硬件设备，比如IDE硬盘，也可以是系统心跳等事件。
+
+
+
+系统定义了四个默认触发器：
+
+default_on、心跳触发器、硬盘灯触发器、闪烁触发器。
+
+除了硬盘灯触发器，其他触发器没有留从其它内核模块访问的接口。
+
+led子系统的目的主要是给用户空间控制led的。
+
+当然可以定义自己的触发器并留给其它模块访问的接口。
+
+
+
+内核中驱动部分维护者针对每个种类的驱动设计一套成熟的、标准的、典型的驱动实现，
+
+并把不同厂家的同类硬件驱动中相同的部分抽出来自己实现好，
+
+再把不同部分留出接口给具体的驱动开发工程师来实现，
+
+这就叫驱动框架。
+
+即标准化的驱动实现,统一管理系统资源，维护系统稳定。
+
+# led驱动框架
+
+## 概述
+
+### （1）LED设备的共性：
+
+1）LED的亮与灭；
+
+2）具有相应的设备节点（设备文件）。
+
+### （2）LED设备的不同点：
+
+1）LED的硬件连接方式不同（GPIO不同）；
+
+2）LED的控制方式不同（低或高电平触发）；
+
+3）其他不同点。
+
+因此，Linux中LED的驱动框架把所有LED设备的共性给实现了，把不同的地方留给驱动工程师去做。
+
+### （3）核心文件：
+
+```javascript
+/kernel/driver/leds/led-class.c 
+/kernel/driver/leds/led-core.c 
+/kernel/driver/leds/led-triggers.c 
+/kernel/include/linux/leds.h
+```
+
+### （4）辅助文件(根据需求来决定这部分代码是否需要)：
+
+```javascript
+/kernel/driver/leds/led-triggers.c 
+/kernel/driver/leds/trigger/led-triggers.c 
+/kernel/driver/leds/trigger/ledtrig-oneshot.c 
+/kernel/driver/leds/trigger/ledtrig-timer.c 
+/kernel/driver/leds/trigger/ledtrig-heartbeat.c
+```
+
+## 代码分析
+
+subsys_initcall是一个宏，
+
+它的功能是将其声明的函数放到一个特定的段：.initcall4.init。
+
+内核在启动过程中，
+
+内核需要按照先后顺序去进行初始化操作。
+
+因此，内核给是给启动时要调用的所有初始化函数归类，
+
+然后每个类按照一定的次序去调用执行。
+
+这些分类名就叫.initcalln.init，n的值从1到8。
+
+内核开发者在编写内核代码时只要将函数设置合适的级别，
+
+这些函数就会被链接的时候放入特定的段，
+
+内核启动时再按照段顺序去依次执行各个段即可。
+
+module_init()、module_exit()也是一个宏，其功能与subsys_initcall相同，只是指定的段不同。
+
+
+
+LED驱动框架使用subsys_initcall宏修饰leds_init()函数，
+
+因此leds_init()函数在内核启动阶段被调用。在led-class.c里。
+
+leds_init()函数的主要工作是：
+
+调用class_create()函数在/sys/class目录下创建一个leds类目录。
+
+
+
+leds_class->dev_attrs规定了leds设备类的类属性，
+
+其中的类属性将被sysfs以文件的形式导出至/sys/class/leds目录下，
+
+用户空间通过对这些文件的访问来操作硬件设备。
+
+
+
+led_class_attrs结构体数组设置了leds设备类的属性，
+
+即led硬件操作的对象和方法。
+
+分析可知，
+
+leds类设备的操作对象一共由3个
+
+brightness（LED的亮灭状态）、
+
+max_brightness（LED最高亮度值）、
+
+trigger（LED闪烁状态）。
+
+对应的操作规则有读写，即show和store。
+
+这些操作规则内部其实调用了设备体led_classdev内的具体操作函数，
+
+譬如：当用户层试图写brightness这个对象时，会触发操作规则led_brightness_store。
+
+
+
+在registerLED设备之前，
+
+需要先定义并初始化一个struct led_classdev结构体变量，
+
+该结构体包含了该LED设备的所有信息。
+
+初始化struct led_classdev结构体变量时，
+
+只需填充如下值即可，其余的在register过程中自动完成填充。
+
+
+
+LED设备驱动框架为驱动开发者提供在/sys/class/leds这个类下创建LED设备的接口。
+
+当驱动调用led_classdev_register注册了一个LED设备，
+
+那么就会在/sys/class/leds目录下创建xxx设备，
+
+由sysfs创建该设备的一系列attr属性文件（brightness、max_brightness等）
+
+将被保存至该目录下供用户空间访问。
+
+![image-20210220113025886](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210220113025886.png)
+
+
+
+当用户cat /sys/class/leds/xxx/brightness时，会调用led-class.c中的brightness_show函数。
+
+
+
+# 以笔记本的caplock led来分析
+
+```
+teddy@thinkpad:/sys/class/leds/input4::capslock$ tree
+.
+├── brightness
+├── device -> ../../input4
+├── max_brightness
+├── power
+│   ├── async
+│   ├── autosuspend_delay_ms
+│   ├── control
+│   ├── runtime_active_kids
+│   ├── runtime_active_time
+│   ├── runtime_enabled
+│   ├── runtime_status
+│   ├── runtime_suspended_time
+│   └── runtime_usage
+├── subsystem -> ../../../../../../../class/leds
+├── trigger
+└── uevent
+```
 
 
 
@@ -294,12 +488,33 @@ switch(leffect->led_effect_type)
         }
 ```
 
+# trigger的逻辑
+
+以心跳指示这个trigger为例进行分析。
+
+```
+static struct led_trigger heartbeat_led_trigger = {
+	.name     = "heartbeat",
+	.activate = heartbeat_trig_activate,
+	.deactivate = heartbeat_trig_deactivate,
+};
+
+```
 
 
 
 
-参考资料
+
+# 参考资料
 
 1、Linux led子系统
 
 http://www.360doc.com/content/12/0312/20/6828497_193834197.shtml
+
+2、
+
+https://blog.csdn.net/Tommy_wxie/article/details/7622498
+
+3、Linux内核的LED设备驱动框架
+
+https://cloud.tencent.com/developer/article/1600462

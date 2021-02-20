@@ -48,3 +48,7 @@ int __init devtmpfs_init(void)
 1、
 
 http://blog.chinaunix.net/uid-27717694-id-3574368.html
+
+2、
+
+https://blog.csdn.net/longwang155069/article/details/52757592

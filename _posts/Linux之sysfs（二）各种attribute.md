@@ -10,7 +10,11 @@ tags:
 
 attribute是sysfs里一个重要的东西，我们在sysfs下面看到的文件节点，就是一个个attribute。
 
-注意最基本的attribute里，是没有存放数据的地方的，这个数据是要另外定义一个int变量这样的东西来store和show的。
+注意最基本的attribute里，是没有存放数据的地方的，
+
+这个数据是要另外定义一个int变量这样的东西来store和show的。
+
+
 
 在linux里，有哪些attribute呢？
 
@@ -108,7 +112,7 @@ struct rx_queue_attribute {
 };
 ```
 
-#kernel下面的
+# kernel下面的
 
 我们接下来分析kernel/ksysfs.c。这里集中了很多的内容，方便分析。
 

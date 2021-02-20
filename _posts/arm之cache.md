@@ -194,6 +194,32 @@ dram一个组内的块数跟cache的分组数相同。
 
 
 
+存储设备的速度对比
+
+
+
+![å¾ç4.jpg](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/3d2f1556803040.jpg)
+
+cache的共享关系
+
+![å¾ç5.png](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/95101556803041.png)
+
+
+
+在Cortex-A53架构上，
+
+L1 cache分为单独的instruction cache（ICache）和data cache（DCache）。
+
+L1 cache是CPU私有的，每个CPU都有一个L1 cache。
+
+一个cluster 内的所有CPU共享一个L2 cache，L2 cache不区分指令和数据，都可以缓存。
+
+所有cluster之间共享L3 cache。
+
+L3 cache通过总线和主存相连。
+
+
+
 
 
 # 参考资料
@@ -229,3 +255,9 @@ https://blog.csdn.net/iodoo/article/details/8954014
 8、Cache直接映射、组相连映射以及全相连映射（转载）
 
 https://www.cnblogs.com/east1203/p/11572500.html
+
+9、
+
+这篇文章图文并茂，很好。
+
+http://www.wowotech.net/memory_management/458.html

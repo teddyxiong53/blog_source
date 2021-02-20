@@ -31,7 +31,7 @@ void *devm_kzalloc(struct device *dev, size_t size, gfp_t gfp);
 void __iomem *devm_ioremap_resource(struct device *dev, struct resource *res);
 void __iomem *devm_ioremap(struct device *dev, resource_size_t offset, unsigned long size);
 //获取clk
-struct clk *dev_clk_get(struct device *dev, const char *id);
+struct clk *devm_clk_get(struct device *dev, const char *id);
 //获取gpio
 int devm_gpio_request(struct device *dev, unsigned gpio, const char *label);
 //获取irq

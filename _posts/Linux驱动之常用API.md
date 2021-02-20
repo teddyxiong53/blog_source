@@ -22,7 +22,7 @@ platform可以替换为spi等其他总线。
 
 
 
-#device.h里常用api
+# device.h里常用api
 
 ```
 1、dev_get_platdata
@@ -42,7 +42,7 @@ platform可以替换为spi等其他总线。
 
 
 
-#etherdevice.h
+# etherdevice.h
 
 ```
 1、alloc_etherdev(sizeof_priv)

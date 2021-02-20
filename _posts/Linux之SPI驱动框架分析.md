@@ -134,8 +134,7 @@ spi_device相当于i2c_client。设备端。
 spi_message对应i2c_msg。
 spi_driver对应i2c_driver。
 
-
-##board_info
+## board_info
 
 用来在bsp里的machine_init里注册信息。
 

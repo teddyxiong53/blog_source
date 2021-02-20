@@ -36,7 +36,13 @@ Linux内核里如何处理big little呢？
 
 
 
-目前的Linux内核实现的CPU负载均衡算法是基于SMP模型的，并没有考虑到big.LITTLE模型，因此Linaro组织对big.LITTLE模型开发了全新的负载均衡调度器，称为HMP调度器。
+目前的Linux内核实现的CPU负载均衡算法是基于SMP模型的，
+
+并没有考虑到big.LITTLE模型，
+
+因此Linaro组织对big.LITTLE模型开发了全新的负载均衡调度器，称为HMP调度器。
+
+
 
 
 
