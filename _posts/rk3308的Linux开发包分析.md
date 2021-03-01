@@ -339,6 +339,22 @@ rk3308-package-file-rootfs
 
 # uboot如何拿到boot分区里的dtb的？
 
+看文档docs\Develop reference documents\U-Boot\Rockchip-Developer-Guide-UBoot-nextdev.pdf
+
+uboot在第一阶段（也就是relocate之前），是使用自己的dtb文件。
+
+这个阶段只需要加载emmc、nadn、cru、grf、uart这些模块。
+
+为了加快这一阶段的设备树解析速度，里面只放了需要的内容。
+
+而板级的
+
+```
+#define CONFIG_USING_KERNEL_DTB 1
+```
+
+
+
 ```
 #define CONFIG_OF_SEPARATE 1
 ```
@@ -390,6 +406,10 @@ rknand_blk_bind
                             /* For mmc/nand/spiflash, just update from kernel dtb instead bind again*/
                             if (drv->id == UCLASS_MMC || drv->id == UCLASS_RKNAND ||
 ```
+
+
+
+
 
 # uboot里操作gpio
 

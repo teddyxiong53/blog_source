@@ -42,6 +42,8 @@ service和characteristic的uuid都是通信之前双方约定好的。android端
 
 
 
+# 连接保持
+
 
 
 # 参考资料
@@ -73,3 +75,7 @@ https://e2echina.ti.com/question_answer/wireless_connectivity/bluetooth/f/103/t/
 7、Android蓝牙通信过程详解
 
 https://cloud.tencent.com/developer/news/216558
+
+8、
+
+https://blog.csdn.net/zzfenglin/article/details/51304084

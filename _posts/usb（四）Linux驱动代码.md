@@ -3,7 +3,7 @@ title: usb（四）Linux驱动代码
 date: 2018-04-05 11:35:27
 tags:
 	- usb
-typora-root-url: ..\
+typora-root-url: ../
 ---
 
 

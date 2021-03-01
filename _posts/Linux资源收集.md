@@ -18,6 +18,26 @@ http://kernel.meizu.com/
 
 http://www.wowotech.net
 
+这个对Linux驱动模型，设备树，子系统，以及蓝牙讲得非常好。
+
+
+
+Linux usb子系统
+
+https://www.cnblogs.com/cslunatic/p/3726053.html
+
+
+
+input子系统
+
+https://www.jianshu.com/p/e9cfae59e3df
+
+
+
+led子系统
+
+https://blog.csdn.net/hanp_linux/article/details/79037610
+
 
 
 Linux内核之旅

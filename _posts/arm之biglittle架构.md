@@ -28,6 +28,41 @@ little核心就是女人，干不了太重的活，但是吃得少。
 
 A53和A57也可以搭配，因为它们都是armv8的架构。
 
+在Linux下的document目录下的cpu.txt里。
+
+```
+Example 1 (dual-cluster big.LITTLE system 32-bit):
+
+	cpus {
+		#size-cells = <0>;
+		#address-cells = <1>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a15";
+			reg = <0x0>;
+		};
+
+		cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a15";
+			reg = <0x1>;
+		};
+
+		cpu@100 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a7";
+			reg = <0x100>;
+		};
+
+		cpu@101 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a7";
+			reg = <0x101>;
+		};
+	};
+```
+
 
 
 big little和smp有什么关系？

@@ -7,7 +7,7 @@ tags:
 
 
 
-#中断分类
+# 中断分类
 
 根据中断的来源，
 
@@ -111,7 +111,7 @@ tasklet就是基于软中断来实现的。tasklet和软中断的处理函数里
 
 
 
-#参考文章
+# 参考文章
 
 http://blog.chinaunix.net/uid-20528014-id-3068412.html
 

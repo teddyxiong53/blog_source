@@ -8,7 +8,7 @@ tags:
 
 
 
-#request_threaded_irq接口的使用
+# request_threaded_irq接口的使用
 
 一般我们都是用request_irq，request_irq是对request_threaded_irq的封装，把thread_fn设置为NULL的。
 

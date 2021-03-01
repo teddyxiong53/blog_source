@@ -226,7 +226,7 @@ brw-rw----    1 0        0          31,   3 Mar 24  2018 /dev/mtdblock3
 / # 
 ```
 
-#sbull
+# sbull
 
 现在看ldd3的代码例子sbull来学习。
 

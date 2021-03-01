@@ -437,3 +437,9 @@ https://www.cnblogs.com/libs-liu/p/9243500.html
 6、
 
 https://blog.csdn.net/yuanzhangmei1/article/details/25074059
+
+7、
+
+这里有hci事件列表。
+
+https://blog.csdn.net/XiaoXiaoPengBo/article/details/107642939
