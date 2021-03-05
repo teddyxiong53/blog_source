@@ -49,7 +49,7 @@ int main()
 
 
 
-#std::thread详解
+# std::thread详解
 
 ## 构造函数
 

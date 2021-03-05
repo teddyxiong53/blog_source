@@ -47,10 +47,10 @@ pcm.dmixer  {
     ipc_key 1025
     slave {
         pcm "hw:0,0"
-        period_time 0
-        period_size 4096
+        period_time 0 us单位
+        period_size 4096 字节
         buffer_size 16384 
-        periods 128
+        periods 128  
         rate 44100
     }
     bindings {
@@ -59,6 +59,8 @@ pcm.dmixer  {
     }
 }
 ```
+
+测试混音，就在命令行，有2个命令分别播放音乐，要可以听出2个音乐，而不是杂音。
 
 
 

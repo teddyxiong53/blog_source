@@ -12,27 +12,79 @@ tags:
 
 
 
-ALSA分为两部分：一部分是在Linux Kernel的声卡驱动，主要是对声卡硬件（支持的采样率、声道、格式等）的描述和抽象；另一部分是在User Space的alsa-lib，有一套插件机制，包括resampling、mixing、channel mapping等功能都可以通过插件实现。
+ALSA分为两部分：
 
-有ALSA还不够，比如说，对多个应用同时播放的支持，虽然可以通过ALSA的dmix插件实现，但不够好。所以PulseAudio作为一个Sound Server登场了，PulseAudio来接管各种音频的输入输出，包括ALSA音频、蓝牙音频、网络音频等；会自动切换声卡，比如有USB声卡接入，播放自动切到USB声卡；还有控制每个应用独立的音量，等等。现在Linux桌面发行版大多都默认安装了PulseAudio。
+一部分是在Linux Kernel的声卡驱动，
+
+主要是对声卡硬件（支持的采样率、声道、格式等）的描述和抽象；
+
+另一部分是在User Space的alsa-lib，
+
+有一套插件机制，包括resampling、mixing、channel mapping等功能都可以通过插件实现。
 
 
 
-另一个类似PulseAudio的Sound Server是JACK Audio Connection Kit，JACK针对的是实时性高、低延时的专业音频应用。还有一个正在火热开发的新项目叫PipeWire，其设计目标是集合PulseAudio + Jack两者的优点，加入权限管理的安全机制，另外添加了对视频（摄像头设备）分发和管理的支持。PipeWire看起来很有前景，值得关注一下。
+有ALSA还不够，
+
+比如说，对多个应用同时播放的支持，
+
+虽然可以通过ALSA的dmix插件实现，但不够好。
+
+所以PulseAudio作为一个Sound Server登场了，
+
+PulseAudio来接管各种音频的输入输出，
+
+包括ALSA音频、蓝牙音频、网络音频等；
+
+**会自动切换声卡，比如有USB声卡接入，播放自动切到USB声卡；**
+
+还有控制每个应用独立的音量，等等。
+
+**现在Linux桌面发行版大多都默认安装了PulseAudio。**
 
 
 
-有了PulseAudio、JACK和PipeWire，他们都有提供各自的API，那么我们先要录音和播放，到底选择用哪种API呢？
+另一个类似PulseAudio的Sound Server是JACK Audio Connection Kit，
+
+JACK针对的是实时性高、低延时的**专业音频应用**。
+
+还有一个正在火热开发的新项目叫PipeWire，
+
+其设计目标是集合PulseAudio + Jack两者的优点，
+
+加入权限管理的安全机制，另外添加了对视频（摄像头设备）分发和管理的支持。
+
+PipeWire看起来很有前景，值得关注一下。
+
+
+
+有了PulseAudio、JACK和PipeWire，
+
+他们都有提供各自的API，那么我们先要录音和播放，到底选择用哪种API呢？
+
+
 
 **对于大部分应用，最佳的选择依然是用ALSA的API。**
 
 
 
- PCM设备与声卡设备有所不同，PCM设备可以由ALSA的插件产生。系统安装PulseAudio之后，ALSA pulse插件会生成名为`pulse`的PCM设备，且这pulse会被设为默认设备。 如果不用PulseAudio，想实现同时多个应用播放和录音可以使用`dmix`和`dsnoop`插件，这两个插件支持采样频率、通道和格式有限，通常会在这俩之上加上`plug`插件，多个插件可以（有限的）级联在一起使用的 。
+PCM设备与声卡设备有所不同，PCM设备可以由ALSA的插件产生。
+
+系统安装PulseAudio之后，
+
+ALSA pulse插件会生成名为`pulse`的PCM设备，且这pulse会被设为默认设备。
+
+ 如果不用PulseAudio，想实现同时多个应用播放和录音可以使用`dmix`和`dsnoop`插件，
+
+这两个插件支持采样频率、通道和格式有限，
+
+通常会在这俩之上加上`plug`插件，多个插件可以（有限的）级联在一起使用的 。
 
 
 
-个人来说，最推荐前面直接用`aplay`和`arecord`重定向的方式，没什么依赖， 稳定可靠，重定向的pipe提供缓冲功能，而且是多进程跑。
+个人来说，最推荐前面直接用`aplay`和`arecord`重定向的方式，
+
+没什么依赖， 稳定可靠，重定向的pipe提供缓冲功能，而且是多进程跑。
 
 
 
@@ -48,15 +100,33 @@ ALSA分为两部分：一部分是在Linux Kernel的声卡驱动，主要是对�
 
 四是default。
 
-至于一是清楚了，二和二以上可以做数据转换，以支持一个动态的范围，比如你要播放7000hz的东西，那么就可以用二和二以上的。而你用7000hz作为参数，去设置一，就会报错。三和四，支持软件混音。我觉得default:0表示对第一个声卡软件混音，default表示对整个系统软件混音。
+至于一是清楚了，
+
+二和二以上可以做数据转换，以支持一个动态的范围，
+
+比如你要播放7000hz的东西，那么就可以用二和二以上的。
+
+而你用7000hz作为参数，去设置一，就会报错。
+
+三和四，支持软件混音。
+
+我觉得default:0表示对第一个声卡软件混音，default表示对整个系统软件混音。
+
+
 
 这里提出两点：
 
 1.1.1 一般为了让所有的程序都可以发音，为使用更多的默认策略，我们选用三和四，这样少一些控制权，多一些方便。
 
-1.1.2 对不同的层次的设备，相同的函数，结果可能是不一样的。比如，设置Hardware Parameters里的period和buffer size，这个是对硬件的设置，所以，default和default:0这两种设备是不能设置的。
+1.1.2 对不同的层次的设备，相同的函数，结果可能是不一样的。
 
-如果直接操作hw:0,0，那么snd_pcm_writei只能写如8的倍数的frame，比如16、24等，否则就会剩下一点不写入而退回，而 default，就可以想写多少就写多少，我们也不必要关心里面具体的策略。
+比如，设置Hardware Parameters里的period和buffer size，这个是对硬件的设置，
+
+所以，default和default:0这两种设备是不能设置的。
+
+如果直接操作hw:0,0，那么snd_pcm_writei只能写如8的倍数的frame，比如16、24等，
+
+否则就会剩下一点不写入而退回，而 default，就可以想写多少就写多少，我们也不必要关心里面具体的策略。
 
 
 

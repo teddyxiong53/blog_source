@@ -7,7 +7,7 @@ tags:
 
 
 
-#构造函数后面的冒号是什么意思？
+# 构造函数后面的冒号是什么意思？
 
 看arduino的代码。看Print类。
 
@@ -85,9 +85,7 @@ namespace ns_with_long_name {
 namespace ns_short = ns_with_long_name;//这样就定义了别名了。
 ```
 
-# std命名空间有什么内容
 
-其实也没有多少，就是cin、cout、cerr这些。
 
 
 
@@ -115,7 +113,7 @@ namespace ns_short = ns_with_long_name;//这样就定义了别名了。
 
 ## 为什么用引用做形参？
 
-引用在这个场景的作用就跟指针类型了。可以修改参数的值。
+引用在这个场景的作用就跟指针类似了。可以修改参数的值。
 
 ## 有没有引用的引用？
 

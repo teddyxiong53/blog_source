@@ -143,9 +143,19 @@ boost lib version1_72
 
 可见生效了。
 
+测试asio的可用性。
+
+在上面代码里加上
+
+```
+#include <boost/asio.hpp>
+```
+
+编译需要-lpthread。不然报错。
 
 
-参考资料
+
+# 参考资料
 
 1、boost
 

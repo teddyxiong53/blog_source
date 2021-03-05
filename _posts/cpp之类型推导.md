@@ -88,7 +88,7 @@ decltype(i) j = y; // const int& j = y;
 
 
 
-##decltype应用
+## decltype应用
 
 主要是用在泛型编程里。
 

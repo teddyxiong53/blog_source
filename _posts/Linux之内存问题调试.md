@@ -12,7 +12,7 @@ tags:
 
 可以通过下面这些文件和手段来帮助定位。
 
-#1、/proc/sys/vm/min_free_kbytes
+# 1、/proc/sys/vm/min_free_kbytes
 
 这个是系统开始回收内存的阈值，当内存小于这个值的时候，就开始回收内存。
 
@@ -29,7 +29,7 @@ tags:
 10240
 ```
 
-#2、/proc/sys/vm/drop_caches
+# 2、/proc/sys/vm/drop_caches
 
 这个是用来清空缓存的。
 
@@ -63,7 +63,7 @@ Swap:            0          0          0
 
 3：都清理。
 
-#3、/proc/sysrq-trigger
+# 3、/proc/sysrq-trigger
 
 打印内存信息。
 

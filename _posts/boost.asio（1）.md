@@ -38,6 +38,10 @@ openssl
 
 你在写自己的代码之前，就要决定好是使用同步还是异步方式，中途做改变不是一件容易的事情。
 
+一般都是使用异步的方式，如果没有异步需求，说明场景很简单。使用普通的socket接口就够用了。
+
+
+
 使用同步方式的简单代码：
 
 ```
@@ -324,6 +328,18 @@ strand的主要作用是在asio中利用多线程进行事件处理的时候，
  但是若我们将这些事件处理函数**bind到同一个strand对象上，**
 
 那么asio库保证在上一个事件处理函数处理完成之前是没法执行下一个事件处理函数的（相当于阻止了并发执行）。
+
+
+
+看一个简单的例子。
+
+
+
+
+
+参考资料
+
+https://www.cnblogs.com/upendi/archive/2012/07/13/2590304.html
 
 
 
@@ -645,7 +661,176 @@ boost::asio::buffer里面的参数填string对象和vector<char>对象，有可�
 
 
 
-参考资料
+# 异步写测试例子
+
+## 定时器
+
+```
+#include <boost/asio.hpp>
+#include <iostream>
+
+void handler(const boost::system::error_code &ec)
+{
+    std::cout << "time out\n";
+}
+
+int main(int argc, char const *argv[])
+{
+    boost::asio::io_context ioc;
+    boost::asio::deadline_timer timer(ioc, boost::posix_time::seconds(1));
+    timer.async_wait(handler);
+    ioc.run();
+    std::cout << "end of code\n";
+    return 0;
+}
+```
+
+在 main() 的最后，再次在唯一的 I/O 服务之上调用了 run() 方法。 
+
+如前所述，这个函数将阻塞执行，
+
+把控制权交给操作系统以接管异步处理。 
+
+在操作系统的帮助下，handler1() 函数会在五秒后被调用，而 handler2() 函数则在十秒后被调用。  
+
+乍一看，你可能会觉得有些奇怪，
+
+为什么异步处理还要调用阻塞式的 run() 方法。
+
+ 然而，由于应用程序必须防止被中止执行，所以这样做实际上不会有任何问题。
+
+ 如果 run() 不是阻塞的，main() 就会结束从而中止该应用程序。 
+
+如果应用程序不应被阻塞，那么就应该在一个新的线程内部调用 run()，它自然就会仅仅阻塞那个线程。
+
+
+
+Boost.Asio 提供了多个 I/O 对象以开发网络应用。 
+
+以下例子使用了 boost::asio::ip::tcp::socket 类来建立与中另一台PC的连接，
+
+并下载 'Highscore' 主页；
+
+就象一个浏览器在指向 www.highscore.de 时所要做的。
+
+## tcp client读取网页
+
+```
+#include <boost/asio.hpp>
+#include <iostream>
+#include <boost/array.hpp>
+
+
+
+boost::asio::io_context ioc;
+boost::asio::ip::tcp::resolver resolver(ioc);
+boost::asio::ip::tcp::socket sock(ioc);
+boost::array<char, 4096> buffer;
+
+void read_handler(const boost::system::error_code& ec, std::size_t bytes_transferred)
+{
+    if(!ec) {
+        std::cout << std::string(buffer.data(), bytes_transferred);
+        sock.async_read_some(boost::asio::buffer(buffer), read_handler);
+    }
+}
+
+void connect_handler(const boost::system::error_code &ec)
+{
+    if(!ec) {
+        boost::asio::write(sock, boost::asio::buffer("GET / HTTP 1.1\r\nHost: www.baidu.com\r\n\r\n"));
+        sock.async_read_some(boost::asio::buffer(buffer), read_handler);
+    }
+}
+
+void resolve_handler(const boost::system::error_code &ec,
+    boost::asio::ip::tcp::resolver::iterator it
+)
+{
+    if(!ec) {
+        sock.async_connect(*it, connect_handler);
+    }
+}
+int main(int argc, char const *argv[])
+{
+    boost::asio::ip::tcp::resolver::query query("www.baidu.com","80");
+    resolver.async_resolve(query, resolve_handler);
+    ioc.run();
+    return 0;
+}
+```
+
+这个程序最明显的部分是三个句柄的使用：
+
+connect_handler() 和 read_handler() 函数会分别在连接被建立后以及接收到数据后被调用。
+
+ 那么为什么需要 resolve_handler() 函数呢？
+
+互联网使用了所谓的IP地址来标识每台PC。
+
+ IP地址实际上只是一长串数字，难以记住。 
+
+而记住象 www.highscore.de 这样的名字就容易得多。 
+
+为了在互联网上使用类似的名字，需要通过一个叫作[域名解析](https://cloud.tencent.com/product/cns?from=10680)的过程将它们翻译成相应的IP地址。
+
+ 这个过程由所谓的域名解析器来完成，对应的 I/O 对象是：boost::asio::ip::tcp::resolver。 
+
+
+
+域名解析也是一个需要连接到互联网的过程。
+
+ 有些专门的PC，被称为DNS服务器，
+
+其作用就象是电话本，它知晓哪个IP地址被赋给了哪台PC。 
+
+由于这个过程本身的透明的，只要明白其背后的概念以及为何需要 boost::asio::ip::tcp::resolver I/O 对象就可以了。 
+
+由于域名解析不是发生在本地的，所以它也被实现为一个异步操作。
+
+ 一旦域名解析成功或被某个错误中断，resolve_handler() 函数就会被调用。
+
+## 简单的tcp server
+
+```
+#include <boost/asio.hpp>
+#include <iostream>
+#include <boost/array.hpp>
+
+
+boost::asio::io_context ioc;
+boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), 8082);
+boost::asio::ip::tcp::acceptor acceptor(ioc, endpoint);
+boost::asio::ip::tcp::socket sock(ioc);
+
+void write_handler(const boost::system::error_code &ec, std::size_t sz)
+{
+    std::cout << "write finish\n";
+}
+void accept_handler(const boost::system::error_code &ec)
+{
+    if(!ec) {
+        boost::asio::async_write(sock, boost::asio::buffer("hello asio"), write_handler);
+    }
+}
+int main(int argc, char const *argv[])
+{
+    acceptor.listen();
+    acceptor.async_accept(sock, accept_handler);
+    ioc.run();
+    return 0;
+}
+```
+
+
+
+
+
+https://cloud.tencent.com/developer/article/1056970
+
+
+
+# 参考资料
 
 1、Boost.Asio入门
 

@@ -13,11 +13,11 @@ tags:
 
 
 
-#av_packet_alloc
+# av_packet_alloc
 
 从一个文件里读取一个packet的数据。是编码后的数据。例如aac的。
 
-#avcodec_find_decoder
+# avcodec_find_decoder
 
 这个是查找并分配一个AVCodec结构体。
 
@@ -31,7 +31,7 @@ static const AVCodec * const codec_list[] = {
 
 
 
-#av_parser_init
+# av_parser_init
 
 得到一个AVCodecParserContext结构体。参数是AVCodec的id。
 
