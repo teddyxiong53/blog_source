@@ -88,3 +88,25 @@ void seq_printf(struct seq_file *m, const char *f, ...)
 
 ```
 
+# proc_create和create_proc_entry区别
+
+create_proc_entry 这个已经废弃了。
+
+在现在的内核代码里，已经搜索不到这个了。
+
+都是用proc_create接口了。
+
+
+
+# single_open
+
+**如果open函数使用了single_open，release函数必须为single_release**
+
+这个是一个封装了对seq_operations的分配和释放的工具函数。
+
+比你定义一个静态的seq_operations变量，要简单一些。
+
+是处理简单的proc文件的情况。
+
+例如显示cmdline就是用了这个。
+

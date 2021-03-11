@@ -1,0 +1,23 @@
+struct device_node *node, *pp;
+node = dev->of_node;
+
+
+//拿到子节点的个数
+nbuttons = of_get_child_count(node);
+
+//这个是返回void *，
+!!of_get_property(node, "autorepeat", NULL);
+//遍历gpios这个节点
+for_each_child_of_node(node, pp) {
+//返回gpio id，同时给flags设置一下标志
+button->gpio = of_get_gpio_flags(pp, 0, &flags);
+//拿到irq id
+button->irq = irq_of_parse_and_map(pp, 0);
+
+//判断一个gpio是不是合法的
+gpio_is_valid(button->gpio)
+
+//读取u32属性，返回0表示成功。
+of_property_read_u32(pp, "linux,code", &button->code)
+//读取bool属性
+of_property_read_bool(pp, "wakeup-source")
