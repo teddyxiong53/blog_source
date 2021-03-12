@@ -6,7 +6,9 @@ tags:
 
 ---
 
-1
+--
+
+
 
 什么是mixer？主要起什么作用？
 
@@ -15,6 +17,71 @@ mixer从字面含义看，是混音器的意思。那么起的作用就是把多
 我现在是希望通过db值来设置音量，网上找了一个资料，就是使用了mixer的接口来做的。
 
 但是我对mixer并不太了解，所以就以此为契机，进行一下了解。
+
+
+
+mixer:
+
+用来控制多个输入、输出的音量,
+
+也控制输入(microphone,line-in,CD)之间的切换，
+
+可以将多个信号组合或者叠加在一起。
+
+声卡上的混音器由**多个混音通道组成**，
+
+它们可以通过声卡驱动程序提供的设备文件/dev/mixer进行编程（对混音器进行操作的软件接口），
+
+混音器主要是对声卡的输入增益和输出增益进行调节。
+
+**混音器的操作不符合典型的读/写操作模式，**
+
+**除了open和close系统调用，大部分通过ioctl系统调用来完成的。**
+
+与/dev/dsp不同，/dev/mixer允许多个应用程序同时访问，
+
+并且混音器的设置值会一直保持到对应的设备文件被关闭为止。
+
+Linux上的声卡驱动程序大多都支持将混音器的ioctl操作直接应用到声音设备上，
+
+也就是说如果已经打开了/dev /dsp，那么就不用再打开/dev/mixer来对混音器进行操作，
+
+而是可以直接用打开/dev/dsp时得到的文件标识符来设置混音器。
+
+常用的mixer控制有
+
+```
+SOUND_MIXER_VOLUME 主音量调节
+SOUND_MIXER_BASS 低音控制
+SOUND_MIXER_TREBLE 高音控制
+SOUND_MIXER_SYNTH FM 合成器
+SOUND_MIXER_PCM 主D/A 转换器
+SOUND_MIXER_SPEAKER PC 喇叭
+SOUND_MIXER_LINE 音频线输入
+SOUND_MIXER_MIC 麦克风输入
+SOUND_MIXER_CD CD 输入
+SOUND_MIXER_IMIX 放音音量
+SOUND_MIXER_ALTPCM 从D/A 转换器
+SOUND_MIXER_RECLEV 录音音量
+SOUND_MIXER_IGAIN 输入增益
+SOUND_MIXER_OGAIN 输出增益
+SOUND_MIXER_LINE1 声卡的第1 输入
+SOUND_MIXER_LINE2 声卡的第2 输入
+SOUND_MIXER_LINE3 声卡的第3 输入
+```
+
+alsa框架下的是/dev/snd/controlC0这样的文件名来打开mixer。
+
+```
+snprintf(fn, sizeof(fn), "/dev/snd/controlC%u", card);
+    fd = open(fn, O_RDWR);
+```
+
+
+
+
+
+
 
 打开alsa-lib的代码，在src/mixer目录下，放的就是mixer相关代码。
 
@@ -169,8 +236,20 @@ min:-5100, max:0
 
 
 
-参考资料
+# 参考资料
 
 1、
 
 https://stackoverflow.com/questions/19489343/set-alsa-master-volume-in-db-from-c-code
+
+2、Linux音频编程（三）混音器介绍
+
+https://www.cnblogs.com/L-102/p/11526525.html
+
+3、ALSA编程之libasound2库的使用——controls篇
+
+这个里面的鱼骨图画得不错。值得学习。
+
+接口梳理也清楚，示例代码不错。不过示例代码跟alsa-lib下面的test的control.c的差不多。
+
+https://blog.csdn.net/oyoung_2012/article/details/79664491
