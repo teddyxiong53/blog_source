@@ -5,7 +5,7 @@ tags:
 	- Linux
 ---
 
-1
+--
 
 udev的工作是靠kernel发出的uevent来驱动的，如果是删除的uevent，就会删除对应的节点。如果是增加设备的uevent，就会增加对应的节点。
 
@@ -42,6 +42,51 @@ SUBSYSTEM=="udc",ACTION=="change",DRIVER=="configfs-gadget",RUN+="/usr/bin/usbde
 
 
 
+多个相同设备会出现相同的产品号和相同的设备号，系统就无法与其中的一个设备进行绑定
+
+为了解决多设备问题，可以利用usb串口id进行区分两个设备
+
+执行这个命令：
+
+```
+udevadm info --attribute-walk --name=/dev/ttyUSB0
+```
+
+简单一点这样：
+
+```
+udevadm info /dev/ttyUSB0
+```
+
+现在需要达到的目的，就是插在某个口上的设备，只要不换口，就固定为某个名字。不管中间是否有插拔，不管电脑是否重启。
+
+```
+ID_PATH=pci-0000:00:14.0-usb-0:2.1:1.0
+```
+
+这个字符串，具体怎么理解？
+
+我把usb，从一个口插到另外一个口上后，可以发现数字上是有一点变化的。
+
+```
+E: ID_PATH=pci-0000:00:14.0-usb-0:2.1:1.0
+E: ID_PATH=pci-0000:00:14.0-usb-0:2.4:1.0
+```
+
+
+
+```
+SUBSYSTEM=="tty", ENV{ID_PATH}=="pci-0000:00:14.0-usb-0:1.1:1.0", MODE:="0666", SYMLINK+="/dev/S420_powerRelay"
+```
+
+
+
+
+
+所以， 可以将devpath 属性作为区分每个设备的关键词
+
+
+
 参考资料
 
 1、udev规则
@@ -51,3 +96,17 @@ http://blog.chinaunix.net/uid-26808060-id-4339831.html
 2、Linux udev规则编写
 
 https://blog.csdn.net/xiaoliu5396/article/details/46531893
+
+3、
+
+https://blog.csdn.net/zhangyuehuan/article/details/52946841
+
+4、Ubuntu系统USB自定义名称与设备号绑定方法
+
+https://blog.csdn.net/qq_31329259/article/details/112232180
+
+5、【Ubuntu】绑定串口号
+
+这个是我要的。
+
+https://blog.csdn.net/qq_37946291/article/details/98881357

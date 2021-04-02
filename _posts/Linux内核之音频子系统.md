@@ -34,7 +34,7 @@ Enable "OSS API emulation" (CONFIG_SND_OSSEMUL)
 
 # ASOC
 
-asoc是为了给soc提供更好的alsa支持。
+**asoc是为了给soc提供更好的alsa支持。**
 
 在引入asoc之前，存在的问题：
 
@@ -64,7 +64,9 @@ asoc有如下特点：
 
 3、machine类driver。
 
-## codec类驱动
+## codec
+
+### codec类驱动
 
 每一个codec类驱动应该提供：
 
@@ -84,9 +86,9 @@ asoc有如下特点：
 
 跟sound/soc/codecs目录下的文件结合一起看。
 
-每一个codec驱动，都必须有一个snd_soc_dai_driver结构体，来描述DAI和PCM能力和操作。
+**每一个codec驱动，都必须有一个snd_soc_dai_driver结构体**，来描述DAI和PCM能力和操作。
 
-这个结构体对外暴露，这样你的machine driver就可以把这个codec driver注册到系统。
+这个结构体对外暴露，**这样你的machine driver就可以把这个codec driver注册到系统。**
 
 举例：
 
@@ -122,9 +124,9 @@ struct snd_soc_dai_driver wm8731_dai = {
 
 codec一般的通过spi或者i2c来进行控制的。
 
-AC97接口特殊一些，它的控制信号也是走数据通路的。
+**AC97接口特殊一些，它的控制信号也是走数据通路的。**
 
-统一用regmap来传递控制信号。
+**统一用regmap来传递控制信号。**
 
 AC97是5线接口。在PC上用的多。
 
@@ -142,10 +144,135 @@ PCM有两种模式：
 
 
 
-参考资料
+### mixer和control
+
+所有的mixer和control，都可以用soc.h里的这个宏来定义
+
+```
+#define SOC_SINGLE(xname, reg, shift, mask, invert)
+```
+
+xname：mixer的名字，例如“Playback volume”
+
+reg：codec的寄存器。
+
+shift：寄存器里的bit位移。
+
+mask：控制的bit的mask。例如7表示3个bit。
+
+invert：是否invert。
+
+还有其他几个类似的宏。
+
+### codec audio ops
+
+对应结构体struct snd_soc_ops 
+
+```
+
+```
+
+## dai
+
+dai是数字音频接口的缩写。
+
+asoc现在支持3个主要的dai：ac97、i2s、pcm。
+
+## platform
+
+asoc platform driver可以分为：
+
+1、audio dma driver。
+
+2、soc dai driver。
+
+3、dsp driver。
+
+platform driver必须跟cpu相关，不跟具体的board相关。
+
+## machine
+
+asoc machine driver是把codec driver、platform、dai这些驱动粘合到一起的驱动。
+
+对应的结构体是snd_soc_card。
+
+
+
+对于目前嵌入式系统上的声卡驱动开发，我们建议读者尽量采用 ASoC 框架， ASoC 主要
+由 3 部分组成。
+
+Codec 驱动。这一部分只关心 Codec 本身，与 CPU 平台相关的特性不由此部分操作。
+平台驱动。这一部分只关心 CPU 本身，不关心 Codec。它主要处理两个问题： DMA 引擎和 SoC 集成的 PCM、 I2S 或 AC ‘97 数字接口控制。
+
+板驱动（也称为 machine 驱动）。这一部分将平台驱动和 Codec 驱动绑定在一起，描述了板一级的硬件特征。
+
+
+
+在以上 3 部分中， 1 和 2 基本都可以仍然是通用的驱动了，
+
+也就是说， Codec 驱动认为自己可以连接任意 CPU，
+
+而 CPU 的 I2S、 PCM 或 AC ‘97 接口对应的平台驱动则认为自己可以连接任
+意符合其接口类型的 Codec，
+
+只有 3 是不通用的，
+
+由特定的电路板上具体的 CPU 和 Codec 确定，
+
+**因此它很像一个插座，上面插上了 Codec 和平台这两个插头。**
+
+**在以上三部分之上的是 ASoC 核心层，**
+
+由内核源代码中的 sound/soc/soc-core.c 实现，
+
+查看其源代码发现它完全是一个传统的 ALSA 驱动。
+
+因此，对于基于 ASoC 架构的声卡驱动而言， alsa-lib以及 ALSA 的一系列 utility 仍然是可用的，
+
+如 amixer、 aplay 均无需针对 ASoC 进行任何改动。
+
+而ASoC 的用户编程方法也与 ALSA 完全一致。
+
+
+
+
+
+由上图我们可以看出，3.0中的数据结构更为合理和清晰，
+
+取消了snd_soc_device结构，
+
+直接用snd_soc_card取代了它，
+
+并且强化了snd_soc_pcm_runtime的作用，
+
+同时还增加了另外两个数据结构snd_soc_codec_driver和snd_soc_platform_driver，
+
+用于明确代表Codec驱动和Platform驱动。
+
+
+
+# 参考资料
 
 1、linux驱动由浅入深系列：tinyalsa(tinymix/tinycap/tinyplay/tinypcminfo)音频子系统之一
 
 https://blog.csdn.net/radianceblau/article/details/64125411
 
 2、Documentation/sound/alsa目录下的文档
+
+3、
+
+https://blog.csdn.net/syh63053767/article/details/9126869
+
+4、Linux音频子系统
+
+这个是系列，但是分析的是2.6版本的，太老了。
+
+https://blog.csdn.net/droidphone/category_1118446.html
+
+这个比较新。
+
+https://blog.csdn.net/vertor11/article/details/79211719
+
+5、
+
+https://blog.csdn.net/moonlinux20704/article/details/88417361

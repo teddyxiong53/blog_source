@@ -473,3 +473,10 @@ https://blog.csdn.net/Luoshengyang/article/details/18195205
 
 https://www.jianshu.com/p/9e6097093854
 
+9、Repo Cheatsheet
+
+https://docs.sel4.systems/projects/buildsystem/repo-cheatsheet.html
+
+manifest的xml里元素详解。
+
+https://gerrit.googlesource.com/git-repo/+/master/docs/manifest-format.md

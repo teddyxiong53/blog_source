@@ -1286,9 +1286,45 @@ of_property_read_bool(pp, "wakeup-source")
 
 ```
 
+# node的依赖关系
+
+## Static dependencies
+
+Let's check drivers init order:
+
+1. From
+
+   ```
+   am33xx-l4.dtsi
+   ```
+
+   file we can see that:
+
+   - GPIO controller: `compatible = "ti,omap4-gpio"`
+   - I2C controller: `compatible = "ti,omap4-i2c"`
+   - I2C device: `compatible = "microchip,mcp23008"`
+
+2. Corresponding drivers for those compatible strings are:
+
+   - GPIO controller: `drivers/gpio/gpio-omap.c`
+   - I2C controller: `drivers/i2c/busses/i2c-omap.c`
+   - I2C device: `drivers/pinctrl/pinctrl-mcp23s08.c`
+
+3. Those drivers are initialized on next initcalls:
+
+   - GPIO controller: `postcore_initcall` (=2)
+   - I2C controller: `subsys_initcall` (=4)
+   - I2C device: `subsys_initcall` (=4)
+
+So GPIO controller driver will be initialized before I2C drivers.
 
 
-参考文章
+
+参考资料
+
+https://stackoverflow.com/questions/57202134/device-tree-dependency-between-two-nodes
+
+# 参考文章
 
 1、
 http://www.eefocus.com/marianna/blog/14-10/306247_821be.html

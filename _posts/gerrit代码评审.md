@@ -223,7 +223,32 @@ gerrit的默认db是什么？
 
 
 
+# 问题
+
+## push review
+
+git push review HEAD:refs/for/master
+
+一般是用上面这个来推送到review。
+
+上面这一句具体是什么意思？
+
+refs/for/master怎么理解？
+
+
+
+refs/for :意义在于我们提交代码到服务器之后是需要经过code review 之后才能进行merge的
+refs/heads 不需要
+
+
+
 参考资料
+
+https://blog.csdn.net/u010312474/article/details/107915694
+
+
+
+# 参考资料
 
 1、Gerrit使用简介
 

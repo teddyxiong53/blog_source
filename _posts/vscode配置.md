@@ -328,6 +328,42 @@ http://www.ayqy.net/blog/vs-code%E6%BA%90%E7%A0%81%E7%AE%80%E6%9E%90/
 
 https://stackoverflow.com/questions/63043585/visual-studio-code-showing-java-11-or-more-recent-is-required-to-run-please-do
 
+# C语言格式化
+
+安装c/c++插件后，自动就安装了clangformat这个插件。
+
+但是这个格式化，默认是把左边大括号另外起一行。
+
+这个不符合我们的规则。
+
+看看怎么调整。
+
+用everything搜索ms-vscode.cpptools，找到这个目录下。
+
+C:\Users\hanliang.xiong\.vscode\extensions\ms-vscode.cpptools-1.2.2\LLVM\bin
+
+执行下面命令，生成默认的配置。
+
+```
+.\clang-format -style="llvm" --dump-config > .clang-format
+```
+
+然后用notepad++打开这个配置文件，进行编辑。
+
+然后进vscode的配置，Clang-format: Executable 填写clang-format运行位置的绝对路径 ,PS我就是这里没有设置才不生效的。
+
+```
+C:\Users\hanliang.xiong\.vscode\extensions\ms-vscode.cpptools-1.2.2\LLVM\bin\clang-format.exe
+```
+
+需要把下图这里改成WebKit。默认是file。file的方向需要你在代码目录下放一个.clang-format文件。就在上面生成的文件基础上修改就好了。
+
+我测试了一下，WebKit的，符合我的需要。就直接用WebKit的。
+
+![image-20210331131604752](../images/random_name/image-20210331131604752.png)
+
+https://blog.csdn.net/sinat_26685721/article/details/109906411
+
 
 
 
