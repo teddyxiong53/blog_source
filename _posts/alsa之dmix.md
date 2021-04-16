@@ -6,7 +6,17 @@ tags:
 
 ---
 
-1
+--
+
+pcm插件扩展了pcm device的功能。
+
+让pcm device可以允许底层sample转换，通道数据的copy。
+
+dmix插件提供了对多个stream的直接mix。
+
+对于不支持硬件mixing的声卡，dmix默认使能了。
+
+
 
 alsa自带了一个很简单的混音器dmix
 
@@ -107,7 +117,7 @@ ctl.!default {
 
 
 
-参考资料
+# 参考资料
 
 1、利用alsa dmix实现混音
 
@@ -124,3 +134,7 @@ https://github.com/Arkq/bluez-alsa/issues/4
 4、这里有个fifo配置。
 
 https://github.com/voice-engine/alsa_plugin_fifo
+
+5、这里有markdown文档，挺好的。
+
+https://github.com/opensrc/alsa/tree/master/lib/md

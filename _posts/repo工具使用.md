@@ -232,6 +232,8 @@ pro2 : pro2
 	
 ```
 
+如果已经repo init过一次，然后再repo init -m xx.xml，相当于把.repo/manifest.xml里的include的文件，替换为xx.xml文件。
+
 如果还没有同步过，repo init等价于：
 
 ```
@@ -438,6 +440,53 @@ path
 这个就是包含其他的xml文件。就一个name属性。描述xml文件的位置。
 
 
+
+# 固定版本
+
+要发布的时候，需要把当前的版本固定下来。
+
+这样的形式。
+
+```
+<project name="amlogic/tools/system_control" path="vendor/amlogic/system_control" revision="e9091be789ca740f62c53009e694ab2c39d8bd04" upstream="master"/>
+```
+
+有没有现成的命令？
+
+有，这样就可以。
+
+```
+repo manifest -r -o 20170120.xml
+```
+
+# 问题解决
+
+## cherry-pick问题
+
+报错
+
+```
+project buildroot/
+fatal: You have not concluded your cherry-pick (CHERRY_PICK_HEAD exists).
+Please, commit your changes before you merge.
+
+error: Cannot checkout linux/buildroot
+Updating files: 100% (5016/5016), done.
+```
+
+原因是我在buildroot下进行过cherry-pick的操作。
+
+解决方法：
+
+```
+git cherry-pick --abort 
+```
+
+然后再repo sync就好了。
+
+参考资料
+
+https://blog.csdn.net/qq_40147863/article/details/98647068
 
 # 参考资料
 

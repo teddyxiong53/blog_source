@@ -76,10 +76,16 @@ E: ID_PATH=pci-0000:00:14.0-usb-0:2.4:1.0
 
 
 ```
-SUBSYSTEM=="tty", ENV{ID_PATH}=="pci-0000:00:14.0-usb-0:1.1:1.0", MODE:="0666", SYMLINK+="/dev/S420_powerRelay"
+SUBSYSTEM=="tty", ENV{ID_PATH}=="pci-0000:00:14.0-usb-0:1.1:1.0", MODE:="0666", SYMLINK+="S420_powerRelay"
 ```
 
+SYMLINK+="S420_powerRelay" 这个不要写成SYMLINK+="/dev/S420_powerRelay"
 
+这样会生成到：
+
+```
+/dev/dev/S420_powerRelay"
+```
 
 
 

@@ -42,3 +42,7 @@ https://blog.csdn.net/happen23/article/details/50546259
 4、speex进行音频去噪
 
 https://www.bbsmax.com/A/VGzlojOwdb/
+
+5、Speex FAQ
+
+https://wiki.xiph.org/Speex_FAQ

@@ -34,8 +34,16 @@ gitlab每个项目都有自己的wiki，很方便查看。
 
 # 有关gitlab+gerrit+jenkins集成
 
-现在比较流行的CI系统，gitlab提供代码查看功能，gerrit保存真正得代码，jenkins通过plugin发布 gerrit上的代码。
+现在比较流行的CI系统，
+
+gitlab提供代码查看功能，
+
+gerrit保存真正得代码，
+
+jenkins通过plugin发布 gerrit上的代码。
+
 这样做没有体现出gitlab的特点，而且由于gerrit的权限问题，很多代码无法放在gitlab上，gitlab沦为代码查看工具，很多功能形同虚设。
+
 有关docker：
 考虑到公司将使用docker技术，对于dockerfile存放等问题，gitlab比gerrit支持的更好（因为权限，文件查看的问题）。
 
@@ -44,9 +52,16 @@ jenkins提供了plugin，可以通过从gitlab上拉取代码直接部署（已�
 
 总结
 **gerrit作为谷歌管理安卓项目的版本管理工具还是有其优点的，**
+
 **多部门之间的权限隔离，强制review的机制都是其优点，**
+
 反观gitlab作为github的开源版，遵循了一套开源的流程，比较符合大多数人得习惯。
+
 所以，通过比较，推荐使用gitlab作为版本管理工具，并且不与gerrit做集成。
+
+
+
+
 
 
 参考资料

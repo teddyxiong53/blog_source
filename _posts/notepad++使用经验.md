@@ -64,7 +64,7 @@ Ctrl + Shift + U：转大写。
 
 
 
-正则表达式使用经验
+# 正则表达式使用经验
 
 替换的时候，使用正则表达式，还是非常方便的。
 
@@ -109,7 +109,7 @@ C语言结构体，把内容拷贝出来，改造为json文件内容。
 
 
 
-参考资料
+# 参考资料
 
 1、在Linux系统上安装NotePad++的三种方法介绍
 
@@ -118,3 +118,9 @@ https://ywnz.com/linuxjc/5382.html
 2、
 
 https://www.crifan.com/files/doc/docbook/rec_soft_npp/release/htmls/npp_func_regex_replace.html
+
+3、3.4. Notepad++的正则表达式替换和替换
+
+这篇文章写得非常好。是crifan写的。
+
+http://shouce.jb51.net/notepad_book/npp_func_regex_replace.html

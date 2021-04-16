@@ -92,8 +92,114 @@ make
 
 
 
+![img](../images/random_name/753880-20160605121846586-1241135412.jpg)
+
+
+
+## autoscan: 
+
+扫描源代码以搜寻普通的可移植性问题，比如检查编译器，库，头文件等，生成文件configure.scan,它是configure.ac的一个雏形。
+
+## aclocal:
+
+根据已经安装的宏，用户定义宏和acinclude.m4文件中的宏
+
+将configure.ac文件所需要的宏集中定义到文件 aclocal.m4中。
+
+aclocal是一个perl 脚本程序，
+
+它的定义是：“aclocal - create aclocal.m4 by scanning configure.ac”
+
+
+
+## automake:
+
+将Makefile.am中定义的结构建立Makefile.in，
+
+然后configure脚本将生成的Makefile.in文件转换 为Makefile。
+
+如果在configure.ac中定义了一些特殊的宏，
+
+比如AC_PROG_LIBTOOL，它会调用libtoolize，
+
+否则它 会自己产生config.guess和config.sub
+
+
+
+## autoconf:
+
+将configure.ac中的宏展开，生成configure脚本。
+
+这个过程可能要用到aclocal.m4中定义的宏。
+
+
+
+以一个main.c和hello.h为例。
+
+先执行autoscan命令，得到configure.scan文件。
+
+手动修改configure.scan文件。然后把文件改名为configure.ac。
+
+然后执行aclocal命令。
+
+得到了aclocal.m4文件。内容较多，不去读里面的内容。
+
+然后执行autoconf命令。
+
+就生成了configure这个文件。
+
+内容也很多，不可读。
+
+然后执行autoheader命令。生成config.h.in文件。
+
+然后需要手动写Makefile.am文件。
+
+```
+AUTOMAKE_OPTIONS=foreign 
+bin_PROGRAMS=hello 
+hello_SOURCES=hello.cpp hello.h
+```
+
+然后执行automake，
+
+```
+automake --add-missing
+```
+
+这一步是为了上传Makefile.in，`--add-missing`是为了自动补全缺少的脚本。
+
+然后就可以进行configure和make了。
+
+
+
+
+
+noinst_HEADERS：
+
+这个表示该头文件只是参加可执行文件的编译，而不用安装到安装目录下。
+
+如果需要安装到系统中，可以用include_HEADERS来代替。
+
+
+
+一般推荐使用libtool库编译目标，
+
+因为automake包含libtool，这对于跨平台可移植的库来说，肯定是一个福音。
+
+
+
 参考资料
 
 1、Autotools 使用入门
 
 https://darktea.github.io/notes/2012/06/24/autotools.html
+
+2、
+
+这个很好，可以照着操作。
+
+https://blog.csdn.net/mao834099514/article/details/79544467
+
+3、
+
+https://blog.csdn.net/zmxiangde_88/article/details/8024223
