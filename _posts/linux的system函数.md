@@ -30,3 +30,8 @@ popen的用法
 
 
 
+参考资料
+
+1、ENV33-C. Do not call system()
+
+https://wiki.sei.cmu.edu/confluence/pages/viewpage.action?pageId=87152177

@@ -46,3 +46,27 @@ drwxr-xr-x 11 root root 4.0K Mar  9 23:35 kernel
 
 这个好像有点麻烦。我暂时不深入了。
 
+
+
+modprobe looks in
+       the module directory /lib/modules/`uname -r` for all the modules and other files, 
+
+except for the optional configuration files in the /etc/modprobe.d directory (see modprobe.d(5)). 
+
+modprobe will also use module options
+       specified on the kernel command line in the form of <module>.<option> and blacklists in the form of modprobe.blacklist=<module>.
+
+
+
+# modprobe跟alias关系
+
+
+
+
+
+# 参考资料
+
+1、
+
+https://github.com/linuxkit/linuxkit/issues/1742
+

@@ -6,6 +6,28 @@ tags:
 
 ---
 
+--
+
+这个是网页游戏性质的git教程，对于理解非常有好处。
+
+https://git.mo.mk/
+
+pro git，这个电子书很好。
+
+https://www.progit.cn/
+
+
+
+git的配置信息
+
+C:\Program Files\Git\etc\gitconfig：系统级的
+
+`C:\Users\hanliang.xiong\.gitconfig`: 用户级的
+
+.git/config ：项目级的
+
+范围越小的，优先级越高。
+
 
 
 首先要弄明白一点，
@@ -110,3 +132,7 @@ Git 是一个内容寻址文件系统，听起来很酷。
 1、
 
 https://git-scm.com/book/zh/v2/Git-%E5%86%85%E9%83%A8%E5%8E%9F%E7%90%86-%E5%BA%95%E5%B1%82%E5%91%BD%E4%BB%A4%E4%B8%8E%E4%B8%8A%E5%B1%82%E5%91%BD%E4%BB%A4#ch10-git-internals
+
+2、git源码剖析-init-db
+
+https://blog.csdn.net/sayhello_world/article/details/82877647
