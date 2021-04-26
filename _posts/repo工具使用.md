@@ -488,6 +488,241 @@ git cherry-pick --abort
 
 https://blog.csdn.net/qq_40147863/article/details/98647068
 
+## remotes/m/master->xx
+
+这个的箭头具体的内涵是什么？
+
+remotes/m/android-4.2.2_r1.2 -> refs/tags/android-4.2.2_r1.2
+
+所有以remotes/aosp/开头的分支都很好理解。就是在真正的远程服务器aosp上的库里，存在着对应的分支。
+
+有一个分支名称看起来很奇怪：remotes/m/android-4.2.2_r1.2
+
+更奇怪的是这个分支的名称后面还有一个箭头，指向另外一个名称。
+
+那么这个remotes/m/android-4.2.2_r1.2 -> refs/tags/android-4.2.2_r1.2到底是什么意思呢？
+
+
+
+其实并不神秘，首先看remotes/m/android-4.2.2_r1.2，
+
+这个就是一个repo的清单库的分支，也就是当你在执行repo init -U [URL] -b [branch_name]的时候，-b参数后面的分支。
+
+如果你repo init的时候，没有指定过-b参数。
+
+那么这里就会显示remotes/m/master。
+
+那么这个箭头后面的refs/tags/android-4.2.2_r1.2是什么呢？
+
+它就是在清单库里的default.xml里面指定的单个git库的revision值。
+
+需要说明的一点是，这个是repo工具自己添加的一个ref，只是利用了git的机制显示了出来。
+
+
+
+那么repo工具添加这个功能有什么用呢？其实就是为了让用户方便的知道自己目前工作在清单库的哪个分支上。当前的清单库的这个分支又引用了当前git库的哪个branch/tag上。
+
+
+
+## fatal: couldn't find remote ref refs/heads/master
+
+```
+这样的，是不能指定master分支的。
+remotes/m/master -> amlogic/m-amlogic
+这样的，才能使用默认的master分支。
+remotes/m/master -> amlogic/master
+```
+
+这个在文件里的体现就是
+
+```
+hanliang.xiong@walle01-sz:~/work/soundbar/code/vendor/amlogic/tdk/.git/refs/remotes$ tree
+.
+├── amlogic
+│   ├── openlinux
+│   │   ├── ott
+│   │   │   ├── q-amlogic
+│   │   │   ├── r-amlogic
+│   │   │   ├── r-amlogic-v3
+│   │   │   └── r-amlogic-v3-20210130
+│   │   └── tv
+│   │       └── p-amlogic-20190219
+│   ├── p-amlogic-hailstorm-2.1
+│   ├── projects
+│   │   └── openlinux
+│   │       └── bl-2.2.0
+│   ├── tdk-v2.4.4
+│   └── tdk-v3.8.0
+└── m
+    └── master
+
+7 directories, 10 files
+hanliang.xiong@walle01-sz:~/work/soundbar/code/vendor/amlogic/tdk/.git/refs/remotes$ cat m/master 
+ref: refs/remotes/amlogic/tdk-v2.4.4
+```
+
+
+
+参考资料
+
+https://blog.csdn.net/u013377887/article/details/107517060
+
+
+
+# repo加速
+
+现在很多企业的网络一般都比较快, 
+
+但是有的企业却会限速,
+
+ 如果需要从github和google code上面git clone大的仓库的话, 
+
+那么需要耗费的时间是很可观的,  
+
+例如从github或者google code, 
+
+或者其他托管服务站点获取Android中需要的多个Kernel仓库, 
+
+一般一个kernel仓库都有几GB, 如果是100KB/S的话, 那么将需要很长的时间.
+
+
+
+与此同时, 不同的Android 版本(AOSP)代码, 
+
+他们一般都会依赖许多相同的组件, 
+
+甚至获取相同的仓库代码, 仅仅只是branch或者tag不同而已, 
+
+例如对于Nexus 7 flo平板而言, 
+
+不管是AOSP 4.4 Kitkat还是 5.X Lolipop, 
+
+都会去下载flo-kernel这个内核, 
+
+他们都remote都是一样的, 
+
+唯一不同的是tag使用的不同, 
+
+因此如果我们已经获取过Kitkat的代码,那么就可以复用其中的bare repo, 
+
+从而达到快速clone.
+
+
+
+要了解如何做, 我们需要对AOSP的代码结构非常熟悉,
+
+ 一般而言, 如果是系统工程师,那么几乎对AOSP的每一个目录都会很熟悉, 
+
+对自己需要编译的target的依赖的每一个repo都几乎会心中有数(例如external中的哪些, vendor, device都会用到哪些), 
+
+这种情况下, 就可以删除某些仓库的下载, 从而节省时间.
+
+
+
+总结起来, 要节省git clone的时间就是从两个方面入手:
+
+
+
+- \1. 复用已经clone的bare repo
+- \2. 不要clone不需要的repo
+
+
+
+repo分析
+
+在实现前面的两点之前, 除了对AOSP的编译, 以及Target的依赖很熟悉外,
+
+ 我们还需要对google 的 repo工具以及其流程有个基本的熟悉和了解.
+
+repo的执行过程
+
+解析传入的args
+checkout下来最新的repo
+找到manifest的目录
+解析manifest.xml
+根据manifest或者其他xml文件调用git clone --bare-repo获取xml中定义的clone repo
+从.repo/projects中的bare repo根据manifest xml中的projects信息checkout到当前目录
+
+具体查看repo这个python脚本的源码.
+
+下面使用具体例子来讲解.
+
+repo init
+
+
+
+repo本身的checkout
+
+
+
+在repo init执行的时候会到: https://gerrit.googlesource.com/git-repo
+
+checkout最新的repo, checkout下来后放在了.repo/repo目录
+
+
+
+指定了从fetch/name这个位置clone, 
+
+因为repo本身会将所有的projects放到.repo/projects目录下面, 
+
+这个存放的位置就是由后面的groups来指定的, 
+
+例如上面的flounder-kernel的repo 本地bare repo位于:
+
+.repo/projects/device/flounder-kernel.git
+
+而这个repository的objects则位于:
+
+.repo/project-objects/aosp_device_asus_flo-kernel.git/
+
+最后xml还可以使用include来包含, 实现"重载"
+
+
+
+了解了repo的工作过程后,我们就可以想办法来重用以前的bare repository了, 也知道如何不去clone和建立不需要的project的bare repository.
+
+
+
+## 一种加速方法
+
+```
+repo init -u https://github.com/seL4/sel4test-manifest.git --no-clone-bundle --depth=1
+repo sync --jobs=8 --fetch-submodules --current-branch --no-clone-bundle
+```
+
+`--depth=1` 表示只下载最近版本的代码，只保留最近的commit版本。
+
+使用`--depth` 可以节省本地磁盘空间，加速下载，对于开发够用了。
+
+```
+repo sync -c -f --no-tags --no-clone-bundle -j`nproc`
+```
+
+-c 或者--current-branch表示只拉取当前分支代码，坑爹啊，我在init指定了分支，同步的时候，你却悄悄给我拉些没用的。
+
+--no-tags 不拉取tags，tag虽然不大，但架不住多
+
+--no-clone-bundle 不使用clone.bundle，clone.bundle是git bundle一样的打包文件，使用bundle文件可以做cdn下载的分流，cdn听上去不错，**但是如果cdn到google的服务器，或者clone.bundle本来就占空间，不是很划算，**所以不使用clone.bundle
+
+**-f 如果sync失败，继续同步（想想当年LZ写了一个while循环解决同步失败终止问题的）**
+**--force-sync 如果文件目录有差异，强制覆盖掉**
+
+ repo回滚
+repo sync -d 可以将所有git 仓库的HEAD重置为manifest文件的指定版本。同时，处于暂存或者修改的目录变化不会被重置。
+
+当然，-d 重置版本的妙用就是回滚，结合以下命令，可以让被指飞的git仓库门，全部恢复成干净的代码。
+
+repo sync -d
+repo forall -c 'git reset --hard'    # Remove all working directory (and staged) changes.
+repo forall -c 'git clean -f -d'     # Clean untracked files
+
+
+repo详解与如何更改manifest快速获取和复用AOSP代码
+
+https://blog.csdn.net/sy373466062/article/details/55190634
+
+
+
 # 参考资料
 
 1、Repo工具的使用
@@ -526,6 +761,10 @@ https://www.jianshu.com/p/9e6097093854
 
 https://docs.sel4.systems/projects/buildsystem/repo-cheatsheet.html
 
-manifest的xml里元素详解。
+10、manifest的xml里元素详解。
 
 https://gerrit.googlesource.com/git-repo/+/master/docs/manifest-format.md
+
+11、
+
+https://blog.csdn.net/counsellor/article/details/86591081

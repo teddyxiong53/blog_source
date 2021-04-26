@@ -51,3 +51,7 @@ https://blog.csdn.net/shuaifengyun/article/details/72472028
 2、什么是OPTEE-OS
 
 https://www.cnblogs.com/dakewei/p/10267774.html
+
+3、43. TA镜像文件的签名
+
+https://blog.csdn.net/shuaifengyun/article/details/74594861
