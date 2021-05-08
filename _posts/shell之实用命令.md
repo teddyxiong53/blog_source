@@ -6,13 +6,13 @@ tags:
 
 ---
 
-### 找出当前目录下最占用空间的子目录
+## 找出当前目录下最占用空间的子目录
 
 ```
 du -h --max-depth=1 ./
 ```
 
-### 同时查找多种文件
+## 同时查找多种文件
 
 ```
 find -name "Makefile" \
@@ -21,7 +21,7 @@ find -name "Makefile" \
 | xargs grep -nwr "generic\-package"
 ```
 
-### 排除几种文件
+## 排除几种文件
 
 ```
 find -type f ! -name "*.c" \
@@ -31,7 +31,7 @@ find -type f ! -name "*.c" \
  | xargs grep -nwr "PLATFORM_VERSION_CODENAME"
 ```
 
-### 查找拷贝
+## 查找拷贝
 
 ```
 find -name "*.so" -exec cp {} ./dst_dir \;
@@ -230,8 +230,49 @@ lsof -i:2335
 
 
 
-参考资料
+## ${}字符串的处理
 
-Linux Shell函数定义与调用
+```
+
+file=/a/b/c/1.2.txt
+
+echo ${file#*/} # a/b/c/1.2.txt
+
+echo ${file##*/} # 1.2.txt
+
+echo ${file#*.} # 2.txt
+
+echo ${file##*.} # txt
+
+echo ${file%/*} # /a/b/c
+
+echo ${file%%/*} # 删掉第一个/及其右边的值，那么就是空的了。
+
+echo ${file%.*} # 删掉最后一个点及其右边的内容。/a/b/c/1.2
+```
+
+记忆方法：
+
+```
+# 是去掉左边的，键盘上，#是在$的左边。
+% 是去掉右边的，键盘上，#是在%的右边。
+单个的#表示最小匹配，2个#表示最大匹配。
+```
+
+还可以做条件处理
+
+```
+${file:-1.txt} 加入file没有设定或者为空值，那么使用1.txt作为值。
+```
+
+
+
+## 参考资料
+
+1、Linux Shell函数定义与调用
 
 <https://www.cnblogs.com/lsdb/p/10148177.html>
+
+2、shell中的${}，##, %% , ：- ，：+， ？ 的使用
+
+https://blog.csdn.net/lee244868149/article/details/49781257/
