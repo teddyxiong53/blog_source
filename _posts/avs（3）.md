@@ -24,7 +24,7 @@ SettingsUpdatedEventSender
 
 
 
-#播放控制
+# 播放控制
 
 PlaybackRouterInterface
 
@@ -93,7 +93,7 @@ m_contextManager->getContext
 
 
 
-#PostConnectSynchronizer
+# PostConnectSynchronizer
 
 这个类的作用是：
 
@@ -710,7 +710,7 @@ m_audioInputProcessor->recognize
 
 
 
-#HTTP2Transport
+# HTTP2Transport
 
 networkLoop
 

@@ -19,7 +19,7 @@ HTTP2TransportFactory
 
 
 
-#HTTP2Transport
+# HTTP2Transport
 
 这个是最基础的类。
 
@@ -47,7 +47,7 @@ downchannelStream是一个get请求。
 
 
 
-#HTTP2Stream
+# HTTP2Stream
 
 这个类是很独立的。是对libcurl的封装。
 

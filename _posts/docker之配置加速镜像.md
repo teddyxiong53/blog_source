@@ -35,3 +35,26 @@ sudo systemctl daemon-reload
 sudo systemctl restart docker
 ```
 
+这样现在并不能正常提速，还有更加简单的做法。
+
+往/etc/docker/daemon.json文件里写入下面的内容：
+
+```
+{
+  "registry-mirrors": [
+    "https://registry.docker-cn.com",
+    "http://hub-mirror.c.163.com",
+    "https://docker.mirrors.ustc.edu.cn"
+  ]
+}
+```
+
+然后重启docker就可以了。
+
+
+
+参考资料
+
+1、Docker：docker国内镜像加速
+
+https://www.cnblogs.com/nhdlb/p/12567154.html

@@ -26,6 +26,97 @@ docker程序根据Dockerfile，生成镜像。
 
 使用`#`作为注释。
 
+# 我的一个简单模板
+
+Dockerfile内容：
+
+```
+from node:lts-alpine
+label maintainer="teddyxiong53 <1073167306@qq.com>"
+arg AUTHOR=xhl
+env PATH=/usr/local/sbin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin \
+    LANG=zh_CN.UTF-8 \
+    SHELL=/bin/bash \
+    PS1="\u@\h:\w \$ " 
+    
+add docker-entrypoint.sh /usr/bin
+run sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
+    && apk update -f \
+    && apk upgrade \
+    && apk --no-cache add -f bash coreutils moreutils git wget curl nano tzdata perl openssl \
+    && rm -rf /var/cache/apk/* \
+    && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone 
+    
+workdir /root
+entrypoint docker-entrypoint.sh
+```
+
+后续可以在这个基础上调整就好了。
+
+当前目录再写一个docker-entrypoint.sh文件
+
+```
+#!/bin/sh
+
+echo "hello docker"
+```
+
+
+
+生成镜像：
+
+```
+docker build -t mydocker .
+```
+
+大小有180M。不小了。
+
+```
+$ docker images
+REPOSITORY            TAG          IMAGE ID       CREATED          SIZE
+mydocker              latest       46e4eea5a4e2   12 seconds ago   180MB
+```
+
+运行：
+
+```
+docker run 46e4eea5a4e2
+```
+
+会打印hello docker这一行。
+
+当前的docker-entrypoint.sh只是打印一行，然后就马上退出了。
+
+所以docker ps看不到容器。
+
+改动docker-entrypoint.sh文件，再执行docker build，则会重新生成镜像。如果没有改动，执行docker    build则没有什么实际效果。
+
+镜像是另外生成了一个，抢占了之前的镜像的名字。之前的那个就变成匿名的了。
+
+```
+$ docker images
+REPOSITORY            TAG          IMAGE ID       CREATED          SIZE
+mydocker              latest       cde8ec019684   42 seconds ago   180MB
+<none>                <none>       46e4eea5a4e2   8 minutes ago    180MB
+```
+
+
+
+为了让docker容器不要退出，我们可以在docker-entrypoint.sh的最后加一个死循环。
+
+或者这样：
+
+```
+tail -f /dev/null
+```
+
+反正就是脚本一直阻塞就可以了。
+
+因为docker需要一个前台进程的存在。
+
+
+
 # 指令分类
 
 指令分为两种：
