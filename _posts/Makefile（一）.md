@@ -22,7 +22,7 @@ Makefile里自带的变量分为3种：
 
 3、自动变量。$>这种。
 
-##查看内置变量
+## 查看内置变量
 
 Makefile这样写。
 
@@ -58,7 +58,7 @@ Makefile:16: SUFFIXES=.out .a .ln .o .c .cc .C .cpp .p .f .F .m .r .y .l .ym .yl
 make: *** No targets.  Stop.
 ```
 
-##自动变量
+## 自动变量
 
 在模式规则中，不能出现具体的文件名，否则模式规则就失去了意义。
 
@@ -226,7 +226,7 @@ declare test='ywnz.com'    #定义并初始化shell变量
 
 
 
-参考资料
+# 参考资料
 
 1、
 

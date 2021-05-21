@@ -46,6 +46,8 @@ while [[ true ]]; do
 done
 ```
 
+lxk0301的docker目录下，docker-entrypoint.sh，是靠crond -f 来指定crond前台运行来保证不退出的。
+
 
 
 # 三方进程守护之-Skaware S6

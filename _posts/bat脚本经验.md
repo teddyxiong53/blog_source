@@ -195,6 +195,8 @@ if /i "%1" equ "/a" echo "第一个参数是a"
 if exist 1.bat echo "1.bat exists"
 ```
 
+# 错误码
+
 
 
 # 循环
@@ -219,6 +221,15 @@ find /r .\ %%i in (*.txt) do find "abc" %%i
 ```
 
 
+
+# 获取命令执行的结果给变量
+
+只能借助for循环来做了。自己替换一下就好了。
+
+```
+for /F %%i in ('find "network" wpa_supplicant.conf') do ( set result=%%i)
+echo %result%
+```
 
 
 

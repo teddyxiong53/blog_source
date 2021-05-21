@@ -739,8 +739,31 @@ PACKAGES += $(DEPENDENCIES_HOST_PREREQ)
 
 # staging目录的作用
 
-staging：软链接到host/< tuple >/sysroot/ 就是上面说到的文件系统需要的库等目录,方便查看
-target： 目录是用来制作rootfs的，里面放着Linux系统基本的目录结构，以及各种编译好的应用库和bin可执行文件。不能用来nfs mount到开发板,因为buildroot不是root权权运行的,所以现dev/,etc/等一些文件无法创建,所以目录还不完整,要用images/里的rootfs.tar解压出来的根文件目录才能mount.使用如下命令：sudo tar -C /destination/of/extraction -xf images/rootfs.tar
+staging：
+
+软链接到host/< tuple >/sysroot/ 
+
+就是上面说到的文件系统需要的库等目录,方便查看
+
+target： 
+
+目录是用来制作rootfs的，
+
+里面放着Linux系统基本的目录结构，
+
+以及各种编译好的应用库和bin可执行文件。
+
+不能用来nfs mount到开发板,
+
+因为buildroot不是root权权运行的,
+
+所以现dev/,etc/等一些文件无法创建,
+
+所以目录还不完整,
+
+要用images/里的rootfs.tar解压出来的根文件目录才能mount.
+
+使用如下命令：sudo tar -C /destination/of/extraction -xf images/rootfs.tar
 
 
 
@@ -1466,6 +1489,30 @@ endef
 选配再看。
 
 
+
+# 提交历史
+
+https://git.busybox.net/buildroot/
+
+从这个官方地址clone下来。
+
+有57000次提交。最终的是从2001年开始。
+
+之前的版本管理工具是cvs，后面是svn。后面是git。
+
+不过切换工具的时候，把记录都保留下来了。
+
+我先把所有的提交历史保存下来。
+
+```
+git --no-pager l^C --pretty=oneline > ~/work/br.txt
+```
+
+使用git checkout xx。
+
+xx为hash值。这样的方式在版本之间穿梭。
+
+先回到第一个版本。编译看看。
 
 
 

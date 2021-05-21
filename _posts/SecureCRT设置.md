@@ -35,3 +35,12 @@ d:\securecrt_log\[%S]-%M-%D-[%h-%m-%s].log
 apt-get install lrzsz
 ```
 
+# 自动化脚本
+
+
+
+参考资料
+
+1、利用SecureCrt实现自动化脚本
+
+https://www.pianshen.com/article/766445705/

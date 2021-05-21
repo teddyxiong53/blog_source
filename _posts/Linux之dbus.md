@@ -181,7 +181,7 @@ interface其实是通信方式的集合。
 
 signal通信方式，不需要对方回复。
 
-method call通信方式，需要对方回复。回复的是method return。
+**method call通信方式，需要对方回复。回复的是method return。**
 
 
 
@@ -540,6 +540,22 @@ As output, the client-side or server-side bindings is generated.  This output is
 
 输入一个xml文件，生成C文件和头文件。
 
+## gdbus-codegen
+
+gdbus-codegen --interface-prefix=aml.linux.dbus --generate-c-code=audioservice_gdbus aml.linux.dbus.xml
+
+
+
+
+
+参考资料
+
+1、
+
+有需要的时候，参考这个来改就好了。
+
+https://www.freedesktop.org/software/gstreamer-sdk/data/docs/latest/gio/ch30s05.html
+
 # glib-dbus和GDBus的区别
 
 GDBus和glib-dbus都是由GNU组织开发的。GDBus可以认为是glib-dbus的升级版，其编程过程比起glib-dbus来要简单得多。
@@ -849,6 +865,40 @@ dbus-send --system --dest=org.bluez --print-reply / org.freedesktop.DBus.ObjectM
 	org.freedesktop.DBus.Properties
 ```
 
+# DBUS_SESSION_BUS_ADDRESS
+
+当使用bus daemon时，libdbus会从环境变量中（DBUS_SESSION_BUS_ADDRESS）自动认识“会话daemon”的地址。
+
+如果是系统daemon，它会检查指定的socket路径获得地址，也可以使用环境变量（DBUS_SESSION_BUS_ADDRESS）进行设定。
+
+当dbus中不使用daemon时，需要定义哪一个应用是server，哪一个应用是client，同时要指明server的地址，这不是很通常的做法。
+
+# 不同的拓扑结构
+
+基于DBus的应用程序可以是使用DBus Daemon的总线型结构，
+
+每个DBus的请求通过DBus Daemon转发；
+
+或者是点对点的星型结构，
+
+Client与Server之间是直接的Peer2Peer的连接。
+
+这俩种结构各有优缺点：
+
+总线型的结构比较清晰，Server需要维护的连接较少，实际上只有一个与DBus Daemon相连的连接，广播消息可以很容易的发送到各个Client；
+
+**P2P形式的DBus通信中间因为少了DBus Daemon的中转，因此性能更好，大约提升30%。**
+
+
+
+提供一个用于代码生成的XML文件
+
+这份XML数据在GDBus中称为introspection data，用来描述提供服务的GObject的接口名与参数。用于gdbus-codegen可以使用这份XML文件生成在Client与Server侧使用的代码。
+
+对于总线型DBus应用和P2P型DBus应用，这份代码是通用的。
+
+生成的代码需要分别链接到俩个进程中：带有Skeleton字样的代码，运行在Server侧；带有Proxy字样的代码，运行在Client侧。
+
 
 
 # 参考资料
@@ -916,3 +966,15 @@ https://blog.csdn.net/adlindary/article/details/80167840
 16、
 
 https://blog.csdn.net/guoke312/article/details/81352944
+
+17、
+
+这文章挺好。
+
+https://www.cnblogs.com/klb561/p/9058282.html
+
+18、
+
+这个有完整例子，讲解详细。
+
+http://just4coding.com/2018/07/31/dbus/
