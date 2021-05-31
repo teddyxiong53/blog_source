@@ -6,6 +6,22 @@ tags:
 
 ---
 
+--
+
+有两个流行的用户模块可启用对闪存的访问： 
+
+MTD_CHAR 和 MTD_BLOCK 。
+
+MTD_CHAR 提供对闪存的原始字符访问，
+
+而 MTD_BLOCK 将闪存设计为可以在上面创建文件系统的常规块设备（象 IDE 磁盘）。
+
+
+
+与 MTD_CHAR 关联的设备是 /dev/mtd0、mtd1、mtd2（等等），而与 MTD_BLOCK 关联的设备是 /dev/mtdblock0、mtdblock1（等等）。
+
+由于 MTD_BLOCK 设备提供象块设备那样的模拟，通常更可取的是在这个模拟基础上创建象 FTL 和 JFFS2 那样的文件系统。
+
 
 
 # 什么是mtd
@@ -221,7 +237,7 @@ struct platform_device ldd6410_device_nor = {
 
 
 
-#参考资料
+# 参考资料
 
 1、25.Linux-Nor Flash驱动(详解)
 
@@ -230,3 +246,7 @@ https://www.cnblogs.com/lifexy/p/7737174.html
 2、linux内核中mtd架构分析
 
 https://www.cnblogs.com/embedded-linux/p/5816970.html
+
+3、什么是MTD分区和NAND flash?
+
+https://www.cnblogs.com/hnrainll/archive/2011/05/17/2048288.html

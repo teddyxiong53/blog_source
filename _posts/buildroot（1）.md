@@ -492,6 +492,20 @@ qemu-system-arm -M vexpress-a9 -smp 1 -m 256 -kernel output/images/zImage -dtb o
 
 ```
 
+# 检查编译buildroot所依赖的工具是否都安装了
+
+我的电脑新安装的ubuntu，直接编译buildroot，肯定会报缺少各种工具的错误。
+
+到底缺了哪些呢？
+
+buildroot提供了一个脚本来检查这个的。
+
+```
+ ./support/dependencies/dependencies.sh 
+```
+
+其实主要安装一下build-essential就差不多了。
+
 
 
 # make file

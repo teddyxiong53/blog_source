@@ -25,3 +25,32 @@ yaffs文件系统镜像，其大小是已经处理过的，。我一直习惯写
 
 
 
+一款nand分析
+
+一般page是2K，block是128K，64个page构成一个block。
+
+如果一个block里有一个page是坏的，那么整个block就不能用了。
+
+oob一般是128字节。
+
+```
+GigaDevice  GD5F1GQ4UB 3.3v SPI NAND was found.
+128 MiB, block size: 128 KiB, page size: 2048, OOB size: 128
+
+Creating 7 MTD partitions on "spi-nand0":
+0x000000000000-0x000000200000 : "bootloader"
+0x000000800000-0x000001000000 : "tpl"
+0x000001000000-0x000001040000 : "misc"
+0x000001040000-0x000001d40000 : "recovery"
+0x000001d40000-0x000002740000 : "boot"
+0x000002740000-0x000006f40000 : "system"
+0x000006f40000-0x000008000000 : "data"
+```
+
+
+
+参考资料
+
+1、为什么NAND Block中坏一个Page就要丢弃整个Block
+
+http://www.ssdfans.com/?p=2483

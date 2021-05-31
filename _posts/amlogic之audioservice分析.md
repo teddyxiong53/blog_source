@@ -55,14 +55,27 @@ as_alsa.c
 as_client.c
 	对外接口：AS_Client_Init
 	主要处理作为dbus client的事务。
+	
 as_client_shm.c
+	共享内存，只被as_client.c调用。
+	AS_Client_Play的时候，调用了client_shm_init，这里分配了一块shm。
+	AS_Client_Play只被usb_player.c里调用了一次。
 as_config.c
+	大部分都是Get接口，用来获取json里的某个元素。
+	还有init、save、restore。
 as_external_wrap.c
+	默认没有使能。
 asplay.c
+	命令行工具。地位相当于as_client.c。
 as_volume.c
+	通过amixer接口来设置音量。
 audioservice.c
+	audioservice的入口文件。作为dbus server端。
+	处理各种消息。
 data_player.c
+	被audioservice.c里的函数调用。
 dolby_decoder.c
+	跟ffmpeg并列的。音频解码。
 ffmpeg_decoder.c
 halaudio.c
 	这个很重要。是音频的硬件抽象层。
@@ -82,9 +95,12 @@ halaudio_spdif.c
 halhdmicec.c
 halhdmicec_control.c
 hardware_buildroot.c
+	这个是提供了接口，可以跟Android的接口进行兼容。Android就不需要编译这个文件。
 input_mgr.c
+	
 pa_config.c
 pa_volume.c
+	portaudio接口方式。默认没有用。
 ```
 
 homeapp目录下
@@ -96,13 +112,24 @@ halaudio_client.c
 homeapp.c
 	这个是入口文件。
 input_manage.c
+	Install_Input_Apps 这个函数比较重要。
 led.c
+	这个是显示昨天信息的。
+	可以显示文字。
 ota_upgrade.c
 resource_manage.c
-sh_cmd.c
+	这个值得注意一下。
+	这个res是指什么资源？有请求和释放这2种操作。
+	被调用的地方还比较多。
+	AMLResHandler 这个是句柄，就是一个void *的指针。
+	例如蓝牙的，AMLResHandler bt_res_handler;是一个全局变量。
+	
 simulate_key.c
+	这个的命令行工具，模拟按键操作。
 speaker_process.c
+	对音频进行处理。跟bt、halaudio是一个级别的东西。
 syskey.c
+	按键处理。
 tm1640_anode.c
 tm2_external.c
 usb_player.c

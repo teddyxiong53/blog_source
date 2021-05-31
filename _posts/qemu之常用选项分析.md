@@ -24,7 +24,7 @@ sudo apt-get install qemu
 
 下面这些内容，都可以在man qemu-system-arm里看到。
 
-##一般选项
+## 一般选项
 
 -M：板子的名字。可以用`qemu-system-arm -M ?`来查看支持的板子有哪些。
 

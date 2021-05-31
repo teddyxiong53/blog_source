@@ -64,9 +64,9 @@ Qt for embedd linux在这方面则完全不同，它并没有构建在X Window�
 
 而是构建在Linux的Framebuffer之上，把在界面上需要显示的内容直接写入了framebuffer。
 
-因为在嵌入式系统上 把X System给省略了，这样会节省许多的系统开销。
+**因为在嵌入式系统上 把X System给省略了，这样会节省许多的系统开销。**
 
-而直接写framebuffer，又会加快显示速度。
+**而直接写framebuffer，又会加快显示速度。**
 
 
 

@@ -12,6 +12,8 @@ tags:
 
 所以把用到的东西总结下来。
 
+bat在运行过程中还可以修改，修改实时生效的。
+
 
 
 打印是echo。
@@ -288,6 +290,36 @@ timeout.exe /t 1
 
 
 # 定义函数
+
+```
+@echo off
+SETLOCAL
+CALL :Display 5 , 10
+EXIT /B %ERRORLEVEL%
+:Display
+echo The value of parameter 1 is %~1
+echo The value of parameter 2 is %~2
+EXIT /B 0
+```
+
+嵌套调用
+
+```
+@echo off
+
+call :total
+EXIT /B %ERRORLEVEL%
+
+:total
+CALL :Display 5 , 10
+call :Display 1,2
+exit /b 0
+
+:Display
+echo The value of parameter 1 is %~1
+echo The value of parameter 2 is %~2
+exit /b 0
+```
 
 
 
@@ -575,3 +607,13 @@ https://juejin.im/post/6844903910856114190
 5、BAT命令高级技巧
 
 https://blog.csdn.net/mezheng/article/details/7961818
+
+6、
+
+https://blog.csdn.net/peng_cao/article/details/73999076
+
+7、
+
+这个网站讲解bat非常好。
+
+https://www.tutorialspoint.com/batch_script/batch_script_functions_with_parameters.htm

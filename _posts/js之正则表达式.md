@@ -93,11 +93,26 @@ r2.exec(s) // null
 
 
 
+
+
 参考资料
 
 1、RegExp 对象
 
 https://wangdoc.com/javascript/stdlib/regexp.html
 
+2、
 
+https://www.jb51.net/article/84784.htm
 
+3、
+
+https://blog.csdn.net/weixin_42142603/article/details/114646470
+
+4、
+
+https://blog.csdn.net/yzbben/article/details/53467659
+
+5、
+
+https://stackoverflow.com/questions/494035/how-do-you-use-a-variable-in-a-regular-expression
