@@ -94,7 +94,20 @@ The Nano-X Window System was previously named Microwindows, but has been renamed
 
 There are three APIs implemented in the system, an X11 API, a Win32 API and an Xlib-like API. 
 
+《**Getting Started WithMicrowindows & Nano-X**》
 
+把这个文档阅读一遍。
+
+文档写于2001年。
+
+在linux上安装microwindows。
+
+```
+cp Configs/config.x11 config
+make clean; make
+```
+
+编译过了。但是运行不起来。
 
 
 

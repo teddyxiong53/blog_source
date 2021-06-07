@@ -47,6 +47,15 @@ electron
 	这个值得分析一下资源占用情况。需要依赖哪些东西？
 	看看在128M+128M的配置下是否跑得起来。
 	这种配置跑Android能跑起来吗？最精简的那种。
+	可以试一下。
+nuklear
+	这个是通过在github搜索“gui”，过滤C语言找到的。
+	https://github.com/Immediate-Mode-UI/Nuklear
+	提供了各种语言的binding。
+nanogui
+	https://github.com/wjakob/nanogui
+然后搜索rtos gui 这样也可以找到另外一些。
+
 ```
 
 出现这种现象的根本原因是GUI并不是嵌入式Linux操作系统的内置组件，
@@ -235,3 +244,14 @@ https://blog.csdn.net/ybhuangfugui/article/details/101442421
 12、
 
 https://itnext.io/top-five-libraries-for-creating-gui-on-embedded-linux-5ce03903be32
+
+13、Speeding embedded systems time to market using Node.js
+
+https://www.embeddedcomputing.com/technology/software-and-os/speeding-embedded-systems-time-to-market-using-node-js
+
+14、
+
+https://www.cnblogs.com/yangguang-it/p/7237532.html
+
+# 末尾
+

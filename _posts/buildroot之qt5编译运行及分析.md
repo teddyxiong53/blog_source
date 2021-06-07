@@ -28,6 +28,27 @@ make qemu_x86_64_defconfig
 
 这个之前也用得比较多。只是知道这个是带显示屏的。
 
+但是没有显示出来。
+
+我还是换成x86_64的。还是没有显示gui界面。
+
+看下面这个，关键是linux的driver要配置一下。
+
+https://stackoverflow.com/questions/22066759/build-a-minimum-system-with-qt-embedded-and-run-on-qemu-for-x86
+
+Qemu emulates Cirrus CLGD 5446 PCI VGA card or dummy VGA card with Bochs VESA extensions (hardware level, including all non standard modes for i386.
+
+So the steps are:
+
+1. Download buildroot
+2. `make clean`
+3. `make qemu_x86_defconfig`
+4. `make linux-menuconfig` to configure kernel and in `Device drivers->Graphics support->Support for frame buffer devices` enable `Cirrus Logic support`
+5. Save the configuration and run `make`
+6. Once make is complete run the command in `board/qemu/x86/readme.txt`
+
+
+
 这个默认也没有选配qt5.我把c库选成glibc。就可以选配qt5了。
 
 默认只选配了qt5base。
@@ -224,6 +245,22 @@ https://code.qt.io/cgit/qt/qtbase.git/
 Qt/e 程序初始化时打开framebuffer，同时将framebuffer的内存映射到自己的空间。有个Qscreen 对象会将上层所有的要显示的东西，放到framebuffer的内存中。linux内核的framebuffer驱动程序控制硬件读取显示。
 
 
+
+# qt在ubuntu下开发环境搭建
+
+https://github.com/NautiluX/slide
+
+以这个作为测试材料。
+
+先安装qt的，这个依赖的东西，在这个工程的Makefile里有写。
+
+```
+sudo apt install qt5-qmake libexif12 qt5-default libexif-dev qt5-image-formats-plugins
+```
+
+安装后，可以把slide项目进行编译运行。效果正常。而且效果还不错。
+
+然后就看看安装QtCreator的。
 
 
 

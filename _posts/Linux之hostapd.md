@@ -88,6 +88,11 @@ dnsmasq
 
 
 
+hostapd能够使得无线网卡切换为master模式，模拟AP(通常可以认为是路由器)功能，也就是我们说的软AP(Soft AP)。
+
+Hostapd的功能就是作为AP的认证服务器，负责控制管理stations(通常可以认为带无线网卡的PC)的接入和认证。
+
+通过Hostapd可以将无线网卡切换为AP/Master模式，通过修改配置文件，可以建立一个开放式的(不加密)的，WEP，WPA或WPA2的无线网络。并且通过修改配置文件可以设置无线网卡的各种参数，包括频率，信号，beacon包时间间隔，是否发送beacon包，如果响应探针请求等等。
 
 
 # 参考资料
@@ -107,3 +112,7 @@ https://www.cnblogs.com/zhuwenger/archive/2011/03/11/1980294.html
 4、配置wifi为AP模式 -- 接入点hostapd基本配置
 
 https://blog.csdn.net/wh_19910525/article/details/52244604
+
+5、
+
+https://blog.csdn.net/zhenwenxian/article/details/6658507

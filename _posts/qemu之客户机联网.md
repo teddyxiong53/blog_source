@@ -108,9 +108,26 @@ qemu提供了4种不同模式的网络
 
 
 
+# 再次尝试
+
+```
+sudo apt-get install uml-utilities
+sudo apt-get install bridge-utils
+```
+
+查看是否有这个设备 /dev/net/tun 
+
+如果有，说明内核支持tun。从ubuntu12.04就开始支持。
+
+添加 /etc/qemu-ifup 和/etc/qemu-ifdown 脚本。
 
 
-参考资料
+
+qemu默认使用tap设备，
+
+
+
+# 参考资料
 
 1、一种简单的qemu网络配置方法
 
@@ -120,3 +137,6 @@ https://blog.csdn.net/wujianyongw4/article/details/80497528
 
 https://blog.csdn.net/rfidunion/article/details/55096935
 
+3、
+
+https://topic.alibabacloud.com/a/configuring-qemus-network-capabilities-with-qemu-simulation-vexpress-a9-_8_8_31314529.html
