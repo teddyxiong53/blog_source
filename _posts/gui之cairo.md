@@ -60,7 +60,60 @@ cairo就是GTK+采用的底层图形库，负责构建图形界面。
 
 
 
+HelloWorld
 
+从awtk的代码的3rd目录下的cairo的demo目录下，找到一个stars.c文件。编译。
+
+```
+ gcc stars.c `pkg-config --libs --cflags cairo` 
+```
+
+运行不报错。但是也没有看到效果。
+
+我就看看用到了哪些接口吧。
+
+最新版本是1.16的。
+
+
+
+功能分为3个部分：
+
+drawing
+
+```
+cairo_t — The cairo drawing context
+```
+
+
+
+fonts
+
+surfaces
+
+
+
+struct _cairo_backend
+
+可以对接多种后端，只要后端实现这个结构体的接口就行了。
+
+```
+typedef enum _cairo_backend_type {
+    CAIRO_TYPE_DEFAULT,
+    CAIRO_TYPE_SKIA,//这个是什么？
+} cairo_backend_type_t;
+```
+
+创建一个上下文。
+
+```
+cr = cairo_create (surface);
+```
+
+搜索一下awtk里哪些地方用到这个接口了。
+
+在vgcanvas里用到了。
+
+lcd_nanovg_init
 
 参考资料
 
@@ -68,3 +121,6 @@ cairo就是GTK+采用的底层图形库，负责构建图形界面。
 
 https://www.cnblogs.com/cnland/archive/2013/01/16/2862422.html
 
+2、官方手册
+
+https://www.cairographics.org/manual/

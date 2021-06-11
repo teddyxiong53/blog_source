@@ -178,6 +178,18 @@ fb设备驱动核心层
 
 
 
+调试工具
+
+fbtest
+
+https://github.com/jumpnow/fbtest
+
+
+
+https://www.kernel.org/doc/Documentation/ABI/stable/sysfs-class-backlight
+
+
+
 # 参考资料
 
 1、嵌入式Linux通过帧缓存截图

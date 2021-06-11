@@ -396,6 +396,123 @@ tk_init(lcd_w, lcd_h, APP_TYPE, APP_NAME, APP_RES_ROOT);
 
 
 
+mainloop的实现
+
+```
+main_loop_t
+	成员变量
+		running
+		quit_num
+		app_quited
+		last_loop_time
+		widget_t *wm
+	接口
+		run
+		quit
+		step
+		sleep
+		wakeup
+		recv_event
+		queue_event
+		get_event_source_manager
+		destroy
+```
+
+事件
+
+```
+event_queue_req_t：是一个共用体。
+	包括了：
+	event_t event
+		type
+		size
+		time
+		void *target
+		void *native_window_handle
+	key_event_t key_event
+		第一个成员是event_t，相当于继承了event_t。
+		u32 key
+		bool alt
+		bool lalt
+		bool ralt
+		bool ctl
+		bool shift
+		bool cmd
+		bool menu
+		bool capslock
+	wheel_event_t wheel_event
+		鼠标滚轮事件
+		int y 滚轮滚动的距离。
+		bool alt
+		bool ctrl
+		bool shift
+	pointer_event_t 
+		鼠标指针事件。
+		
+	multi_gesture_event_t
+		多点触摸手势。
+	add_idle_t
+	add_timer_t
+	exec_in_ui_t 
+```
+
+
+
+mainloop当前只有sdl的真的实现了。
+
+main_loop_sdl.c
+
+```
+main_loop_simple_t
+	第一个成员是main_loop，相当于继承。
+	
+```
+
+
+
+```
+object_t
+	emitter_t emitter
+	ref_count
+	name
+	object_vtable_t *vt
+```
+
+tk_init
+
+```
+platform_prepare
+	stm_time_init
+	预分配了12M的内存。
+tk_mem_init_stage2
+system_info_init
+tk_init_internal
+	这个是真正干活的函数。里面调用了很多的初始化函数。
+	tk_widgets_init 这个注册了组件。
+```
+
+object_vtable_t
+
+```
+这个是对象设计的关键。
+object_t* object_create(const object_vtable_t* vt) 
+	创建每一种对象，都提供一个这样的结构体。
+	
+对象继承了emitter。
+所以对象都可以进行事件的发送。
+
+```
+
+
+
+vgcanvas
+
+
+
+字体功能的实现
+
+
+
 # 参考资料
 
 1、在 qemu 中运行 awtk-linux-fb
