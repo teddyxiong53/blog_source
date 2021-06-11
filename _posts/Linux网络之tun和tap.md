@@ -6,7 +6,7 @@ tags:
 
 ---
 
-
+--
 
 我们现在处在云计算时代，到处都是虚拟机和容器。
 
@@ -359,6 +359,40 @@ if_tun.h
 
 
 
+# 再次尝试
+
+1、确认host是支持tap和tun设备的。
+
+```
+ls /dev/net/tun 
+存在这设备说明支持，默认都支持的。
+```
+
+2、编写qemu的tap初始化脚本。保存到/etc/qemu-ifup。增加可执行权限。
+
+```
+#!/bin/sh 
+/sbin/ifconfig $1 192.168.0.11 
+```
+
+3、qemu命令启动时，增加tap网卡。
+
+```
+-net tap
+```
+
+注意：因为创建TAP网卡需要root权限，所以必须用root用户启动QEMU。
+
+虚拟机启动后，用ifconfig命令设置网络，要求它的IP与host的tap网口的IP（即在上个步骤里qemu-ifup文件中设置的IP）处于同一网段。例如： 
+ifconfig eth0 192.168.0.110 netmask 255.255.255.0 
+
+**虚拟机通过host连接internet** 
+现在实现了虚拟机和host的联网，如果需要虚拟机连接internet，则要在host设置NAT： 
+echo 1 > /proc/sys/net/ipv4/ip_forward 
+iptables -t nat -A POSTROUTING -o eth0 -s 192.168.0.0/24 -j MASQUERADE 
+
+ 
+
 # 参考资料
 
 1、Documentation/networking/tuntap.txt
@@ -386,3 +420,7 @@ http://backreference.org/2010/03/26/tuntap-interface-tutorial/
 7、Linux虚拟网络设备之tun/tap。这位作者的文章都值得一读。
 
 https://segmentfault.com/a/1190000009249039
+
+8、用TAP方式让QEMU虚拟机与host联网
+
+https://blog.csdn.net/larryliuqing/article/details/27127843
