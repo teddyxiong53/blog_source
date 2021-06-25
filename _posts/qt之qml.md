@@ -185,6 +185,14 @@ Window需要导入QtQuick.Window 。
 
 
 
+# qml跟c++交互
+
+QML引擎与Qt***\*元对象系统\****集成的本质使得C ++功能可以直接从QML调用。
+
+这允许开发混合应用程序，这些应用程序是通过混合使用QML，JavaScript和C ++代码实现的。
+
+
+
 参考资料
 
 1、QML
@@ -210,3 +218,7 @@ https://blog.csdn.net/iloveqt5/article/details/17150637
 6、QML的Window与ApplicationWindow
 
 https://www.cnblogs.com/judes/p/9438084.html
+
+7、
+
+https://blog.csdn.net/gongjianbo1992/article/details/87965925

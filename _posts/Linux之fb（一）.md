@@ -351,7 +351,7 @@ fbi->fix.smem_start//这个的dma地址。所以三星的有，fbtft的没有。
 
 
 
-#关于page cache
+# 关于page cache
 
 页高速缓存（page cache）是内核所使用的主要的磁盘高速缓存机制。
 
@@ -382,4 +382,10 @@ linux支持大道几个TB的文件。访问大文件的时候，page cache里就
 这样要顺序扫描就很耗时。
 
 所以这里就应用了radix tree技术。
+
+
+
+**/sys/class/graphics**
+
+
 

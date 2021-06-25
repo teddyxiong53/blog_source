@@ -30,6 +30,42 @@ https://github.com/JingOS-team
 
 http://shouce.jb51.net/
 
+这个系列文章，比较实用，嵌入式qt相关
+
+https://my.oschina.net/shelllife?q=Qt
+
+pyqt写的天气面板
+
+https://github.com/dglent/meteo-qt/tree/master/meteo_qt
+
+用pyqt来写桌面应用
+
+https://realpython.com/qt-designer-python/
+
+一些qt开源项目
+
+https://opensourcelibs.com/libs/qml
+
+
+
+https://github.com/yiminyangguang520/qt
+
+
+
+https://github.com/chengyangkj/Ros_Qt5_Gui_App
+
+QT--简易智能家居框架
+
+https://blog.csdn.net/Mr_robot_strange/article/details/102540006
+
+
+
+https://github.com/kevinlq/SmartHome-Qt
+
+这个是qt的官方的智能家居的例子。
+
+https://wiki.qt.io/Home_Control_Demo
+
 参考资料
 
 1、
