@@ -66,6 +66,12 @@ https://github.com/kevinlq/SmartHome-Qt
 
 https://wiki.qt.io/Home_Control_Demo
 
+这个系列文章不错。
+
+https://www.devbean.net/2014/02/qt-study-road-2-qml-layout/
+
+
+
 参考资料
 
 1、

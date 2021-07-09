@@ -308,7 +308,387 @@ PIXEL_FORMAT_ARGB_8888 这个的可能性比较大。
 #define FILE_NAME_GE2D        "/dev/ge2d"
 ```
 
+还是需要把对qt的修改代码调用流程分析一下。
 
+入口在哪里？改动的文件是这些。
+
+![image-20210628104318076](../images/random_name/image-20210628104318076.png)
+
+改动在3个目录下。
+
+gui目录：
+
+```
+gui/kernel
+	这个下面是加了个空函数，不知道意义何在？
+	get_phy_info
+	知道了，这个空函数相当于是父类的默认实现。并不使用。
+	实际上用的是linuxfb的实现。
+	unsigned long QLinuxFbIntegration::get_phy_info(unsigned long mem)
+{
+    return m_primaryScreen->getfbinfo(mem);
+}
+```
+
+platformsupport目录：
+
+plugins目录：
+
+
+
+需要从qlinuxfbscreen.cpp开始看，这个相当于底层。
+
+增加了一个结构体定义
+
+```
+    struct {
+        void            *mem;
+        int             size;
+        unsigned int    xres;
+        unsigned int    yres;
+        unsigned int    bits_per_pixel;
+        unsigned long   phys;
+    } gfx_fb;
+```
+
+增加了2个成员函数。
+
+```
+void setfbinfo(void *mem, int size, unsigned long phys, unsigned int xres, unsigned int yres, unsigned int bits_per_pixel);
+    unsigned long getfbinfo(unsigned long mem);
+```
+
+
+
+我在对比代码的时候，发现有一些不符合预期的地方，
+
+产生的原因是patch导致的。
+
+我一个目录是手动改的，然后把这个目录跟原始目录对比生成patch，再对原始目录打上这个patch。
+
+打上patch后的结果，跟我手动修改的有出入。
+
+不过这些出入先不管。应该没有影响。
+
+先还是看调用流程。
+
+
+
+以analogclock的为例进行分析。
+
+```
+QGuiApplication app(argc, argv);
+```
+
+这一个构造函数，产生了哪些调用？
+
+```
+QGuiApplication::QGuiApplication(int &argc, char **argv, int flags)
+    : QCoreApplication(*new QGuiApplicationPrivate(argc, argv, flags))
+```
+
+直接调用了QCoreApplication的构造函数。
+
+把参数构造成了QGuiApplicationPrivate，在进一步调用coreapp的private的构造。
+
+```
+QCoreApplicationPrivate(argc, argv, flags)
+```
+
+这个构造函数就调用了QObjectPrivate，另外加argc等的赋值。
+
+这个就没有必要进一步跟进去了。
+
+回到QCoreApplication，这个主要是建立了一个eventdispatcher。
+
+
+
+QPlatformIntegrationFactory 这个就一个create的static函数。
+
+看看哪里调用的。
+
+在qguiapplication.cpp里的init_platform函数里。
+
+createPlatformIntegration 这个就是在创建event dispatcher的时候调用的。
+
+然后相当于调用了：
+
+```
+QPlatformIntegrationFactory::create("linuxfb")
+```
+
+这样的方式来调用对应的模块的：
+
+```
+qLoadPlugin<QPlatformIntegration, QPlatformIntegrationPlugin>(loader(), platform, paramList, argc, argv);
+```
+
+那么我就认为是调用到了qlinuxfbintegration.cpp里的函数了。
+
+先是构造函数：
+
+```
+m_primaryScreen = new QLinuxFbScreen(paramList);
+```
+
+创建了一个screen。
+
+然后是QLinuxFbIntegration::initialize 这个函数
+
+
+
+get_phy_info 实际调用的是：
+
+```
+unsigned long QLinuxFbIntegration::get_phy_info(unsigned long mem)
+```
+
+
+
+```
+unsigned long QFbScreen::getfbinfo(unsigned long mem)
+	
+```
+
+
+
+```
+void QFbScreen::setfbinfo
+这个函数被谁调用了？
+在这个初始化的时候：
+bool QLinuxFbScreen::initialize()
+是通过读取fb的info来设置的。
+然后对fb进行了mmap。
+```
+
+
+
+qBlendTexture 关键看这个函数被谁调用了。
+
+只被这函数调用：
+
+```
+void QSpanData::adjustSpanMethods()
+```
+
+还是处理文字的情况。
+
+我跑一个有文字显示的例子。ge2d还是没有中断。
+
+lsof |grep ge2d ，也没有看到有进程使用了/dev/ge2d这个设备文件。
+
+倒是有个内核线程
+
+```
+ 1916 root     [ge2d_monitor]
+```
+
+看看什么时候起来的，起什么作用。
+
+```
+static int ge2d_start_monitor(void)
+{
+	int ret = 0;
+
+	ge2d_log_info("ge2d start monitor\n");
+	ge2d_manager.process_queue_state = GE2D_PROCESS_QUEUE_START;
+	ge2d_manager.ge2d_thread = kthread_run(ge2d_monitor_thread,
+					       &ge2d_manager,
+					       "ge2d_monitor");
+	if (IS_ERR(ge2d_manager.ge2d_thread)) {
+		ret = PTR_ERR(ge2d_manager.ge2d_thread);
+		ge2d_log_err("ge2d failed to start kthread (%d)\n", ret);
+	}
+	return ret;
+}
+```
+
+那先从为什么没有打开ge2d这个点进行切入。
+
+打开就这个地方：
+
+```
+int ge2d_blend_Texture(aml_ge2d_info_t *pge2dinfo)
+{
+    if (ge2d_fd < 0)
+        ge2d_fd = ge2d_open();
+```
+
+
+
+现在找一下这个函数的调用的地方：adjustSpanMethods
+
+先在这这里面加一个打印。提交so看看哪些地方调用了。
+
+加了打印，这个库libQt5Gui.so.5.12.7 需要推送到板端。
+
+adjustSpanMethods 在quickcontrols2/contactlist例子运行时，多次被调用到。
+
+但是type值，只有0和1这两种情况。
+
+```
+enum Type {
+        None,
+        Solid,
+        LinearGradient,
+        RadialGradient,
+        ConicalGradient,
+        Texture
+    } type : 8;
+```
+
+而我们的改动是对Texture，也就是5的情况才起作用。
+
+我把ge2d_com.h里的`__DEBUG`打开看看。
+
+跑quickcontrols2/texteditor 这个例子，有Texture的情况。
+
+但是ge2d还是没有看到调用。
+
+是这里判断条件不符合。
+
+```
+src is continue:0, dst is continue:0, src is support:1, dst is support:1
+```
+
+
+
+QFbScreen::setfbinfo 
+
+这里为什么要明确写使用QFbScreen这个类的这个函数？
+
+QFbScreen和QLinuxFbScreen是什么关系？
+
+QFbScreen 在platformsupport/fbconvenience目录下。
+
+QLinuxFbScreen是在plugins/platforms/linuxfb目录下。
+
+这2个类，都定义了一个一样的结构体：
+
+```
+struct {
+        void            *mem;
+        int             size;
+        unsigned int    xres;
+        unsigned int    yres;
+        unsigned int    bits_per_pixel;
+        unsigned long   phys;
+    } gfx_fb;
+```
+
+那这里就值得看一下了。是不是我漏了一行代码。
+
+还真是我写错了。
+
+```
+setfbinfo(mMmap.data,mMmap.size, finfo.smem_start + mMmap.offset,
+    vinfo.xres, vinfo.yres,vinfo.bits_per_pixel);
+ 被我错写成：
+QFbScreen::setfbinfo(mMmap.data,mMmap.size, finfo.smem_start + mMmap.offset,
+    vinfo.xres, vinfo.yres,vinfo.bits_per_pixel);
+```
+
+改回来。再看看。
+
+不是不是，我之前没有改错。
+
+在第二个patch里，就是改setfbinfo为QFbScreen::setfbinfo。
+
+而且还刻意在QLinuxFbScreen里，对setfbinfo和getfbinfo进行了空的处理。
+
+
+
+当前这个函数里
+
+```
+unsigned long QFbScreen::getfbinfo(unsigned long mem)
+{
+    unsigned long phys = 0;
+    unsigned long vir_mem_base = (unsigned long)gfx_fb.mem;
+
+
+    if ((mem >= vir_mem_base) && (mem - vir_mem_base) <= gfx_fb.size)
+        phys = gfx_fb.phys + (mem - vir_mem_base);
+    //if (phys > 0)
+    //    printf("!QFbScreen:: %s,phys=%x,gfx_fb.size=%x,mem=%x,vir_mem_base=%x\n",__func__,phys,gfx_fb.size,mem,vir_mem_base);
+    return phys;
+
+}
+```
+
+mem 一直比gfx_fb.mem 要小。所以phys一直是返回0 。
+
+gfx_fb.mem 的值怎么来的？为什么这么大？
+
+是setfbinfo设置的。他的值是这样赋值过来的。
+
+````
+mMmap.data = data + mMmap.offset;
+````
+
+data这个指针，是对fb进行mmap得到的。
+
+为什么getfbinfo的时候，传递进来的mem参数，总是不符合要求的呢？
+
+为什么会这样呢？
+
+当前的gfx_fb.mem是一个很大的值，
+
+而程序里的内存值，都是比较小的。根本没可能大于gfx_fb.mem的值。
+
+也不一定，像这一次，就比较接近了。
+
+```
+xhl -- mem:0xf00a5008, vir_mem_base:0xf24fe000
+```
+
+测试了多次，还是没有碰到满足条件的。
+
+
+
+# 评估性能
+
+评估性能，有哪些维度呢？
+
+可以从直观感受开始，到量化的数据。
+
+从粗略到细致。
+
+从简单到复杂。
+
+从整体到局部。
+
+
+
+直观感受：
+
+流畅度，显示效果。
+
+
+
+当前有没有vsync，怎么加入vsync？
+
+把性能测试的跑起来。
+
+
+
+```
+      1.  Amlogic 评估能否直接使用QT显示将数据直接送到VPU/FB？跳过GE2D？
+      2.  Alpha混合是在VPU还是OSD中完成的？
+      3.  可以同时混合多少个Alpha的通道？ 如何验证？
+      4.  Amlogic去评估跳过GE2D方式帧率是多少？ 是GE2D限制了帧率吗？ 如果不是GE2D限制，那么低帧率的瓶颈是哪里？
+      5.  当使用DSI以60fps写入显示器时，如果从RAM中获取数据，则存在撕裂的风险（即显示器一般是旧帧数据一般是新帧数据），Amlogic是如何管理撕裂的？使用垂直同步？还是其他的方式？
+      6.  每个Alpha通道有多大X * Y（以像素为单位）？
+      7.  最终的数据如何送到DSI （示意图参考附件ppt）
+           将每帧直接写入DSI PHY @ 60fps（Alt 2）？
+           将每帧写入RAM @ 60fps（Alt 1A / B）中的“输出帧缓冲区”？
+
+      8.  DSI PHY可以从两个不同的“输出帧缓冲区”中获取数据吗？
+      9.  VPU可以在两个“输出帧缓冲器”之间交替使用吗？
+      10.  DSI PHY是否充当DMA？
+      11.  VPU是否充当DMA？
+      12.  ACPU是否参与了任何阶段的显示渲染？
+```
 
 
 

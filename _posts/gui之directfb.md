@@ -611,6 +611,534 @@ if (getenv( "DISPLAY" ))
 
 
 
+# 代码分析
+
+桌面GUI系统涉及很多图像运算，
+
+比如画点、画线、填充、透明度处理、平滑度处理、层的叠加、字体处理、贴图等等。
+
+如果这些运算都由CPU来处理，那这将是对CPU的一个很大的负载。
+
+在QT的文档中曾说到，
+
+假如一个图形运算让加速设备来做需要1到2个CLK，
+
+同样的图形运算让CPU来算则至少需要20个CLK，
+
+而且，对于嵌入式SoC来说，CPU的频率和SDRAM/DRAM的带宽始终是图形运算的瓶颈。
+
+所以这些芯片的图形加速能力有无、高低，最终决定其目标GUI的质量。
+
+
+
+近两年嵌入式设备主芯片越来越多的嵌入了2D/3D加速功能，
+
+由此软件可以搭建越来越复杂、炫酷、先进的桌面系统，如Qt/Android等。
+
+这些加速硬件，通常也因其是否拥有私有内存、是否支持3D、加速接口是否可编程等特性而分为三六九等。
+
+硬件的加速功能如果要在目标GUI系统中跑起来，
+
+还得需要一些软件中间层为不同的硬件加速提供同一的接口，并且为上层GUI提供服务。
+
+DirectFB就是这样一个软件中间层,它主要为上层提供2D加速服务。
+
+**OpenGL/ES 主要为上层提供3D加速服务。**
+
+DirectFB是一个专门针对Linux图形库设计的图形加速中间层。
+
+它的上层直接面向图形库比如QT，提供如显示、画图、输入设备控制等服务，
+
+他的下层直接面向GFX加速硬件，**要求硬件驱动实现全部或部分预定的画图函数**。
+
+
+
+ DirectFB由超级接口IDirectFB为上层提供接口调用，其他所有接口都由此接口生成，这些接口内容包括：
+
+  =========================
+  . IDirectFBScreen
+  . IDirectbFBDisplayLayer
+
+   IDirectFBSurface
+
+
+
+# ge2d对接
+
+```
+static GraphicsDriverFuncs driver_funcs = {
+     .Probe              = driver_probe,
+     .GetDriverInfo      = driver_get_info,
+     .InitDriver         = driver_init_driver,
+     .InitDevice         = driver_init_device,
+     .CloseDevice        = driver_close_device,
+     .CloseDriver        = driver_close_driver
+};
+```
+
+对接是这样一个结构体的实现。
+
+driver_probe 这个直接返回1就好了（bool语义）
+
+driver_get_info 这个就填充一些字符串信息。
+
+driver_init_driver
+
+```
+这个就是重要入口。
+2个数据结构
+AMLGFX_DriverData
+AMLGFX_DeviceData
+
+amldrv->ge2d_fd = open("/dev/ge2d", O_RDWR);
+
+GraphicsDeviceFuncs
+这个是重要的函数结构体。需要实现十几个函数。
+
+```
+
+
+
+DFBAccelerationMask
+
+这个枚举，列举了可以进行加速的操作。
+
+```
+fill rectangle
+draw rectangle
+draw line
+fill triangle
+fill trapezoid 不规则四边形
+fill quadrangle 四边形。
+fill span 
+draw monoglyph
+blit 块传输
+stretch blit
+text triangle
+blit2 
+tile blit
+draw string
+all
+all drawn
+all blit
+```
+
+总的调用逻辑是：填充一些结构体，然后ioctl传递下去。
+
+目前看，只实现了这几个函数。
+
+```
+	funcs->CheckState    = amlCheckState;
+	funcs->SetState      = amlSetState;
+	funcs->EngineSync    = amlEngineSync;
+	funcs->EngineReset   = amlEngineReset;
+	funcs->FlushTextureCache  = amlFlushTextureCache;
+
+	funcs->FillRectangle = amlFillRectangle;
+	funcs->Blit          = amlBlit;
+	funcs->StretchBlit = amlStretchBlit;
+```
+
+还有几个还是空函数。
+
+可以对比看一下VMware的实现。
+
+
+
+# qt和directfb的对接
+
+配置：
+
+```
+export QT_QPA_PLATFORM=directfb
+export QT_QUICK_BACKEND=softwarecontext
+```
+
+执行：/usr/lib/qt/examples/quick/text
+
+```
+Not support amlBlit please check configure
+=====GE2D_NOT_SUPPORT=====
+!!!!!!aml_state.c 460 > DSPD_SRC_OVER flags[0x3]***NULL
+Not support amlBlit please check configure
+=====GE2D_NOT_SUPPORT=====
+!!!!!!aml_state.c 460 > DSPD_SRC_OVER flags[0x3]***NULL
+Not support amlBlit please check configure
+=====GE2D_NOT_SUPPORT=====
+!!!!!!aml_state.c 460 > DSPD_SRC_OVER flags[0x3]***NULL
+Not support amlBlit please check configure
+=====GE2D_NOT_SUPPORT=====
+!!!!!!aml_state.c 460 > DSPD_SRC_OVER flags[0x3]***NULL
+Not support amlBlit please check configure
+=====GE2D_NOT_SUPPORT=====
+!!!!!!aml_state.c 460 > DSPD_SRC_OVER flags[0x3]***NULL
+Not support amlBlit please check configure
+=====GE2D_NOT_SUPPORT=====
+```
+
+把/etc/directfbrc里的format从ARGB改成RGB。
+
+至少可以显示图形出来了。
+
+虽然尺寸还不对。
+
+是因为directfb不能自动缩放导致的？
+
+我找一个720x720的图片放进来看看。
+
+```
+(*) Direct/Interface: Loaded 'BMP' implementation of 'IDirectFBImageProvider'.
+(!) IDirectFBImageProvider_BMP: Unsupported compression 3!
+CreateImageProvider -> The requested operation or an argument is (currently) not supported
+
+Caught exception!
+  -- CreateImageProvider -> The requested operation or an argument is (currently) not supported
+(*) FBDev/Mode: Setting 720x720 RGB16
+```
+
+用dfbshow来进行显示看看。
+
+不行。
+
+我把bmp文件转成jpg的再试一下。可以正常显示。
+
+为什么直接使用fb可以素材自动适应屏幕的大小。
+
+而directfb的不行？
+
+看之前的邮件，还提到了directfb慢的问题。
+
+当前首先是要解决显示尺寸的问题。
+
+然后才能讨论效果和效率。
+
+就选择wearable这个例子来看。
+
+
+
+
+
+# argb还是rgb
+
+当前argb是不行的，rgb是可以的。
+
+这个是谁来决定的？
+
+屏幕参数决定的？
+
+不对，我现在试了，RGB和ARGB都是可以的。
+
+而且效果没有区别。
+
+但是使用ge2d的时候，
+
+我试了这样是正常的：
+
+```
+depth = 24 #32也可以。
+pixelformat = RGB
+```
+
+pixelformat是ARGB是一定不正常。
+
+不要指定这2个参数。
+
+运行qt会自动切换的。
+
+```
+(*) Direct/Thread: Started 'Genefx' (19068) [DEFAULT - OTHER/0] <8388608>...
+(*) FBDev/Mode: Setting 720x720 RGB16
+(*) FBDev/Mode: Switched to 720x720 (virtual 720x720) at 16 bit (RGB16), pitch 1440
+(*) FBDev/Mode: Setting 720x720 RGB16
+(*) FBDev/Mode: Switched to 720x720 (virtual 720x1440) at 16 bit (RGB16), pitch 1440
+```
+
+primarySetRegion这个函数打印的？
+
+但是不对啊，现在为什么还是走fbdev的？
+
+走应该还是要走。
+
+```
+Not support amlBlit please check configure
+```
+
+这个打印又是为什么呢？
+
+现在先不管
+
+重点先看这个。
+
+```
+ (!!!)  *** UNIMPLEMENTED [fusion_get_fusionee_pid] *** [fusion.c:4147]
+```
+
+这个函数的确是没有实现。
+
+```
+DirectResult
+fusion_get_fusionee_pid( const FusionWorld *world,
+                         FusionID           fusion_id,
+                         pid_t             *ret_pid )
+{
+     D_UNIMPLEMENTED();
+
+     return DR_UNIMPLEMENTED;
+}
+```
+
+lcd支持的像素格式，是怎么确定的？
+
+我用自己的fb_basic_info运行，得到的数据：
+
+```
+/data # ./fb_basic_info
+-----------fix info-------------
+                        id:OSD FB
+                        smem_start:1043333120
+                        smem_len:25165824
+                        type:0
+                        type_aux:0
+                        visual:2
+                        xpanstep:1
+                        ypanstep:1
+                        line_length:0
+                        mmio_len:1440
+                        accel:0
+
+--------------------------------
+-----------var info-------------
+                                                xres:720
+                        yres:720
+                        xres_virtual:720
+                        yres_virtual:720
+                        xoffset:0
+                        yoffset:0
+                        bits_per_pixel:16
+                        nonstd:0
+                        activate:0
+                        height:0
+                        width:0
+                        accel_flags:0
+                        pixclock:0
+                        left_margin:0
+                        right_margin:0
+                        upper_margin:0
+                        lower_margin:0
+                        hsync_len:0
+                        vsync_len:0
+                        vmode:0
+
+--------------------------------
+```
+
+bits_per_pixel:16
+
+现在需要看一下osd fb的驱动。
+
+看看设备树
+
+```
+display_mode_default = "1080p60hz";
+```
+
+```
+ret = of_property_read_u32_array(pdev->dev.of_node,
+					"display_size_default",
+					&var_screeninfo[0], 5);
+这里是把display_size_default = <720 720 720 1440 32>;
+这个信息给解析出来。填充给fb_var结构体。
+但是按照这个，bpp应该是32位的啊。
+```
+
+重启一下机器，从kernel的开机打印
+
+```
+[   11.156859@0]- fb: init fbdev bpp is:32
+[   11.161115@2]- fb: set osd0 reverse as NONE
+[   11.174060@0]- fb: osd probe OK
+```
+
+可以看到是32bit的。
+
+我这时候再执行一下fb_basic_info。看到的信息是这样：
+
+```
+-----------fix info-------------
+                        id:OSD FB 
+                        smem_start:104333312
+                        smem_len:25165824
+                        type:0
+                        type_aux:0
+                        visual:2
+                        xpanstep:1
+                        ypanstep:1
+                        line_length:0
+                        mmio_len:2880
+                        accel:0
+
+--------------------------------
+-----------var info-------------
+                                                xres:720
+                        yres:720
+                        xres_virtual:720
+                        yres_virtual:1440
+                        xoffset:0
+                        yoffset:0
+                        bits_per_pixel:32
+                        nonstd:0
+                        activate:0
+                        height:0
+                        width:0
+                        accel_flags:0
+                        pixclock:0
+                        left_margin:0
+                        right_margin:0
+                        upper_margin:0
+                        lower_margin:0
+                        hsync_len:0
+                        vsync_len:0
+                        vmode:0
+
+--------------------------------
+```
+
+难度变化的是因为directfb执行时修改导致的？
+
+应该是的。
+
+现在我不在directfbrc里填入depth和pixelformat。
+
+运行基于directfb的qt，打印这个。
+
+```
+(*) FBDev/Mode: Setting 720x720 RGB32
+(*) FBDev/Mode: Switched to 720x720 (virtual 720x720) at 32 bit (RGB32), pitch 2880
+(*) FBDev/Mode: Setting 720x720 RGB32
+(*) FBDev/Mode: Switched to 720x720 (virtual 720x1440) at 32 bit (RGB32), pitch 2880
+```
+
+但是这个是没有任何的显示。
+
+
+
+我给一张720x720的jpg图片。用df_dok --load-image的方式显示，不正常。
+
+用dfbshow的方式显示，图片正常。
+
+这二者有什么不同？
+
+df_dok里是这样：
+
+```
+IDirectFBImageProvider *provider;
+
+          /* create a surface and render an image to it */
+          DFBCHECK(dfb->CreateImageProvider( dfb, filename, &provider ));
+          DFBCHECK(provider->GetSurfaceDescription( provider, &dsc ));
+          if (imageformat)
+               dsc.pixelformat = imageformat;
+          if (!surface)
+               DFBCHECK(dfb->CreateSurface( dfb, &dsc, &surface ));
+          DFBCHECK(provider->RenderTo( provider, surface, NULL ));
+          DFBCHECK(provider->Release( provider ));
+```
+
+dfbshow是c++ demo。继承了DFBApp这个类。
+
+代码看起来很接近。
+
+看一下二者的打印。
+
+db_dok的最后几行打印
+
+```
+(*) FBDev/Mode: Setting 720x720 RGB32
+(*) FBDev/Mode: Switched to 720x720 (virtual 720x720) at 32 bit (RGB32), pitch 2880
+(*) Direct/Interface: Loaded 'PNG' implementation of 'IDirectFBImageProvider'.
+(*) Direct/Interface: Loaded 'FT2' implementation of 'IDirectFBFont'.
+(*) FBDev/Mode: Setting 720x720 RGB32
+(*) FBDev/Mode: Switched to 720x720 (virtual 720x720) at 32 bit (RGB32), pitch 2880
+(*) Direct/Interface: Loaded 'GIF' implementation of 'IDirectFBImageProvider'.
+```
+
+dfbshow的最后几行打印：
+
+```
+(*) FBDev/Mode: Setting 720x720 RGB32
+(*) FBDev/Mode: Switched to 720x720 (virtual 720x720) at 32 bit (RGB32), pitch 2880
+(*) FBDev/Mode: Setting 720x720 RGB32
+(*) FBDev/Mode: Switched to 720x720 (virtual 720x1440) at 32 bit (RGB32), pitch 2880
+(*) Direct/Interface: Loaded 'JPEG' implementation of 'IDirectFBImageProvider'.
+(*) FBDev/Mode: Setting 720x720 RGB32
+(*) FBDev/Mode: Switched to 720x720 (virtual 720x2160) at 32 bit (RGB32), pitch 2880
+```
+
+可以看到df_dok，virtual的尺寸不同。
+
+而且是使用了png的provider。
+
+那我直接给一张png格式的图片。
+
+一闪而过。
+
+这个不是关键。
+
+关键还是qt为什么显示的尺寸不能铺满。
+
+
+
+
+
+# 像素深度
+
+像素深度（bits per pixel，简称bpp）
+
+一个像素的颜色在计算机中由多少个字节数据来描述。计算机中用二进制位来表示一个像素的数据，用来表示一个像素的数据位越多，则这个像素的颜色值更加丰富、分的更细，颜色深度就更深。
+
+一般来说像素深度有这么几种：1位、8位、16位、24位、32位。
+
+像素深度bpp和像素格式pix_format关系：
+
+像素格式是人为规定的用来填充像素深度bpp的。比如像素深度为16，说明用16位二进制表示一个像素，那到底是怎样的数据形式来表示填充呢，人为可以规定RGB565,也可以规定BGR565。这个格式就要看具体驱动和应用代码了。
+
+
+
+# df_dok
+
+只需要研究这一个测试程序就可以了。
+
+查看--help，可以看到很多的选项，可以测试不同的子项目。
+
+以df_dok --fill-rect来作为典型测试。
+
+当前使用硬件加速，不正常。并没有继续进行后面的测试。
+
+直接使用fb，则是正常的。
+
+查看ge2d的中断数，刚开始运行会有，过一会就没有中断增加了。
+
+
+
+面对嵌入式设备的特殊需求环境，我们为图形加速和图形增强支持开发了一个小巧、强大和易于使用的技术：directfb。
+
+directfb是一个瘦函数库，
+
+为开发者提供硬件加速，
+
+输入设备处理，
+
+并在Linux FB设备之上抽象、集成了支持**半透明窗口和多层显示**的窗口系统。
+
+它是一个完全的硬件抽象层，
+
+**在每个图形操作上都具有软件后备机制，**
+
+用于那些不被底层硬件支持的功能。
+
+DFB让嵌入式系统图形功能更强大，并在Linux上建立了一个新的标准。
+
+
 
 
 # 参考资料
@@ -638,3 +1166,31 @@ https://blog.csdn.net/yangzhongxuan/article/details/6539711
 6、man手册
 
 https://linux.die.net/man/5/directfbrc
+
+7、
+
+https://elinux.org/DirectFB
+
+8、DirectFB的接口详解
+
+https://blog.csdn.net/yinjiabin/article/details/7674053
+
+9、
+
+https://www.raspberrypi.org/forums/viewtopic.php?t=22802
+
+10、
+
+https://blog.csdn.net/zhangliang_571/article/details/28265255
+
+11、LCD显示问题-lcd中像素深度bpp和像素格式（比如RGB,YUV）的关系
+
+https://blog.csdn.net/u013165704/article/details/80590652
+
+12、
+
+https://higfxback.github.io/DirectFB.html
+
+13、
+
+http://www.mianshigee.com/tutorial/tinyclub-elinux/dev_portals-multimedia-porting_directfb-porting_directfb.md
