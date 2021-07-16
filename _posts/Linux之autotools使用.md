@@ -188,7 +188,138 @@ noinst_HEADERS：
 
 
 
-参考资料
+下面分别展示下软件发布和安装的命令：
+
+发布：
+
+```text
+aclocal # 设置m4 环境
+autoconf # 生成 configure 脚本
+automake --add-missing # 生成 Makefile.in 脚本
+./configure # 生成 Makefile 脚本
+make distcheck # 使用 Makefile 构建一个发布软件并测试
+```
+
+安装：
+
+```text
+./configure # 生成 Makefile 脚本
+make # 构建软件
+make install # 使用 Makefile 安装软件
+```
+
+
+
+
+
+# configure检查过程
+
+configure过程会检查各种依赖的东西是否存在。
+
+这个是怎么做的？
+
+我主要是想搞清楚，buildroot时，configure是检查哪里的配置。能不能改。
+
+sysroot可以改，configure选项加上
+
+```
+DIRECTFB_CONF_OPTS += --with-sysroot=$(STAGING_DIR)
+```
+
+
+
+evtest的编译分析
+
+这个是一个实际项目，足够简单，依赖也不多。正好可以用来分析。
+
+代码目录是这样：
+
+```
+├── autogen.sh
+├── configure.ac
+├── COPYING
+├── evtest.c
+├── evtest.txt
+├── INSTALL
+├── Makefile.am
+└── README
+```
+
+https://github.com/freedesktop-unofficial-mirror/evtest
+
+看一下提交记录。从2009年开始的。
+
+最开始的编译文件是2个：configure.ac和Makefile.am
+
+
+
+# configure.ac写法
+
+https://blog.csdn.net/yhd1019896930/article/details/78488256
+
+
+
+
+
+新建一个目录
+
+```
+auto-test
+└── src
+    ├── audio
+    │   ├── audio.c
+    │   └── audio.h
+    ├── image
+    │   ├── image.c
+    │   └── image.h
+    ├── main.c
+    └── video
+        ├── video.c
+        └── video.h
+```
+
+这样看起来比较正式一点。
+
+然后在auto-test目录下，执行：
+
+```
+autoscan
+```
+
+ Generate a preliminary configure.in
+
+读懂这些，应该就足够了。总结一下，基本步骤如下：
+1、autoscan ./
+2、修改生成的configure.scan文件，增加AM_INIT_AUTOMAKE ，AC_CONFIG_FILES([Makefile])
+3、aclocal
+4、核心步骤：根据情况，编写Makefile.am
+5、autoheader
+6、touch NEWS README AUTHORS ChangeLog
+7、automake -a
+8、autoconf
+
+注：运行autoscan时，会出现以下提示：
+
+[shell]
+autom4te: configure.ac: no such file or directory
+autoscan: /usr/bin/autom4te failed with exit status: 1
+[/shell]
+
+这个提示不影响下面的步骤，因为configure.scan文件已经生成了。
+
+
+
+之前一直把所有的h文件和c文件都放在同一个目录下，用的是通用Makefile，现在觉得需要现代化一点，
+
+于是进行了一些改造，分多个目录，多级目录，
+
+因此，学习一下autoscan，aclocal，autoconf，automake这些工具的使用。
+
+
+
+
+
+# 参考资料
 
 1、Autotools 使用入门
 
@@ -203,3 +334,17 @@ https://blog.csdn.net/mao834099514/article/details/79544467
 3、
 
 https://blog.csdn.net/zmxiangde_88/article/details/8024223
+
+4、
+
+https://zhuanlan.zhihu.com/p/77813702
+
+5、
+
+https://www.cnblogs.com/alexyuyu/articles/3106482.html
+
+6、
+
+这个很好，讲得很详细，照着这个做就好了。
+
+https://blog.csdn.net/pangudashu/article/details/47664639

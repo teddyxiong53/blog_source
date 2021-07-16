@@ -513,6 +513,12 @@ vgcanvas
 
 
 
+# darray
+
+表示动态数组。
+
+
+
 # 参考资料
 
 1、在 qemu 中运行 awtk-linux-fb

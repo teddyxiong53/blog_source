@@ -611,55 +611,40 @@ if (getenv( "DISPLAY" ))
 
 
 
-# 代码分析
-
-桌面GUI系统涉及很多图像运算，
-
-比如画点、画线、填充、透明度处理、平滑度处理、层的叠加、字体处理、贴图等等。
-
-如果这些运算都由CPU来处理，那这将是对CPU的一个很大的负载。
-
-在QT的文档中曾说到，
-
-假如一个图形运算让加速设备来做需要1到2个CLK，
-
-同样的图形运算让CPU来算则至少需要20个CLK，
-
-而且，对于嵌入式SoC来说，CPU的频率和SDRAM/DRAM的带宽始终是图形运算的瓶颈。
-
-所以这些芯片的图形加速能力有无、高低，最终决定其目标GUI的质量。
 
 
 
-近两年嵌入式设备主芯片越来越多的嵌入了2D/3D加速功能，
-
-由此软件可以搭建越来越复杂、炫酷、先进的桌面系统，如Qt/Android等。
-
-这些加速硬件，通常也因其是否拥有私有内存、是否支持3D、加速接口是否可编程等特性而分为三六九等。
-
-硬件的加速功能如果要在目标GUI系统中跑起来，
-
-还得需要一些软件中间层为不同的硬件加速提供同一的接口，并且为上层GUI提供服务。
-
-DirectFB就是这样一个软件中间层,它主要为上层提供2D加速服务。
-
-**OpenGL/ES 主要为上层提供3D加速服务。**
-
-DirectFB是一个专门针对Linux图形库设计的图形加速中间层。
-
-它的上层直接面向图形库比如QT，提供如显示、画图、输入设备控制等服务，
-
-他的下层直接面向GFX加速硬件，**要求硬件驱动实现全部或部分预定的画图函数**。
 
 
+# dfbinfo
 
- DirectFB由超级接口IDirectFB为上层提供接口调用，其他所有接口都由此接口生成，这些接口内容包括：
+当前我的板子的情况：
 
-  =========================
-  . IDirectFBScreen
-  . IDirectbFBDisplayLayer
+```
+Screen (00) FBDev Primary Screen            (primary screen)
+   Caps: VSYNC POWER_MANAGEMENT 
 
-   IDirectFBSurface
+     Layer (00) FBDev Primary Layer             (primary layer)
+        Type:    GRAPHICS 
+        Caps:    SURFACE BRIGHTNESS CONTRAST SATURATION 
+
+
+Input (01) tslib touchscreen 0             (primary mouse)
+   Vendor  ID: 0x0000
+   Product ID: 0x0000
+   Type: MOUSE 
+   Caps: AXES BUTTONS 
+   Max. Axis: 1
+   Max. Button: 0
+
+Input (00) Keyboard                        (primary keyboard)
+   Vendor  ID: 0x0000
+   Product ID: 0x0000
+   Type: KEYBOARD 
+   Caps: KEYS 
+   Min. Keycode: 0
+   Max. Keycode: 127
+```
 
 
 
@@ -813,6 +798,371 @@ Caught exception!
 然后才能讨论效果和效率。
 
 就选择wearable这个例子来看。
+
+
+
+```
+ fusion_skirmish_init( 0x4d3e4, 'Display Layer 0' )
+ primaryInitLayer()
+ dfb_fbdev_read_modes()
+ dfb_fbdev_test_mode_simple( mode: 0x4d458 )
+ dfb_fbdev_mode_to_var( mode: 0x4d458 )
+   -> resolution   720x720
+   -> virtual      720x720
+   -> pixelformat  RGB32
+   -> buffermode   FRONTONLY
+   => SUCCESS
+
+```
+
+
+
+```
+dfb_surface_lock_buffer2( accessor 0x1, access 0x3, role 1, count 0, eye 1 ) <- 320x480 ARGB
+```
+
+
+
+# directfb和tslib结合
+
+```
+tslib-devices=/dev/input/event1
+```
+
+不行，我看了一下板端的目录。
+
+```
+/usr/lib/directfb-1.7-7/inputdrivers # ls
+libdirectfb_keyboard.so     libdirectfb_ps2mouse.so
+libdirectfb_linux_input.so  libdirectfb_serialmouse.so
+```
+
+tslib我配置了，不知道为什么没有编译进来。
+
+是编译配置过程有问题。
+
+```
+checking for TSLIB... no
+checking for TSLIB... no
+configure: WARNING: *** no tslib -- tslib driver will not be built.
+```
+
+```
+checking for sysroot... no
+checking for a working dd... /bin/dd
+checking how to truncate binary pipes... /bin/dd bs=4096 count=1
+checking for arm-linux-gnueabihf-mt... no
+```
+
+这里就涉及到configure过程，检查sysroot，是检查的服务器的，还是检查buildroot的host目录的。
+
+按道理应该用host的。
+
+但是这里为什么没有用呢？
+
+这样指定sysroot。
+
+```
+DIRECTFB_CONF_OPTS += --with-sysroot=$(STAGING_DIR)
+```
+
+但是加上后，还是不行。
+
+看一下config.log。
+
+```
+configure:24379: $PKG_CONFIG --exists --print-errors "tslib-1.0 >= 1.0.0"
+Package tslib-1.0 was not found in the pkg-config search path.
+Perhaps you should add the directory containing `tslib-1.0.pc'
+```
+
+那么问题的关键就在于指定pkg-config的搜索路径。
+
+在package目录下grep搜索。找到有的package里的mk文件里有这个。
+
+```
+export PKG_CONFIG_PATH=$(STAGING_DIR)/usr/lib/pkgconfig:$(PKG_CONFIG_PATH)
+```
+
+那我也加上这个。
+
+还是不行。
+
+下面这个目录有。
+
+```
+ls ./output/axg_s400_a6432_release/target/usr/lib/pkgconfig/
+++dfb.pc              directfb-internal.pc  directfb.pc           direct.pc             fusion.pc             tslib.pc 
+```
+
+要的就是tslib.pc 这个文件所在的目录。
+
+搜索一下这个文件。
+
+这里有：
+
+```
+./output/axg_s400_a6432_release/host/arm-linux-gnueabihf/sysroot/usr/lib/pkgconfig/tslib.pc
+```
+
+那就是这个目录没错啊。
+
+这样来查看
+
+```
+PKG_CONFIG_PATH=/mnt/nfsroot/hanliang.xiong/work/s400_gui/code/output/axg_s400_a6432_release/host/arm-linux-gnueabihf/sysroot/usr/lib/pkgconfig pkg-config --list-all |grep tslib
+tslib                               tslib - Touchscreen Access Library
+```
+
+是存在的。
+
+我当前的版本是1.21的，也足够高。
+
+关键是这里：
+
+```
+configure:24379: $PKG_CONFIG --exists --print-errors "tslib-1.0 >= 1.0.0"
+```
+
+tslib-1.0 这个是不对的，会找不到。写tslib就可以。
+
+这个是哪里指定的？
+
+这个是当前的configure文件里写死的。的确是directfb没有维护导致的。
+
+改configure.in有用吗？
+
+应该没用。当前是直接用configure文件的。
+
+我看加amlgfx的，也是直接改configure文件的。
+
+不对，configure.in也改了。
+
+是都要改？
+
+从编译打印看，是使用了configure.in。
+
+```
+aclocal: warning: autoconf input should be named 'configure.ac', not 'configure.in'
+```
+
+感觉确实年久失修。warning一大堆。
+
+我先只改configure.in，看看有用没。
+
+可能这样来做简单点：把tslib.pc改名为tslib-1.0.pc。看看行不行。
+
+可以。改名后，把pc文件里的名字也改一下。
+
+再重新编译directfb，可以看到已经报告可以检测到tslib了。
+
+直接把编译出来的so文件，拷贝到板端对应的目录下。
+
+运行qt程序。
+
+```
+(*) Direct/Thread: Started 'tslib Input' (24409) [INPUT - OTHER/0] <8388608>...
+(*) DirectFB/Input: tslib touchscreen 0 0.1 (tslib)
+```
+
+可以看到tslib已经被枚举出来。
+
+但是触摸没有效果。
+
+有没有一个directfb的测试tslib的程序？
+
+有一个df_input的测试程序。
+
+看一下代码，device_id默认是0, 这个代表了那种设备？
+
+```
+DFBInputDeviceID  device_id = 0;
+```
+
+输入设备id的宏定义
+
+```
+#define DIDID_KEYBOARD        0x0000    /* primary keyboard       */
+#define DIDID_MOUSE           0x0001    /* primary mouse          */
+#define DIDID_JOYSTICK        0x0002    /* primary joystick       */
+#define DIDID_REMOTE          0x0003    /* primary remote control */
+#define DIDID_ANY             0x0010    /* no primary device      */
+```
+
+也没有看到tslib的。那么试一下mouse的行不行。
+
+不对，tests目录的东西，默认没编译。
+
+需要加上这个：
+
+```
+ifeq ($(BR2_PACKAGE_DIRECTFB_TESTS),y)
+DIRECTFB_CONF_OPTS += --with-tests
+endif
+```
+
+现在直接运行dfbtest_input，会退出。
+
+打开debug。看看打印。
+
+出错是这里：
+
+```
+(*) DFBTest/Input: Setting sensitivity to 0x100, please move mouse!
+(-) [dfbtest_input    15772.126,495] (28743) DirectFB/CoreInputDevice:         IInputDevice_Real::SetConfiguration()
+(-) [dfbtest_input    15772.126,563] (28743) Core/Input:                           dfb_input_device_set_configuration( 0x42a48, 0xffdb4d24 )
+(!) DFBTest/Input: SetConfiguration() failed!
+```
+
+对应的错误码是DR_UNSUPPORTED
+
+这个函数是枚举所有的input设备。
+
+```
+dfb_input_enumerate_devices( GetInputDevice_Callback, &context, DICAPS_ALL );
+```
+
+driver_open_device函数，这里注册名字的。
+
+```
+snprintf( info->desc.name,
+               DFB_INPUT_DEVICE_DESC_NAME_LENGTH, "Keyboard" );
+```
+
+我修改传递给dfbtest_input的-d参数，0和1都不行。
+
+2的错误就不一样了。直接是找不到。
+
+```
+(!) DFBTest/Input: GetInputDevice( 2 ) failed!
+```
+
+我到目录下，去把除了linux_input和tslib之外的so文件都删除。
+
+现在按道理0就是tslib了。
+
+但是报错。
+
+```
+(!) DFBTest/Input: GetInputDevice( 0 ) failed!
+```
+
+看directfb里的tslib的代码
+
+```
+info->desc.type       = DIDTF_MOUSE;
+info->desc.caps       = DICAPS_AXES | DICAPS_BUTTONS;
+info->desc.max_axis   = DIAI_Y;
+info->desc.max_button = DIBI_LEFT;
+```
+
+可见，触摸屏是当成mouse来处理的。
+
+能力只有坐标事件和按钮事件。
+
+只有鼠标的单击能力。
+
+那么当前就是这个函数出错
+
+```
+ret = dfb->GetInputDevice( dfb, device_id, &device );
+```
+
+那就要看初始化的时候，有没有把input设备找到并加入到链表。
+
+从之前的打印里，可以看到
+
+```
+(-) [dfbtest_input    15756.132,206] (28743) Core/Input:                                                 -> probing 'tslib Input Driver'...
+(-) [dfbtest_input    15756.160,060] (28743) Core/Input:                                                 -> 1 available device(s) provided by 'tslib Input Driver'.
+(-) [dfbtest_input    15756.161,733] (28743) Direct/Thread:                                                direct_thread_create( INPUT, 0xf69b6d54(0x39e60), 'tslib Input' )
+```
+
+把keyboard放进去，就可以的。
+
+枚举出来是这样：
+
+```
+xhl -- id:1,name:tslib touchscreen 0 
+xhl -- id:0,name:Keyboard 
+```
+
+现在不是枚举不到设备，而是SetConfigure失败。
+
+我把SetConfigure注释掉。
+
+也还是没有效果。
+
+
+
+看tools默认也没有编译，改一下directfb.mk，编译tools。
+
+https://blog.csdn.net/csdnxw/article/details/2630389
+
+
+
+direct_trace_print_stack
+
+这个打印出错堆栈，一般的错误也会打印，例如没有实现的函数。
+
+
+
+我自己写一个简单的测试程序来测试tslib吧。
+
+evtest确认tslib工作正常。
+
+然后用dfb的接口来写简单的测试程序。
+
+不用dfbtest_input了。
+
+IDirectFBEventBuffer_WaitForEvent
+
+那么问题就在于ts_read函数没有得到内容。
+
+这又是为什么？
+
+把ts的测试工具运行一下看看。
+
+在tslib/tests目录下。
+
+我好像有点知道了。 
+
+把ts.conf的module_raw input改成module input。
+
+运行dfbtest_input会找不到tslib。
+
+这样情况下，运行ts_finddev也会报错
+
+```
+No raw modules loaded.
+ts_config: No such file or directory
+```
+
+--enable-input-evdev
+
+那么可能是这个导致的。
+
+不是。
+
+我先把tslib里的ts_read改成ts_read_raw看看。
+
+改了也还是不行。
+
+现在又可以了。
+
+
+
+## 最终的改法
+
+一个疑问：tslib没有host编译，怎么在host下面有？
+
+tslib.pc 这个文件只来自于tslib目录。
+
+单独把tslib编译一下，看看打印。
+
+这个就是取决于tslib里的编译脚本的行为了。默认就是安装的。
+
+我需要给tslib.mk加上一行，把tslib.pc拷贝一个tslib-1.0.pc。
 
 
 
@@ -1086,7 +1436,122 @@ dfbshow的最后几行打印：
 
 关键还是qt为什么显示的尺寸不能铺满。
 
+我显示一张320x320的图片看看。
 
+用dfbshow来显示。这样即使是尺寸不够，也是居中显示的。
+
+当前的directfb是1.7.7，看看有没有更新的版本。
+
+最新的release确实是这个。
+
+我自己写一个720x720的app来测试一下。
+
+先运行我的demo_qt。
+
+linuxfb的时候，是居中显示这个按钮，周围都是白色背景。
+
+directfb的时候，则是在左上角显示这个按钮，剩余部分都是黑色。
+
+还显示了一个鼠标。
+
+我把directfb的input先都关闭。
+
+我直接在directfbrc里，加上no-cursor。这样运行就卡住没有显示。
+
+卡住不是加no-cursor导致的。好像是我/cat /dev/urandom > /dev/fb0 之后就会出现这种情况。
+
+进一步测试发现，只要直接用过/dev/fb0，之后及时把当前的进程杀掉，directfb再用就会卡住。
+
+这是为什么？
+
+
+
+我把尺寸指定为720x720，则可以达到跟linuxfb一样的显示效果。
+
+那就先这样吧。
+
+fbdev的信息，可以从/sys/class/graphics/fb0目录下看到。
+
+
+
+我先把wearable的保证在directfb正常跑起来。哪怕用最笨的方法。
+
+我先把所有的素材都缩放到720x720对应的大小。
+
+把tslib配置正常。
+
+我先只把wearable.qml里的2个320改成720，没有什么变化。
+
+我看background-light.png，就是当前的背景图片，大小是640x640的。
+
+我直接用vexpress里的directfb来试一下看看。
+
+
+
+
+
+amlogic支持的加速操作。
+
+```
+#define AML_SUPPORTED_DRAWINGFLAGS (DSDRAW_NOFX |DSDRAW_BLEND)
+
+#define AML_SUPPORTED_DRAWINGFUNCTIONS (DFXL_FILLRECTANGLE)
+
+#define AML_SUPPORTED_BLITTINGFLAGS ( DSBLIT_BLEND_ALPHACHANNEL | DSBLIT_BLEND_COLORALPHA | \
+											DSBLIT_COLORIZE | \
+											DSBLIT_SRC_PREMULTIPLY |DSBLIT_SRC_COLORKEY | \
+											DSBLIT_ROTATE180 )
+
+#define AML_SUPPORTED_BLITTINGFUNCTIONS (DFXL_STRETCHBLIT | DFXL_BLIT)
+```
+
+# directfb卡住
+
+复现条件：
+
+```
+1、随便用某种方式直接使用一下/dev/fb0。例如 cat /dev/urandom > /dev/fb0，然后ctrl+c结束掉。
+2、用directfb作为后端，打开一个qt程序，则会卡住。
+```
+
+打开directfb里的debug。可以看到最后的几行打印是：
+
+```
+(-) [animation        650.873,767] ( 3505) FBDev/VT:                         dfb_vt_initialize()
+(-) [animation        650.873,882] ( 3505) FBDev/VT:                         vt_get_fb( 4 )
+(-) [animation        650.873,925] ( 3505) FBDev/VT:                           -> -1
+(-) [animation        650.873,949] ( 3505) FBDev/VT:                         vt_set_fb( 4, -1 )
+```
+
+这里的vt是指什么？VirtualTerminal
+
+有必要使能这个吗？
+
+是这样调用的：
+
+```
+if (dfb_config->vt) {
+          ret = dfb_vt_initialize();
+          if (ret)
+               return DFB_INIT;
+     }
+```
+
+那么就是vt这个默认是使能的。
+
+在directfbrc里加上no-vt。
+
+这样就不会再卡住了。
+
+
+
+# directfbrc调整
+
+```
+# 需要加上这个，避免卡住。
+no-vt 
+
+```
 
 
 
@@ -1138,6 +1603,231 @@ directfb是一个瘦函数库，
 
 DFB让嵌入式系统图形功能更强大，并在Linux上建立了一个新的标准。
 
+
+
+
+
+DirectFB就是一个全能系统，麻雀虽小五脏俱全。
+
+DirecttFB源码，可以了解很多方面的技术, 
+
+包括Framebuffer, Graphics Accelerate Card,鼠标及键盘等外设的事件处理，
+
+Font, Graphics Drawing等，
+
+另外还可以看到一下很有用的编程技巧，
+
+例如C++思想在C语言中的运用，动态加载链接库，双buffer的具体实现，进程通信，多进程的控制和管理等。
+
+
+
+几个容易混淆的概念：surface, screen, layer。
+
+surface：是用户作图的一块方形区域，对应一块内存，用户可以任意创建多个surface，surface与屏幕没有任何联系。
+
+screen: 就是用户看到的屏幕，实际上对应的是系统中特定的一块内存，写到这块内存的东西会自动显示到屏幕上，这块内存可以通过grahics system操作，如frame buffer等， DFB的用户并不能直接操作这块内存。surface 上的东西只有拷贝到这块内存中才会显示出来。
+
+layer: 一般是一个与graphics driver 有关的物理特性，不同的硬件可能支持的layer个数不同，种类也不同。不同的layer对应不同的graphics card中的不同内存。一个典型的应用是下面的一个layer显示video， 上面的layer显示字幕。layers上的内容在现实到屏幕之前需要做混合等处理。
+
+
+
+**即使系统存在硬件加速，DFB仍然提供了上层用户绕过硬件加速而只使用纯软件的画图。**
+
+**这在调试硬件或比较软硬件性能时很有帮助。这是通过directfbrc中的'hardware'指定的。**
+
+
+
+我们先看一下用户是如何调DirectFB来画线的,一般流程如下：
+
+ 
+
+·    DirectFBInit( &argc, &argv );
+
+·    DirectFBCreate(&dfb);
+
+·    dfb->CreateSurface(dfb, &sdsc, &primary);
+
+·    primary->DrawLine(primary, 0, 0, 100, 200);
+
+ 
+
+上面的代码就是创建一个surface并在其上画一条从（0,0）到（100,200）的斜线。
+
+
+
+现在我们看看input_core的初始化。
+
+在进入具体的代码之前，我们先总结一下input_core这个核心部件的主要功能。
+
+我们知道计算机系统的外设有很多，不同的外设，接口不同，功能不同，
+
+提供的数据类型也不尽相同。
+
+例如键盘的事件是KEY_RELEASE 或KEY_PRESS, 
+
+而鼠标的事件是BUTTON_PRESS或BUTTON_RELEAASE,
+
+还有触摸屏，游戏杆等等。
+
+所以input_core的功能之一就是统一不同输入设备的差异。
+
+第二，上层可能有多个进程在等待某个输入，而下层的输入设备并不知道，
+
+这种向多个进程分发事件的功能也是input core完成的。
+
+第三，系统中可能有多个设备对应同一个driver，DFB需要建立设备与driver的对应关系。
+
+
+
+上面有关fusion和reactor时，我们仍然只考虑单进程的情况。
+
+在input_core_part初始化完成后，我们最终得到一个数据结构core_local, 将input drivers, input devices, reactors联系起来。其结构图如下：
+
+
+
+![image-20210712195644250](../images/random_name/image-20210712195644250.png)
+
+
+
+双缓存是画图时一个常用的技术，它的基本原理是在其中一个缓存中作图，完成后提交显示，同时在另一块缓存中继续作图，这样两块缓存交替画图-显示，实现了两者的同步进行，提高了效率。
+
+在DirectFB中,一个缓存实际就是一块内存。
+
+DFB支持两种缓存分配方式:
+
+(1)用户自己分配，并在createSurface是将该内存地址传递给DFB，这种方式需要在createSurface时指定DSCAPS_PREMULTIPLIED属性
+
+(2）DFB自动分配，大部分用户使用这种方式。
+
+
+
+DirectFB支持双缓存或三缓存，用户编程时，只需在调用dfb->CreateSurface 时指定DSCAPS_DOUBLE或DSCAPS_TRIPLE即可。而除此以外，多缓存对于用户是透明的。
+
+
+
+我们在DirectFB初始化中了解到gfx driver, input driver等都是在DirectFBCreate（）时完成初始化，也就是说在用户真正使用之前，这些driver已经准备就绪。
+
+ 而字体（font）与此不同，只有用户明确使用字体时，才会进行初始化及资源分配，
+
+**类似还有Image和Video，在DirectFB中它们通称为Interface。**
+
+源码对应的目录就是DirectFB-1.4.0/Interfaces。
+
+  在DirectFB运行环境中，interface的存在形式也是动态链接库。对应的目录是：lib/directfb-1.4.0/interfaces/IDirectFBFont等。
+
+
+
+当前的directfb支持三种字体文件：
+
+  （1）**FreeType2**。有关freetype2的资料，可以参考官方网站：http://freetype.sourceforge.net/。
+
+  (2) **DGIFF字体**。 DGIFF是DirectFB Glyph Image File Format的简称，从名字就可以看出，这是DirectFB所特有的一种字体格式。 DFB在tools目录中有一个mkdgiff可以将TrueType的字体文件转化为一个DGIFF字体文件。（**命令为**：./mkdgiff -f A8 -s 10,20,30 one.ttf > one.dgiff, 将字体文件one.ttf转化为DGIFF格式，结果保存在one.dgiff中，指定字体的格式是A8, 大小支持10，20，30），DGIFF与FreeType2的一个重要区别是FreeType2可以支持无限大小的字体，而DGIFF只支持一定个数的字体大小，例如对于上面的one.dgiff它只支持10，20或30，三种大小的字体。
+
+  (3) **缺省字体**。如果系统不支持FreeType2, 也不想是使用DGIFF,则可以使用DFB中提供了一种缺省字体，这种字体固定大小的，也就是说指定是non-scalable的字体。
+
+
+
+*DirectFB*是图形*API*存在于*Frame Buffer*层之上与高级图形管理层如*GTK+*等之下的。
+
+它可以以很小的系统资源占用来提供图形硬件加速功能，
+
+提供类如多路*a*通道渲染模型等高级图像操作。
+
+它不修改*Linux*内核，除了标准*C*库没有其他库的依赖。
+
+应用在了基于*Linux*系统的*DTV*显示系统的研发和其他有关*Linux*显示界面的项目上。支持市面上绝大多数显示卡，支持键盘、鼠标、遥控器、游戏手柄、触摸屏等输入设备。支持*JPEG*、*PNG*、*GIF*、*mpeg1/2*、*AVI*、*MOV*、*Flash*、*Video4Linux*、*DirectFB bitmap font*和*TrueType*等音视频文件和字体
+
+
+
+有这2个自动被调用的初始化和去初始化函数。
+
+在lib/direct/init.c里。
+
+```
+__constructor__ void __D_init_all  ( void );
+__destructor__  void __D_deinit_all( void );
+```
+
+是把一个init 函数表调用了一下，主要就是mutex lock的初始化。
+
+
+
+# qt后端可选
+
+就是plugins下面的platforms下的so的名字来作为参数。
+
+```
+/usr/lib/qt/plugins/platforms # ls
+libqdirectfb.so   libqminimal.so    libqvnc.so
+libqlinuxfb.so    libqoffscreen.so
+```
+
+除了directfb和linuxfb，其他的对我来说有用吗？
+
+在代码目录下，还有更多。
+
+```
+README    direct2d/  integrity/  minimalegl/    qnx/      winrt/
+android/  directfb/  ios/        offscreen/     vnc/      xcb/
+bsdfb/    eglfs/     linuxfb/    openwfd/       wasm/
+cocoa/    haiku/     minimal/    platforms.pro  windows/
+```
+
+大部分对我来说确实没用。
+
+
+
+开发者可以选择以DirectFB为后端的Cairo图形库进行2D图形操作。实践证明，这是一种嵌入式系统中高效、通用的解决方案。
+
+
+
+# opendfb
+
+我在谷歌搜索“directfb不维护了”。找到了opendfb。
+
+https://github.com/openDFB/OpenDFB
+
+这个项目看是深圳的开发者在维护。但是热度看起来不高，只有2个star。
+
+发展前景存疑。
+
+
+
+DirectFB官方已经不再维护，但目前还有不少用户使用DirectFB，
+
+该组件从某种程度上可以说是业界事实标准，
+
+之所以这么流行原因是DirectFB天生就是针对嵌入式设备而设计，
+
+以最小的资源来实现了最高的硬件加速性。
+
+如今IOT设备流行，需要一种在RAM和ROM占用均小图形显示组件，
+
+所以该项目从DirectFB-1.6.3拉出了一个分支，命名OpenDFB，
+
+该项目主要是通过对DirectFB代码进行重构和精简，旨在建立一个IOT轻量级设备的显示服务组件。
+
+
+
+OpenDFB定位为IOT设备显示服务组件，
+
+因为DirectFB发展多年，
+
+一方面存在历史代码导致代码陈旧，
+
+另外一方面也存在发展中增加了很多背离最早轻量级设计目标的很多没有用的功能，
+
+OpenDFB出现就是为了解决这些问题，
+
+主要是通过明确显示服务的目标删除一些没有用的功能，甚至对外接口也会有些调整，目前调整的代码包括：
+
+1. 将directfb内部C++代码统一整改成纯C代码，避免代码膨胀，保持代码简洁；(done)
+2. 删除历史遗留的半吊子组件，包括++dfb, dvc, fusiondale, fusionsound, voodoo, input hub; (done)
+3. 显示服务需要强化显示功能，对于显示之外的功能进行删除，包括IDirectFBVideoProvider,IFusionSound,IFusionSoundMusicProvider,IWater；（done）
+4. 对外接口保留，但内部实现保留最简单实现，建议应用端实现， 包括Image provider, Font/Text. （done）
+5. 对于2D接口保留Blitter相关功能，对于其他矢量绘制等功能均删除. （done）
+6. 将游离directfb之外的库收编到内部直接编译，包括sawman, divine;（done）
+7. 将内核fusion机制使用socket来代替，避免依赖linux内核依赖，方便移植到其他RTOS。（doing）
 
 
 
@@ -1194,3 +1884,61 @@ https://higfxback.github.io/DirectFB.html
 13、
 
 http://www.mianshigee.com/tutorial/tinyclub-elinux/dev_portals-multimedia-porting_directfb-porting_directfb.md
+
+14、DirectFB 源码解读系列
+
+这个看起来不错。写于2009年。
+
+http://blog.sina.com.cn/s/articlelist_1569739200_1_1.html
+
+15、DirectFB同时显示到X11和VNC上
+
+https://blog.csdn.net/jggyff/article/details/87455496
+
+16、在linux上移植xserver、tslib、gtk和桌面系统（用buildroot）
+
+https://blog.csdn.net/w6980112/article/details/47155691
+
+17、
+
+https://www.cnblogs.com/sky-heaven/p/8116664.html
+
+18、
+
+这篇文章也碰到类似问题，提问者最后切换到sdl了。
+
+https://www.avrfreaks.net/forum/directfb-tslib
+
+19、
+
+https://blog.csdn.net/deggfg/article/details/81093427
+
+20、使用DirecetFB支持Qt4.7.0 (十分详细)
+
+https://www.cnblogs.com/leaven/archive/2010/10/13/1850129.html
+
+21、DirectFB和Cairo的嵌入式图形开发实践
+
+https://blog.csdn.net/shenbin1430/article/details/4578865
+
+22、DirectFB代码导读
+
+李先静的博客。
+
+https://blog.csdn.net/absurd/article/details/1001641
+
+23、哪位大佬用过nuc972 linux下的2D图形加速？
+
+这个讨论有启发性。
+
+https://whycan.com/t_1232.html
+
+24、
+
+https://forum.odroid.com/viewtopic.php?t=21034&start=50
+
+25、DirectFB运行机制介绍
+
+https://blog.csdn.net/absurd/article/details/2596080
+
+# 末尾

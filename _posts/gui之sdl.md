@@ -166,7 +166,15 @@ SDL_JOYSTICK_DISABLED
 
 
 
-参考资料
+# sdl和sdl2的区别
+
+就是一个较大的版本改动。
+
+api接口有些每一向前兼容了。
+
+
+
+# 参考资料
 
 1、
 
@@ -175,3 +183,7 @@ https://baike.baidu.com/item/SDL/224181?fr=aladdin
 2、
 
 https://blog.csdn.net/leixiaohua1020/article/details/11954039
+
+3、SDL1.2到2.0的迁移指南
+
+https://www.cnblogs.com/lihaiping/p/4020248.html
