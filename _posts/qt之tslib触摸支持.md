@@ -371,7 +371,7 @@ module linear
 ```
 export LD_LIBRARY_PATH=/usr/lib/
 export TSLIB_ROOT=/usr/lib
-export TSLIB_TSDEVICE=/dev/input/input1
+export TSLIB_TSDEVICE=/dev/input/event1
 export TSLIB_CALIBFILE=/etc/pointercal
 export TSLIB_CONFFILE=/etc/ts.conf
 export TSLIB_CONSOLEDEVICE=none
@@ -1276,6 +1276,214 @@ Event: time 1420070514.989533, type 3 (EV_ABS), code 48 (ABS_MT_TOUCH_MAJOR), va
 
 
 
+现在用hexdump /dev/input/event1的方式来查看。
+
+触摸一下，有这些内容，解析一下。
+
+```
+/ # hexdump /dev/input/event1
+0000000 8e5e 54a4 f6a2 0007 0003 0039 0001 0000
+0000010 8e5e 54a4 f6a2 0007 0003 0035 0139 0000
+0000020 8e5e 54a4 f6a2 0007 0003 0036 01a7 0000
+0000030 8e5e 54a4 f6a2 0007 0001 014a 0001 0000
+0000040 8e5e 54a4 f6a2 0007 0000 0000 0000 0000
+0000050 8e5e 54a4 9874 0008 0003 0039 ffff ffff
+0000060 8e5e 54a4 9874 0008 0001 014a 0000 0000
+0000070 8e5e 54a4 9874 0008 0000 0000 0000 0000
+```
+
+每一行对应一个input_event结构体。
+
+```
+struct input_event {
+	struct timeval time;
+	__u16 type;
+	__u16 code;
+	__s32 value;
+};
+```
+
+```
+8e5e 54a4 f6a2 0007  这个是时间戳
+0003 type  表示EV_ABS
+0039 code  ABS_MT_TRACKING_ID 
+0001 0000  value 
+```
+
+所以上面这次触摸的实际依次是：
+
+```
+tracking id 为1
+X坐标
+Y坐标
+BTN_TOUCH down
+EV_SYN
+tracking id为0xffff ffff
+BTN_TOUCH up
+EV_SYN
+```
+
+确实是没有pressure事件。
+
+那就要在内核里继续加打印。看看是哪里抛弃了这个事件。
+
+
+
+https://discuss.vlug.narkive.com/gHWmeiHQ/how-to-interpret-dev-input-event0
+
+
+
+## A协议和B协议
+
+B协议：
+
+没有SYN_MT_REPORT,
+
+利用ABS_MT_TRACKING_ID来跟踪当前点属于哪一条线。
+
+当前序列中某点的ID值，如果与前一次序列中某点的ID值相等，那么他们就属于同一条线，
+
+应用层就不用再去计算这个点是哪条线上了；
+
+如果按下并一直按同一个点，那么input子系统就会做个处理来屏蔽你上下两次相同点，减少IO负担。
+
+协议B明显优越于协议A，但是协议B需要硬件支持，
+
+ID值并不是随便赋值的，而是硬件上跟踪了点的轨迹，
+
+比如按下一个点硬件就会跟踪这个点的ID，只要不抬起上报的点都会和这个ID相关。
+
+
+
+## add_input_randomness
+
+这个函数怎么理解？
+
+看网上的一个注释这么写：
+
+```
+        // 对系统随机熵池有贡献，因为这个也是一个随机过程   
+        add_input_randomness(type, code, value);
+```
+
+函数对事件发送没有一点用处,只是用来对随机数熵池增加一些贡献,因为按键输入是一种随机事件,所以对熵池是有贡献的。 
+
+实现在这里。
+
+```
+TRACE_EVENT(add_input_randomness,
+	TP_PROTO(int input_bits),
+
+	TP_ARGS(input_bits),
+
+	TP_STRUCT__entry(
+		__field(	  int,	input_bits		)
+	),
+
+	TP_fast_assign(
+		__entry->input_bits	= input_bits;
+	),
+
+	TP_printk("input_pool_bits %d", __entry->input_bits)
+);
+```
+
+
+
+https://www.cnblogs.com/sky-heaven/p/5109128.html
+
+
+
+input_to_handler
+
+```
+handler->filter(handle, v->type, v->code, v->value)
+handler->events(handle, vals, count);
+```
+
+handler哪里注册进来的？
+
+input_register_handle
+
+input/evdev.c有进行注册。
+
+这个就是对应/dev/input/event0这样的设备吗？
+
+evdev没有实现filter。所以filter不会被调用。
+
+最后events函数是触发了这个
+
+kill_fasync(&client->fasync, SIGIO, POLL_IN);
+
+
+
+多触点设备有：
+
+指针类型，例如笔记本的触摸板。
+
+直接类型，例如平板电脑的触摸屏。
+
+```
+#define INPUT_MT_POINTER	0x0001	/* pointer device, e.g. trackpad */
+#define INPUT_MT_DIRECT		0x0002	/* direct device, e.g. touchscreen */
+```
+
+
+
+input_get_disposition()获得事件处理者身份。
+
+INPUT_PASS_TO_HANDLERS表示交给input hardler处理，
+
+INPUT_PASS_TO_DEVICE表示交给input device处理，
+
+**INPUT_FLUSH表示需要handler立即处理。**
+
+如果事件正常一般返回的是INPUT_PASS_TO_HANDLERS，
+
+只有code为SYN_REPORT时返回INPUT_PASS_TO_HANDLERS | INPUT_FLUSH。
+
+需要说明的是下面一段：
+
+首先说明的是过滤处理，
+
+如果code不是ABS_MT_FIRST到ABS_MT_LAST之间，那就是单点上报(比如ABS_X)；
+
+否则符合多点上报；
+
+**它们的事件值value存储的位置是不一样的，所以取pold指针的方式是不一样的。**
+
+（这个pold是过滤之后存的*pold = *pval;）。
+
+input_defuzz_abs_event()会对比当前value和上一次的old value；
+
+如果一样就过滤掉；不产生事件，但是只针对type B进行处理；
+
+**type B的framework层sync后是不会清除slot的，所以要确保上报数据的准确；**
+
+**type A的sync后会清除slot。**
+
+我改成协议A的来试一下。
+
+当前我碰到的问题，应该就是pressure值没有变化，所以不会上报。
+
+当前触摸屏到底支不支持获取pressure值？应该是不支持。
+
+而驱动里又使能了。
+
+而且应用层普遍都需要pressure。
+
+改成协议A的。就可以了。
+
+
+
+
+
+https://www.cnblogs.com/sky-heaven/p/9214329.html
+
+这篇文章非常好，解答了我的疑惑。
+
+https://blog.csdn.net/coldsnow33/article/details/12841077
+
 # 测试工具
 
 现在directfb里获取不到触摸事件。
@@ -1290,6 +1498,622 @@ ts_finddev
 	在3秒内，有触摸则返回成功。
 	
 ```
+
+
+
+## ts_calibrate
+
+执行完成后，会生成/etc/pointercal文件。
+
+文件内容是：
+
+```
+65791 48 -438534 -1442 59395 2416436 65536 720 720 0
+```
+
+这些数字表示什么含义？
+
+
+
+# 跟qt集成需要设置哪些
+
+我当前的问题是：
+
+1、使用linuxfb，没有配置QT_QPA_FB_TSLIB环境变量。
+
+所以下面这个代码没有执行：
+
+```
+#if QT_CONFIG(tslib)
+    bool useTslib = qEnvironmentVariableIntValue("QT_QPA_FB_TSLIB");
+    if (useTslib)
+        new QTsLibMouseHandler(QLatin1String("TsLib"), QString());
+#endif
+```
+
+在这个前提下，触摸可以生效。那么是怎么生效的？
+
+应该是这个：
+
+```
+#if QT_CONFIG(tslib)
+    if (!useTslib)
+#endif
+        new QEvdevTouchManager(QLatin1String("EvdevTouch"), QString() /* spec */, this);
+#endif
+```
+
+也不一定。这个要依赖这个。当前这个并没有被使能。
+
+```
+QT_CONFIG(evdev)
+```
+
+没有看到这样的配置项。
+
+还是需要先把buildroot里的配置项看一遍。
+
+没有看到配置evdev的。
+
+那触摸屏是怎么起作用的？
+
+我在pro文件里加message调试。可以看到evdev默认是有使能的。
+
+/usr/lib/qt/plugins/generic input的在这个目录下。
+
+要调试这个，只需要输出一下环境变量：export QT_QPA_EVDEV_DEBUG=1
+
+```
+qt.qpa.input: evdevtouch: Using device discovery
+qt.qpa.input: evdevtouch: Adding device at "/dev/input/event1"
+qt.qpa.input: evdevtouch: Using device /dev/input/event1
+qt.qpa.input: evdevtouch: /dev/input/event1: Protocol type A  (multi), filtered=no
+qt.qpa.input: evdevtouch: /dev/input/event1: min X: 0 max X: 720
+qt.qpa.input: evdevtouch: /dev/input/event1: min Y: 0 max Y: 720
+qt.qpa.input: evdevtouch: /dev/input/event1: min pressure: 0 max pressure: 0
+qt.qpa.input: evdevtouch: /dev/input/event1: device name: fts_ts
+qt.qpa.input: evdevtouch: Updating QInputDeviceManager device count: 1  touch devices, 0 pending handler(s)
+```
+
+从打印看，是自动扫描发现的触摸设备。不依赖配置的。
+
+这个可以理解流程了。
+
+不是直接用ts_read，而是read /dev/input/event1。
+
+
+
+现在看qdirectfbintegration.cpp里怎么初始化input的。
+
+```
+void QDirectFbIntegration::connectToDirectFb()
+{
+    initializeDirectFB();
+    initializeScreen();
+    initializeInput();
+
+    m_inputContext = QPlatformInputContextFactory::create();
+}
+```
+
+
+
+```
+void QDirectFbIntegration::initializeInput()
+{
+    m_input.reset(new QDirectFbInput(m_dfb.data(), m_primaryScreen->dfbLayer()));
+    m_input->start();
+}
+```
+
+那就是通过directfb来使用ts_read了。
+
+现在directfb里的事件还是没有上来。
+
+这是为什么？
+
+在tslib.c里加打印，一次触摸打印如下。感觉是合理的。
+
+```
+xhl --  x:339, y:407,.presssure:63
+xhl -- old x:-1, old y:-1, old pressure:0
+xhl -- send x value
+xhl -- send y value
+xhl -- send press 3
+xhl -- after wait event, event.type:5
+xhl -- before wait event
+xhl -- after wait event, event.type:5
+xhl -- before wait event
+xhl -- after wait event, event.type:3
+xhl -- before wait event
+xhl --  x:0, y:0,.presssure:0
+xhl -- old x:339, old y:407, old pressure:63
+xhl -- send press 4
+xhl -- after wait event, event.type:4
+xhl -- before wait event
+```
+
+dfb_input_dispatch的消息去哪里了？
+
+```
+ Fusion/Main/Dispatch:             event_dispatcher_loop() got msg 0x43478 <- arg 0, reaction 1                       
+ IDFBEventBuffer:                      IDirectFBEventBuffer_InputReact( 0x434ac, 0x40378 ) <- type 000003             
+ -:                                    DirectFB/IDirectFBInputDevice: Unknown event type detected (0x3), skipping!    
+ Core/WindowStack:                     _dfb_windowstack_inputdevice_listener( 0x434ac, 0x3d760 )                      
+```
+
+IDirectFBInputDevice_React
+
+这个函数，对于这个DFBInputEventType枚举
+
+没有处理button press和button release的情况。
+
+IDirectFBInputDevice_data 里都没有button相关的成员变量。
+
+key的不方便来模拟。
+
+找一个较老的directfb版本看看。
+
+也是没有，应该是一直都没有。
+
+那是怎么处理鼠标事件的？
+
+
+
+input事件的传递过程
+
+```
+dfb_input_dispatch( data->device, &evt );
+输入线程检测到input事件，进行分发。
+```
+
+里面调用到这里
+
+```
+if (core_local->hub)
+          CoreInputHub_DispatchEvent( core_local->hub, device->shared->id, event );
+
+     if (core_input_filter( device, event ))
+          D_DEBUG_AT( Core_InputEvt, "  ****>> FILTERED\n" );
+     else
+          fusion_reactor_dispatch( device->shared->reactor, event, true, dfb_input_globals );
+```
+
+core_local->hub 是否有值？
+
+在初始化的时候：
+
+```
+if (dfb_config->input_hub_service_qid)
+          CoreInputHub_Create( dfb_config->input_hub_service_qid, &core_local->hub );
+```
+
+input_hub_service_qid 这个应该没有配置。不存在input hub。
+
+所以还是靠fusion_reactor_dispatch来做。
+
+然后是放入到队列里，然后唤醒等待的线程。
+
+event_dispatcher_loop阻塞在队列上。
+
+取出消息，这样处理：
+
+```
+msg->call_handler
+也可能是
+reaction->func
+```
+
+input事件处理的回调，这样注册进来的。
+
+````
+dfb_input_attach( device, IDirectFBEventBuffer_InputReact,
+                       data, &attached->reaction );
+````
+
+这样存放的：
+
+```
+reaction->func      = func;
+```
+
+然后加入链表里。
+
+IDirectFBEventBuffer_InputReact里做的处理，也只是把事件加入到buffer里。
+
+IDirectFBEventBuffer_WaitForEvent 这个函数里等待buffer里的数据。
+
+应用层调用了WaitForEvent函数指针。
+
+然后就可以取出事件进行自己的处理。
+
+当前的问题，在IDirectFBInputDevice_React这一步，
+
+```
+dfb_input_attach( data->device, IDirectFBInputDevice_React,
+                       data, &data->reaction );
+```
+
+看看KEYPRESS怎么处理的。
+
+DFBInputDeviceKeyIdentifier     key_id;
+对应
+DFBInputDeviceButtonIdentifier  button; 
+
+按键的数组，是包括了所有的按键的。
+
+data->keystates[index] = DIKS_DOWN;
+
+是IDirectFBInputDevice_data 这个结构体里的。
+
+这个结构体里，没有button的对应成员变量。
+
+还是有一个
+
+```
+DFBInputDeviceButtonMask    buttonmask; 
+```
+
+有这个mask就够了？不用一个数组？
+
+在IDirectFBInputDevice_React里
+
+```
+if (evt->flags & DIEF_BUTTONS)
+          data->buttonmask = evt->buttons;
+```
+
+IDirectFBInputDevice_React的那个unknown打印，并没有实质影响，只是一行打印而已。
+
+还是返回OK的。
+
+应用层最后还是拿到这个事件了。
+
+那边qt为什么没有拿到这个事件呢？
+
+```
+QEvent::Type QDirectFbConvenience::eventType(DFBWindowEventType type)
+```
+
+
+
+directfb和qt的input是怎么对接起来的？
+
+配置上，只需要配置directfb的就好了吧。
+
+qt的需要对input配置什么？
+
+qt的都不用配置tslib吧。配置了按道理也没有什么关系。因为当前没有调用到。
+
+WaitForEvent，为什么没有拿到数据？
+
+那就要在directfb里加打印。
+
+
+
+现在就是这个函数阻塞了。
+
+IDirectFBEventBuffer_WaitForEvent
+
+那就是这个
+
+```
+ direct_waitqueue_wait( &data->wait_condition, &data->events_mutex );
+```
+
+IDirectFBEventBuffer_AddItem 这个会唤醒线程。
+
+IDirectFBEventBuffer_InputReact 里会调用。
+
+IDirectFBEventBuffer_AttachInputDevice的时候，
+
+```
+dfb_input_attach( device, IDirectFBEventBuffer_InputReact,
+                       data, &attached->reaction );
+```
+
+看这里有没有被执行。
+
+这个函数没有被调用。这个是在扫描到input设备的时候执行。不只，有几处调用了。
+
+IDirectFBEventBuffer_AttachInputDevice
+
+
+
+```
+IDirectFBInputDevice_AttachEventBuffer
+IDirectFBInputDevice_CreateEventBuffer
+CreateEventBuffer_Callback
+containers_attach_device
+```
+
+运行dfbtest_input有调用一次。
+
+```
+(*) DFBTest/Input: Testing sensitivity with input device 1...
+dispatch reaction 0x3dc48 channel 0 func 0xf615b438
+IDirectFBEventBuffer_AttachInputDevice 813,
+```
+
+从代码看，执行了：
+
+```
+dfb->GetInputDevice
+device->CreateEventBuffer
+```
+
+这样可以的。
+
+qt可能是没有执行CreateEventBuffer这样的操作。
+
+搜索了一下，在QDirectFbInput构造函数里有调用。
+
+qt调用的是：
+
+```
+m_dfbInterface->CreateEventBuffer(m_dfbInterface, m_eventBuffer.outPtr());
+```
+
+EventBuffer和InputEventBuffer关系。
+
+而在dfbtest_input里，是调用的这个：
+
+```
+device->CreateEventBuffer( device, &buffer );
+```
+
+函数指针名字一样，但是主体不一样。
+
+
+
+在对于IDirectFB，Event和InputEvent分开了。
+
+```
+     thiz->CreateEventBuffer = IDirectFB_CreateEventBuffer;
+     thiz->CreateInputEventBuffer = IDirectFB_CreateInputEventBuffer;
+```
+
+所以，是需要改qt里的代码。
+
+这样改：
+
+```
+// DFBResult ok = m_dfbInterface->CreateEventBuffer(m_dfbInterface, m_eventBuffer.outPtr());
+DFBResult ok = m_dfbInterface->CreateInputEventBuffer(m_dfbInterface, 0x7, DFB_TRUE, m_eventBuffer.outPtr());
+```
+
+这样改是否妥当，还存疑，应该另外加一个Event的。
+
+现在QDirectFbInput::handleEvents 拿到事件了。
+
+得到的type是4，跟下面这些宏应该是对不上的。中间按道理应该有一次type值的转换的。
+
+```
+if (event.clazz == DFEC_WINDOW) {
+            switch (event.window.type) {
+            case DWET_BUTTONDOWN:
+            case DWET_BUTTONUP:
+            case DWET_MOTION:
+                handleMouseEvents(event);
+```
+
+在哪里进行转换的？
+
+```
+DWET_BUTTONDOWN     = 0x00010000,  /* mouse button went down in
+                                           the window */
+     DWET_BUTTONUP       = 0x00020000,  /* mouse button went up in
+                                           the window */
+```
+
+当前我directfb没有配置wm。
+
+是否有问题？
+
+在directfbrc里加上wm=default。
+
+运行还是一样的。
+
+buttonpress在哪里被转换成DWET_BUTTONDOWN？
+
+当前为什么没有转？
+
+在wm的default里，有这样转：
+
+```
+send_button_event
+    we.type   = (event->type == DIET_BUTTONPRESS) ? DWET_BUTTONDOWN : DWET_BUTTONUP;
+```
+
+wm_process_input 有没有被调用到？
+
+```
+.ProcessInput         = wm_process_input,
+```
+
+wm_process_input只被dfb_wm_process_input调用
+
+stack_containers_attach_device
+
+但是看代码，这些好像是在多进程的情况才用到。
+
+wm对于单进程有用没？
+
+单进程也可以有多个窗口。
+
+(*) DirectFB/Core/WM: Default 0.3 (directfb.org)
+
+wm是有使用上的。
+
+
+
+ IDirectFB_CreateInputEventBuffer这个函数创建一个EventBuffer，通过EventBuffer可以获取输入事件，
+
+**不过通常应该通过Window去创建EventBuffer，**
+
+**那样可以收到更高层的事件。**
+
+InputEventBuffer实际上主要是对InputDevice的包装，
+
+不要小看这个包装，包装后有三个重要变化：
+
+Event被缓冲,不用担心事件丢失或者阻塞驱动程序。
+
+包装前的InputDevice事件是来一个处理一个，
+
+包装后则是先放到缓冲中，然后一个一个的处理。
+
+由被动变为主动，更符合GUI的事件处理的惯例。
+
+包装前是上层设置回调函数，在事件到来时回调函数被下层调用，包装后是上层主动调用GetEvevnt 获取事件。                     
+
+由多线程变为单线程，简化了处理。
+
+包装前是由输入线程回调上层设置的回调函数，每个输入设备都是一个独立的线程，所以回调函数要考虑多线程并发执行的问题，包装后多线程问题由EventBuffer处理掉了，上层通过GetEvent获取事件并处理，处理函数始终是在主线程中执行的，所以不用考虑与输入线程的并发问题了。                    
+
+
+
+怎么测试wm的input流程呢？
+
+wm怎么被使用的？
+
+## wm的调用
+
+```
+dfb_wm_process_input
+被2个函数调用
+WindowStack_Input_Flush
+_dfb_windowstack_inputdevice_listener
+
+WindowStack_Input_Flush
+被下面3处调用：
+WindowStack_Input_Add
+WindowStack_Input_DispatchCleanup
+_dfb_windowstack_inputdevice_listener
+
+WindowStack_Input_Add
+被1处调用：
+_dfb_windowstack_inputdevice_listener
+
+那么归根结底，是_dfb_windowstack_inputdevice_listener进行了调用。
+
+_dfb_windowstack_inputdevice_listener
+被2处调用：
+stack_attach_devices
+dfb_input_globals里，把_dfb_windowstack_inputdevice_listener作为数组成员。
+
+stack_attach_devices
+被2处调用
+stack_containers_attach_device
+dfb_windowstack_create
+
+stack_containers_attach_device
+这个只在多进程的情况下使用。我不考虑这种情况。
+
+dfb_windowstack_create
+只被1处调用。
+dfb_layer_context_init
+
+dfb_layer_create_context
+那就跟踪这个函数的调用情况。
+被2出调用：
+ILayer_Real::CreateContext
+dfb_layer_get_primary_context
+
+ILayer_Real::CreateContext
+这个在实际打印中没有看到。
+
+dfb_layer_get_primary_context
+这个有看到打印。
+(-) [dfbtest_input    12374.173,023] (23139) DirectFB/CoreLayer:                       ILayer_Real::GetPrimaryContext()
+(-) [dfbtest_input    12374.173,058] (23139) Fusion/Skirmish:                              fusion_skirmish_prevail( 0x3b5b4, 'Display Layer 0' )
+(-) [dfbtest_input    12374.173,083] (23139) Core/Layers:                                  dfb_layer_get_primary_context (FBDev Primary Layer, activate) <- active: -1
+(-) [dfbtest_input    12374.173,138] (23139) Fusion/Skirmish:                                  fusion_skirmish_dismiss( 0x3b5b4, 'Display Layer 0' )
+(-) [dfbtest_input    12374.173,172] (23139) Core/Layers:                                      dfb_layer_create_context (FBDev Primary Layer)
+
+对wm的初始化
+Core/Parts:                                       Going to initialize 'wm_core' core...
+Core/WM:                                              dfb_wm_core_initialize( 0x2d838, 0x3b830, 0x3b850 )
+```
+
+
+
+现在还是要回到Event和InputEvent的关系。
+
+按道理directfb在1.7.7版本上很久了。不应该存在这么明显的问题。
+
+
+
+运行dfbtest_window_cursor这个例子。
+
+触摸交互有反应。看看代码是怎么写的。
+
+```
+m_dfb->CreateEventBuffer( m_dfb, &m_events );
+```
+
+这个测试代码的逻辑是，在（100，100）和（200,400）的位置，有2个正方形的边长为200的window，颜色为白色。当cursor进入对应区域，就是focus变化的时候，进行显示或者隐藏。
+
+我发现现在qt的测试例子也可以了。
+
+通过对directfbrc文件里的修改进行回退。
+
+我就改了2点：
+
+```
+去掉no-cursor
+增加wm=default
+```
+
+发现是no-cursor导致的问题。wm没有影响。因为不写wm默认也是用了的。
+
+cursor为什么会对这个有影响？
+
+现在先把qt的Event的改回去。看看是否正常。
+
+也可以了。
+
+cursor可以从qt这一层来进行隐藏。
+
+qml里试了一下，没有隐藏掉。但是肯定是可以隐藏的。
+
+先不纠结这个。
+
+现在就看no-cursor为什么会影响InputEvent。
+
+
+
+这个是一个module_raw galax。
+
+从里面的一段注释，可以看到作用是：tslib依赖pressure值，而有的触摸屏没有pressure值。
+
+这个模块就是用来固定pressure值为255 。
+
+```
+	/* Since some touchscreens (eg. infrared) physically can't measure pressure,
+	 * the input system doesn't report it on those. Tslib relies on pressure, thus
+	 * we set it to constant 255. It's still controlled by BTN_TOUCH - when not
+	 * touched, the pressure is forced to 0.
+	 */
+```
+
+我手动加上这个galax的编译配置。
+
+在ts.conf也加上。
+
+但是运行后，导致ts_read直接返回。一直打印x、y、pressure值都是-1 。
+
+是应该把module_raw input去掉。
+
+去掉还是不行。
+
+应该是ts_read返回了错误导致的。
+
+
+
+https://www.raspberrypi.org/forums/viewtopic.php?t=39027
+
+
 
 # 环境变量配置
 
@@ -1451,5 +2275,9 @@ https://www.shuzhiduo.com/A/MAzAPVQ1d9/
 17、
 
 https://www.codeleading.com/article/67425421626/
+
+18、
+
+https://blog.csdn.net/Lliuzz0827/article/details/73838980/
 
 # 末尾

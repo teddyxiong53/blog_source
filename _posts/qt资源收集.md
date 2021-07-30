@@ -72,6 +72,10 @@ https://www.devbean.net/2014/02/qt-study-road-2-qml-layout/
 
 
 
+qt学习之路，不错。
+
+https://www.bookstack.cn/read/qt-study-road-2/8eccc101fb6cd3f7.md
+
 参考资料
 
 1、

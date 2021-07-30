@@ -243,7 +243,7 @@ DirectFB使用C语言实现了面向对象思想，
 
 接口的方法采用函数指针的方式实现，
 
-方法名与其所指的实际函数之间的对应关系是：“函数名=接口名_方法名”，
+**方法名与其所指的实际函数之间的对应关系是：“函数名=接口名_方法名”，**
 
 如IDirectFBWindow_CreateEventBuffer为IDirectFBWindow接口CreateEventBuffer方法的具体实现。
 
@@ -636,9 +636,285 @@ input逻辑
 
 
 
+# 系统能力
+
+```
+CSCAPS_ACCELERATION 具有硬件加速
+CSCAPS_ALWAYS_INDIRECT  所有的调用都不直接调用？
+
+```
+
+对于fbdev，只设置了硬件加速这个标志。
+
+```
+static void
+system_get_info( CoreSystemInfo *info )
+{
+     info->type = CORE_FBDEV;
+     info->caps = CSCAPS_ACCELERATION;
+
+     snprintf( info->name, DFB_CORE_SYSTEM_INFO_NAME_LENGTH, "FBDev" );
+}
+```
+
+# fusion机制
+
+ Fusion是DFB实现的一个进程间通信的机制。它提供了一系列抽象模块/对象的实现。这些抽象模块都是使用多线程、多进程编程必要的模块。这些模块主要有以下几种：
+
+（1）共享内存（shared memory）;
+
+fusion的共享内存是基于GNU malloc在用户空间实现的，
+
+但是它mmap到一个基于ram的文件系统（tmpfs或shmfs），
+
+该文件系统可作为共享堆内存(share heap)的后备仓库（backing store）.
+
+每个进程的mmap的起始地址都是0x20000000，
+
+**因此指向内存分配的指针就可以方便的在进程间传递，而不需要经过复杂的转换。**
+
+（2）竞技场(Arena),它是共享内存的指针注册中心。
+
+可以理解为它是一个跨进程的仓库，
+
+用来存储所有指向共享内存的指针。
+
+通常，我们把这些指针按域fields分类存放在竞技场里。
+
+指针通过fields取得。fields域名和竞技场都由你选择的一个竞技场内唯一的名字name来区分。
+
+可见，**竞技场的的主要功能是对共享数据的管理，**
+
+通过一个名称与一块数据关联起来，放到hash表中，
+
+每个进程都可以通过名字取相应的数据。
+
+.fusion_arena_enter()负责创建或者访问指定的Arena,
+
+并可以使用回调函数 initialize()和 join() (分别创建新的field和访问field)。
 
 
-参考资料
+
+理解Fusion，**需要从用户空间和内核空间两个方面去把握**：
+
+（1）在用户空间，fusion library库被DFB或其他程序调用；
+
+ （2）在内核空间，实现了fusion device,这些device被库使用，从而实现进程间的通信。
+
+ FUSION通常配置成一个支持多进程的库，
+
+**它使用内核模块的软设备实现多进程通信。**
+
+**Fusion也可以配置成使用单进程，使用pthread的mutex等构建相关的概念。**
+
+**单进程的情况下，只用到了用户空间的fusion library，它与内核空间的fusion device无关。**
+
+  使用fusion library的一个进程通常被称为一个fusionee.
+
+Fusionee可以访问它自己创建的fusion item项，也可以访问同处一个fusion world的其他fusionee.
+
+多进程环境下，一个world可以包含任意多的进程,而一个系统最多可以有8个world。
+
+单进程环境下，每个fusionee都在它自身的world里运作，因此自使用fusion作为内部通信（可能是线程间的通信，但都是限制于同一个进程的线程）。
+
+ 每个fusion world 拥有一个file-backed heap（请参看前面讲到的共享内存模块）.
+
+每个fusion library实例只有一个shared heap. 
+
+
+
+
+
+fusionee_rpc.c
+该程序会创建一个简单的进程。
+
+它通过竞技场共享一个过程调用。
+
+为了实现这个共享，我们必须按步骤完成以下工作：
+
+创建一个fusion world.
+创建一个共享内存池
+初始化一个竞技场
+在共享内存里通过调用fusion_call_init()注册一个 FusionCall结构。
+
+把该结构添加到竞技场； 
+
+把fusioncall初始化为一个普通的函数。
+
+发布一个指向该fusioncall函数的指针；
+
+
+
+# 命名规律
+
+```
+src/core目录
+	这个下面的，C文件里的函数都是dfb_xx的命名方式。
+	c文件名都是蛇形的。c++文件都是驼峰的。
+	有一些core part。
+	DFB_CORE_PART
+	数据结构还是驼峰的。
+	数据结构的成员变量是蛇形的。
+	CoreDFB.h的例外，这个是c++的。
+	类之外的函数也是驼峰的。
+	CoreDFB_Roundtrip 这种风格。
+	
+	
+应用使用的接口
+类型都是DirectFB开头的。
+```
+
+调用方式有：拒绝、直接、间接。默认是直接调用。
+
+```
+typedef enum {
+     COREDFB_CALL_DENY,
+     COREDFB_CALL_DIRECT,
+     COREDFB_CALL_INDIRECT
+} CoreDFBCallMode;
+```
+
+以Core开头的类型，这个应该是对内的。
+
+以DFB开头的类型，这个是对外的。
+
+在src/core/coretypes.h头文件里。统一进行了规范typedef定义。
+
+```
+Core开头的类型有：
+最核心的：
+CoreDFB
+CoreDFBShared
+
+CoreGraphicsDevice
+CoreGraphicsState
+CoreGraphicsStateClient
+
+CoreScreen
+CoreInputDevice
+CoreLayer
+CoreSurface
+CoreWindow
+```
+
+CoreDFB
+
+```
+系统最核心的数据结构
+在src/core/core.h里。
+包含了：
+FusionWorld             *world;
+DirectLink              *cleanups;
+init_handler
+signal_handler
+cleanup_handler
+```
+
+CoreDFBShared
+
+```
+一系列的FusionObjectPool
+
+```
+
+dfb_core_initialize 
+
+```
+被ICore_Real::Initialize调用
+被CoreDFB_Initialize
+dfb_core_arena_initialize
+dfb_core_create
+IDirectFB_Construct
+DirectFBCreate
+```
+
+
+
+XX_Real相当于XX_Impl的意思。接口的实现。
+
+
+
+# CallBuffer
+
+这个是什么调用机制？
+
+```
+class IGraphicsState_Requestor : public IGraphicsState, public CallBuffer
+```
+
+非直接调用的方式。
+
+```
+case COREDFB_CALL_INDIRECT: {
+            DirectFB::IGraphicsState_Requestor requestor( core_dfb, obj );
+```
+
+类似线程池一样的操作。
+
+相对于的是直接同步调用的方式。
+
+DirectFB::IGraphicsState_Real
+
+但是从打印中看，这个确实有打印。为什么呢？
+
+ILayerContext_Requestor
+
+是打印写错了。是直接调用的方式，打印写成了间接的。
+
+```
+ILayerContext_Real::GetPrimaryRegion(
+                    DFBBoolean                                 create,
+                    CoreLayerRegion                          **ret_region
+)
+{
+    D_DEBUG_AT( DirectFB_CoreLayerContext, "ILayerContext_Requestor::%s()\n", __FUNCTION__ );
+
+    D_ASSERT( ret_region != NULL );
+
+    return dfb_layer_context_get_primary_region( obj, create, ret_region );
+}
+```
+
+
+
+# State的调用
+
+```
+IDirectFB_CreateSurface
+IDirectFBSurface_Construct
+CoreGraphicsStateClient_Init
+CoreGraphicsStateClient_init_state
+CoreDFB_CreateState
+ICore_Real::CreateState
+dfb_graphics_state_create
+```
+
+但是当前打印中找不到dfb_graphics_state_create的日志。
+
+CoreGraphicsStateClient_Init 这个的打印有。
+
+的确是没有调用。分支进不去。
+
+靠这个来初始化的
+
+```
+dfb_state_init( &data->state, core );
+dfb_state_set_destination( &data->state, surface );
+```
+
+看state.c里的函数。
+
+# direct库
+
+direct_trace_lookup_symbol_at( direct_trace_get_caller() )
+
+这个可以获取调用者的名字。不错。
+
+
+
+
+
+# 参考资料
 
 1、
 
@@ -655,3 +931,15 @@ https://blog.csdn.net/dotphoenix/article/details/4762623
 4、基于fusion的DirectFB消息流
 
 https://blog.csdn.net/hope_learn/article/details/5567644
+
+5、
+
+https://blog.csdn.net/acs713/article/details/7963964
+
+6、
+
+https://blog.csdn.net/acs713/article/details/7975830
+
+7、
+
+https://wenku.baidu.com/view/11842c0af78a6529647d5385.html

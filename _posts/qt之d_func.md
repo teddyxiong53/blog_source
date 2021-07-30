@@ -99,6 +99,13 @@ QObjectData
 QObjectPrivate
 ```
 
+在QObject里：
+
+```
+protected:
+    QScopedPointer<QObjectData> d_ptr;
+```
+
 
 
 

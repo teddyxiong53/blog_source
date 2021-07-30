@@ -317,6 +317,117 @@ autoscan: /usr/bin/autom4te failed with exit status: 1
 
 
 
+# Makefile.am变量
+
+```
+1. SUBDIRS  
+
+说明下面当前目录下的哪些子目录需要编译，多个目录用空格分开
+
+如
+
+SUBDIRS=src tests tools
+
+说明需要进入到src、tests 、tools三个目录中编译
+
+ 
+
+2. DIST_SUBDIRS 
+
+（待确认）
+
+ 
+
+3. noinst_LIBRARIES
+
+表示该工程用于生成库文件
+
+如
+
+noinst_LIBRARIES = libcommon.a
+
+表示用于该工程生成库文件名为libcommon.a
+
+4. XXX_SOURCES
+
+表示要编译的源文件，XXX需要用生成的目标文件名替换，如果文件名中含".",则需要改为“_”； 多个源文件用空格分开，也可以用变量表示文件
+
+如
+
+libcommon_a_SOURCES = ${common_sources}  
+
+表示生成libcommon.a需要编译的源文件来源变量common_sources
+
+ 
+
+5. 自定义变量
+
+如
+
+common_sources = common.h common.cpp
+
+表示定义common_sources 为 common.h common.cpp
+
+ 
+
+6. clean-local:
+
+执行make clean命令是，实际执行的命令，其中，命令如下文-rm前面不能是空格，必须是Tab；*表示通配符号，多个文件用空格隔开
+
+如
+
+clean-local:
+
+-rm -f *.gcov *.gcno *.gcda 
+
+表示执行make clean清理*.gcov、*.gcno、*.gcda
+
+7. AM_CPPFLAGS 、AM_CFLAGS 
+
+预定义变量，，g++编译器的附加参数
+
+如
+
+AM_CPPFLAGS = -I${top_srcdir}/src  
+
+AM_CFLAGS = -I${top_srcdir}/src  
+
+ 
+
+-I表示搜索头文件时的附加路径
+
+8. LDADD 
+
+表示编译本工程的附加链接库
+
+如
+
+LDADD = ${top_srcdir}/src/common/libcommon.a 
+
+表示编译时需要连接 ${top_srcdir}/src/common/libcommon.a
+
+ 
+
+9. top_srcdir
+
+预定义变量，工程的顶层目录
+
+ 
+
+10. bin_PROGRAMS
+
+表示该工程生成可执行文件
+
+如
+
+bin_PROGRAMS = prog2  
+
+prog2_SOURCES = main.cpp  
+表示生成可执行文件prog2，其中源文件为main.cpp  
+```
+
+# acmkdir
+
 
 
 # 参考资料
@@ -348,3 +459,11 @@ https://www.cnblogs.com/alexyuyu/articles/3106482.html
 这个很好，讲得很详细，照着这个做就好了。
 
 https://blog.csdn.net/pangudashu/article/details/47664639
+
+7、第二部分 Automake的标准工程组织
+
+https://blog.csdn.net/wh8_2011/article/details/78828020
+
+8、
+
+https://blog.csdn.net/weixin_33985507/article/details/85636537

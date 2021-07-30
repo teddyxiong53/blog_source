@@ -53,14 +53,14 @@ DirectFB是图形API
  对于底层的驱动来说，DirectFB里面负责和硬件打交道的显卡的驱动（gfxdriver）和显示系统（system），**这里面gfxdriver是和各个硬件平台相关的，有可能需要自己写。** 为了更易于理解DirectFB，需要先介绍几个DirectFB里面的概念：
 
 - Layers：代表互相独立的图形缓存。大多数嵌入式设备都有多个layer。多个layer根据对应的alpha值混合 在一起，从而显示出来。 
-- Surface：代表一块预留的内存，来保存像素数据。DirectFB中的Drawing，Bilitting操作就是基于 surface的。Surface的内存根据设定，可以从系统中分配，也可以从显卡的内存中分配。
+- Surface：代表一块预留的内存，来保存像素数据。**DirectFB中的Drawing，Bilitting操作就是基于 surface的**。Surface的内存根据设定，可以从系统中分配，也可以从显卡的内存中分配。
 - Primary Surface：代表一个特殊layer的特殊surface。如果primary surface是单缓冲的，任何对于 primary surface的操作都会直接反应到显示屏上。
-- Subsurface：是一个surfac的子集，但是自身并不占有任何内存。
-- Window/Windowstack：控制一个layer中的surface该显示什么。Window属于某个背景可以设定的layer。 每个window有自己的surface，window用这个surface来组合图像。 
+- Subsurface：是一个surface的子集，但是自身并不占有任何内存。
+- Window/Windowstack：控制一个layer中的surface该显示什么。Window属于某个背景可以设定的layer。 **每个window有自己的surface，window用这个surface来组合图像**。 
 
 
 
- 比如说下图中有三个Layer，最下面的Layer是一幅背景图，中间的Layer是一个透明的带有一个“igel”的Layer，最上面是一个透明的带有subtitle的Layer，最后我们在显示器中看到的就是各个Layer的混合。
+ 比如说下图中有三个Layer，最下面的Layer是一幅背景图，中间的Layer是一个透明的带有一个“igel”的Layer，最上面是一个透明的带有subtitle的Layer，**最后我们在显示器中看到的就是各个Layer的混合。**
 
 ![img](../images/random_name/20140913151204098)
 
@@ -727,6 +727,46 @@ all blit
 还有几个还是空函数。
 
 可以对比看一下VMware的实现。
+
+之前测试ge2d在df_dok测试时，可以生效。
+
+但是现在再次测试，又没有ge2d的中断了。
+
+偶尔有。
+
+从打印看，驱动是找到了。
+
+```
+driver_probe find FB_ACCEL_AML_GE2D
+amldrv->fb.phys is 0x3e300000, size is 25165824
+(*) DirectFB/Graphics: aml vendor aml 0.1 (aml beijing)
+```
+
+从之前的结果看fill-rect是肯定有用的。
+
+加打印看看。
+
+可以看到是aml的ge2d，只支持ARGB这一种像素格式。
+
+我加上配置。现在ge2d有中断。
+
+但是之前的测试结果就是不对的。凡是用到了ge2d的。显示都没有动。
+
+所以看起来cpu占用率就低了。
+
+加打印跟踪一下。
+
+填充函数主要是这3个。
+
+```
+funcs->FillRectangle = amlFillRectangle;
+	funcs->Blit          = amlBlit;
+	funcs->StretchBlit = amlStretchBlit;
+```
+
+FillRectangle 以这个为例。
+
+上层的gfxcard.c。
 
 
 
@@ -1585,6 +1625,8 @@ no-vt
 
 
 
+# directfb
+
 面对嵌入式设备的特殊需求环境，我们为图形加速和图形增强支持开发了一个小巧、强大和易于使用的技术：directfb。
 
 directfb是一个瘦函数库，
@@ -1713,13 +1755,13 @@ DirectFB支持双缓存或三缓存，用户编程时，只需在调用dfb->Crea
 
 源码对应的目录就是DirectFB-1.4.0/Interfaces。
 
-  在DirectFB运行环境中，interface的存在形式也是动态链接库。对应的目录是：lib/directfb-1.4.0/interfaces/IDirectFBFont等。
+在DirectFB运行环境中，interface的存在形式也是动态链接库。对应的目录是：lib/directfb-1.4.0/interfaces/IDirectFBFont等。
 
 
 
 当前的directfb支持三种字体文件：
 
-  （1）**FreeType2**。有关freetype2的资料，可以参考官方网站：http://freetype.sourceforge.net/。
+（1）**FreeType2**。有关freetype2的资料，可以参考官方网站：http://freetype.sourceforge.net/。
 
   (2) **DGIFF字体**。 DGIFF是DirectFB Glyph Image File Format的简称，从名字就可以看出，这是DirectFB所特有的一种字体格式。 DFB在tools目录中有一个mkdgiff可以将TrueType的字体文件转化为一个DGIFF字体文件。（**命令为**：./mkdgiff -f A8 -s 10,20,30 one.ttf > one.dgiff, 将字体文件one.ttf转化为DGIFF格式，结果保存在one.dgiff中，指定字体的格式是A8, 大小支持10，20，30），DGIFF与FreeType2的一个重要区别是FreeType2可以支持无限大小的字体，而DGIFF只支持一定个数的字体大小，例如对于上面的one.dgiff它只支持10，20或30，三种大小的字体。
 
@@ -1828,6 +1870,95 @@ OpenDFB出现就是为了解决这些问题，
 5. 对于2D接口保留Blitter相关功能，对于其他矢量绘制等功能均删除. （done）
 6. 将游离directfb之外的库收编到内部直接编译，包括sawman, divine;（done）
 7. 将内核fusion机制使用socket来代替，避免依赖linux内核依赖，方便移植到其他RTOS。（doing）
+
+# 基于其他的方案
+
+基于SDL/X11等其它GUI
+
+这个很简单，只要修改一下DirectFB的配置/etc/directfbrc即可(也可以修改当前用户的配置文件)。如：
+system=sdl
+mode=240x320
+wm=unique
+
+这里的system=sdl指定以SDL作为显示后端，SDL通常是运行在X11之上的，所以要注意设置DISPLAY环境变量。mode=240x320指明分辨率为240像素宽，320像素高。wm=unique指定窗口管理器为unique。
+
+如果前面的方式能够正常工作，那就没有必要使用基于framebuffer方式了。
+
+但不幸的是前面的方式在多进程(基于fusion)时，非常容易死锁，
+
+这主要是因为调用fusion_call_execute更新屏幕引起的。
+
+这个问题在最新版本里，似乎也没有解决，我看了一下，要解决它也确实很麻烦。
+
+
+
+基于framebuffer是唯一不会死锁的方式，
+
+**所以在多进程运行时使用基于framebuffer的方式是比较明智的。**
+
+但遗憾的是，PC上的framebuffer的分辨率一般在都640x480及以上大小（可以参考kernel中的文档Documentation/fb/vesafb.txt）。
+
+看了网上一些文档，也做了一些尝试，但没有成功的把分辨率设置得更低。
+
+# directfb examples
+
+依赖的资源文件都安装在/usr/share/directfb-examples目录下。
+
+# devmem
+
+我当前一直是用的fbdev。
+
+但是我看到有个文档里这么写的。难道是要用devmem的方式来做硬件加速的？
+
+![image-20210730102820269](../images/random_name/image-20210730102820269.png)
+
+对我们当前应该是不行的。
+
+
+
+
+
+Surface是一个概念简单而实现复杂的东西，
+
+它在功能上和Windows中的DeviceContext类似，
+
+提供基本绘图功能。
+
+每个窗口都和一个Surface关联，
+
+**窗口上的控件与一个SubSurface关联。**
+
+**绘制结束后调用Flip更新到物理屏幕上。**
+
+Surface一般是双缓冲，
+
+这主要是避免闪烁，
+
+Flip时并不总是BACK和FRONT交换。
+
+**如果只是更新一个区域则是直接从BACK向FRONT拷贝这个区域的内容。**
+
+*谁能更新物理屏幕?*对于fbdev，master和slave都可以更新。
+
+对于x11只有master可以更新，slave通过fusion_call_execute请求master更新。
+
+**IDirectFB_SetCooperativeLevel**设置指定的IDirectFB对象**与其它IDirectFB对象的协作级别，**
+
+DFSCL_FULLSCREEN和DFSCL_EXCLUSIVE的处理方式是一样的，
+
+与DFSCL_NORMAL的差别是它们有自己独立的Context，
+
+也就是说设置为DFSCL_FULLSCREEN的DirectFB对象自成一个体系，
+
+不会与其它DirectFB对象干扰。
+
+在多进程情况下，一般是设置为DFSCL_NORMAL的，
+
+它保证所有窗口由同一个窗口器管理。
+
+(题外话，这个函数里调用了drop_window函数，drop_window的实现是有点问题的，它始终调用dfb_windowstack_cursor_enable去打开光标，这是不对的，应该根据据情况而定，在IDirectFB_Destruct里调用时就不应该打开光标，因为这可能会造成程序不正常退出。)
+
+
 
 
 
@@ -1940,5 +2071,17 @@ https://forum.odroid.com/viewtopic.php?t=21034&start=50
 25、DirectFB运行机制介绍
 
 https://blog.csdn.net/absurd/article/details/2596080
+
+26、
+
+https://blog.csdn.net/absurd/article/details/1880973
+
+27、
+
+https://www.cnblogs.com/pengxinglove/archive/2011/01/15/1936292.html
+
+28、
+
+https://www.cnblogs.com/zhangyunlin/archive/2008/06/29/6167636.html
 
 # 末尾
