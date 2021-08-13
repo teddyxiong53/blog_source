@@ -2204,6 +2204,42 @@ module module module
 
 raw device--> Calibrate
 
+# linuxfb方式tslib不工作
+
+我最先就是用这种方式的，当时是没有问题。
+
+后面我就调试directfb方式的。
+
+现在要对比linuxfb方式的效果。但是就发现linuxfb方式tslib读取不到输入了。
+
+把tslib的调试打开，可以看到这个打印。
+
+```
+qt.qpa.input: Found matching devices ("/dev/input/event1")
+qt.qpa.input: evdevtouch: Adding device at "/dev/input/event1"
+qt.qpa.input: evdevtouch: Using device /dev/input/event1
+qt.qpa.input: evdevtouch: /dev/input/event1: Protocol type A  (multi), filtered=no
+qt.qpa.input: evdevtouch: /dev/input/event1: min X: 0 max X: 720
+qt.qpa.input: evdevtouch: /dev/input/event1: min Y: 0 max Y: 720
+qt.qpa.input: evdevtouch: /dev/input/event1: min pressure: 0 max pressure: 0
+qt.qpa.input: evdevtouch: /dev/input/event1: device name: fts_ts
+qt.qpa.input: evdevtouch: Updating QInputDeviceManager device count: 1  touch devices, 0 pending handler(s)
+```
+
+但是这个打印是在input/evdevtouch文件里的。
+
+而不是qt tslib的。
+
+为什么qt tslib里的没有被调用到呢？
+
+看了一下代码，是需要设置这个环境变量。
+
+```
+export QT_QPA_FB_TSLIB=1
+```
+
+加上就正常了。
+
 
 
 # 参考资料

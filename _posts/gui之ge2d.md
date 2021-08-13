@@ -2981,7 +2981,389 @@ dest->Blit( dest, image32a, NULL,
 
 DSBLIT_BLEND_ALPHACHANNEL 这个表示使用src的透明度。
 
+所谓的pre alpha channel是
 
+```
+DSBLIT_BLEND_ALPHACHANNEL | DSBLIT_SRC_PREMULTIPLY
+```
+
+amldev里的gl_alpha表示全局透明度。
+
+amldev的color表示const color。const在这里怎么理解？
+
+```
+debug("global alpha is 0x%x. const color is 0x%x\n", amldev->gl_alpha, amldev->color);
+```
+
+这么赋值传递下去的。
+
+```
+amldev->ge2d_config_ex.src1_gb_alpha = amldev->gl_alpha;
+amldev->ge2d_config_ex.alu_const_color = amldev->color;
+```
+
+gl_alpha相当于把color里的alpha这部分单独提取出来存放了。有点冗余吧。
+
+```
+amldev->gl_alpha = state->color.a;
+	switch (buffer->format) {
+		case DSPF_ARGB:
+			amldev->color = PIXEL_ARGB( state->color.r,
+					state->color.g,
+					state->color.b,
+					state->color.a );
+			break;
+```
+
+之前的代码，还有phys addr这个属性的传递。现在的libge2d里，完全没这个东西了。
+
+libge2d有layermode，directfb有没有传递这样一个参数？
+
+layermode有3个取值：
+
+none：最终的以src的颜色为准。
+
+premulti：最终颜色等于src颜色+ 目标颜色*(1-src透明度)
+
+coverage：最终颜色等于`src*src_alpha + dst*(1-src_alpha)`
+
+ge2d_feature_test 来看一下这三种效果。
+
+没有命令可以直观地看出效果。先不管。
+
+我直接通过directfb的例子来测试，因为当前layermode都没有指定，所以我自己来每次改成一下这个值来查看效果。
+
+libge2d的blend mode有是三种，跟layermode是一样的。
+
+blend-nofx的，就等价于blit。
+
+```
+case GE2D_BLEND_NOFX:
+			amlBlit_ConfigEx(drv, dev, rect, amldev->src_info, amldev->dst_info);
+			amlBlit_Start(drv, dev, rect, dx, dy, GE2D_BLIT, SRC_TO_DST);
+```
+
+看看GE2D_BLEND_ALPHACHANNEL的。
+
+
+
+之前的amldev里，只有一个src和一个dst。
+
+没有没有2个src的？blend不是需要2个src的吗？
+
+在blend config 的代码里有这样的判断：
+
+```
+if(src2_info == src_info){
+}else if (src2_info == dst_info){
+这个表示的就是A向B运动和B向A运动的情况。
+在实际的调用中，都是后面一种情况。
+就是A向B运动。
+```
+
+无论是blit还是blend，都是2个矩形的相互作用吧。
+
+要么矩形A向矩形B运动，矩形B保持不动。
+
+要么相反。
+
+不存在2个矩形同时运动到第三个位置。
+
+及时有，也是可以分解成2个步骤的。
+
+所以，还是只要考虑一个不动一个运动的情况。
+
+最上层的blit函数，关键是2个参数：
+
+```
+一个surface
+一个point
+surface对应矩形，point对应位置。
+表达的语义也很简单，把一个矩形移动到某个位置上。
+```
+
+调用栈层次很简单清晰。
+
+```
+main
+	dest->Blit( dest, simple,
+		IDirectFBSurface_Blit
+			CoreGraphicsStateClient_Blit
+				dfb_gfxcard_batchblit
+					card->funcs.Blit
+						amlBlit
+```
+
+重点看看上层设置了哪些flag。先不管。
+
+这个函数的参数是这么填写的。
+
+```
+amlBlend_Config_Ex(drv, dev, rect, rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
+src_rect和dst_rect都是rect。
+src2_info就是dst_info。
+都是这样传递的。
+按照这个来做就好了。
+
+在函数的实现里，
+src_rect和dst_rect完全没有使用。
+
+```
+
+
+
+对于libge2d，blit和blend的配置的区别：
+
+```
+对比ge2d_blit_config_ex和ge2d_blend_config_ex函数
+1、blit不需要指定src2
+2、blend需要指定buffer_info的def_color和fill_color_en 2个属性。
+3、需要使用info里的layermode。
+```
+
+SetState的时候，具体设置了哪些信息？
+
+```
+1、设置颜色。
+	这个只设置了amldev->color。没有src和dst信息。
+2、设置format信息。
+	src_info->format
+	dst_info->format。
+3、设置dst
+	当前设置了addr/phys/pitch。以及宽高。
+	只有宽高有用。
+	宽高写入到dst_size。
+	其余写入到dst_info。
+	不包含位置信息。
+4、指定dst_info和src_info的rotation。
+	都是直接指定为0的。
+然后就是fill-rect、blit、stretch-blit的处理。
+fill-rect
+	这个就是从state->drawingflags里取值，然后给amldev->function_type赋值。
+	就设置了一个flag。
+blit
+	这个就设置src了。fill-rect是不需要设置src的。
+	设置src
+		跟dst类似。设置了addr/phys/pitch。以及宽高。
+	设置src color key
+		就一个属性值。
+	设置blend config
+		给amldev->blend_op赋值。
+		amldev->blitfunction_type赋值 。
+stretch-blit
+	跟blit一样。
+```
+
+结论：state里没有放入位置信息。
+
+现在写代码有一个点需要注意，就是ge2dinfo有src_info属性和dst_info属性，是buffer_info类型的，而且还有src_info[1]。其内部属性较多。
+
+而之前的amldev也有src_info和dst_info属性。是config_info类型。我们只需要里面的宽高信息。其实宽高信息都可以不要了。因为amldev里有。
+
+我们现在主要处理buffer_info类型的src_info和dst_info。
+
+ge2dinfo的blend_mode属性，不需要我们手动指定。下面会根据layer_mode进行判断赋值。
+
+
+
+src、src2、dst都可以设置layer_mode，以谁的为准？
+
+以src的为准，其余的都不用管。
+
+把赋值的代码梳理一下，把ge2dinfo需要赋值的内容按照src、src2、dst、其他参数这个顺序排列好。后续就进行填空就好了。
+
+把blit的整理一下。fill-rect的就先不管。
+
+也就这些了。
+
+```
+GE2DOP ge2d_op;
+buffer_info_t src_info[2];
+buffer_info_t dst_info;
+unsigned int color;
+unsigned int gl_alpha;//不用填，src1的透明度来决定。
+unsigned int const_color;
+unsigned int offset;
+```
+
+buffer_info内部的
+
+```
+unsigned int mem_alloc_type;
+unsigned int memtype;
+unsigned int canvas_w;
+unsigned int canvas_h;
+rectangle_t rect;
+int format;
+unsigned int rotation;
+unsigned char plane_alpha;//这个src1的会传递给ge2einfo的gl_alpha
+unsigned char layer_mode;
+unsigned char fill_color_en;
+unsigned int  def_color;
+int plane_number;
+```
+
+现在把代码改好了。运行有问题。
+
+我现在是把src、src2、dst都指定为OSD类型的mem_type的。
+
+应该是不行的。src2的不能被这样指定。
+
+其实还是应该跟普通的blit类似，只是blend属性指定不同。
+
+改了。还是不对。
+
+```
+xhl -- aml_blend_optype 470, blit type:2 
+[ge2d_blend_config_ex 1901] b_src_swap=0
+[ge2d_blend_config_ex 1968] ge2d_blit_config_ex,memtype=0,src_format=ffffffff,s_canvas_w=0,s_canvas_h=0,rotation=0
+[ge2d_blend_config_ex 1971] ge2d_blit_config_ex,memtype=3,src2_format=ffffffff,s2_canvas_w=0,s2_canvas_h=0,rotation=0
+[ge2d_blend_config_ex 1974] ge2d_blit_config_ex,memtype=0,dst_format=ffffffff,d_canvas_w=0,d_canvas_h=0,rotation=0
+[ge2d_blend_config_ex 2406] blend:src1_cmult_asel=2,src2_cmult_ase2=0,gl_alpha=ff,src1_gb_alpha_en=1, src2_gb_alpha=0, src2_gb_alpha_en=0, src2_cmult_ad=0
+[ge2d_blend 2727] ge2d_blend srect[0 0 720 720], s2rect[0 0 720 720],drect[400 400 720 720]
+```
+
+问题：
+
+1、为什么format都是0xffff ffff。明显不对。
+
+2、宽高为什么都是0？
+
+3、最后的srect、srect2、drect这些信息打印的信息不符合预期。
+
+
+
+blit和blend的format都没有进行赋值。
+
+但是普通blit的，至少看到的现象是正常的。
+
+format可以不写，OSD类型的mem_type，可以获取的。
+
+
+
+看之前amldev的，都是CANVAS_ALLOC类型，没有直接写OSD类型。
+
+# 直接基于之前的方案改
+
+从上面的记录可以看出，当前用libge2d，碰到不少的困难。
+
+所以还是回过头来基于之前的ioctl的方案来改。
+
+之前的ioctl方案，现在之所以不行，是因为内核结构体有改动。
+
+只需要在应用这边改一个结构体，增加一个成员变量mem_sec，然后赋值为0，就都正常了。
+
+把df_dok的测试一项项手动过一遍。
+
+fill-triangle为什么也会使用到ge2d加速？不是只有fill-rect才会吗？
+
+fill-triangle确实会用到ge2d。但是效率反而低了很多。
+
+不用加速，速度是64MPixel/s。
+
+用了加速，速度是0.685MPixel/s
+
+而CPU只是从100%降低到50%。
+
+这完全是负优化的效果。
+
+不知道跟打印有没有关系。后面去掉打印再留意一下。
+
+我现在就把内核的打印去掉。
+
+然后找到之前的测试数据进行对比。
+
+从之前的测试数据看，也是这样的性能表现。
+
+ge2d的提升，主要是体现在blend效果上。
+
+blend的数据提升是几十倍的提升。而非blend的，性能是下降的。
+
+A113的GE2D的最大频率是250M。
+
+CPU的频率支持从100M到1.4G的调频。
+
+支持的值有：100M、250M、500M、667M、1G、1.2G、1.3G、1.4G。
+
+因为CPU频率比ge2d的要高得多，所以用cpu不一定比用ge2d的慢。
+
+fill-triangle确实是不支持加速的，但是不支持为什么测试数据下降很多？
+
+把之前的邮件翻出来看看。
+
+可以得到这些信息：
+
+```
+1.优化直接使用QT+GE2D，解决了之前QT+DirectFB+GE2D显示慢的问题  
+	为什么使用DirectFB会导致变慢？
+2.运行QT程序目前没有碰到crash的问题了
+	为什么会crash？
+	我看看现在能不能碰到。
+	
+运行Quick Demo情况：
+Qt版本5.8，使用Qt新特性Quick+qml开发Demo程序
+目前运行基本效果如下：
+
+整体展示：
+LCD频幕（768x1024），QT demo（700x200）
+运行上面demo程序cpu占有率情况：
+优化GE2D前：
+        只运行demo，只保留text滚动，不对平台做任何操作：7%
+        只运行demo，使用鼠标不停的对平台UI进行前后台切换操作：22%
+
+优化GE2D后：
+       只运行demo，只保留text滚动，不对平台做任何操作：5%
+       只运行demo，使用鼠标不停的对平台UI进行前后台切换操作：18%
+```
+
+```
+查看ge2d帧率的方法
+echo 1> /sys/class/ge2d/ge2d_fps
+然后可以看到对应的打印。
+```
+
+```
+对于QT本身来说是不支持双buffer切换的，只能借助于DirectFB，但是实际测试的DirectFB会存在很多问题，比如有一些无法显示，效率不高，甚至还会crash等问题
+
+```
+
+```
+帧率的传递过程
+
+```
+
+之前涉及的有spotify、zte。
+
+```
+今天我们讨论了下，采用QtWebkit+OpenGl方案 ，目前大概有下面几点需要你们支持，谢谢！ 
+
+1.osd层需要支持多窗口显示，每个窗口可以设定自己的Z序，以及基于Z序的焦点选择，具体的需求后续会发出来 
+
+2.支持分辨率切换，QT提供接口给浏览器调用 
+
+3.Qt中添加输入法，提供如何添加的demo 
+
+4.网络同步、异步超时，清网络缓存等的设置 
+
+5.需要把qt+webkit抽离出来编译，提供编译方法 
+
+6.直接用qt生成的库的话占用的内存会比较大，应该还需要裁剪 
+
+7.如何开启openGl加速
+```
+
+```
+  Qt + directfb + ge2d 目前遗留问题：
+   1.  Qt5.6.2 + directfb + ge2d:  desktop-buffer-mode=backsystem  可以正常显示Qt 动画demo.
+        (Qt5.6.2 + directfb + ge2d: desktop-buffer-mode=backvideo 存在crash问题)
+    2. Qt4.8.7 + directfb + ge2d: desktop-buffer-mode=backvideo (default) 可以正常显示Qt 动画demo.
+```
+
+```
+QT屏幕部分效果改善明显，但还存在低概率抖动问题  
+```
+
+mipi的测试脚本的在test_plan下的mipi_test.sh。
 
 
 

@@ -914,6 +914,194 @@ direct_trace_lookup_symbol_at( direct_trace_get_caller() )
 
 
 
+```
+dfb->SetCooperativeLevel
+IDirectFB_SetCooperativeLevel
+CoreLayer_CreateContext
+ILayer_Real::CreateContext
+dfb_layer_context_init
+dfb_windowstack_create
+```
+
+dfb_windowstack_create里加上trace打印，看看调用栈是怎样的。
+
+实际调用栈是这样
+
+```
+dfb_windowstack_create () from /usr/lib/libdirectfb-1.7.so.7 [0xf702b000]
+dfb_layer_context_init () from /usr/lib/libdirectfb-1.7.so.7 [0xf702b000]
+dfb_layer_create_context () from /usr/lib/libdirectfb-1.7.so.7 [0xf702b000]
+dfb_layer_get_primary_context () from /usr/lib/libdirectfb-1.7.so.7 [0xf702b000]
+DirectFB::ILayer_Real::GetPrimaryContext(DFBBoolean, __DFB_CoreLayerContext**) () from /usr/lib/libdirectfb-1.7.so.7 [0xf702b000]
+CoreLayer_GetPrimaryContext () from /usr/lib/libdirectfb-1.7.so.7 [0xf702b000]
+InitIDirectFB_Async () from /usr/lib/libdirectfb-1.7.so.7 [0xf702b000]
+IDirectFB_Construct () from /usr/lib/libdirectfb-1.7.so.7 [0xf702b000]
+DirectFBCreate () from /usr/lib/libdirectfb-1.7.so.7 [0xf702b000]
+```
+
+这个就是构造dfb的时候就调用了的。
+
+而且demo_qt为什么没有调用到这个？
+
+# coretypes.h
+
+这个头文件里定义了重要的CoreXX的结构体。
+
+```
+DFBLayerCore;
+DFBScreenCore;
+DFBSystemCore;
+DFBWMCore;
+
+下面的结构体，从底层往上层
+显卡
+CoreGraphicsDevice
+CoreGraphicsState
+CoreGraphicsStateClient
+
+屏幕
+CoreScreen
+显示层
+CoreLayer;
+CoreLayerContext;
+CoreLayerRegion;
+CoreLayerRegionConfig;
+
+显示surface
+CoreSurface;
+CoreSurfaceAccessor;
+CoreSurfaceAllocation;
+CoreSurfaceBuffer;
+CoreSurfaceBufferLock;
+CoreSurfaceClient;
+CoreSurfacePool;
+CoreSurfacePoolBridge;
+CoreSurfacePoolTransfer;
+
+显示window
+CoreWindow;
+CoreWindowConfig;
+CoreWindowStack;
+```
+
+
+
+```
+CoreGraphicsDevice 显卡设备
+主要包括2个函数结构体：
+驱动函数
+	Probe、Init这些。
+设备函数
+	FillRect这些。
+还有caps能力。
+```
+
+```
+CoreGraphicsState 显卡状态
+主要是包含一个renderer指针。
+还包含CardState结构体。
+CardState结构体内容较多。
+	GenefxState 软件显卡的状态。
+```
+
+```
+CoreGraphicsStateClient
+主要包含几个指针。
+CardState
+CoreGraphicsState
+```
+
+```
+CoreScreen
+包含
+CoreGraphicsDevice 显卡设备指针
+ScreenFuncs 屏幕处理函数结构体。
+```
+
+```
+CoreLayer
+包含显卡设备、屏幕的指针。
+DisplayLayerFuncs 显示层函数结构体
+	主要是Init、TestRegion、SetRegion、FlipRegion这些函数。
+	还有AllocateSurface
+	
+```
+
+```
+CoreLayerContext
+
+CoreWindowStack 每个Layer有自己的窗口栈。
+```
+
+```
+CoreLayerRegion
+状态标志
+CoreLayerRegionConfig
+id
+```
+
+```
+CoreLayerRegionConfig
+宽高、格式、颜色空间、buffermode。
+Rect的src、dst
+
+```
+
+```
+CoreSurface
+CoreSurfaceStateFlags 状态，当前状态很少。
+CoreSurfaceTypeFlags 类型。
+	layer、window、cursor、font。
+	internal（表示system memory）、external（表示video memory）
+	preallocate
+CoreSurfaceNotificationFlags
+	通知。宽高变化、flip等。
+	
+CoreSurfaceBuffer
+	有多个buffer。
+	
+```
+
+
+
+```
+CoreWindow 
+id
+flags。表示状态。
+caps能力。
+CoreWindowConfig 配置。
+CoreSurface            *surface;  后备surface。
+CoreWindowStack 所属的窗口栈。
+
+```
+
+```
+CoreWindowConfig
+范围
+透明度
+窗口栈类型。
+窗口事件
+```
+
+```
+CoreWindowStack
+
+```
+
+通过读取显卡硬件加速能力，来决定window policy。
+
+如果有blit能力，而且还支持blend，那么优先使用video memory。
+
+```
+/* Examine the hardware capabilities. */
+               dfb_gfxcard_get_capabilities( &card_caps );
+
+               if (card_caps.accel & DFXL_BLIT && card_caps.blitting & DSBLIT_BLEND_ALPHACHANNEL)
+                    policy = CSP_VIDEOHIGH;
+```
+
+
+
 # 参考资料
 
 1、

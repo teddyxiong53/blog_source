@@ -1960,7 +1960,1453 @@ DFSCL_FULLSCREEN和DFSCL_EXCLUSIVE的处理方式是一样的，
 
 
 
+# directfb的鼠标隐藏
 
+如果设置了no-cursor，那么触摸板输入就没有反应。
+
+但是不设置的话，显示总是有一个鼠标的指针。
+
+我在qt里通过代码隐藏cursor。但是qt的cursor没有了，而directfb的cursor就显示出来了。
+
+
+
+/usr/share/directfb-1.7.7/cursor.dat
+
+只要去掉这个文件就可以把directfb的鼠标也隐藏了。
+
+在windowstack.c里：
+
+```
+#define CURSORFILE  DATADIR"/cursor.dat"
+```
+
+
+
+发现可以用更好的方式来隐藏cursor，同时保证触摸还正常。
+
+有两个关于鼠标的选项，一个是no-cursor，一个是no-cursor-updates。前一个会使directfb屏蔽掉所有触摸信号，即gtk程序收不到触摸屏的任何信号。后一个即可以隐藏DFB的鼠标，但是又不会屏蔽掉触摸屏事件。
+
+## 参考资料
+
+https://blog.csdn.net/GMstart/article/details/6784362
+
+# 画面花屏撕裂
+
+当前同一个demo_qt程序，是一个覆盖整个屏幕的button。
+
+进行点击会刷新按钮的文字。
+
+使用linuxfb，不会有画面撕裂的问题。
+
+使用directfb，会有画面撕裂的问题。
+
+这个应该是一个关于多buffer的问题。
+
+先分析linuxfb的，有没有用到双buffer这样的特性？
+
+vsync有没有？它的作用如何体现？
+
+
+
+双缓冲机制：
+在绘制控件时，首先将要绘制的内容绘制在一张图片中，再将图片一次性绘制到控件上。
+
+在Qt的早期版本中，为了用户界面更加清爽，经常用这个技术来消除闪烁。
+
+自Qt5版本后，QWidget能够自动处理闪烁，因此我们不用再担心这个问题。
+
+双缓冲机制的使用场合：
+
+所需绘制的内容较复杂，并且需频繁刷新。
+
+每次只需刷新整个控件的一小部分。
+
+
+
+directfb有一个desktop-buffer-mode的参数，
+
+取值有：
+
+```
+auto。
+	默认是这个。取决于硬件能力。
+	如果硬件支持blit存在，dfb会从video memory里分配一个back buffer
+	如果没有硬件加速，那么就从system memory分配 back buffer。
+	
+backsystem
+	指定back buffer在system memory里。
+    如果你的硬件支持blit，但是不支持alpha blend，适合这个。
+backvideo
+frontonly
+windows
+tripple
+```
+
+Doublebuffer 模式。
+
+设置：
+
+在directfbrc配置文件中添加desktop-buffer-mode=backvideo，doublebuffer模式生效。
+
+原理：
+
+    Directfb 创建两块 buffer, 
+    一块是backbuffer 在后台混合各个surface用的，
+    一块是frontbuffer用来显示的。
+    绘画的过程是：
+    先将各个window上的surfaceblit到backbuffer,
+    然后再算出需要更新的区域，
+    将backbuffer指定的区域blit到frontbuffer中。
+
+优点：
+
+    用户看到的效果是backbuffer 的内容更新到frontbuffer的过程，
+    不会看到各个window上的surface的混合过程。
+
+缺点：
+
+这种绘图过程引进了backbuffer，增加了内存的拷贝次数。
+
+
+
+ Frontonly 模式。
+
+在directfbrc配置文件中添加desktop-buffer-mode=frontonly，frontonly 模式生效。
+
+
+
+使用建议：
+
+   如果只使用到一个window,不需要多window的混合，frontonly 模式的效率会更高些。  
+
+   如果同时使用到多个透明window叠加，使用double buffer效果应该会更好些。
+
+
+
+当前我的板子上的表现：
+
+```
+backvideo，也是闪烁。
+	GE2D在起作用。
+backsystem，则不会闪烁。
+	backsystem的情况，ge2d就没有起作用了。
+
+frontonly，则花屏明显得不能再明显了。
+windows
+	跟backsystem效果一样，不花屏。但是ge2d没有作用。
+triple
+	花屏。
+```
+
+结论就是：使用了ge2d的，都花屏了。
+
+还是要分析一下当前从上到下的完整的绘制过程。
+
+
+
+看看使用devmem情况如何。
+
+
+
+为什么要使用devmem驱动
+
+相比使用fb驱动来说使用devmem驱动要显的更麻烦，
+
+但是它给我们带来更大的灵活性，更适用于嵌入式系统。
+
+**使用devmem驱动可以方便向dfb注册多个层，**
+
+在一个系统中除了framebuff看作一个层外，
+
+如果系统还可以有多个OSD，那每个OSD则被视为一个层，
+
+即可以很方便的把系统中的OSD等层利用起来。
+
+这在某些系统中是非常有用的，
+
+比如在TV系统中有视频、菜单、字幕以及码流中的html应用等
+
+当它们在一块屏幕显示时它们其实是会分属于不同的层上，
+
+这些层可以通过dfb轻松的对应到硬件上的层，
+
+**让它们的混合完全由硬件来完成，极大的充分利用硬件。**
+
+要使用devmem驱动时我们要完善如下几个配置项并把他们写到directfbrc文件中被dfb读取到
+
+```
+system=devmem
+video-phys=<hexaddress>
+video-length=<bytes>
+mmio-phys=<hexaddress>
+mmio-length=<bytes>
+accelerator=<id>
+```
+
+video-phys 这里是要我们告诉dfb我们显存的位置，是一个物理地址，
+
+对于没有固定显存的嵌入式系统来说，
+
+我们可以让linux系统启动的时候为我们预留一块内存区域来作为我们的显存，
+
+比如通过内核启动参数mem来指定比实际物理内存少一点的内存。
+
+mmio-phys 这里是要我们告诉我们的显示控制器或者说是显卡的物理起始地址，
+
+这个其实是给我们自己在gfx驱动中用的，因为dfb并不知道要往里面写啥起作用。
+
+
+
+我通过内核启动参数mem告诉内核我只有56M内存
+
+从而预留出了高8M内存区域来作为我的显存区域，
+
+查看数据手册可知n32926的显示控制器（VPOST）的起始地址为0xb1002000
+
+这个即是我们想要的，后面我们会在gfx驱动中得到它然后直接对寄存器进行读写来控制它。
+
+
+
+用devmem是不行的。
+
+```
+(!) IDirectFB_Construct: No layers available! Missing driver?
+```
+
+那就不管这种方式了。
+
+
+
+点击界面，系统刷新了哪些东西？
+
+QT_DIRECTFB_BLITTER_DEBUGPAINT
+
+用这个也看不出什么。
+
+那就要看看当前调用了ge2d的哪些功能。
+
+把ge2d的打印打开。
+
+
+
+在显示的时候被写到。
+
+就是在qt render引擎绘制的时候，数据又被改到了？
+
+render过程是怎么调度的？
+
+
+
+显示第一屏
+
+```
+amldrv->fb.phys is 0x3e300000, size is 25165824
+	为什么是在预留地址往后偏移3M的位置？大小为什么是24M？
+	一屏的数据大小：
+	我记得之前dump处理确实是24M。
+	但是720x720，每个像素是个字节，那么应该是在2M左右。
+	看内核的打印，osd0的是给了24M。
+	大小先不管吧。先往后看。
+amlgfx amlFillRectangle_ConfigEx 170> ------dst_info phys is 0x3e300000, mem_type is 0
+amlgfx amlFillRectangle_ConfigEx 171> rect info x is 0, y is 0, w is 720, h is 720
+amlgfx amlFillRectangle_ConfigEx 172> canvas_w is 720, canvas_h is 720
+	这个表示，在fb内存的开头处，画了一个720x720的矩形。
+amlgfx amlBlit_ConfigEx 405> src_info phys is 0x3e300000
+amlgfx amlBlit_ConfigEx 406> dst_info phys is 0x3e4fa400
+amlgfx amlBlit_Start 492> rect x is 0, y is 0, w is 720, h is 720
+amlgfx amlBlit_Start 493> dx is 0, dy is 0
+	然后进行了一次blit操作。移动的偏移量，就是720x720x4的。
+	从(0,0)移动到(0,0)
+qt.accessibility.cache: insert - id: 2147483648  iface: QAccessibleInterface(0x4bde0 name="click me" role=Button obj=QPushButton(0x4b368)"focusable|invisible")
+amlgfx amlBlit_ConfigEx 405> src_info phys is 0x3e4fa400
+amlgfx amlBlit_ConfigEx 406> dst_info phys is 0x3fafe700
+amlgfx amlBlit_Start 492> rect x is 360, y is 360, w is 40, h is 40
+amlgfx amlBlit_Start 493> dx is 0, dy is 0
+	然后是绘制button的。这个dst_info的phys地址，是比较靠后的位置。
+amlgfx amlBlend_Config_Ex 667> ------src_info phys is 0x3fafce00, mem_type is 0
+amlgfx amlBlend_Config_Ex 668> ------dst_info phys is 0x3e4fa400, mem_type is 0
+amlgfx amlBlend_Config_Ex 669> global alpha is 0x0. const color is 0x0
+amlgfx amlBlend_Start 768> src_rect x is 0, y is 0, w is 40, h is 40
+amlgfx amlBlend_Start 770> dst_rect x is 0, y is 0, w is 40, h is 40
+amlgfx amlBlend_Start 771> dx is 360, dy is 360
+amlgfx amlBlend_Start 791> colormode is 0, color src is 1, color dst is 7
+amlgfx amlBlend_Start 793> alphamode is 0, alpha src is 1, alpha dst is 3
+	然后是进行blend。
+amlgfx amlBlit_ConfigEx 405> src_info phys is 0x3e4fa400
+amlgfx amlBlit_ConfigEx 406> dst_info phys is 0x3e300000
+amlgfx amlBlit_Start 492> rect x is 360, y is 360, w is 40, h is 40
+amlgfx amlBlit_Start 493> dx is 360, dy is 360
+	把button部分的进行blit。
+amlgfx amlFillRectangle_ConfigEx 170> ------dst_info phys is 0x3e4fa400, mem_type is 0
+amlgfx amlFillRectangle_ConfigEx 171> rect info x is 0, y is 0, w is 720, h is 720
+amlgfx amlFillRectangle_ConfigEx 172> canvas_w is 720, canvas_h is 720
+amlgfx amlBlend_Config_Ex 667> ------src_info phys is 0x3f902a00, mem_type is 0
+amlgfx amlBlend_Config_Ex 668> ------dst_info phys is 0x3e4fa400, mem_type is 0
+amlgfx amlBlend_Config_Ex 669> global alpha is 0x0. const color is 0x0
+amlgfx amlBlend_Start 768> src_rect x is 0, y is 0, w is 720, h is 720
+amlgfx amlBlend_Start 770> dst_rect x is 0, y is 0, w is 720, h is 720
+amlgfx amlBlend_Start 771> dx is 0, dy is 0
+amlgfx amlBlend_Start 791> colormode is 0, color src is 6, color dst is 7
+amlgfx amlBlend_Start 793> alphamode is 0, alpha src is 1, alpha dst is 3
+	再次blend。
+```
+
+
+
+双buffer的情况：
+
+```
+buffer0：0x3e300000
+buffer1：0x3e4fa400
+```
+
+这个可以跟frontonly的情况进行对比得到。
+
+这2个buffer，如何跟屏幕显示进行对应呢？
+
+怎么决定是哪个buffer刷到屏幕上呢？
+
+
+
+看看vsync在directfb里怎么调用的。
+
+```
+.WaitVSync     = primaryWaitVSync,
+```
+
+上层都是这个：
+
+```
+thiz->WaitForSync              = IDirectFBScreen_WaitForSync;
+```
+
+但是上层没有哪里调用了这个，只有df_fire.c这个例子里调用了。
+
+```
+/* Wait for vertical retrace. */
+dfb->WaitForSync( dfb );
+```
+
+看看这个例子的运行效果。跑起来没有效果。
+
+在qt里搜索不到WaitForSync的调用。
+
+
+
+fb本身可以支持双缓冲。
+
+framebuffer驱动框架原生支持双缓冲，如果fb底层驱动实现了双缓冲，应用层可以直接使用，非常方便。
+
+framebuffer双缓冲原理是基于 virtual screen 平移实现，
+
+平移实际上就是重新配置了显存的首地址。
+
+当定义的显存大于LCD实际尺寸两倍以上时，
+
+就可以通过 fb_var_screeninfo 中的 xoffset 和 yoffset 控制 x 轴或 y 轴方向的平移，
+
+**一般来说只实现 y 轴上的平移就够了。**
+
+***最后需要说明一点：单纯的双缓冲并不能有效解决撕裂问题，必须配合vsync才能彻底消灭撕裂！***
+
+好消息是，NXP的fb驱动在fb_pan_display里已经实现vsync切换显存(值得新手学习)，可以在应用层直接使用双缓冲。
+
+
+
+qt里为什么没有看到vsync相关的东西？
+
+directfb里提供了vsync的接口，应该由directfb的使用者来调用。
+
+但是qt为什么不调用呢？
+
+
+
+kernel里，只有video下的fb才有FBIOPAN_DISPLAY的实现。
+
+```
+./drivers/video/fbdev/core/fbmem.c:1147:        case FBIOPAN_DISPLAY:
+```
+
+这个是通用的驱动，不是amlogic的驱动。
+
+就是通用实现的。所以是有效的。
+
+但是directfb里并没有用到FBIOPAN_DISPLAY这个来做双缓冲。
+
+
+
+当前directfb的双缓冲是怎么工作的？是否合理有效？
+
+qt好像只要opengl才使用了vsync。
+
+先要搞清楚当前画面撕裂的原因是什么？
+
+为什么软件方式不会导致撕裂？
+
+自己写代码操作fb，就是映射720x720x4这么大的一块内存，然后往上面写数据。
+
+我只管内存就好了。不管屏幕的。
+
+操作fb实现双缓冲怎么做呢？
+
+就是靠FBIOPAN_DISPLAY这个ioctl。
+
+
+
+而当前directfb的双缓冲怎么实现的？
+
+
+
+从这里我们也发现DirectFB为每个创建的Sufrace多提供了双缓冲的支持，
+
+所以它在创建Primary Sufrace时会要求我们的FrameBuffer驱动支持双缓冲驱动，
+
+当它发现我们的FrameBuffer驱动不支持双缓冲驱动的时候，
+
+它就会自己从system memory里面分配出一块内存来实现双缓冲，
+
+**而从system memory分配的内存是不支持2D硬件加速的，**
+
+所以这也是为什么我之前对Primary Sufrace一直不能使用硬件加速的原因了。
+
+我改一下设备树，把virtual_yres改成1440的看看。
+
+偏移3M，大小为24M，是在fb的设备树里指定的。
+
+前面保留的3M，是给logo用的。为了保持uboot到kernel的logo不变，所以这段内存要预留。
+
+```
+mem_size = <0x00300000 0x1800000 0x00000000>;
+logo_addr = "0x3e000000";
+```
+
+看了dfb_fbdev_mode_to_var函数，里面有这样的代码：
+
+```
+switch (buffermode) {
+          case DLBM_TRIPLE:
+               if (shared->fix.ypanstep == 0 && shared->fix.ywrapstep == 0)
+                    return DFB_UNSUPPORTED;
+
+               var.yres_virtual *= 3;
+               break;
+
+          case DLBM_BACKVIDEO:
+               if (shared->fix.ypanstep == 0 && shared->fix.ywrapstep == 0)
+                    return DFB_UNSUPPORTED;
+
+               var.yres_virtual *= 2;
+               break;
+
+          case DLBM_BACKSYSTEM:
+          case DLBM_FRONTONLY:
+               break;
+
+          default:
+               return DFB_UNSUPPORTED;
+     }
+```
+
+可以看到，根据设置的buffer模式，修改了yres_virtual的值，所以设备树里的初值，改不改都无所谓。
+
+triple的时候，可以看到，有这样的打印。确实改了。
+
+```
+(*) FBDev/Mode: Switched to 720x720 (virtual 720x2160) at 32 bit (ARGB), pitch 2880
+```
+
+
+
+改了yres_virtual，双缓冲具体如何生效呢？
+
+DLBM_TRIPLE 搜索这个看看哪里用到了。
+
+
+
+dfb里的这个sync是做什么的？
+
+```
+     /* Set sync options */
+     var.sync = 0;
+     if (mode->hsync_high)
+          var.sync |= FB_SYNC_HOR_HIGH_ACT;
+     if (mode->vsync_high)
+          var.sync |= FB_SYNC_VERT_HIGH_ACT;
+     if (mode->csync_high)
+          var.sync |= FB_SYNC_COMP_HIGH_ACT;
+     if (mode->sync_on_green)
+          var.sync |= FB_SYNC_ON_GREEN;
+     if (mode->external_sync)
+          var.sync |= FB_SYNC_EXT;
+     if (mode->broadcast)
+          var.sync |= FB_SYNC_BROADCAST;
+```
+
+
+
+```
+     DSCAPS_FLIPPING      = DSCAPS_DOUBLE | DSCAPS_TRIPLE /* Surface needs Flip() calls to make
+                                                             updates/changes visible/usable. */
+```
+
+flip确实被多次调用
+
+```
+ Core/Surface:                       -> flips 2 <-----------------
+ Core/Surface:                       -> flips 3 <-----------------
+ Core/Surface:                       -> flips 4 <-----------------
+ Core/Surface:                       -> flips 5 <-----------------
+```
+
+这个flip是交换buffer的操作吗？
+
+
+
+blit操作的地址，为什么是2个buffer？
+
+dfb最后还是调用了这个ioctl的。
+
+```
+     if (ioctl( dfb_fbdev->fd, FBIOPAN_DISPLAY, var ) < 0) {
+```
+
+```
+/*
+ * pans display (flips buffer) using fbdev ioctl
+ */
+static DFBResult
+dfb_fbdev_pan( int xoffset, int yoffset, bool onsync )
+```
+
+所以，可以得到结论：
+
+directfb的双缓冲，就是靠fb驱动的pan_display来实现的。
+
+
+
+当前directfb里，把整个24M都映射过来了。
+
+```
+dfb_fbdev->framebuffer_base = mmap( NULL, shared->fix.smem_len,
+                                         PROT_READ | PROT_WRITE, MAP_SHARED,
+                                         dfb_fbdev->fd, 0 );
+```
+
+
+
+```
+static void *
+system_video_memory_virtual( unsigned int offset )
+{
+     return(void*)((u8*)(dfb_fbdev->framebuffer_base) + offset);
+}
+```
+
+
+
+从打印看，是在2个buffer直接切换的。
+
+```
+xhl -- xoffset:0, yoffset:0, onsync:0 
+amlgfx amlBlit_ConfigEx 405> src_info phys is 0x3e300000
+amlgfx amlBlit_ConfigEx 406> dst_info phys is 0x3e4fa400
+
+xhl -- xoffset:0, yoffset:720, onsync:0 
+amlgfx amlBlit_ConfigEx 405> src_info phys is 0x3e4fa400
+amlgfx amlBlit_ConfigEx 406> dst_info phys is 0x3e300000
+
+我不太理解，
+换buffer为什么要blit？
+还是可以理解，
+但是blit算是绘制过程。
+应该要blit完成，再换buffer才正常吧。
+```
+
+看看是不是在绘制完成后再进行的切换。
+
+怎么算绘制完成？
+
+
+
+打开debug。因为打印很多，所以速度就非常慢，所以可以看到第一屏的显示过程是这样的：
+
+先显示了界面，然后黑屏了一段时间，然后再显示了界面。
+
+为什么会有黑屏这个过程？
+
+dfb_fbdev_pan 有4次调用，都是primaryFlipRegion调用的。
+
+看第一次flip前面做完了什么事情。在flip之后又做了什么。
+
+最开始的buffermode
+
+```
+buffermode   FRONTONLY
+```
+
+到这里才设置过来
+
+```
+
+```
+
+
+
+CoreGraphicsStateClient_Flush
+
+这个函数的语义是什么？
+
+
+
+会不会是因为ge2d比CPU慢导致的？
+
+提交ge2d任务后，绘制实际上还没有完成，但是CPU往后执行了。
+
+
+
+双buffer的话，怎么确定当前生效的是哪个？当前修改的又是哪个？
+
+可以看到，当前fbdev.c里，有一些被patch改掉了。
+
+本来有vsync的处理的，被注释掉了。
+
+我先把这些改动改回来看看。
+
+还是一样的撕裂。
+
+```
+DSFLIP_WAITFORSYNC  = DSFLIP_WAIT | DSFLIP_ONSYNC
+```
+
+
+一次点击导致的刷新，产生了2次buffer交换。
+
+
+
+跑wearable的例子。则是明显速度很慢。
+
+跟ge2d都没有关系。
+
+可能是是waitvsync导致的。
+
+把这个改回去。因为也没有解决花屏的问题。
+
+改回去至少速度上来了。
+
+
+
+目前有个思路，就是看ge2d在ioctl执行命令的时候，是否阻塞了当前进程。
+
+我怀疑是否因为不阻塞，导致ge2d执行完成的时机不受控制。
+
+从而ge2d和cpu绘制的内容不同步。导致结果出现混乱。
+
+从kernel代码看，可以选择阻塞和不阻塞的模式。是这个标志。
+
+```
+cmd.wait_done_flag
+```
+
+看看有哪些命令，是否阻塞。
+
+当前都是调用的阻塞方式的。
+
+因为非阻塞的函数，对应的ioctl命令，都有_NOBLOCK的后缀，例如：GE2D_BLEND_NOBLOCK
+
+那么此路就是不通的。
+
+既然是阻塞调用的，那么就是同步的方式了。
+
+跟CPU自己来绘制，还有什么不一样？
+
+
+
+对比一下frontonly和backvideo的区别。
+
+双缓冲的，在fill-rect之后，会从buffer0到buffer1进行一次blit操作，为什么？
+
+在整个videoram的最后部分，是做临时绘制用的？
+
+双缓冲和单缓冲的不同，就是多了很多的blit操作。
+
+
+
+在qt的directfb适配里，只有fill-rect、blit、stretch-blit这3种调用，blit可以设置blend选项。
+
+绘制引擎的整体流程是：
+
+```
+
+```
+
+window是一种widget。widget的show函数怎么做的？
+
+
+
+又好像跟ge2d没有关系。
+
+因为我做这样的测试：
+
+把所有的加速能力都关闭。使用frontonly的模式，这个是为了让现象暴露地更加明显。
+
+采用linuxfb方式的，没有看到画面撕裂。
+
+ 使用directfb方式，每次都有画面撕裂。
+
+这个就说明是directfb导致的问题。
+
+那会不会是vsync导致的呢？
+
+linuxfb方式，好像也没有看到双缓冲这样的机制。
+
+qt本身是没有双缓冲机制的。也不管画面撕裂的。
+
+还是不要以frontonly的来评估directfb吧。
+
+以双缓冲来评估。
+
+双缓冲的backsystem模式，把hardware明确关闭的情况，是没有画面撕裂的。
+
+hardware打开的情况，即使硬件没有任何能力，运行wearable还是有明显的撕裂。demo_qt的撕裂倒是不明显了。
+
+有hardware，和没有hardware，程序的运行路径差别有多大？
+
+为什么会导致这样的结果差异？
+
+backvideo的在repaint_stack的时候，flip_update的时候，指定了vsync和swap的flag。
+
+```
+case DLBM_BACKVIDEO:
+               /* Flip the whole region. */
+               dfb_layer_region_flip_update( region, bounding, flags | DSFLIP_WAITFORSYNC | DSFLIP_SWAP );
+               
+               
+default:
+               /* Flip the updated region .*/
+               for (i=0; i<num_updates; i++) {
+                    const DFBRegion *update = &flips[i];
+
+                    DFB_REGION_ASSERT( update );
+
+                    dfb_layer_region_flip_update( region, update, flags );
+               }
+               break;
+```
+
+
+
+没有hardware的，在这里就返回
+
+```
+     /* If there's no CheckState function there's no acceleration at all. */
+     if (!card->funcs.CheckState)
+          return false;
+```
+
+这个internal和external怎么理解？
+
+```
+     CSTF_INTERNAL       = 0x00000100,  /* system memory */
+     CSTF_EXTERNAL       = 0x00000200,  /* video memory */
+```
+
+backsystem和backvideo的区别在这里
+
+```
+ dfb_surface_pool_allocate( 0x3b738 [0 - System Memory], 0x46198 )
+dfb_surface_pool_allocate( 0x3d878 [2 - Frame Buffer Memory], 0x47168 )
+```
+
+backvideo的还多了这个
+
+```
+FBDev/Surfaces:                   fbdevAllocateBuffer( 0x47168 )
+FBDev/Surfaces:                     -> primary layer buffer (index 0)
+
+```
+
+对于backvideo模式，有flip buffer的操作。
+
+而backsystem模式，没有这种操作。
+
+flip buffer具体是怎么进行的？
+
+backsystem做了这个：
+
+```
+-> Copying content from back to front buffer...
+```
+
+```
+dfb_layer_region_flip_update
+
+backsystem
+-> Going to copy portion...
+backvideo
+-> Going to swap buffers...
+```
+
+
+
+backsystem的拷贝行为：
+
+```
+dfb_back_to_front_copy_rotation
+	CoreGraphicsStateClient_Blit
+	CoreGraphicsStateClient_Flush
+	dfb_state_stop_drawing
+dfb_layer_wait_vsync
+```
+
+backsystem的cursor是在system memory里分配的。
+
+```
+-> 40x40 ARGB - SHARED CURSOR INTERNAL
+而backvideo的cursor不知道是哪里分配的。各种flag都不属于。
+-> 40x40 ARGB - SHARED CURSOR
+```
+
+把hardware和no-hardware的第一屏显示看了一遍。
+
+我觉得问题的关键可能还是在于backsystem是采用拷贝的方式。
+
+而backvideo是采用flip buffer的方式。
+
+当前还有一个疑问没有解决，
+
+我配置hardware，然后把buffermode配置为backsystem。
+
+```
+hardware
+	设置frontonly，buffermode就是frontonly。撕裂严重。
+	设置backsystem。就是backsystem。是进行拷贝行为。、
+no-hardware
+	设置为backvideo。有拷贝也有交换。绝大部分都是交换。
+```
+
+那我就可以no-hardware加backvideo。看看是不是也会闪烁。
+
+如果会，说明就是backvideo导致的？
+
+的确会有。
+
+那我再把hardware指定backsystem看看。看起来也没有。
+
+那把ge2d的加速都打开，看看能不能正常进行加速。
+
+对于demo_qt的，backsystem方式，不会进加速。
+
+对于wearable，backsystem方式，有少数情况可以进加速。
+
+
+
+当前可以得出结论：
+
+1、跟加速没有关系。
+
+2、只有backsystem这一种情况不会出现屏幕撕裂。
+
+3、如果不是directfb本身的问题，那么就可能是我们对fbdev的改动导致的问题。
+
+
+
+我把之前其他人对fbdev的改动关闭。其实就是禁用掉了vsync的。
+
+这样video模式也不会撕裂。但是ui变得非常慢。
+
+这个是什么原因导致？我们的驱动有问题？还是硬件有什么问题？
+
+vsync机制具体怎么发挥作用？
+
+屏幕的刷新率是60HZ。
+
+wait_vsync，是在等什么？
+
+我可以用qemu来模拟看看。作为对比参照。
+
+服务器我没有root权限。但是编译速度非常快。
+
+所以把通过服务器编译qemu-x86-64的镜像，然后拷贝到我电脑虚拟机里运行。
+
+为了避免频繁输入密码，用这个脚本来同步吧。
+
+```
+#!/usr/bin/expect
+spawn rsync SRC DEST
+expect "password:"
+send "PASS\n"
+expect eof
+if [catch wait] {
+    puts "rsync failed"
+    exit 1
+}
+exit 0
+```
+
+我改成scp的吧。scp用起来简单些。
+
+先看看驱动力vsync的怎么做的。
+
+```
+case FBIO_WAITFORVSYNC:
+		if (info->node < osd_meson_dev.viu1_osd_count)
+			vsync_timestamp = (s32)osd_wait_vsync_event();
+		else
+			vsync_timestamp = (s32)osd_wait_vsync_event_viu2();
+		ret = copy_to_user(argp, &vsync_timestamp, sizeof(s32));
+		break;
+```
+
+这个函数里
+
+```
+s64 osd_wait_vsync_event(void)
+{
+	unsigned long timeout;
+
+	user_vsync_hit[VIU1] = false;
+
+	if (pxp_mode)
+		timeout = msecs_to_jiffies(50);
+	else
+		timeout = msecs_to_jiffies(1000);
+```
+
+pxpmode是指什么？
+
+在fb的设备树里，有这样的：
+
+```
+pxp_mode = <0>; /** 0:normal mode 1:pxp mode */
+```
+
+
+
+```
+DFBSurfaceFlipFlags 这个的取值的含义
+DSFLIP_WAIT
+	flip在vsync后返回。
+DSFLIP_BLIT
+	从back buffer拷贝到front buffer，而不是仅仅swap操作。
+	这个行为在下面2种情况下是强制的：
+		1、传递给flip的region不是NULL。
+		2、被flip的surface是一个subsurface。
+DSFLIP_ONSYNC
+	在下一次vsync的时候，做实际的flip操作。
+DSFLIP_WAITFORSYNC
+	等于DSFLIP_WAIT + DSFLIP_ONSYNC
+实际运行中，这些flags是哪里来的？
+
+repaint_stack_for_window
+
+DFBResult (*Flip) (
+          IDirectFBSurface         *thiz,
+          const DFBRegion          *region,
+          DFBSurfaceFlipFlags       flags
+     );
+	 
+IDirectFBSurface_Flip
+```
+
+在Qt里，DFBSurfaceFlipFlags只在2个函数里用到。
+
+```
+QDirectFbBackingStore::flush
+	m_dfbSurface->Flip(m_dfbSurface.data(), &dfbReg, DFBSurfaceFlipFlags(DSFLIP_BLIT|DSFLIP_ONSYNC));
+```
+
+```
+scrollSurface
+	surface->Flip(surface, &region, DFBSurfaceFlipFlags(DSFLIP_BLIT));
+```
+
+FlipRegion 被哪些地方调用了？
+
+```
+dfb_layer_region_flip_update 这个函数是有被调用的。
+repaint_stack的时候，强制指定了DSFLIP_WAITFORSYNC
+case DLBM_BACKVIDEO:
+               /* Flip the whole region. */
+               dfb_layer_region_flip_update( region, bounding, flags | DSFLIP_WAITFORSYNC | DSFLIP_SWAP );
+process_updates 这个函数被多次调用。里面调用了repaint_stack
+DSFLIP_BLIT和DSFLIP_ONSYNC是一直都指定的。
+那应该就是Qt的flush函数传递的。
+所以调用其实都是这样的flags：DSFLIP_WAITFORSYNC | DSFLIP_SWAP | DSFLIP_BLIT
+```
+
+
+
+```
+switch (buffer->policy) {
+          case CSP_SYSTEMONLY:
+               type |= CSTF_INTERNAL;
+               break;
+
+          case CSP_VIDEOONLY:
+               type |= CSTF_EXTERNAL;
+               break;
+
+          default:
+               break;
+     }
+```
+
+还是要把dfb_layer_region_flip_update 这个看懂调用栈。
+
+repaint_stack的时候，backvideo和backsystem的处理的区别如下。
+
+```
+case DLBM_BACKVIDEO:
+               /* Flip the whole region. */
+               dfb_layer_region_flip_update( region, bounding, flags | DSFLIP_WAITFORSYNC | DSFLIP_SWAP );
+
+               /* Copy back the updated region. */
+
+               if (!dfb_config->wm_fullscreen_updates)
+                    dfb_gfx_copy_regions_client( region->surface, CSBR_FRONT, DSSE_LEFT, region->surface, CSBR_BACK, DSSE_LEFT, updates, num_updates, 0, 0, &wmdata->client );
+
+               break;
+
+          default:
+               /* Flip the updated region .*/
+               for (i=0; i<num_updates; i++) {
+                    const DFBRegion *update = &flips[i];
+
+                    DFB_REGION_ASSERT( update );
+
+                    dfb_layer_region_flip_update( region, update, flags );
+               }
+               break;
+```
+
+区别主要还是flags有没有vsync。
+
+
+
+对于backsystem的，并没有等vsync，为什么没有画面撕裂？这个条件是不满足的。
+
+```
+case DLBM_BACKSYSTEM:
+               D_DEBUG_AT( Core_Layers, "  -> Going to copy portion...\n" );
+
+               if ((flags & DSFLIP_WAITFORSYNC) == DSFLIP_WAITFORSYNC) {
+                    D_DEBUG_AT( Core_Layers, "  -> Waiting for VSync...\n" );
+
+                    dfb_layer_wait_vsync( layer );
+               }
+```
+
+dfb_layer_region_flip_update函数具体逻辑
+
+```
+参数：
+	参数1：CoreLayerRegion
+	参数2：DFBRegion
+	参数3：flags。
+处理：
+1、打印要更新的区域范围。
+2、加锁。
+3、打印region信息。
+4、通过region的layer_id拿到layer_id指针。从而拿到layer的funcs。
+5、调用 dfb_layer_region_realize，这一步的打印比较多。
+6、调用 dfb_gfxcard_flush，这个就打印了2行。
+7、第一次调用，直接调到这里。
+	update_only:
+     D_DEBUG_AT( Core_Layers, "  -> update\n" );
+     然后直接dfb_surface_dispatch_update
+8、通过dispatch调用到dfb_surface_globals里的_dfb_layer_region_surface_listener
+9、打印done。
+```
+
+
+
+看到有single-window这个参数。
+
+加入到配置文件看看。
+
+出错了。
+
+```
+ (!!!)  *** ONCE [no mode found for 320x320] *** [fbdev.c:1360 in dfb_fbdev_find_mode()]
+(!) Core/LayerRegion: Could not lock region surface for SetRegion()!
+```
+
+single-window方式是行不通的。
+
+
+
+wm的unique这种方式，跟default有什么不一样？
+
+unique的根本编译不过。不管了。
+
+在大部分Android平台的设备上，Android系统是16ms刷新一次，也就是一秒钟60帧。
+
+要达到这种刷新速度就要求在ui线程中处理的任务时间必须要小于16ms，
+
+如果ui线程中处理时间长，就会导致跳过帧的渲染，
+
+也就是导致界面看起来不流畅，卡顿。
+
+如果用户点击事件5s中没反应就会导致ANR。
+
+
+
+引擎渲染的过程是CPU提交数据，GPU进行渲染，渲染完的帧数据给显示器显示，
+
+引擎的GPU渲染完成的速率可以称为引擎帧率，fps
+
+显示器显示的速率可以被垂直同步信号控制，VSYNC
+
+现在显示器一般会有一个主打的一个点就是刷新率，比如我买的这个显示器就是144hz，这个144hz是显示器刷新的频率，是VYSNC支持的上限。
+
+引擎渲染帧率fps>显示器刷新率：比如引擎渲染出来120帧，但是显示器刷新率是60hz，这个时候开启了垂直同步会有什么影响？画面显示还是60帧，但是对于竞技类游戏，比如射击，动作游戏，开了垂直同步信号反而会让操作有延迟，降低手感。一般引擎渲染可以到120帧，说明主机的配置是不错的，显示器是卡点。
+
+引擎渲染帧率fps=显示器刷新率：引擎60帧，显示器60hz，开启垂直同步，实际帧率会低于60帧。因为游戏是一个复杂的系统，不可能稳定60帧，如果有波动，垂直同步会放大这个影响。
+
+引擎渲染帧率fps<显示器刷新率：引擎45帧，显示60hz，就没有开启垂直同步的意义了。
+
+所以带来的问题是：
+
+1，垂直同步信号要根据自己的硬件设备综合考虑
+
+2，部分竞技类游戏比较考验操作，相信大家肯定也能想到，开了垂直同步，是肯定会对帧率有影响的，会影响到操作的实时性。
+
+
+
+那么我就要得出现在的渲染帧率是多少。
+
+如果渲染帧率低于屏幕刷新率，那么vsync就是没有意义的。
+
+```
+echo 1 > osd_fps
+动几下画面
+echo 0 > osd_fps
+```
+
+这样来看打开vsync前后的帧率变化，打开之前是108fps，打开之后是11fps。
+
+之前是108fps，说明可以用vsync。但是vsync为什么导致慢了这么多？
+
+
+
+qemu里运行qt程序，说/usr/lib/fonts找不到。
+
+先不管。
+
+qemu里运行wearable，用backvideo，也可以看到明显的画面撕裂。
+
+qemu无论那种模式，都可以看到明显的画面撕裂。
+
+
+
+dfb_config->layers_fps 这个参数是做什么的？
+
+没有什么用途。不管。
+
+把backvideo模式的swap buffer逻辑看懂。就是调用fb的FlipRegion。
+
+FlipRegion调用dfb_surface_flip_buffers。swap参数是false。
+
+swap参数用途就是这里：
+
+```
+if (swap) {
+    int tmp = surface->buffer_indices[back];
+    surface->buffer_indices[back] = surface->buffer_indices[front];
+    surface->buffer_indices[front] = tmp;
+}
+else
+	surface->flips++;
+```
+
+dfb_surface_flip 函数只被primaryFlipRegion调用了。
+
+
+
+再看backsystem的行为。
+
+```
+这个在wm里，就设置了不会wait vsync。
+调用dfb_back_to_front_copy_rotation
+	从名字看，是从back拷贝到front。
+	调用CoreGraphicsStateClient_Blit，client指定了不要加速。
+	所以就是memcpy的行为。
+	
+调用dfb_surface_dispatch_update
+	
+```
+
+驱动里这个函数，好像并没有使用从应用层传递过来的var->activate = FB_ACTIVATE_NOW; 这个属性。
+
+```
+osd_pan_display_hw(fbi->node, var->xoffset, var->yoffset);
+```
+
+那么效果就一定是异步的。
+
+所以需要调用pan之后，再调用wait vsync？
+
+每次vsync都是16ms。
+
+FlipRegion调用次数却很多。
+
+这个合理吗？
+
+
+
+buffermode设置为windows，不行。
+
+```
+     -> No virtual resolution support or not enough memory?
+        Falling back to system back buffer.
+```
+
+dfb_layer_region_flip_update有个这样的情况。
+
+```
+     if (flags & DSFLIP_UPDATE)
+          goto update_only;
+```
+
+但是这个flag只在single-window的情况才被设置。所以不用管。
+
+
+
+```
+backsystem为什么不撕裂？
+在没有wait vsync的前提下。
+backsystem跟frontonly，多了什么操作，让画面不会撕裂？
+就多了一个拷贝操作。dfb_back_to_front_copy_rotation
+
+frontonly的相当于只调用了这个函数：dfb_surface_dispatch_update
+dfb_surface_dispatch_channel
+回调是这个：IDirectFBEventBuffer_SurfaceReact
+但是这个react还是只把东西加入到队列里。
+谁来处理队列的内容呢？
+qt里来处理
+QDirectFbInput::handleEvents()
+这个事件就交给qt的各个widget去响应。
+例如进行repaint等操作。
+然后又调用回到directfb的wm的函数。
+```
+
+
+
+dfb_config->wm_fullscreen_updates 这个参数作用是啥？
+
+加上也没有明显改善。
+
+```
+Force fullscreen updates in window manager
+```
+
+
+
+当前一次触摸导致的wearable的刷新，有两次，
+
+第一次把周围6个圆圈刷新处理。
+
+第二次把中间的圆圈刷新出来。
+
+
+
+backvideo和backsystem的内存的区别具体是什么？
+
+
+
+IDirectFB_CreateSurface 调用了多次。都是这种特性的。
+
+```
+DSCAPS_PREMULTIPLIED = 0x00001000,  /* Surface stores data with premultiplied alpha. */
+```
+
+
+
+```
+switch (i) {
+                    case 0:
+                         surface->buffer_indices[CSBR_FRONT] = i;
+                    case 1:
+                         surface->buffer_indices[CSBR_BACK] = i;
+                    case 2:
+                         surface->buffer_indices[CSBR_IDLE] = i;
+               }
+```
+
+dfb_surface_buffer_create
+
+
+
+调用fbdevAllocateBuffer来分配内存。
+
+```
+/*
+      * Mark the CoreSurfaceAllocation as having been read and written to by the CPU because it is possible
+      * the CPU cache after allocation has some data due to a read/write performed as part of allocation.
+      */
+     allocation->accessed[CSAID_CPU] |= CSAF_READ | CSAF_WRITE;
+```
+
+
+
+**force-windowed**
+
+Forces the primary surface to be a window. This allows to run applications that were written to do full-screen access in a window.
+
+
+
+**force-desktop**
+
+Forces the primary surface to be the background surface of the desktop.
+
+
+
+https://www.systutorials.com/docs/linux/man/5-directfbrc/
+
+
+
+backvideo 在视频内存中分配前端和后端缓冲区。
+
+该值特别不建议设定，因为如果blit被加速的话，‘auto’模式下会选择该值。
+
+没有加速的blit操作，该值不推 荐使用。
+
+当前大部分的加速就是blit操作。
+
+
+
+简单说来，
+
+BACKVIDEO是将两个BUFFER存放在显存中，
+
+BACKSYSTEM是将一个BUFFER存放在显存中，一个BUFFER存放在内存中。
+
+
+
+## 参考资料
+
+Double Buffered Graphics Driver Example
+
+https://doc.qt.io/archives/qt-4.8/qt-qws-dbscreen-example.html
+
+Qt双缓冲机制：实现一个简单的绘图工具（纯代码实现）
+
+https://blog.csdn.net/rl529014/article/details/51658350
+
+Directfb buffer mode分析
+
+https://blog.csdn.net/haima1998/article/details/8626485
+
+DirectFB学习之使用devmem驱动
+
+这个作者有一个系列文章，可以看看。
+
+https://blog.csdn.net/jxgz_leo/article/details/77601310
+
+
+
+https://stackoverflow.com/questions/49657086/proper-double-buffering-with-linux-framebuffer
+
+[正点原子i.MX6UL] v4l2+framebuffer预览USB摄像头(番外篇)：framebuffer双缓冲消灭撕裂测试
+
+https://whycan.com/t_3912.html
+
+
+
+https://blog.csdn.net/molibaobei90/article/details/40826791
+
+DirectFB学习之修改FrameBuffer驱动支持双缓冲
+
+https://blog.csdn.net/jxgz_leo/article/details/70216901
+
+第001节_LCD硬件原理
+
+http://wiki.100ask.org/%E7%AC%AC017%E8%AF%BE_LCD%E7%BC%96%E7%A8%8B
+
+11 性能优化-卡顿优化和监控方案
+
+https://www.jianshu.com/p/b14c4c90666a
+
+垂直同步VSYNC，帧率，渲染缓存
+
+https://blog.csdn.net/wangqing008/article/details/104066456
+
+# unique wm
+
+看看这种方式跟default的有什么不同。
+
+
+
+## 参考资料
+
+https://blog.51cto.com/u_15314083/3192810
+
+
+
+# opengl + directfb
+
+
+
+## 参考资料
+
+https://huangong.gitbooks.io/art_as_programer/content/meet_chromium/opengl-egl-integration-with-directfb.html
+
+# 关闭directfb的鼠标，用QTimer模拟点击事件
+
+```
+#include <QtWidgets>
+
+int main(int argc, char ** argv) {
+   bool clicked = {};
+   QApplication app{argc, argv};
+   QPushButton b{"Click Me"};
+   QObject::connect(&b, &QPushButton::clicked, [&]{ clicked = true; qDebug() << "clicked"; });
+   Q_ASSERT(!clicked);
+   b.clicked(); // immediate call
+   Q_ASSERT(clicked);
+   clicked = {};
+   // will be invoked second - i.e. in connect order
+   QObject::connect(&b, &QPushButton::clicked, &app, &QApplication::quit);
+   QTimer::singleShot(0, &b, [&]{ b.clicked(); }); // deferred call
+   Q_ASSERT(!clicked);
+   app.exec();
+   Q_ASSERT(clicked);       
+}
+```
+
+
+
+参考资料
+
+https://stackoverflow.com/questions/23621257/how-to-programmatically-click-a-qpushbutton
+
+# qt本身加速
+
+对于嵌入式linux的qt，painting操作是纯软件实现的。
+
+分为两步：
+
+1、render window到一个surface上，使用painting engine来做这个事情。
+
+2、拷贝数据到screen。
+
+render的过程可以被加速。要两种加速方式
+
+1、加速拷贝数据到screen的过程。这个靠graphic driver来实现。靠继承QScreen来做。当前就是QLinuxFbScreen。
+
+2、加速painting操作。这个靠painting engine来实现。靠继承QRasterPaintEngine来做。
+
+实现一般是这3个步骤：
+
+1、创建一个自定义的Graphics Driver。
+
+2、实现一个自定义的Paint Engine。
+
+3、让widget可以意识到自定义的Paint Engine的存在。
+
+
+
+https://doc.qt.io/archives/qt-4.8/qt-embedded-architecture.html
 
 # 参考资料
 
