@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 经常看到jupyter notebook这个东西。jupyter的字面含义是木星。
 
@@ -232,9 +232,53 @@ chmod -R 777 /data/wwwroot/KODExplorer/
 
 改iptables就可以了。
 
+# docker方式安装jupyter
+
+https://hub.docker.com/u/jupyter
+
+https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html
+
+jupyter有各种stack。
+
+基础的：
+
+base-notebook：
+
+是所有的stack的基础。包括了jupyter notebook server，conda，jupyter hub等package，
+
+minimal-notebook
+
+在base-notebook的基础上，增加了tex live、git、vi、nano、tzdata
+
+r-notebook
+
+集成了R语言的支持。
+
+scipy-notebook
+
+集成了科学计算相关的包。
+
+tensorflow-notebook
+
+集成了TensorFlow
+
+datascience-notebook
+
+pyspark-notebook
+
+all-spark-notebook
+
+层次关系
+
+![image-20210820191931211](../images/random_name/image-20210820191931211.png)
+
+```
+docker run -d -p 8888:8888 jupyter/tensorflow-notebook
+```
 
 
-参考资料
+
+# 参考资料
 
 1、数据分析为什么常用Jupyter而不是直接使用Python脚本或Excel?
 
@@ -251,3 +295,7 @@ https://blog.csdn.net/qq_33266320/article/details/80949339
 4、kodexplorer安装
 
 https://blog.csdn.net/weixin_33704234/article/details/91476964
+
+5、
+
+https://www.zhihu.com/question/59392251

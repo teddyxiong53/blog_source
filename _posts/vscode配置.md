@@ -364,6 +364,20 @@ C:\Users\hanliang.xiong\.vscode\extensions\ms-vscode.cpptools-1.2.2\LLVM\bin\cla
 
 https://blog.csdn.net/sinat_26685721/article/details/109906411
 
+# .vscode-server调整位置
+
+因为home目录空间有限。.vscode-server默认在home目录下。
+
+所以需要调整位置。
+
+没有配置文件可以配置的。所以就通过软链接的方式来调整。
+
+```
+cp .vscode-server ~/work -rf # work本身就是一个软链接，指向一个大的磁盘。
+rm .vscode-server -rf
+ln -s .vscode-server ~/work/.vscode-server
+```
+
 
 
 

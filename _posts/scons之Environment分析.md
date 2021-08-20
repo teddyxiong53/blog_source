@@ -91,8 +91,30 @@ TOOLS : ['default', 'gnulink', 'gcc', 'g++', 'gfortran', 'gas', 'ar', 'dmd', 'm4
 
 
 
+控制默认的构造环境：DefaultEnvironment函数
+
+我们已经介绍过的所有的Builder，比如Program和Library，实际上使用一个默认的构造环境。
+
+你可以控制默认构造环境的设置，使用DefaultEnvironment函数：
+
+   DefaultEnvironment(CC=’/usr/local/bin/gcc’)
+
+这样配置以后，所有Program或者Object的调用都将使用/usr/local/bin/gcc编译目标文件。
+
+注意到DefaultEnvironment返回初始化了的默认构造环境对象，这个对象可以像其他构造环境一样被操作。所以如下的代码和上面的例子是等价的：
+
+   env=DefaultEnvironment()
+
+   env[‘CC’]=’/usr/local/bin/gcc’
+
+
+
 参考资料
 
 1、Construction Environments
 
 https://scons.org/doc/1.2.0/HTML/scons-user/x1392.html
+
+2、
+
+http://www.jmpcrash.com/?p=1169

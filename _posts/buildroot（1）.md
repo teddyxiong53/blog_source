@@ -1065,7 +1065,13 @@ virtual package是一种可扩展的机制。允许用户选择rootfs里用的pr
 
 所以libgles这个package，就是sunxi-mali和ti-gfx的virtual package。
 
+我目前有这样一个需求，lvgl-app依赖了lvgl-core和lvgl-drivers。
 
+但是lvgl-core和lvgl-drivers不要编译，需要先拷贝到lvgl-app的目录下再进行编译。
+
+virtual-package可以满足我的需求吗？
+
+不可以。
 
 # skeleton
 
@@ -1448,9 +1454,15 @@ define XXX_POST_EXTRACT_HOOKS
 endef
 ```
 
+现在我在编译之前，需要解压本地目录下2个release的压缩包。
+
+应该怎么做？
+
 
 
 # package的patch怎样生成
+
+可以用diff生成，也可以用git生成。
 
 
 
@@ -1528,9 +1540,152 @@ xx为hash值。这样的方式在版本之间穿梭。
 
 先回到第一个版本。编译看看。
 
+# 单个package编译过程分析
+
+```
+做包依赖分析
+按照依赖分析顺次处理所有的 package
+处理过程有
+	0.预处理...(解压,打patch,生成makefile等)
+	1.编译
+	2.安装
+		1.host工具被安装到host目录
+		2.target工具及库被 安装到target目录和staging目录)
+	
+然后 进行打包
+```
+
+一个host包的编译过程，有host-tar为例。
+
+```
+Extracting
+	mkdir -p output/build/host-tar-1.29
+	cd output/build/host-tar-1.29 && gzip -d -c dl/tar/tar-1.29.cpio.gz | cpio -i --preserve-modification-time
+	31631 blocks
+	mv output/build/host-tar-1.29/tar-1.29/* output/build/host-tar-1.29
+	rmdir output/build/host-tar-1.29/tar-1.29
+Patching
+Updating config.sub and config.guess
+Patching libtool
+Configuring
+	./configure --prefix="output/host" --sysconfdir="output/host/etc" --localstatedir="output/host/var" --enable-shared --disable-static --disable-gtk-doc --disable-gtk-doc-html --disable-doc --disable-docs --disable-documentation --disable-debug --with-xmlto=no --with-fop=no --disable-dependency-tracking  --without-selinux )
+configure: WARNING: unrecognized options: --enable-shared, --disable-static, --disable-gtk-doc, --disable-gtk-doc-html, --disable-doc, --disable-docs, --disable-documentation, --disable-debug, --with-xmlto, --with-fop
+Building
+	PKG_CONFIG="output/host/bin/pkg-config" PKG_CONFIG_SYSROOT_DIR="/" PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1 PKG_CONFIG_ALLOW_SYSTEM_LIBS=1 PKG_CONFIG_LIBDIR="output/host/lib/pkgconfig:output/host/share/pkgconfig"  /usr/bin/make   -C output/build/host-tar-1.29/
+/usr/bin/make  all-recursive
+Installing to host directory
+	PKG_CONFIG="output/host/bin/pkg-config" PKG_CONFIG_SYSROOT_DIR="/" PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1 PKG_CONFIG_ALLOW_SYSTEM_LIBS=1 PKG_CONFIG_LIBDIR="output/host/lib/pkgconfig:output/host/share/pkgconfig"  /usr/bin/make  install -C output/build/host-tar-1.29/
+
+```
+
+一个target包的编译过程，以pcre为例。
+
+```
+Extracting
+	bzcat buildroot_topdir/dl/pcre/pcre-8.41.tar.bz2 | buildroot_topdir/output/host/bin/tar --strip-components=1 -C buildroot_topdir/output/build/pcre-8.41   -xf -
+Patching
+	Applying 0001-Kill-compatibility-bits.patch using patch: 
+	patching file pcrecpp.cc
+	
+	Applying 0002-Disable-C-unit-tests.patch using patch: 
+	patching file Makefile.in
+Updating config.sub and config.guess
+	将support/gnuconfig 下的 文件更新到 build目录
+	如果package/xxx中有GPT,则将GPT下的configure文件更新到build目录
+Patching libtool
+	如果有 ltmain.sh 就打 patch
+	support/libtool/buildroot-libtool-v2.4.4.patch
+Configuring
+	./configure \
+		--target=gpt-buildroot-linux-gnu --host=gpt-buildroot-linux-gnu --build=x86_64-pc-linux-gnu --prefix=/usr --exec-prefix=/usr --sysconfdir=/etc --localstatedir=/var --program-prefix="" \
+		--disable-gtk-doc --disable-gtk-doc-html --disable-doc --disable-docs --disable-documentation --with-xmlto=no --with-fop=no --disable-dependency-tracking --enable-ipv6 --disable-nls --enable-static --enable-shared  \
+		--enable-pcre8 --disable-pcre16 --disable-pcre32 --enable-utf --enable-unicode-properties
+Building
+	/usr/bin/make   -C buildroot_topdir/output/build/pcre-8.41/
+Installing to staging directory
+	/usr/bin/make  DESTDIR=buildroot_topdir/output/host/gpt-buildroot-linux-gnu/sysroot install -C buildroot_topdir/output/build/pcre-8.41/
+Fixing package configuration files
+Fixing libtool files
+Installing to target
+	/usr/bin/make  DESTDIR=buildroot_topdir/output/target install -C buildroot_topdir/output/build/pcre-8.41/
+
+```
+
+rootfs打包过程
+
+```
+Finalizing target directory
+	分析 output/build/packages-file-list.txt // 分析 一个 文件是否被两个包拥有,如果存在,会有Warning
+	分析 output/build/packages-file-list-staging.txt // 分析 一个 文件是否被两个包拥有
+	分析 output/build/packages-file-list-host.txt // 分析 一个 文件是否被两个包拥有
+	修改 /etc 下的配置文件
+		output/target/etc/shells
+		output/target/etc/inittab
+		output/target/etc/hostname
+		output/target/etc/hosts
+		output/target/etc/issue
+		output/target/etc/shadow
+		output/target/usr/lib/os-release
+		output/target/etc/os-release
+Sanitizing RPATH in target tree
+	support/scripts/fix-rpath target
+Copying overlay user_files/
+	就是覆盖copy user_files目录下面的文件到 output/target(待验证)
+Executing post-build script board/gpt/scripts/makeuboot.sh
+	执行编译之前就已经在的脚本 makeuboot.sh ,制作u-boot.img
+Generating common rootfs tarball
+	删除并新建文件夹output/build/buildroot-fs
+	rsync -auH output/target output/build/buildroot-fs/target
+	创建 output/build/buildroot-fs/fakeroot.fs 文件,并写命令到该文件
+	创建 output/build/buildroot-fs/device_table.txt
+	chmod a+x output/build/buildroot-fs/fakeroot.fs
+	output/host/bin/fakeroot -- output/build/buildroot-fs/fakeroot.fs 
+		// 执行这个脚本,这个脚本的作用 
+		//1.根据output/build/buildroot-fs/device_table.txt创建/dev下的dev文件 
+		//2.打包output/build/buildroot-fs/target 为 output/build/buildroot-fs/rootfs.common.tar
+	
+Generating root filesystem image rootfs.squashfs
+	删除并创建文件夹output/build/buildroot-fs/squashfs
+	创建 output/build/buildroot-fs/squashfs/fakeroot 文件,并写命令到该文件
+	chmod a+x output/build/buildroot-fs/squashfs/fakeroot
+	output/host/bin/fakeroot -- output/build/buildroot-fs/squashfs/fakeroot
+		// 执行这个脚本,这个脚本的作用 
+		//1.创建 output/build/buildroot-fs/squashfs/target
+		//2.解压 output/build/buildroot-fs/rootfs.common.tar 到 output/build/buildroot-fs/squashfs/target
+		//3.用output/host/bin/mksquashfs,将output/build/buildroot-fs/squashfs/target 做输入,输出output/images/rootfs.squashfs
+Generating root filesystem image rootfs.tar
+	删除并创建output/build/buildroot-fs/tar
+	创建文件 output/build/buildroot-fs/tar/fakeroot并写命令到output/build/buildroot-fs/tar/fakeroot
+	chmod a+x output/build/buildroot-fs/tar/fakeroot
+	output/host/bin/fakeroot -- output/build/buildroot-fs/tar/fakeroot
+		// 执行这个脚本,这个脚本的作用 
+		//1.创建 output/build/buildroot-fs/tar/target
+		//2.解压 output/build/buildroot-fs/rootfs.common.tar 到 output/build/buildroot-fs/tar/target
+		//3.cd output/build/buildroot-fs/tar/target ;find -print0 | LC_ALL=C sort -z | tar  -cf output/images/rootfs.tar --null --no-recursion -T - --numeric-owner
+
+```
 
 
-参考资料
+
+目录
+
+```
+output/build 	// 编译目录,target和host的编译过程都在 output/build/xxx output/build/host-yyy 下进行
+				// rootfs 的打包也在该目录下进行
+output/host		// host 的安装目录,在output/build/host-yyy 下编译后,安装到 output/host目录
+output/images	// 最终的输出目录,我们要的所有最终文件都在这里
+output/staging -> output/host/gpt-buildroot-linux-gnu/sysroot 
+				// 包A在编译过程中需要链接包B的头文件和so.
+				// 则 需要创建一个目录来安装B的头文件和so
+output/target 	// target的安装目录,在output/build/xxx 下编译后,安装到 output/target目录
+
+```
+
+
+
+https://blog.csdn.net/u011011827/article/details/105263974
+
+# 参考资料
 
 1、HOWTO: Use BuildRoot to create a Linux image for QEMU
 

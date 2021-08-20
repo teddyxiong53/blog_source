@@ -42,3 +42,9 @@ trusted-host=pypi.tuna.tsinghua.edu.cn
 trusted-host=pypi.mirrors.ustc.edu.cn
 ```
 
+还可以在命令行加参数直接加速。
+
+```
+sudo pip3 install numpy -i https://pypi.doubanio.com/simple
+```
+
