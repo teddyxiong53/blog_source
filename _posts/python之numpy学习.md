@@ -12,6 +12,12 @@ numpy主要是用来做矩阵计算的。
 
 numpy + scipy + matplotlib 可以用来取代matlab。
 
+实用的线性代数、傅里叶变换和随机数生成函数。
+
+numpy和稀疏矩阵运算包scipy配合使用更加方便。
+
+https://www.numpy.org.cn/
+
 
 
 # ndarray
@@ -20,7 +26,7 @@ n维数组。这个是numpy一个重要的基础数据。
 
 opencv的imread函数，返回的就是这么一个对象。
 
-```
+```python
 #coding: utf-8
 from __future__ import print_function
 import numpy as np
@@ -181,8 +187,12 @@ print(b)
 
 
 
-参考资料
+# 参考资料
 
 1、NumPy 教程
 
 https://www.runoob.com/numpy/numpy-tutorial.html
+
+2、
+
+https://baike.baidu.com/item/numpy/5678437?fr=aladdin

@@ -16,3 +16,11 @@ NPU是VeriSilicon的。
 
 hardware/aml-4.9/npu/nanoq目录下。
 
+有个npu_app的仓库，
+
+platform/hardware/verisilicon/npu_app
+
+比较大，有5.8G。里面大部分都是模型文件。
+
+编译都是build_vx.sh脚本来做。
+

@@ -406,6 +406,346 @@ ide推荐vs code；
 
 
 
+# 一些github repo
+
+https://github.com/search?q=tinyml
+
+
+
+https://github.com/gigwegbe/tinyml-papers-and-projects
+
+
+
+# 系列文章
+
+## HelloWorld
+
+就这一部分的关键代码详细解释一下：
+
+```
+TRAIN_SPLIT =  int(0.6 * SAMPLES)
+TEST_SPLIT = int(0.2 * SAMPLES + TRAIN_SPLIT)
+```
+
+整个数据集包括三个部分，训练集，测试集，验证集。
+
+示例中用了 60% 的数据当训练集，20% 的数据当测试集，20% 的数据当验证集。
+
+这个比例不是恒定的，可以按需求调整。
+
+```
+from tensorflow.keras import layers
+model_1 = tf.keras.Sequential()
+model_1.add(layers.Dense(16, activation='relu', input_shape=(1,)))
+model_1.add(layers.Dense(1))
+model_1.compile(optimizer='rmsprop', loss='mse', metrics=['mae'])
+model_1.summary()
+```
+
+把代码保存到github上。直接在colab里进行关联就可以了。
+
+上面这个代码的表示的含义是：
+
+第一层采用标量输入，并且基于 “relu” 激活，
+
+用了 16 个神经元的密集层 (Dense Layer，也可叫做全连接层)。
+
+当我们进行预测时，它是推理过程中的神经元之一。
+
+每个神经元将然后被激活到一定程度。
+
+每个神经元的激活量是基于在训练过程中获得的 weight 和 bias 值来定义激活功能。
+
+神经元的激活将作为数字输出。
+
+激活是通过一个简单的公式来计算的，如 Python 中所示。
+
+我们将永远不需要自己编写此代码，因为它由 Keras 和 TensorFlow 处理， 
+
+在深入学习时但会有所帮助，计算公式的伪代码如下所示：
+
+```
+activation = activation_function((input * weight) + bias)
+```
+
+要计算神经元的激活程度，需要将其输入乘以权重和偏差被添加到结果中。
+
+计算出的值被传递到激活函数中。
+
+结果就是神经元的激活。
+
+激活函数是一种数学函数，用于塑造神经元的输出。
+
+在我们的网络中，我们使用的是称为**整流线性单元** (Rectified Linear Unit) 的激活函数，或简称为 ReLU。
+
+这在 Keras 中由参数 activation = relu 指定。ReLU 是一个简单的函数，如 Python 所示：
+
+```
+def relu(input):
+	return max(0.0, input)
+```
+
+
+
+用 ReLU 做为激活函数意义在哪儿？
+
+ 
+
+没有激活函数，神经元的输出将始终是线性函数.
+
+这意味着网络只能建模线性关系，其中 x 和 y 之比在整个值范围内保持不变。
+
+但是正弦波又是非线性的，这将阻止网络对我们的正弦波进行建模。
+
+由于 ReLU 是非线性的，
+
+因此它允许多层神经元联合作用并建立模型复杂的非线性关系，
+
+每次x增量不会使y值以相同的方式增加。
+
+还有其他激活函数，但是ReLU是最常用的函数。
+
+作为ML算法，运用最优的激活函数是必要的。
+
+
+
+我们再对输入、输出层做一些解读：
+
+由于输出层是单个神经元，它将接收 16 个输入。
+
+由于这是我们的输出层，因此我们不指定确定激活功能-我们只需要原始结果。
+
+由于此神经元有多个输入，因此每个神经元都有一个对应的权重值。
+
+神经元的输出通过以下公式计算得出，如 Python 中所示：其中 “inputs” 和 “weights” 都是 NumPy 数组，每个数组有 16 个元素
+
+```
+output = sum((inputs * weights)) + bias
+```
+
+通过将每个输入与其对应的乘积获得输出值 weights，对结果求和，
+
+然后加上神经元的 bias。
+
+该网络的 weights 和 bias 是在训练期间学习的。 
+
+
+
+接下来，编译阶段的关键点，便是优化器的损失函数了。
+
+```
+model_1.compile(optimizer='rmsprop', loss='mse', metrics=['mae'])
+```
+
+最后我们再来看看模型概况：
+
+![img](../images/random_name/aHR0cHM6Ly9tbWJpei5xcGljLmNuL21tYml6X2pwZy9Oa0UzdU1GaWFmWEdVRmRBUERIUUpaY1djdFpNWWdLUUdzeEg2Z2dJZ29BOWlhRU53djZGWHoxNTNQNUVrb0c3eWM3VExFbVFXSktUTHE2VWliekdBRUVwdy82NDA)
+
+ 
+
+其中输入层有 16 个神经元，共 2 层连接，所以全部的连接数为 16x2=32，
+
+每一个神经元都有一个 bias，网络总共有 17 个 bias。
+
+输入的 16，以及输出的 1。
+
+所以总的参数为 32+17=49。
+
+然后就是训练模型
+
+```
+history_1 = model_1.fit(x_train, y_train, epochs=1000, batch_size=16, validation_data=(x_validate, y_validate))
+```
+
+利用 keras 的 fit() 方法能够很好的训练。下面就一些参数做一下最基本的解释：
+
+X_train, y_train 表示最基本的训练数据。
+
+epochs 训练的周期，一般来说，周期越长，训练越精确，
+
+但是，一般来说，训练的时间到一定阶段，训练精度不会有很大差别。
+
+在这种清况下，一般要考虑去优化模型了。
+
+batch_size 用于往网络中一次送入多少数据，如果值为 1，我们每一次会更新 weight 和 bias，并且会估计网络预测的损失，为下一次的运行做更精确的估计。越小的值，会带来很大的计算量，占用更多的计算资源。如果我们把值定要 600，一次性可以计算出更多的数据，但是会降低模型的精度。
+
+**所以最好的方式是把值设置为 16 或者是 32**。这个值的选择，实际上精度与时间花费权衡的结果。
+
+接下来，我们就要看一下训练的结果。
+
+```
+loss = history_1.history['loss']
+val_loss = history_1.history['val_loss']
+
+epochs = range(1, len(loss)+1)
+
+plt.plot(epochs, loss, 'g.', label='Traning loss')
+plt.plot(epochs, val_loss, 'b', label="Validate loss")
+plt.title('Traning and validation loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
+```
+
+下图显示了每个时期的损失，
+
+有几种计算损失的方法，我们使用的方法是均方误差。对于训练和验证数据有明显的损失值。
+
+
+
+![image-20210823145252415](../images/random_name/image-20210823145252415.png)
+
+我们可以看到，损失的数量在前 25 个时期迅速减少，然后趋于平稳。
+
+这意味着该模型正在改进并产生更准确的预测！
+
+我们的目标是在模型不再改善或训练损失小于验证损失 (Validation Loss) 时停止训练，
+
+这意味着该模型已经学会了很好地预测训练数据，也不需要新的数据来提高精度。
+
+为了使图表的平坦部分更具可读性，我们用代码 SKIP = 50 跳过前 50 个 epochs，这仅仅是便于我们看图方便。
+
+![image-20210823145629162](../images/random_name/image-20210823145629162.png)
+
+从图中可以分析出，大概 epochs 到了 600 左右，训练开始趋于稳定。意味着我们的 epochs 应该不需要超过 600。
+
+但是，我们还可以看到最低的损失值仍在 0.155 左右。
+
+这意味着我们网络的预测平均降低了约 15％。
+
+另外，验证损失值 (Validation loss) 产生的很大的跳跃，并不稳定。
+
+我们需要改进方法。
+
+这次，我们将绘制平均绝对误差 (Mean Absolute Error)图，
+
+这是另一种衡量网络预测与实际数字的距离的方法
+
+```
+plt.clf() # clear current figure
+mae = history_1.history['mae']
+val_mae = history_1.history['val_mae']
+
+plt.plot(epochs[SKIP:], mae[SKIP:], 'g.', label='Traning MAE')
+plt.plot(epochs[SKIP:], val_mae[SKIP:], 'b.', label="Validate MAE")
+plt.title('Traning and validation mean absolute error')
+plt.xlabel('Epochs')
+plt.ylabel('MAE')
+plt.legend()
+plt.show()
+```
+
+![image-20210823150302744](../images/random_name/image-20210823150302744.png)
+
+
+
+从平均绝对误差图可以看到，训练数据显示出的错误始终比验证数据低，
+
+这意味着网络可能存在过拟合 (Overfit)，
+
+或者过分地学习了训练数据，
+
+从而无法对新数据做出有效的预测。
+
+
+
+此外，平均绝对误差值非常高，最多约为 0.305，这意味着该模型的某些预测至少可降低 30％。
+
+30％ 的误差意味着我们离精确建模正弦波函数还很遥远。
+
+预测一下看看跟实际值的区别。
+
+```
+predictions = model_1.predict(x_train)
+plt.clf()
+plt.title('Training data predicted vs actual data')
+plt.plot(x_test, y_test, 'b.', label='Actual')
+plt.plot(x_train, predictions, 'r.', label='Predictions')
+plt.legend()
+plt.show()
+```
+
+可见预测差别非常大。
+
+![image-20210823150923207](../images/random_name/image-20210823150923207.png)
+
+结果表明，该模型没有足够的能力来学习正弦波函数的全部复杂度，
+
+因此只能以过于简单的方式对其进行近似。
+
+通过优化模型，我们应该能够改善其性能。
+
+
+
+优化的关键是增加一个全连接层，这一层包含了 16 个神经元。
+
+```
+model_2 = tf.keras.Sequential()
+model_2.add(layers.Dense(16, activation='relu', input_shape=(1,)))
+model_2.add(layers.Dense(16, activation='relu'))#加了这一行。
+model_2.add(layers.Dense(1))
+model_2.compile(optimizer='rmsprop', loss='mse', metrics=['mae'])
+```
+
+训练一下
+
+```
+history_2 = model_2.fit(x_train, y_train, epochs=600, batch_size=16, validation_data=(x_validate, y_validate))
+```
+
+然后预测一下
+
+```
+predictions = model_2.predict(x_test)
+plt.clf()
+plt.title('Comparision of predictions and actual values')
+plt.plot(x_test, y_test, 'b.', label='Actual')
+plt.plot(x_test, predictions, 'r.', label="Predicted")
+plt.legend()
+plt.show()
+```
+
+现在就准确多了。
+
+![image-20210823152213024](../images/random_name/image-20210823152213024.png)
+
+### 模型转换
+
+模型转换的要点，就是 TensorFlow 到 TensorFlow Lite 的转换。其中有两个主要的组成部分：
+
+TensorFlow Lite 转换器 (TensorFlow Lite Converter)
+
+这会将 TensorFlow 模型转换为一种节省空间的特殊格式，以用于内存受限的设备，并且可以应用进一步减少并优化模型尺寸，使其在小型设备上运行更快。
+
+TensorFlow Lite 解释器 (Tensorflow Lite Interpreter)
+
+这会使用最有效的方式运行经过适当转换的 TensorFlow Lite 模型到给定设备的有效操作。
+
+
+```
+# 第一个模型，不经过量化处理
+converter = tf.lite.TFLiteConverter.from_keras_model(model_2)
+tflite_model = converter.convert()
+open('sine_model.tflite', 'wb').write(tflite_model)
+# 第二个模型，经过量化处理
+converter = tf.lite.TFLiteConverter.from_keras_model(model_2)
+converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_SIZE]
+tflite_model = converter.convert()
+open('sine_model_quantized.tflite', 'wb').write(tflite_model)
+```
+
+对 TF Lite 模型进行预测，我们还需要完成如下的工作：
+
+1. 申明解释器对象实体
+2. 为模型分配内存
+3. 加载模型
+4. 从传感器中读取输出数据
+
+把生成的模型，转成C语言数组，就可以在tflite-micro里使用了。
+
+
+
 
 
 # 参考资料
@@ -427,3 +767,9 @@ https://baijiahao.baidu.com/s?id=1682409135667826022&wfr=spider&for=pc
 flavorfan的系列文章
 
 https://cloud.tencent.com/developer/article/1757386
+
+5、
+
+系列文章，不错
+
+https://blog.csdn.net/wfing/article/details/106995562

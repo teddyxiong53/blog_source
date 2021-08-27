@@ -21,6 +21,10 @@ tags:
 
 https://segmentfault.com/a/1190000013807691
 
+这个别人的学习笔记，值得看一遍。
+
+https://blog.csdn.net/yuanlulu/category_9272622.html
+
 # 概念
 
 TensorFlow从单词字面含义看，是张量流的意思。
@@ -74,6 +78,215 @@ Tensorflow是目前最火的深度学习框架，
 社区活跃性。
 
 
+
+使用 TensorFlow, 你必须明白 TensorFlow:
+使用图 (graph) 来表示计算任务.
+在被称之为 会话 (Session) 的上下文 (context) 中执行图.
+使用 tensor 表示数据.
+通过 变量 (Variable) 维护状态.
+使用 feed 和 fetch 可以为任意的操作(arbitrary operation) 赋值或者从其中获取数据.
+
+
+
+tensor的中文意思是 “张量”，
+
+tensorflow中的数据都是以张量形式存在。
+
+我们通常说的标量（数字，例如3）、
+
+向量（数组，例如[1,2])、
+
+二维矩阵
+
+在这里又被称为0维张量、一维张量、二维张量；
+
+一张图片（包含width, height, channal）称3维张量；
+
+通常处理图片时不止一张，加上图片数量（batch,width,height,channal)称4维张量。
+
+**其中张量的维数又被称为阶。**
+
+
+
+## 用图来表示计算任务
+
+**什么是图**：
+
+图（G）由顶点集和边集组成，
+
+记为G=（V,E)，
+
+分为有向图和无向图。
+
+有向图即边是有方向的，无向图即边没有方向。
+
+
+
+tensorflow中的图为有向图，
+
+图中的节点被称为op（operation)，
+
+表示对数据的某些操作，
+
+有向边可以理解成数据从上一层流动到下一层。
+
+使用tensorflow首先要构建一个图，
+
+第一步创建源op（这里我把源op理解成“创建数据或者读入数据”这个操作），
+
+源op（入度为0的节点）不需要任何输入，
+
+输出作为下一层节点的输入继续运算。
+
+
+
+参考资料
+
+https://blog.csdn.net/gagaki/article/details/105693243
+
+## TF2为什么去掉session？
+
+TensorFlow2.0开启默认模式是eager模式。
+
+什么是eager模式？
+
+说白了命令行交互模式，
+
+和我们写python一样的体验，
+
+写完一句代码，按下回车立刻就知道了结果。
+
+不用事事不离tf.Session run了，
+
+那个像阴魂不散的sess.run终于一去不复返了！
+
+TensorFlow2.0在推理性能上比之前的版本提供4-5倍。笔者小试了几行代码，的确很酸爽！
+
+
+
+# 常用api
+
+从官网的api编排看，
+
+https://www.tensorflow.org/api_docs/python/tf/data/Dataset
+
+api分为这些：
+
+```
+tf.audio
+	就2个函数。
+	decode_wav：把一个16 bit的pcm转成一个float tensor。
+	encode_wav
+	关联的例子：简单的语音识别。值得一看。
+	https://www.tensorflow.org/tutorials/audio/simple_audio
+	
+tf.autodiff
+	就2个类。
+	ForwardAccumulator：自动求导。
+	GradientTape：记录自动求导的操作。
+tf.autograph
+	把eager-style的代码转成graph代码
+	就4个函数：
+	set_verbosity
+	to_code
+	to_graph
+	trace
+tf.bitwise
+	bit操作。跳过。
+tf.compat
+	下面一个v1的package。提供对v1的api的兼容。
+tf.config
+	3个package
+	3个class
+	10来个函数
+tf.data
+	10来个类。
+	
+tf.debugging
+	各种assert。
+tf.distribute
+	类比较多。
+tf.dtypes
+	
+tf.errors
+tf.experimental
+tf.feature_column
+tf.graph_util
+tf.image
+tf.initializers
+tf.io
+tf.keras
+	这个内容比较多。
+tf.linalg
+tf.lite
+tf.lookup
+tf.losses
+tf.math
+tf.metrics
+tf.mixed_precision
+tf.mlir
+tf.nest
+tf.nn
+tf.optimizers
+tf.profiler
+tf.quantization
+tf.queue
+tf.ragged
+tf.random
+tf.raw_ops
+tf.saved_model
+tf.sets
+tf.signal
+tf.sparse
+tf.strings
+tf.summary
+tf.sysconfig
+tf.test
+tf.tpu
+tf.train
+tf.types
+tf.version
+tf.xla
+```
+
+
+
+求导的例子
+
+```
+import tensorflow as tf
+
+x = tf.constant(3.0)
+with tf.GradientTape() as g:
+  g.watch(x)
+  y = x*x
+dy_dx = g.gradient(y,x)
+print(dy_dx) //得到的是6, 因为导函数是2x，2*3.0 = 6
+```
+
+
+
+tf.keras.datasets.minit.load_data()返回值：
+
+Tuple of NumPy arrays: `(x_train, y_train), (x_test, y_test)`.
+
+
+
+可能TF2本身虽然明面上是将Keras纳入官方API中，
+
+但本身估计也有着去Keras化的倾向，
+
+所以，建议说可以直接`tf.optimizers`，个人建议说就直接从`tf`里调用好了。
+
+
+
+鉴于TF的接口变化比较大，我又只是简单使用，不然就看keras的就好了。
+
+
+
+参考资料
+
+https://blog.csdn.net/qq_36688965/article/details/103022250
 
 # 应用场景
 
@@ -592,6 +805,18 @@ You can install the required Bazel version via apt:
 ## 参考资料
 
 https://blog.csdn.net/guo1988kui/article/details/103696188/
+
+# API基本操作
+
+现在看看TF2的基本api的操作。
+
+## 打印helloworld
+
+```
+
+```
+
+
 
 # 参考资料
 
