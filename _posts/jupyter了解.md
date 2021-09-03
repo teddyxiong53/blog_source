@@ -276,7 +276,9 @@ all-spark-notebook
 docker run -d -p 8888:8888 jupyter/tensorflow-notebook
 ```
 
+# 支持C语言
 
+https://blog.csdn.net/weixin_37543731/article/details/99254107
 
 # 参考资料
 

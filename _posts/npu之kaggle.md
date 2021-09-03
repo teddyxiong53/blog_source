@@ -62,8 +62,29 @@ Kaggle任务虽然不限制编程语言，但绝大多数队伍会选用Python�
 
 
 
+根据引导教程来学习。
+
+# 解释数据
+
+> describe输出了一个8行n列的数据表
+
+## count
+
+`count`行统计了此列共有多少行没有缺失值，即：
+
+```
+某列具有缺失值的行 = 总行数 - count;
+```
+
+出现缺失值可能有很多原因，例如调查1室1厅的房屋时，不会询问是否有第二个卧室。
+
+
+
 参考资料
 
 1、Kaggle入门，看这一篇就够了
 
 https://zhuanlan.zhihu.com/p/25686876
+
+2、
+https://blog.csdn.net/weixin_34233421/article/details/89664791

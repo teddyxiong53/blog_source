@@ -119,3 +119,7 @@ https://www.cnblogs.com/feifeifeisir/p/10495976.html
 2、
 
 https://blog.csdn.net/zhangcongyi420/article/details/103909107
+
+3、十分钟掌握pandas中文版（pandas官方文档翻译）
+
+https://blog.csdn.net/brook_/article/details/80791473
