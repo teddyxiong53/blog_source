@@ -1685,6 +1685,14 @@ output/target 	// target的安装目录,在output/build/xxx 下编译后,安装�
 
 https://blog.csdn.net/u011011827/article/details/105263974
 
+# root用户的禁用
+
+到产品化的阶段，一般会要求禁用root用户。
+
+BR2_TARGET_ENABLE_ROOT_LOGIN 这个设置为n。应该可以。
+
+
+
 # 参考资料
 
 1、HOWTO: Use BuildRoot to create a Linux image for QEMU

@@ -194,6 +194,81 @@ scikit-learn 是基于 Python 语言的机器学习工具
 
 
 
+但是官方文档讲述的太过于详细，同时很多人对官方文档的理解和结构认识上都不能很好的把握。
+
+我写这篇文章的目的是想用一篇文章讲清楚整个sklearn库，
+
+我会讲清楚怎么样用这个库，而不是讲清楚每一个知识点。
+
+本篇文章主要从两个方面出发：
+
+1，介绍sklearn官方文档的类容和结构；
+
+2，从机器学习重要步骤出发讲清楚sklearn的使用方法。
+
+
+
+![这里写图片描述](../images/random_name/918791-20160810230724965-1004907740.png)
+
+
+
+![这里写图片描述](../images/random_name/578330-20170525083149591-1263319710.png)
+
+由图中，可以看到库的算法主要有四类：分类，回归，聚类，降维。其中：
+
+常用的回归：线性、决策树、SVM、KNN ；
+
+集成回归：随机森林、Adaboost、GradientBoosting、Bagging、ExtraTrees
+
+常用的分类：线性、决策树、SVM、KNN，朴素贝叶斯；
+
+集成分类：随机森林、Adaboost、GradientBoosting、Bagging、ExtraTrees
+
+常用聚类：k均值（K-means）、层次聚类（Hierarchical clustering）、DBSCAN
+
+常用降维：LinearDiscriminantAnalysis、PCA
+
+这个流程图代表：蓝色圆圈内是判断条件，绿色方框内是可以选择的算法。
+
+你可以根据自己的**数据特征和任务目标**去找到一条自己的操作路线，一步步做就好了。
+
+
+
+sklearn在机器学习中的主要应用情况有：
+
+**1，数据集：**面对自己的任务肯定有自己的数据集，
+
+但是对于学习来说，sklearn提供了一些数据，
+
+主要有两部分：现在网上一些常用的数据集，可以通过方法加载；
+
+另一种sklearn可以生成数据，可以生成你设定的数据。（设定规模，噪声等）
+
+**2，数据预处理：**
+
+数据预处理包括：
+
+降维、数据归一化、特征提取和特征转换（one-hot）等，
+
+这在sklearn里面有很多方法，具体查看api。
+
+这里用归一化（preprocessing.scale() ）例子解释一下：
+
+**3，选择模型并训练：** 
+
+sklearn里面有很多的机器学习方法，可以查看api找到你需要的方法，sklearn统一了所有模型调用的api，使用起来还是比较简单。
+
+**4，模型评分：**
+（1）模型的score方法：最简单的模型评估方法是调用模型自己的方法：
+
+（2）sklearn的指标函数：库提供的一些计算方法，常用的有classification_report方法
+
+（3）sklearn也支持自己开发评价方法
+
+**5，模型的保存于恢复：**模型的保存与恢复可以采用python的pickle，也可以用joblib的方法。
+
+
+
 参考资料
 
 1、sklearn 和tensorflow的区别
@@ -209,3 +284,17 @@ https://www.cnblogs.com/lianyingteng/p/7811126.html
 这里面涉及的统计学知识点太多了。简直没法读。
 
 https://www.scikitlearn.com.cn/
+
+4、sklearn库的学习
+
+这篇博客高屋建瓴，清晰地抓住了主干。这种学习思路值得效仿。
+
+多画图，不知道画什么图，就画思维导图。
+
+https://blog.csdn.net/u014248127/article/details/78885180
+
+5、sklearn方法大全
+
+这个总结得很好。
+
+https://blog.csdn.net/rankiy/article/details/102663650

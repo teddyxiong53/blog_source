@@ -8,7 +8,7 @@ tags:
 
 
 
-
+--
 
 cmake是一个跨平台的编译工具。
 
@@ -106,13 +106,26 @@ hlxiong@hlxiong-VirtualBox:~/work/test/cpp$ tree
 定义变量
 
 ```
+CMake中，变量的值要么是String要么是String组成的List。
+
+CMake没有用=赋值的操作，只有通过set,option来定义变量。
+option只能定义OFF,ON的变量。
+
 set mydir=./
+
+//VA=a;b, VA是一个字符串list
+set(VA a b)
+//VA=a,VA是一个字符串
+set(VB a)
+
+
 ```
 
 条件判断：
 
 ```
 if(${Platform} STREQUAL ABC
+elseif()
 else()
 endif()
 ```
@@ -121,7 +134,99 @@ endif()
 if(${Platform} MATCHES "ABC")
 ```
 
+command调用语法为
 
+```
+identifier(以空格隔开的参数表)
+参数可以用()括起来，表示这个单个参数。
+如if(TRUE OR (TRUE AND FALSE))
+```
+
+参数的形式有：
+
+```
+1、方括号形式。
+	这个比较麻烦。不管。
+2、引号形式。
+3、无引号形式。
+```
+
+多行注释
+
+```
+#[[这是多
+行注释]]
+```
+
+for循环
+
+```
+foreach(loop_var arg1 arg2 ...)
+  COMMAND1(ARGS ...)
+  COMMAND2(ARGS ...)
+  ...
+endforeach(loop_var)
+
+举例 
+set(mylist "a" "b" c "d")
+foreach(_var ${mylist})
+     message("当前变量是：${_var}")
+endforeach()
+```
+
+while循环
+
+```
+while(condition)
+  COMMAND1(ARGS ...)
+  COMMAND2(ARGS ...)
+  ...
+endwhile(condition)
+```
+
+自定义函数
+
+```
+function(<name> [arg1 [arg2 [arg3 ...]]])
+  COMMAND1(ARGS ...)
+  COMMAND2(ARGS ...)
+  ...
+endfunction(<name>)
+```
+
+宏定义
+
+```
+宏和function的作用是一样的，但是宏只是对字符串的简单替换。和define类似。
+```
+
+## 内置变量
+
+基本上是CMAKE_XX的格式。
+
+从用途划分：
+
+```
+1、提供信息。
+2、改变行为。
+3、描述系统。
+4、控制build。
+5、语言相关。
+6、CTest相关。
+7、CPack相关。
+```
+
+https://cmake.org/cmake/help/v3.7/manual/cmake-variables.7.html
+
+## 参考资料
+
+CMake基本语法
+
+https://www.cnblogs.com/stonehat/p/7707578.html
+
+cmake内置参数以及常用命令
+
+https://blog.csdn.net/qq_31112205/article/details/105257230
 
 # 添加宏定义
 
@@ -559,6 +664,99 @@ pkg_check_modules
 
 cmake -D传递的CMAKE_FIND_ROOT_PATH，这样在CMakeLists.txt里得到的不对。
 
+# cmake实践笔记
+
+## t1
+
+一个最简单的例子。
+
+新建目录t1。在下面新建CMakeLists.txt和main.c。
+
+```
+project(hello)
+set(SRC_LIST main.c)
+add_executable(hello ${SRC_LIST})
+```
+
+执行命令：
+
+```
+mkdir build
+cd build
+cmake ../
+make
+```
+
+## t2
+
+这一步的目的是把HelloWorld改造成更加工程化的样式。
+
+1、添加子目录src。放源代码。
+
+2、添加子目录doc。存放hello.txt这个帮助文档。
+
+3、添加COPYRIGHT、readme
+
+4、添加一个runhello.sh脚本，用来调用hello文件。
+
+5、把可执行文件放入到bin目录。
+
+6、安装hello和runhello.sh到 /usr/bin。doc和COPYRIGHT拷贝到/usr/share/doc/cmake/t2目录。
+
+把顶层的CMakeLists.txt改成：
+
+```
+project(hello)
+add_subdirectory(src bin)
+```
+
+把src下面的CMakeLists.txt改成：
+
+```
+add_executable(hello main.c)
+```
+
+然后编译，就可以看到可执行文件自动放到了build/bin目录下了。
+
+
+
+# 交叉编译
+
+CMake给交叉编译预留了一个很好的变量CMAKE_TOOLCHAIN_FILE，
+
+它定义了一个文件的路径，
+
+这个文件即toolChain，里面set了一系列你需要改变的变量和属性，
+
+包括C_COMPILER,CXX_COMPILER,
+
+如果用Qt的话需要更改QT_QMAKE_EXECUTABLE以及
+
+如果用BOOST的话需要更改的BOOST_ROOT(具体查看相关Findxxx.cmake里面指定的路径)。
+
+CMake为了不让用户每次交叉编译都要重新输入这些命令，因此它带来toolChain机制，
+
+简而言之就是一个cmake脚本，内嵌了你需要改变以及需要set的所有交叉环境的设置。
+
+一个例子：名字为toochain.cmake。
+
+```
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_C_COMPILER /xx-gcc)
+set(CMAKE_CXX_COMPILER /xx-g++)
+set(CMAKE_FIND_ROOT_PATH /xx/buildroot/target)
+# search for programs in the build host directories (not necessary)
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+# for libraries and headers in the target directories
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+
+```
+
+cmake -DCMAKE_TOOLCHAIN_FILE=./toolchain.cmake
+
+
+
 
 
 # 参考资料
@@ -626,3 +824,13 @@ http://www.yeolar.com/note/2014/12/16/cmake-how-to-find-libraries/
 15、CMake configuration for ffmpeg in C++ project
 
 https://stackoverflow.com/questions/50760024/cmake-configuration-for-ffmpeg-in-c-project
+
+16、掌握CMake编译配置工具，编译设计工作快到飞起！
+
+这篇文档非常好。给一个比较完整的例子。
+
+https://juejin.cn/post/6854573214069161997
+
+17、cmake实践。一个40页的pdf文档。这个是KDE的开发者写的。很有条理。
+
+http://file.ncnynl.com/ros/CMake%20Practice.pdf

@@ -816,7 +816,48 @@ https://blog.csdn.net/guo1988kui/article/details/103696188/
 
 ```
 
+# jupyter搭建TensorFlow环境
 
+镜像地址在这里。
+
+https://hub.docker.com/r/jupyter/tensorflow-notebook
+
+拉取镜像。
+
+```
+docker pull jupyter/tensorflow-notebook
+```
+
+运行：这样来把磁盘数据映射出来。方便我上传文件。
+
+```
+docker run -itd \
+-p 8888:8888 \
+-v /home/amlogic/jupyter_work:/home/jovyan \
+--hostname tensorflow \
+--network host \
+--restart always \
+--name tensorflow \
+jupyter/tensorflow-notebook
+```
+
+查看token，
+
+```
+docker exec -it tensorflow jupyter notebook list
+```
+
+得到这样的输出：
+
+```
+http://0.0.0.0:8888/?token=918e2b45bc198428fde99c8c63cd70bc35725882e2ce07c8
+```
+
+然后就可以正常使用了。
+
+
+
+https://zhuanlan.zhihu.com/p/65886733
 
 # 参考资料
 

@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 教程是基于python2.7的。我就用anaconda，结合pycharm来进行环境的搭建。
 
@@ -94,9 +94,48 @@ print(img.shape)
 (222L, 180L, 3L)
 ```
 
+# 重新再来
+
+现在研究npu相关的东西。用到一些opencv的东西。
+
+所以先通过python版本的来快速了解opencv的常见用法。
+
+现在对docker和jupyter比较喜欢。搭建环境快速。就用这个来重新搭建环境。
+
+我就在jupyter TensorFlow的基础上安装一下opencv就好了。
+
+```
+!pip install opencv-python -i https://pypi.douban.com/simple/
+```
+
+当前的最新版本是 opencv-python-4.5.3.56
+
+”cv2”中的”2”并不表示OpenCV的版本号。
+
+ OpenCV是基于C/C++的，
+
+”cv”和”cv2”表示的是底层C API和C++API的区别，
+
+”cv2”表示使用的是C++API。这主要是一个历史遗留问题，是为了保持向后兼容性。
 
 
-参考资料
+
+图片的读取、显示、写入操作
+
+```
+import numpy as np
+import cv2
+import imutils
+
+gray_img = cv2.imread('1080p.bmp', cv2.IMREAD_GRAYSCALE)  #加载灰度图像
+rgb_img = cv2.imread('1080p.bmp', cv2.IMREAD_COLOR)   #加载RGB彩色图像
+
+cv2.imshow('origin image', imutils.resize(rgb_img, 800))
+```
+
+
+
+# 参考资料
 
 1、官方教程
 
@@ -105,3 +144,7 @@ https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_setup/py
 2、OpenCV 中图像坐标系统与Python中NumPy Arrays之间的关系
 
 https://blog.csdn.net/lz0499/article/details/80978433
+
+3、为什么OpenCV3在Python中导入名称是cv2
+
+https://blog.csdn.net/mid_Faker/article/details/105653181
