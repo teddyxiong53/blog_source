@@ -1205,6 +1205,32 @@ https://blog.csdn.net/u011279649/article/details/102624556
 
 
 
+
+
+TFLite是为了将深度学习模型部署在移动端和嵌入式设备的工具包，
+
+可以把训练好的TF模型通过转化、部署和优化三个步骤，
+
+达到提升运算速度，减少内存、显存占用的效果。
+
+TFlite主要由Converter（左）和Interpreter（右）组成。
+
+Converter负责把TensorFlow训练好的模型转化，并输出为.tflite文件（FlatBuffer格式）。
+
+转化的同时，还完成了对网络的优化，如量化。
+
+Interpreter则负责把.tflite部署到移动端，
+
+嵌入式（embedded linux device）和microcontroller，并高效地执行推理过程，
+
+同时提供API接口给Python，Objective-C，Swift，Java等多种语言。
+
+简单来说，Converter负责打包优化模型，Interpreter负责高效易用地执行推理。
+
+
+
+
+
 # 参考资料
 
 1、教程丨基于 TensorFlow Lite Micro 和 Arduino 的视觉分类和识别

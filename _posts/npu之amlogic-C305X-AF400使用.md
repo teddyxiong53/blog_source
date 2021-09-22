@@ -1028,7 +1028,13 @@ W [HandleLayoutInfer:257]Op 18: default layout inference pass.
 (140:0) : error : syntax error at 'VXC_512Bits'
 ```
 
+这个问题需要指定一个环境变量，类似这样：
 
+```
+export VIVANTE_SDK_DIR=/mnt/nfsroot/hanliang.xiong/work/test/timvx-tflite-test/tflite-vx-delegate/build/_deps/tim-vx-src/prebuilt-sdk/x86_64_linux
+```
+
+然后运行就正常了。
 
 ```
 You have bazel 4.2.1 installed.

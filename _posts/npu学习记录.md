@@ -742,3 +742,398 @@ https://medium.com/@ageitgey/machine-learning-is-fun-part-6-how-to-do-speech-rec
 
 跟timvx一起的版本，也不能正常工作。
 
+# 9月14日
+
+现在领导给了方向，就围绕着NN在智能音箱的各个环节的应用为研究方向。
+
+总共5个环节：唤醒、VAD、ASR、NLP、TTS。
+
+最极致的用法就是完全在本地实现智能音箱的功能。
+
+研究重点还是边缘计算。
+
+首先从唤醒入手。
+
+tflite-micro的micro_speech是个可以研究的对象。
+
+我一直有的疑问就是数据取长时间的刚好可以足够识别，有能保证速度和准确性？
+
+搜索到这个博客，很专业，专注音频开发的。
+
+https://www.cnblogs.com/talkaudiodev/
+
+我有一个疑问，唤醒词跟ASR的边界是什么？
+
+ASR不是简单的分类任务。
+
+我觉得可以看一下esp的命令词。
+
+https://github.com/espressif/esp-skainet/blob/master/README_cn.md
+
+目前支持唤醒词识别和命令词识别。
+
+自定义唤醒词的流程。
+
+https://github.com/espressif/esp-sr/blob/master/wake_word_engine/%E4%B9%90%E9%91%AB%E8%AF%AD%E9%9F%B3%E5%94%A4%E9%86%92%E8%AF%8D%E5%AE%9A%E5%88%B6%E6%B5%81%E7%A8%8B.md
+
+我要想办法实现一个类似乐鑫wakenet的东西。
+
+这篇文章对智能音箱的流程讲得比较好。
+
+http://www.woshipm.com/ai/4144034.html
+
+这个产品经理的6篇文章质量都不错。
+
+http://www.woshipm.com/u/844241
+
+这篇文章全面系统。值得一读。
+
+https://wqw547243068.github.io/2020/09/17/voice-detection/
+
+# 9月15日
+
+我还是把注意力集中在TensorFlow上。
+
+搜索“TensorFlow vad”。
+
+
+
+这个kaggle代码，里面是一些对音频的处理。
+
+https://www.kaggle.com/davids1992/speech-representation-and-data-exploration?scriptVersionId=1924001
+
+这本在线书籍，很全面，讲音频技术的。
+
+https://shichaog1.gitbooks.io/hand-book-of-speech-enhancement-and-recognition/content/chapter7.html
+
+yamnet系列文章
+
+https://blog.csdn.net/search_129_hr/category_11201015.html
+
+把tflite编译了，运行末benchmark_model和label_image。把板端运行的梳理了一下。
+
+搜索“tflite rpi speech command”
+
+这里有个例子，把“stop”当成唤醒词的。在树莓派上运行的。
+
+https://github.com/ShawnHymel/tflite-speech-recognition
+
+用keras训练得到h5模型，转成tflite模型。
+
+就是在音频回调函数里，每500ms调用一次。
+
+```
+word_threshold = 0.5
+rec_duration = 0.5
+```
+
+就用mfcc的来做的。
+
+在arduino上识别yesno。
+
+https://create.arduino.cc/projecthub/superboys/wake-word-detection-43843a
+
+我估计乐鑫的命令词也是根据谷歌的speech command来的。
+
+就是自己用语料训练了模型而已。
+
+micro_speech和speech_command的网络结构分别是怎样的？
+
+micro_speech就是在speech_command里挑了2个单词而已。就这样。
+
+How to train new TensorFlow Lite micro speech models
+
+https://learn.adafruit.com/how-to-train-new-tensorflow-lite-micro-speech-models?view=all
+
+https://github.com/ZhitongYan/Micro-Speech
+
+直接到tfhub.dev上找模型。
+
+想到deep speech，看看这个的用途，找找模型。看看怎么在板端用起来。
+
+百度的 DeepSpeech 就是一个典型的端到端的语音识别框架：
+
+这篇文章提到了不少的模型，值得了解一下。
+
+https://antkillerfarm.github.io/speech/2019/03/01/Deep_ASR_2.html
+
+看一下百度的语音技术相关的文档。
+
+https://ai.baidu.com/ai-doc/SPEECH/tk7h8ya0f
+
+语音识别初探
+
+https://benzblog.site/2019-06-25-%E8%AF%AD%E9%9F%B3%E8%AF%86%E5%88%AB%E5%88%9D%E6%8E%A2/
+
+11516 语音唤醒技术综述
+
+https://zhuanlan.zhihu.com/p/90596982
+
+ASRer
+
+语音相关技术
+
+https://www.zhihu.com/column/c_1241766528963534848
+
+作为中国最大的搜索引擎公司，百度还收集了大量汉语（尤其是普通话）的音频数据，这些都为百度语音识别系统Deep Speech 2技术成果提供了基本的数据优势与支持。
+
+个性化菜谱APP的实现（六） 语音识别功能实现
+
+https://blog.csdn.net/liqiangstartcsdn/article/details/105111620
+
+deepspeech可能是比较适合做理想语音识别吧。
+
+《语音识别基本法》，这本书不错。
+
+http://cslt.riit.tsinghua.edu.cn/mediawiki/images/2/25/Speech_book.pdf
+
+
+
+目前一般会从Librispeech数据集开始，960 hours；
+
+Timit数据集相当于CV领域的mnist，有些小的想法可以在这上面先进行验证，看是否work；
+
+imagenet换算成语音大概是4096 hours；
+
+google和facebook在文献中公布的使用语音数据量是1.3w hours，但实际上使用的应该是这个数字的10倍-20倍
+
+
+
+https://zhuanlan.zhihu.com/p/131589687
+
+ASRT这个项目。
+
+本项目使用Keras、TensorFlow基于深度卷积神经网络和长短时记忆神经网络、注意力机制以及CTC实现。
+
+当前，最好的模型在测试集上基本能达到80%的汉语拼音正确率
+
+不过由于目前国际和国内的部分团队能做到98%，所以正确率仍有待于进一步提高
+
+史上最全面的AI推理框架对比--OpenVINO、TensorRT、Mediapipe
+
+https://zhuanlan.zhihu.com/p/344442534
+
+迈向语音识别领域的 ImageNet 时刻
+
+https://www.infoq.cn/article/4u58WcFCs0RdpoXev1E2
+
+
+
+https://www.infoq.cn/article/lEe6GCRjF1CNToVITvNw
+
+# 9月16日
+
+搜索“边缘计算NLP”
+
+NVIDIA的社区培训。可以看到各种应用场景。
+
+https://www.nvidia.cn/developer/online-training/community-training/
+
+看到openseq2seq这个东西。
+
+基于seq2seq的中文聊天机器人（一）
+
+https://blog.csdn.net/daniellibin/article/details/103290169
+
+这个博客很不错，基于jekyll。评论系统基于github的issue。可以参考这个自己再搭建一次博客系统。
+
+https://antkillerfarm.github.io/
+
+
+
+先用开源数据做预训练使模型收敛，再用垂直领域的业务数据做fine-tune
+
+https://taorui-plus.github.io/Chinese-ASR-gitbook/deepspeech-enhance/experience.html
+
+看看全志R329的NPU做了哪些应用。
+
+周易NPU的model zoo
+
+https://github.com/Zhouyi-AIPU/Model_zoo
+
+刚好极术社区今晚8点有个周易NPU的直播，报名听一下。
+
+既然收集人工智能模型的一般叫model zoo。那么就搜索一下。
+
+https://github.com/openvinotoolkit/open_model_zoo
+
+极术社区确实挺不错的。这种轻博客网站，技术难度应该不大，难的是持续集聚人气和保证文章的质量。
+
+腾讯的ncnn。是一个推理框架。
+
+# 9月17日
+
+今天就集中搜索model zoo。
+
+这个组织是干啥的？好像不是什么正式组织。
+
+https://github.com/TensorSpeech
+
+提供了TensorFlowTTS和TensorFlowASR这2个仓库。
+
+人气还可以。最近也还在更新。
+
+是一个越南人在主导的项目。
+
+发现nemo里有不少的模型。都梳理出来看看。
+
+这里查看模型。模型格式是pytorch的。
+
+https://ngc.nvidia.com/catalog/models/nvidia:nemospeechmodels
+
+这就很全面了。
+
+NeMo Speech Models include speech recognition, command recognition, speaker identification, speaker verification and voice activity detection. These models are used for Automatic Speech Recognition (ASR) and sub-tasks.
+
+玩PyTorch？你不得不看的PyTorch资源大列表
+
+https://blog.csdn.net/DBC_121/article/details/104578647
+
+
+
+https://modelzoo.co/
+
+WaveNet和Tacotron比较
+
+https://becominghuman.ai/into-a-better-speech-synthesis-technology-29411b64f2a2?gi=3dc90159b870
+
+
+
+https://heartbeat.fritz.ai/a-2019-guide-to-speech-synthesis-with-deep-learning-630afcafb9dd
+
+wavernn
+
+https://zhuanlan.zhihu.com/p/105788551
+
+这个是语音合成的专栏。
+
+https://www.zhihu.com/column/speech-synthesis
+
+预训练模型+finetune的模式是否应用到ASR-语音识别领域，如果应用到了，目前ASR有哪些效果很棒的预训练模型呢？
+
+https://www.zhihu.com/question/470641780/answer/1993620048
+
+
+
+近几年ASR任务也逐渐采用端到端范式，模型架构从早期基于RNN到目前基于Transformer的编码器-解码器架构，性能相比之前有了很大提升。
+
+目前的预训练方法普遍采用预训练特征提取器或编码器的方式，通过海量的无标注音频进行学习，取得了非常明显的效果。
+
+# 9月18日
+
+今天把tts的模型demo跑一下。
+
+谷歌“NPU唤醒词”。找到一些有意思的内容。
+
+从gx8010的npu的部分，看到提供了一个这样的pb文件
+kws_i320_norm_cnn32_lstm96x2_with_ckpt.pb
+这个从名字看，就是唤醒词，lstm模型。
+集成了两颗用于语音识别的神经网络处理器（NPU），可运行TensorFlow模型，
+实现激活词识别、语音识别、语音合成等深度神经网络算法；
+这个是在国芯的板子上跑mnist的例子。
+https://github.com/NationalChip/gxDNN
+经深圳湾确认，Xiaomi Sound 采用的是全志 R329 芯片，这是去年 3 月发布的一款 AI 语音专用芯片，它搭载了 Arm 中国全新的 AI 处理器——周易 AIPU。
+基于这款芯片强大的 AI 算力，Xiaomi Sound 就可以实现每秒 330 次的动态计算，针对不同的音乐曲风，做到实时计算调音，让每种类型的音乐在聆听时都更具特色。
+最多可以实现 8 台音箱的互连，让音乐在房间的每一个角落自然地流动。
+此次 Xiaomi Sound 还推出了家庭传声的功能，即广播功能，可以实现多台音箱之间的对讲，同时也支持音箱与手机、电视等设备的对讲功能。
+
+典型的应用场景：当你放着音乐，在房间里码字时，从 Xiaomi Sound 传来妈妈喊你吃饭的提醒声，而这个声音，可能就来自客厅里的另一台 Xiaomi Sound 或是妈妈的手机。
+我们在上一篇文章已经展示了苹果如何基于 UWB 超宽频技术，实现 iPhone 与 HomePod mini 的音乐接力。
+
+如今，小米也将这一技术应用在了 Xiaomi Sound 上。当手机靠近音箱时，可以将手机上播放的音乐无缝传递至音箱，在音箱上开启播放。而手机再次靠近音箱时，还可以将音乐回传至手机。
+
+AI芯片选型
+http://aiiaorg.cn/uploadfile/2020/0730/20200730030838762.pdf
+
+1.Toybrick 算力棒，算力卡；
+2.致远电子 M1808 工业 AI 板；
+3.点创 ADAS/DSM 设备；
+4.动作识别智能摄像头
+
+周易人工智能平台软件框架Tengine。Tengine是目前Arm平台上最快最好用的AI部署框架。同时周易大赛推荐使用EAIDK作为比赛硬件平台。
+
+国产离线语音识别芯片对比
+https://zhuanlan.zhihu.com/p/166078186
+
+台湾 新塘\凌阳
+围绕着台湾赛维的算法，几年前以新塘为首的台湾MCU厂家，大力推广离线语音识别，新塘ISD9160更是号称出货10kkpcs，国内外各大家电均有大力尝试推广，然而受限於技术，识别效果无法令消费者满意，导致退货率居高不下，厂商损失惨重，离线语音识别技术成为诸多老板和高管的雷区。
+在家电以外，台湾系的语音识别，以低廉的价格和支持多国语言等特性，几乎垄断语音玩具行业。玩具消费者，对于识别率的要求比较宽容。
+
+在线语音识别巨头：科大讯飞、思必驰、云知声
+三家在线语音识别巨头，纷纷从云端落地到线下，利用成熟的识别算法技术优势，进一步下沉到端侧的离线语音识别芯片，打通线上和线下。三家各自市场侧重点都不同，讯飞侧重教育行业、思必驰侧重车载行业、云之声侧重家电行业，当然这个划分也非绝对，各自肯定有交叉竞争关系。
+另外，讯飞和思必驰各自收购了芯片设计公司，补足硬件不足。
+
+芯片语音处理核心，多为专用的NPU。同等资源下，NPU算力和能耗比远高于通用DSP。而且该类芯片多具有强大的前端信号处理能力，能真正做到降噪\远场识别等功能。加上持续优化的声学算法模型和语料定制，识别率通常在95%以上，且误识别率更低。
+
+挑剔点四：离线与在线之争。这是目前离线语音面临最大的挑战。
+
+离线比在线的优势点：更安全的隐私保护（离线不会将用户语音上传网络）；开发成本低，无需搭建联网和APP；反应速度及时，在线响应速度取决于用户的网络状态；中小品牌掌控度高，可自行决定命令词，以及实现差异化功能。
+
+在线比离线的优势点：命令词更灵活多样；大厂带货属性强（例如天猫生态）；直接成本低（在线往往通过加蓝牙或WiFi模块实现，成本比语音模块便宜）。
+
+在智能计算/人工智能领域，芯片占整体技术栈价值的40-50%，而在其他领域只占10%以下，这是芯片领域近几十年最大的机会 。
+岚正科技推出的离线语音模组，拥有在无网络环境下的开放空间通过本地离线语音功能，实现语音识别、语音文字输出以及语音控制家电产品的能力。
+
+根据市场反馈，用户在使用语音OS产品时，相对不满意的是语音识别准确率即聪明程度，试想一下，不应答的语音模块将会让智能产品的便捷形同虚设。
+海凌科HLK-V01语音模块采用CPU+DSP+NPU 三核架构，
+内置基于人工智能语音识别算法的NPU硬件加速核，
+通过神经网络对音频信号进行训练学习，提高语音信号的识别能力。
+DSP优化降噪算法，对接收的语音指令进行降噪和均衡处理，在测试距离6米以内，噪音40dB以下，HLK-V01语音模块语音识别准确率达到100%，在9米的测试范围内，强噪音干扰下也有良好的表现。
+
+中国人工智能产业研究报告（2020）
+https://pdf.dfcfw.com/pdf/H3_AP202101071448331621_1.pdf?1610032445000.pdf
+
+
+离线语音从场景到设备再到芯片，听 5 位行业大佬解读端上 AI 的共性和趋势
+https://aijishu.com/a/1060000000108731
+
+Snips 是一个来自法国巴黎的语音助手初创公司，成立于 2013 年。通过 Snips 的离线语音平台，打造可以直接在设备端运行、无需将信息传输到云端的语音助手。这一主打离线操作语音平台也正是 Sonos 收购 Snips 的最重要原因。
+
+思必驰创始人、首席科学家俞凯则认为，近期有关边缘计算的收购案很多，实际上是端上 AI。端上 AI 和边缘计算是两个概念，虽然都不需要经过云端，但边缘计算是在局域网和类局域网的边缘终端上进行的，而苹果和 Sonos 这些消费电子厂商在做的是端上 AI。
+各家企业提出的「云+端」是普适的发展线路，云端比较集中，端上比较分散，无论是设备、技术、还是所提供的服务种类。针对端上的普适性语音助手的技术目前还不明确，大公司从布局的角度上，会选择收购小公司，来尽可能覆盖不同的设备场景。
+这里还看到一个趋势——数字助理的行业化，是自然而然发生的。就像人类的社会分工，随着物质文明的进步，有专门的人钻研专门的知识。而随着数字助理的发展，也会有针对不同行业和领域的专门分工，有的公司做通用的数字助理，有的则选择垂直领域深钻。
+
+端上语音交互：从云端到芯片，小型化，与业务逻辑深度整合，ASR、TTS、NLP 将成为标配
+
+端上 AI 并不是简单在将云端的技术拿来在端上跑，虽然技术种类并没有区别，但难度更大，比如，端上可以识别语音的范围和种类受限。其次，端上语音 AI 的更新和定制，是要难于云端的，端上的深度学习更难。
+
+梁家恩还指出，当前，离线挑战在于低资源、低功耗情况下保持高性能、低成本，减少环境复杂和模型压缩带来的精度损失。语音成为 IoT 设备的交互标配是大势所趋，边缘计算能力也成为必要条件。
+
+Rokid 副总裁周军认为，随着模型小型化技术的进展，端侧可以用非常小的运算资源运行非常优秀的推理模型。比如在一个 DSP 上跑语音信号处理与多达 50 个离线命令词，噪声下可以达到 90% 以上识别率。
+
+目前，端侧的语音识别（ASR）、语音合成（TTS）、甚至自然语言理解（NLP）占用的内存和运算资源还比较高，这也是创业公司的机会，通过创新的算法、模型设计以及新的芯片架构来解决。
+
+端侧的 AI 训练也将是一个趋势，通过自学习进一步提高智能。此外，除了离线语音，未来也会与离线视觉/图像/环境理解结合，创造出更有意思的产品。
+
+全志科技副总裁陈风则认为，语音识别（ASR）技术在大多数家居场景已经达到了实用程度，短期内再有大幅度提升不太现实，而「人工智障」的问题还有很大的改善空间，因此接下来的提升重点在于语义理解（NLP）。
+
+NLP 的提升需要更高的深度学习算力，这就需要更强算力、更高能耗比的芯片支持。这意味着客户对芯片的深度学习算力、以及能耗比要求，都有了指数级的提升。对于芯片而言，集成音频 DSP 和音频 NPU 的需求已经出现，发展趋势非常明确。
+
+本地 NLP 需要本地 ASR、本地 TTS 以及传统信号处理的配合，才能实现一个完整的端侧语音识别功能，对应芯片的需求就是需要音频 DSP 和音频 NPU 的标配支持。
+
+现在 NPU 市场百花齐放，导致算法公司和客户存在大量的适配和优化工作，NPU 市场现阶段呈现碎片化状态形式。
+
+TensorFlow也有模型库。但是没有音频相关的。
+
+https://github.com/tensorflow/models/tree/master/official
+
+下面这篇文章很不错。
+
+基于端到端深度学习方法的语音唤醒(Keyword Spotting)模型和论文
+
+https://blog.csdn.net/YZhang0108/article/details/105771069
+
+发现heywhale和鲸这个网站，挺不错的。上面有很不错的笔记。
+
+语音识别长篇研究（一）
+
+这个系列似乎不错。
+
+https://zhuanlan.zhihu.com/p/105454729
+
+https://www.zhihu.com/column/c_188282848
+
+
+
+https://www.beningo.com/wp-content/uploads/2018/06/MachineLearning_IoT.pdf
+

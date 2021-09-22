@@ -122,6 +122,8 @@ from google.colab import drive
 drive.mount('/content/drive')
 ```
 
+指定使用TF1版本。
+
 
 
 参考资料
