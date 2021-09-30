@@ -959,3 +959,6 @@ http://www.uml.org.cn/ai/202011052.asp?artid=23336
 
 https://blog.csdn.net/weixin_42305378/article/details/108699096
 
+5、中文文档。这个还比较适合用来学习。同时收集了一些博客。
+
+https://keras-cn.readthedocs.io/

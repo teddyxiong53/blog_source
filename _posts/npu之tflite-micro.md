@@ -207,6 +207,12 @@ https://blog.csdn.net/yuanlulu/article/details/84063503
 # tflite-micro在ubuntu编译运行
 
 ```
+make -f tensorflow/lite/Makefile TARGET=rpi TARGET_ARCH=armv7l
+```
+
+
+
+```
 make -f tensorflow/lite/micro/tools/make/Makefile test_hello_world_test
 ```
 
@@ -243,6 +249,12 @@ TfLiteRegistration Register_CONV_2D() {
 
 ## 分析一下Makefile
 
+可以这样来简化用法。这样就可以直接用make，不用每次都带上-f了。
+
+ln -s ./tensorflow/lite/micro/tools/make/Makefile ./Makefile
+
+
+
 test_hello_world_test 这个target名字，是怎么被解析使用的呢？
 
 是这里。make test_hello_world_test
@@ -257,6 +269,16 @@ $(HELLO_WORLD_TEST_SRCS),,$(HELLO_WORLD_GENERATOR_INPUTS)))
 # Tests producing an output.
 $(eval $(call microlite_test,output_handler_test,\
 $(OUTPUT_HANDLER_TEST_SRCS),$(OUTPUT_HANDLER_TEST_HDRS)))
+```
+
+```
+test_$(1): $$($(1)_BINARY)
+	$$(TEST_SCRIPT) $$($(1)_BINARY) $$(TEST_PASS_STRING) $$(TARGET)
+
+else
+run_$(1): $$($(1)_BINARY)
+	$$(TEST_SCRIPT) $$($(1)_BINARY) non_test_binary $$(TARGET)
+endif
 ```
 
 
@@ -330,6 +352,81 @@ Log:     /tmp/renode_stm32f4_logs/log.html
 Report:  /tmp/renode_stm32f4_logs/report.html
 Tests finished successfully :)
 ```
+
+## 编译其他的
+
+通过tab补全，可以看到有1000多个目标，大部分的目标是通过规则生成的。
+
+### benchmark
+
+编译
+
+```
+make -f tensorflow/lite/micro/tools/make/Makefile keyword_benchmark
+```
+
+运行
+
+```
+./tensorflow/lite/micro/tools/make/gen/linux_x86_64_default/bin/keyword_benchmark
+
+InitializeKeywordRunner took 405 ticks (0 ms).
+
+KeywordRunNIerations(1) took 283 ticks (0 ms)
+QUANTIZE took 18 ticks (0 ms).
+SVDF took 56 ticks (0 ms).
+FULLY_CONNECTED took 12 ticks (0 ms).
+SVDF took 23 ticks (0 ms).
+FULLY_CONNECTED took 11 ticks (0 ms).
+SVDF took 22 ticks (0 ms).
+FULLY_CONNECTED took 10 ticks (0 ms).
+SVDF took 23 ticks (0 ms).
+FULLY_CONNECTED took 10 ticks (0 ms).
+SVDF took 25 ticks (0 ms).
+SVDF took 27 ticks (0 ms).
+SVDF took 27 ticks (0 ms).
+FULLY_CONNECTED took 5 ticks (0 ms).
+SOFTMAX took 9 ticks (0 ms).
+QUANTIZE took 5 ticks (0 ms).
+
+KeywordRunNIerations(10) took 2612 ticks (2 ms)
+
+[RecordingMicroAllocator] Arena allocation total 14736 bytes
+[RecordingMicroAllocator] Arena allocation head 672 bytes
+[RecordingMicroAllocator] Arena allocation tail 14064 bytes
+[RecordingMicroAllocator] 'TfLiteEvalTensor data' used 1296 bytes with alignment overhead (requested 1296 bytes for 54 allocations)
+[RecordingMicroAllocator] 'Persistent TfLiteTensor data' used 128 bytes with alignment overhead (requested 128 bytes for 2 tensors)
+[RecordingMicroAllocator] 'Persistent TfLiteTensor quantization data' used 64 bytes with alignment overhead (requested 64 bytes for 4 allocations)
+[RecordingMicroAllocator] 'Persistent buffer data' used 684 bytes with alignment overhead (requested 572 bytes for 17 allocations)
+[RecordingMicroAllocator] 'TfLiteTensor variable buffer data' used 10240 bytes with alignment overhead (requested 10240 bytes for 7 allocations)
+[RecordingMicroAllocator] 'NodeAndRegistration struct' used 960 bytes with alignment overhead (requested 960 bytes for 15 NodeAndRegistration structs)
+```
+
+这个就涉及到一个类：MicroProfiler。看看是怎么实现的。
+
+RecordingMicroInterpreter是用来做benchmark的。
+
+```
+class RecordingMicroInterpreter : public MicroInterpreter
+```
+
+### micro_speech
+
+make run_micro_speech实际是这样调用的：
+
+```
+micro_speech non_test_binary linux
+```
+
+但是这样在linux上运行是没有效果的，因为默认的audio_provider.cc里的提供的dummy数据。
+
+看看能不能自己用portaudio来实现一下。
+
+只有这样跑起来，我才方便自己来训练替换模型。
+
+暂时不弄。
+
+找个
 
 
 

@@ -32,8 +32,24 @@ https://github.com/kiritigowda/openvx-samples.git
 
 这个是测试用的。
 
+这个是教程。
+
+https://github.com/rgiduthuri/openvx_tutorial
+
+我给自己一个任务：用openvx的接口来实现音频的yesno语音识别的概念。
+
+
+
+https://www.khronos.org/assets/uploads/developers/library/2017-openvx-12-overview/Khronos-OpenVX-Webinar_Sep2017.pdf
+
+
+
 参考资料
 
 1、
 
 https://shumeipai.nxez.com/2020/07/11/openvx-api-for-raspberry-pi.html
+
+2、
+
+https://dfc.pub/yi-gou-ji-suan/ru-he-cheng-wei-yi-ming-yi-gou-bing-xing-ji-suan-gong-cheng-shi/

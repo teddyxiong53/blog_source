@@ -1137,3 +1137,496 @@ https://www.zhihu.com/column/c_188282848
 
 https://www.beningo.com/wp-content/uploads/2018/06/MachineLearning_IoT.pdf
 
+# 9月22日
+
+今天还是继续梳理NPU在音频上的应用。
+
+从使用的角度来看是否有可行性。
+
+首先看BERT能不能做一个问答系统。
+
+TensorFlow就有一个官方的BERT例子，运行一下看看。
+
+运行不了，还需要谷歌云计算的资源。看一下代码。
+
+https://colab.research.google.com/github/tensorflow/tpu/blob/master/tools/colab/bert_finetuning_with_cloud_tpus.ipynb#scrollTo=IhdjgZWAZ60C
+
+代码也看不出什么来。
+
+找找手机demo有没有。
+
+这个是用bert对imdb的数据进行情感分析的。
+
+https://www.tensorflow.org/text/tutorials/classify_text_with_bert
+
+这个输入是一些句子，输出其实是二分类的，就是正面或者负面评价。
+
+给的也是概率。
+
+搜索“bert demo”
+
+https://www.jianshu.com/p/3d0bb34c488a
+
+使用预训练语言模型BERT做中文NER尝试，fine - tune BERT模型
+
+自然语言处理（NLP）主要自然语言理解（NLU）和自然语言生成（NLG）。
+
+为了让NLU任务发挥最大的作用，来自纽约大学、华盛顿大学等机构创建了一个多任务的自然语言理解基准和分析平台，也就是GLUE（General Language Understanding Evaluation）。
+
+GLUE包含九项NLU任务，语言均为英语。
+
+GLUE九项任务涉及到自然语言推断、文本蕴含、情感分析、语义相似等多个任务。
+
+**像BERT、XLNet、RoBERTa、ERINE、T5等知名模型都会在此基准上进行测试。**
+
+目前，大家要把预测结果上传到官方的网站上，官方会给出测试的结果。
+
+
+
+MRPC(The Microsoft Research Paraphrase Corpus，微软研究院释义语料库)，相似性和释义任务，
+
+是从在线新闻源中自动抽取句子对语料库，
+
+并人工注释句子对中的句子是否在语义上等效。
+
+类别并不平衡，其中68%的正样本，所以遵循常规的做法，报告准确率（accuracy）和F1值。
+
+
+
+bert的实际应用场景
+
+最经典的场景，有多分类和二分类，
+
+二分类的典型场景就是垃圾邮件。
+
+多分类的典型场景是情感分类。
+
+传统的方法有tfidf提取特征后用LR做分类，或降维后用GBDT做分类，再后来就是word2vec或fasttext提取embedding后接各种NN网络做分类。
+
+Bert出现后，整个pipeline更简单了，前面挂一个BertMainLayer提取特征，后面拼接不同的网络，训练2到3轮搞定。
+
+这里用Jasper来动态生成youtube的视频的字幕。是把视频转成音频文件先。
+
+https://colab.research.google.com/github/tugstugi/dl-colab-notebooks/blob/master/notebooks/NVidiaJasper.ipynb#scrollTo=3KUlO4oiA8CM
+
+
+
+现在看VED的，声音事件检测。我们不是要VAD的，而是要VED的，也可以叫Sound Event Detection。简称SED。
+
+http://dcase.community/challenge2019/task-sound-event-localization-and-detection
+
+在github上搜索“sound event detection”。
+
+从这里又可以看到一下kws的方案。
+
+https://paperswithcode.com/sota/keyword-spotting-on-google-speech-commands
+
+这个网站还是可以搜索到很多想要的东西。
+
+https://paperswithcode.com/
+
+这个是唤醒词相关的。
+
+https://paperswithcode.com/task/keyword-spotting
+
+关于fine tune的认识
+
+https://www.cnblogs.com/andre-ma/p/8676186.html
+
+| 名字                              | 说明                                                         |
+| --------------------------------- | ------------------------------------------------------------ |
+| QuartzNet15x5Base-En              | 在6个数据集上进行了训练： 1、LibriSpeech 2、Mozilla Common Voice  3、WSJ  4、Fisher 5、SwitchBoard  6、NSC Singapore English 用apex/amp优化器level O1训练了600轮。 在LibriSpeech的dev-clean数据集上，WER是3%左右。在dev-other（带噪音的语料）上WER在10%左右。 |
+| QuartzNet15x5Base-Zh              | 在ai-shell2 这个数据集进行了训练。 这个数据集的介绍： http://www.aishelltech.com/aishell_2 经过专业语音校对人员转写标注，并通过严格质量检验，此数据库文本正确率在96%以上。（支持学术研究，未经允许禁止商用。） |
+| QuartzNet5x5LS-En                 | 只在LibriSpeech数据集上进行了训练。 相比于QuartzNet15x5Base-En，WER略高一点。 |
+| QuartzNet15x5NR-En                | NR表示噪音。这个模型适合在有噪音的场合使用。                 |
+| Jasper10x5Dr-En                   | 在6个数据集上进行了训练。比QuartzNet15x5Base-En略好一点。    |
+| ContextNet-192-WPE-1024-8x-Stride | ContextNet 模型。只在LibriSpeech数据集上训练了。             |
+| MatchboxNet-3x1x64-v1             | MatchboxNet 模型。在Google Speech Commands dataset（v1版本，30种命令）上进行训练。 97%的准确率。 |
+| MatchboxNet-3x2x64-v1             | 同上，准确率略高。                                           |
+| MatchboxNet-3x1x64-v2             | 在Google Speech Commands dataset（v2版本，35种命令）上训练。 |
+| MatchboxNet-3x1x64-v2-subset-task | 在Google Speech Commands dataset（v2版本子集，10+2种命令）上训练。 |
+| MatchboxNet-VAD-3x2               | MatchboxNet 模型。在Google Speech Commands dataset（v2版本，35种命令）上训练。 |
+| SpeakerNet_recognition            | 使用交叉熵损失函数。端到端的语音识别。 使用voxceleb1/2 数据集进行训练。在clean数据上，2.65%的WER。 |
+
+# 9月23日
+
+先初步提交了一个报告。
+
+继续在这里看看代码和模型。
+
+https://paperswithcode.com/area/speech
+
+这个有点意思，代码复杂度都不高。
+
+https://github.com/graykode/nlp-tutorial
+
+Learning Sound Event Classifiers from Web Audio with Noisy Labels
+
+https://arxiv.org/abs/1901.01189
+
+这个仓库包含了基本的步骤：特征提取、训练、推理和评估。
+
+在载入FSDnoisy18k这个数据集之后，计算对数梅尔谱图，一个CNN的baseline被训练和评估。
+
+代码还可以测试4个noise-robust损失函数。
+
+https://github.com/edufonseca/icassp19
+
+这个可以跑demo。而且可以在树莓派上跑。
+
+https://github.com/FIGLAB/ubicoustics
+
+
+
+这个博士主要就是在研究声音的分类的。他的网站值得看看。来自于芬兰的坦佩雷大学。
+
+他一直在参与DCASE的比赛。是为比赛提供baseline。
+
+dcase_util就是他写的。他是Audio Research Group的成员。
+
+https://homepages.tuni.fi/toni.heittola/research-sound-event-detection
+
+https://github.com/toni-heittola?tab=repositories
+
+这本在线书籍，就是将声音分类的。可以看看。
+
+https://cassebook.github.io/
+
+dcase_util
+
+https://github.com/DCASE-REPO/dcase_util
+
+这个是对应的文档
+
+https://dcase-repo.github.io/dcase_util/
+
+这个例子
+
+https://github.com/TUT-ARG/CASSE_book_ch2_examples
+
+sed_eval 
+
+这个是声音事件检测评估系统。
+
+https://github.com/TUT-ARG/sed_eval
+
+这本书pdf非常好，很权威。
+
+https://homepages.tuni.fi/toni.heittola/pubs/ICASSP2019_DCASE_tutorial.pdf
+
+应用场景
+
+场景相关的情况。
+
+例如助听器，需要感知当前在哪个声音环境中。
+
+自动驾驶、机器人这些需要感知当前所在环境的。
+
+声音监测。
+
+婴儿啼哭、窗户被打破、狗叫、鸟叫、管道故障检测、机器运行状况。
+
+环境噪声检测。
+
+视频的自动生成字幕。
+
+
+
+# 9月24日
+
+提供数据集服务的网站：
+
+zenodo.org, ieee-dataport.org, archive.org
+
+为了让你的研究可以让其他人可以进行复现，需要做这些事情：
+
+1、使用一个开发的数据集或者公布你的数据集。数据集用一篇论文介绍，提供Baseline系统。
+
+2、公布你的代码。
+
+3、使用标准格式公布你的结果。
+
+DCASE的目标
+
+1、提供一个开发数据集。
+
+2、鼓励可复现的研究。
+
+3、吸引新的研究者。
+
+4、创建参考标准。
+
+当前的产出
+
+1、开发了SOTA方法。
+
+2、一下新的开放数据集。
+
+3、研究者社区的快速成长。
+
+这里提供了模型。h5格式的。
+
+https://github.com/toni-heittola/icassp2019-tutorial/
+
+自己动手写CNN Inference框架之 (一) 开篇
+
+这个系列不错。但是并没有形成最终可用的代码。
+
+https://zhuanlan.zhihu.com/p/72568569
+
+在树莓派上运行各种NN例子。
+
+https://qengineering.eu/deep-learning-examples-on-raspberry-32-64-os.html
+
+模型转换工具。
+
+https://blog.csdn.net/WZZ18191171661/article/details/99700992
+
+为了将使用N卡的GPU训练出来的模型成功的部署在这些低功耗的设备上面，我们通常需要对这些模型进行模型压缩和模型加速操作，**比较有名的几个工具包括TensorRT、PocketFlow、TVM等**。
+
+简而言之，模型转换工具的作用是：**将使用不同训练框架训练出来的模型相互联系起来，用户可以进行快速的转换，节省了大量的人力和物力花销**。
+
+上图展示了tflite的整个流程。**首先需要选择一个合适的模型；然后使用Lite converter将模型转换为FlatBuffer格式；接着将.tflite文件部署到嵌入式设备中；最后进行模型量化操作。**
+
+
+
+https://github.com/margaretmz/awesome-tensorflow-lite
+
+
+
+https://github.com/lmoroney/odmlbook
+
+# 9月26日
+
+把前面的学习记录回顾一下。
+
+把tflite-micro再看一下。
+
+firefly的buildroot里有集成了TensorFlow的。看看。
+
+```
+$(TOPDIR)/../external/tensorflow
+```
+
+编译是用这个tensorflow/contrib/lite/Makefile文件。
+
+就在笔记本上训练一个唤醒词模型。即使速度再慢。把流程走一遍。
+
+https://learn.adafruit.com/users/adafruit2
+
+搜索sound event detection deep learning
+
+谷歌学术里有一些论文。看了一篇，不继续看论文了。
+
+这样搜索到的第一页的数据，都是paperwithcode、dcase的。说明这个确实是主要的研究材料。
+
+很多都是pdf文件链接。说明多是论文。
+
+这个仓库里是一些零散的Python脚本。没有串起来。
+
+https://github.com/sharathadavanne/seld-net
+
+If you are only interested in the SELDnet model then just check the keras_model.py script.
+
+这个进行了训练和保存。
+
+https://github.com/sharathadavanne/seld-net/blob/master/seld.py
+
+使用了哪些数据集，可以适用于哪些场景？
+
+可以实现定位和事件检测。定位是指分析出事件开始和结束的时间点。
+
+声音事件检测，在实际应用中怎么做？也是录制10s的数据，然后提交给模型去分析？或者可以短一点，1秒可以。这个都不是关键，可以根据实际情况调整。
+
+这句话怎么理解？是说上面列举了7个数据集，但是你只需要下载其中一个的意思？
+
+In order to test the SELDnet code you don't have to download the entire dataset. You can simply download one of the zip files and train the SELDnet for the respective overlap (ov) and split (split).
+
+
+
+polyphonic SED 
+
+这个是对于多个声音重叠的研究。
+
+这个人也是聚焦研究这一块的。有好些仓库。
+
+https://github.com/sharathadavanne
+
+这样做的动机是人类听觉系统的双耳听觉，
+
+它可以无缝地检测多个重叠的声音事件。
+
+为了研究这一点，我们首先确定人类听觉系统采用耳间强度差 (IID)、耳间时间延迟 (ITD) 和感知特征来检测这种重叠的声音事件。
+
+在此基础上，我们提出了表示与 IID、ITD 和双耳音频感知类似的信息的声学特征。
+
+受双耳音频重叠声音事件检测改进的启发，我们很好奇使用两个以上的音频通道是否会进一步改进？
+
+与仅使用单通道相比，多通道音频可以更好地识别重叠的声音事件
+
+
+
+这些数据集包含来自相同场景的录音，
+
+TAU Spatial Sound Events 2019 - Ambisonic 
+
+提供四通道一阶环绕声 (FOA) 录音，
+
+而 TAU Spatial Sound Events 2019 - 麦克风阵列
+
+提供来自四面体阵列配置的四通道定向麦克风录音.
+
+两种格式都从同一个麦克风阵列中提取，关于每种格式的空间特征的附加信息可以在下面找到。参与者可以根据他们喜欢的音频格式选择两个数据集之一，或两个数据集。这两个数据集都包含一个开发和评估集。
+
+开发集包含 400 个以 48000 Hz 采样的一分钟长的录音，
+
+分为四个交叉验证分割，
+
+每个分割为 100 个录音。
+
+评估集由 100 个一分钟的录音组成。
+
+这些录音是使用从五个室内位置收集的空间房间脉冲响应 (IR) 合成的，具有 504 种独特的方位角-仰角-距离组合。
+
+此外，为了合成录音，收集的 IR 与来自 DCASE 2016 任务 2 的孤立声音事件数据集进行了卷积。
+
+最后，为了创建逼真的声音场景录音，在 IR 录音位置收集的**自然环境噪声**被添加到合成录音中，例如声音事件的平均 SNR 为 30 dB。
+
+这篇文章罗列了一些论文，
+
+https://pythonrepo.com/repo/soham97-awesome-sound_event_detection-python-audio
+
+这篇论文说了一下基本知识关于SED。
+
+https://arxiv.org/pdf/2107.05463.pdf
+
+在现实生活中的录音中，各种**声音事件**可能在事件内部和事件之间**具有时间结构**。
+
+例如，“脚步声”事件可能会重复，中间有暂停（事件内结构）。
+
+另一方面，“汽车喇叭”很可能跟随或先于“汽车经过”声音事件（事件间结构）。
+
+这种时间结构被用于其他机器学习任务，
+
+例如机器翻译、图像字幕和语音识别。
+
+在这些任务中，开发的方法还学习了目标类的时间关联模型。
+
+**这些关联通常被称为语言模型。**
+
+**SED 方法可以从语言模型中受益。**这个存储库中的方法正是关于这个。一种利用 SED 语言模型的方法。
+
+
+
+华为AI服务业务。
+
+https://developer.huawei.com/consumer/cn/doc/development/hiai-Guides/service-introduction-0000001050040017
+
+华为的框架是mindspore。
+
+端侧训练和推理
+
+https://blog.csdn.net/free1993/article/details/111081271
+
+还真有端侧训练啊。具体看看怎么做的。
+
+# 9月27日
+
+看了一下端侧训练的文章。都没有讲出什么东西来。
+
+这个的必要性还是不大。
+
+不看这个方向的。没有意义。
+
+有必要keras再学习一下。自己掌握实现一些简单的网络。
+
+通过https://keras-cn.readthedocs.io/ 把概念梳理了一下。暂时不继续深入了。
+
+刚好要做一个分享，那的确需要梳理一下。
+
+把那些之前没有理清楚的点，要搞清楚。
+
+# 9月29日
+
+写了一个ppt来分享知识。还是促使自己思考之前没有留意的内容。很有好处。
+
+# 9月30日
+
+继续思考。
+
+深度学习 语音任务的难点和瓶颈
+
+https://blog.csdn.net/lc013/article/details/100985711
+
+**实现强人工智能要做什么？从现在看，其实就是上面说的几点：**
+
+1. 记忆：能够学习海量信息（互联网、物联网）中的知识，并加以有效的存储
+2. 总结：能够总结归纳海量信息中的知识，得出一般性规律
+3. 生成：能够通过知识或规律举一反三，生成更多的类似的知识、规律
+4. 推导：能够通过知识或规律得到更深入的、符合目标的知识或规律
+
+**这四点就是核心难点，比较抽象，也没那么容易，每一点估计都要N年来解决**
+
+**它们都可以用上深度学习，但肯定都不是简单设计个graph就可以搞定的**
+
+目前绝大多数深度学习模型，不管神经网络的构建如何复杂，其实都是在做同样一件事：
+
+**用大量训练数据去拟合一个目标函数 y=f(x)。**
+
+语音，
+
+数据难获取并且经常有坑（版权问题，录音质量问题，数据集大小问题），
+
+输入输出的对应关系有时候就难定义（情绪识别，语音识别里的对齐，某些情况下对波形的分帧），
+
+中间过程不直观（这个波形/频谱怎么对应到这个字的？or为什么这两句话说话人向量差了这么多？），
+
+开源资源相对少的多（一个kaldi承载了多少做识别的人的青春…），
+
+前置知识要求更多（没上过数字信号处理、信号与系统等基础EE课程是不可能做语音的，但很多时候CV和NLP只要上过基础机器学习就能上手了），
+
+社区相对更小，等等……不一而足。这些问题都给语音设了更高的入门门槛，可能也是语音整体人数要远小于CV和NLP的一个原因。
+
+很多人做语音识别的时候都会被kaldi、HTK之类的必备工具先洗礼一次，
+
+而且过程一般都还挺痛苦。
+
+但也不是一定就要走这条路，不做识别不就行了嘛。
+
+我的个人兴趣全在前端处理（分离/降噪，去混响，阵列处理等）
+
+而对后端几乎没有兴趣，所以我没有仔细啃过kaldi，在可见的未来里应该也不打算啃……
+
+我一直忽悠对语音感兴趣的人从前端入手，
+
+因为前端处理相对后端而言坑少并且工作量也低一些，
+
+对于小实验室的人来说更容易独立出活，周期相对更短，自学难度也比识别等要低不少。
+
+在建立了语音处理研究的概念和大框架以后如果对后端有了兴趣，继续学习的难度也比从零开始要容易的多了。
+
+https://www.zhihu.com/question/277152459
+
+
+
+瓶颈背后的原因，就是一个叫做“组合爆炸”的概念：
+就说视觉领域，真实世界的图像，从组合学观点来看太大量了。任何一个数据集，不管多大，都很难表达出现实的复杂程度。
+
+因为深度学习本身缺乏理论，深度学习理论是一块难啃的骨头，深度学习框架越来越傻瓜化，各种模型网上都有开源实现，现在业内很多人都是把深度学习当乐高用。
+面对一个任务，把当前最好的几个模型的开源实现 git clone 下来，看看这些模型的积木搭建说明书（也就是论文），思考一下哪块积木可以改一改，积木的顺序是否能调换一样，加几个积木能不能让效果更好，减几个积木能不能让效率更高等等。
+
+思考了之后，实验跑起来，实验效果不错，文章发起来，实验效果不如预期，重新折腾一遍。
+这整个过程非常的工程师化思维，基本就是凭感觉 trial and error，深度思考缺位。很少有人去从理论的角度思考模型出了什么问题，针对这个问题，模型应该做哪些改进。
+
+深度学习本应该是一门科学，需要用科学的思维去面对她，这样才能得到更好的结果。
+
+
+
+https://www.agora.io/cn/community/blog/123-category/21377
+
+把音频技术梳理一下。
+
+【原创】10大音频处理任务，助你开启深度学习之路（附案例链接）
+
+https://zhuanlan.zhihu.com/p/69116079
+

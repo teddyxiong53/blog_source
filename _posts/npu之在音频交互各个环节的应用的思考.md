@@ -1864,6 +1864,23 @@ https://github.com/sooftware/kospeech
 
 这个是出门问问和西北工业大学一起开发的语音识别系统。
 
+https://github.com/wenet-e2e/wenet/blob/main/README_CN.md
+
+WeNet 是一款面向工业落地应用的语音识别工具包，提供了从语音识别模型的训练到部署的一条龙服务，其主要特点如下：
+
+- 使用 conformer 网络结构和 CTC/attention loss 联合优化方法，统一的流式/非流式语音识别方案，具有业界一流的识别效果。
+- 提供云上和端上直接部署的方案，最小化模型训练和产品落地之间的工程工作。
+- 框架简洁，模型训练部分完全基于 pytorch 生态，不依赖于 kaldi 等复杂的工具。
+- 详细的注释和文档，非常适合用于学习端到端语音识别的基础知识和实现细节。
+- 支持时间戳，对齐，端点检测，语言模型等相关功能。
+
+WeNet 借鉴了一些优秀的开源项目，包括
+
+1. Transformer 建模 [ESPnet](https://github.com/espnet/espnet)
+2. WFST 解码 [Kaldi](http://kaldi-asr.org/)
+3. TLG 构图 [EESEN](https://github.com/srvk/eesen)
+4. Python Batch 推理 [OpenTransformer](https://github.com/ZhengkunTian/OpenTransformer/)
+
 
 
 ## 参考资料
