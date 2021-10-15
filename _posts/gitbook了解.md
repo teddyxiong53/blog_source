@@ -103,6 +103,14 @@ gitbook init python_data_structure
 
 
 
+# 用docker搭建写书环境
+
+我当前在笔记本上搭建，有点问题。为了节省时间，快速解决这个问题。
+
+所以我打算用docker来搭建。
+
+
+
 
 
 参考资料
@@ -110,3 +118,7 @@ gitbook init python_data_structure
 1、Gitbook学习笔记
 
 https://skyao.io/learning-gitbook/
+
+2、
+
+http://tinylab.org/docker-quick-start-docker-gitbook-writing-a-book/

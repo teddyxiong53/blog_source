@@ -323,7 +323,7 @@ print pa.get_default_output_device_info()
 
 
 
-###get_host_api_count
+### get_host_api_count
 
 代码：
 

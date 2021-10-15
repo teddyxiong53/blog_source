@@ -23,7 +23,7 @@ requests是基于urllib写的，是第三方库，不是python自带的。它在
 
 requests实际主要用途是什么？
 
-
+在脚本里做各种网络请求。
 
 安装就用`pip install requests`来安装。
 
@@ -236,3 +236,7 @@ http://docs.python-requests.org/zh_CN/latest/user/quickstart.html
 2、Python-第三方库requests详解
 
 https://blog.csdn.net/shanzhizi/article/details/50903748
+
+3、
+
+https://geek-docs.com/python/python-tutorial/python-requests.html

@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 # 资料收集
 
@@ -1690,6 +1690,10 @@ https://blog.csdn.net/u011011827/article/details/105263974
 到产品化的阶段，一般会要求禁用root用户。
 
 BR2_TARGET_ENABLE_ROOT_LOGIN 这个设置为n。应该可以。
+
+# 查看当前编译了哪些package
+
+make show-targets
 
 
 

@@ -60,7 +60,7 @@ sudo docker logs -f -t --tail 10 gitlab
 
 创建2个用户：
 
-hanliang.xiong：1073167306@qq.com
+hanliang.xiong：1073167306@qq.com  username是teddyxiong53，fullname是hanliang xiong。
 
 webdev：teddyxiong53@163.com
 
@@ -76,6 +76,12 @@ webdev：teddyxiong53@163.com
 http://10.28.39.10/only4u/web
 http://10.28.39.10/only4u/blog
 ```
+
+
+
+现在有时间，继续研究一下gitlab。
+
+就创建几个角色，相互提交。把各种功能都试用一遍。
 
 
 

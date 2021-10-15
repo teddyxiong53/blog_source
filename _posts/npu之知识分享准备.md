@@ -349,5 +349,28 @@ https://blog.csdn.net/m0_37867246/article/details/79766371
 
 4、明显的错误改一下。
 
+之前的戏说的内容也要改一下，需要更加严谨。
+
+不要误人子弟。
+
+# v3
+
+根据意见继续修改。
+
+删掉没有什么内容的图片。尽量精简。
+
+唤醒词的，用谷歌的例子来讲解训练的过程。
+
+把音频的进一步展开一下。
+
+https://zhuanlan.zhihu.com/p/38575723
 
 
+
+https://www.zhihu.com/question/56816282/answer/150639596
+
+
+
+CNN为什么相比于全连接神经网络减少了计算量？
+
+https://cloud.tencent.com/developer/article/1163625

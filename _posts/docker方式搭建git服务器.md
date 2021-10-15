@@ -31,7 +31,7 @@ sudo docker run -d --name=mygogs -p 10022:22 -p 10080:3000 -v /var/gogs:/data go
 
 第一次访问，会需要你配置数据库。
 
-选择sqlite3。这样就免去配置数据库的玛法。
+选择sqlite3。这样就免去配置数据库的麻烦。
 
 
 

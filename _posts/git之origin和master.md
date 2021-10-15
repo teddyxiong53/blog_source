@@ -32,7 +32,7 @@ git push git@github.com:username/project.git
 
 
 
-而master，是本地的仓库的名字。
+而master，是分支的名字。
 
 
 

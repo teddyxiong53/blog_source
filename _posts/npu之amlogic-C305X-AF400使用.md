@@ -62,6 +62,10 @@ NPU DDK支持到6.4.2.1版本。
 
 TensorFlow支持2.0.0版本，Keras2.2.5版本，PyTorch1.2.0版本。
 
+选这个编译：
+
+c2_af400_a64_release
+
 
 
 Amlogic NN SDK V1.5
@@ -1040,6 +1044,71 @@ export VIVANTE_SDK_DIR=/mnt/nfsroot/hanliang.xiong/work/test/timvx-tflite-test/t
 You have bazel 4.2.1 installed.
 Please downgrade your bazel installation to version 3.99.0 
 ```
+
+# dncnn-test分析
+
+人脸检测那些例子，都封装得非常没有通用性了。
+
+看这个例子，似乎还是通用的方式。看看怎么做的。
+
+看看能不能参考这个，把一些例子，用这种方式来实现一下。
+
+dncnn是进行图像去噪的。
+
+先在板端跑一下。
+
+编译：
+
+```
+cd vendor/amlogic/slt/npu_app/DNCNN/DnCnn-test
+./build_vx.sh /home/hanliang.xiong/work/npu-test c2_af400_a64_release
+```
+
+需要改一下连接路径之类的配置，反正改到能编译过为止。
+
+现在编译过了。
+
+程序必须保证dncnn、DnCNN.export.data、input.tensor、output.bin、input.bin、run.sh六个文件在同一目录下才能运行
+
+把这6个文件push到板端。简单起见，把整个目录都push过去。
+
+运行：
+
+```
+/data/DnCnn-test # ./run.sh
+Create Neural Network: 41ms or 41186us
+Verify...
+Verify Graph: 1428ms or 1428426us
+Start run graph [10] times...
+Run the 1 time: 11ms or 11645us
+Run the 2 time: 9ms or 9681us
+Run the 3 time: 9ms or 9652us
+Run the 4 time: 9ms or 9663us
+Run the 5 time: 9ms or 9673us
+Run the 6 time: 9ms or 9686us
+Run the 7 time: 9ms or 9876us
+Run the 8 time: 9ms or 9713us
+Run the 9 time: 9ms or 9718us
+Run the 10 time: 9ms or 9719us
+Execution time:
+Total   126ms, Average 12.70ms
+
+Test Pass.
+```
+
+看看run.sh的内容
+
+```
+export VSI_NN_LOG_LEVEL=0
+export VNN_NOT_PRINT_TIME=0
+export VNN_LOOP_TIME=10
+export VIV_VX_VERIFYSPEED_OPT_MODE=1
+./dncnn DnCNN.export.data inp_2.tensor
+```
+
+DnCNN.export.data：这个是模型数据。
+
+inp_2.tensor：这个应该的图片数据。至于是经过什么处理过的，暂时不清楚。
 
 
 

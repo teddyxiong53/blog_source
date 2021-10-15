@@ -100,6 +100,59 @@ https://jmvalin.ca/demo/rnnoise/
 
 
 
+使用的音频数据是16bit的单声道pcm文件，采样率48K。
+
+我自己录制朗读”1234“的音频，然后用ffmpeg转成对应的格式。进行测试。
+
+```
+ffmpeg -i 1.m4a -f s16le -ar 48000 -acodec pcm_s16le output.raw
+```
+
+
+
+上面的是过滤后的，下面的是过滤前的。可以看到的确有降噪的效果。
+
+![image-20211008144800511](../images/random_name/image-20211008144800511.png)
+
+
+
+看看代码api是怎么用的。
+
+头文件就一个。rnnoise.h
+
+```
+typedef struct DenoiseState DenoiseState;
+typedef struct RNNModel RNNModel;
+```
+
+核心接口
+
+```
+float rnnoise_process_frame(DenoiseState *st, float *out, const float *in);
+```
+
+example是这么写的
+
+```
+DenoiseState *st;
+st = rnnoise_create(NULL);
+打开音频文件，一次读取480字节。相当于10ms的数据。
+in和out都是同一个指针。这样是可以的。
+rnnoise_process_frame(st, x, x);
+
+rnnoise_destroy(st);
+```
+
+就这么3个函数就可以了。
+
+
+
+它的降噪原理是什么？
+
+ 作者提出了一种用于噪声抑制的快速算法，在降噪时需要精细调整的部分使用深度学习方法，而其他部分使用传统的DSP方法。
+
+使用的窗长为20ms，窗之间的overlap为10ms
+
 
 
 # 参考资料
@@ -107,3 +160,7 @@ https://jmvalin.ca/demo/rnnoise/
 1、打破传统降噪算法，AliDenoise 的背后技术
 
 https://zhuanlan.zhihu.com/p/234429493
+
+2、RNNoise超详细解读
+
+https://zhuanlan.zhihu.com/p/397288851
