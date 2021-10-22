@@ -351,6 +351,22 @@ lv_color_t color_primary;
 lv_color_t color_secondary;
 ```
 
+函数：
+
+lv_theme_default_init
+
+lv_theme_default
+
+lv_theme_mono：这个是单色的，应该是只有黑白。
+
+lv_theme_basic
+
+这3个的区别是什么？
+
+对外的接口，都是一个lv_theme_xx_init。
+
+内部实现，复杂一些的就是theme_apply函数。这个是在修改theme的时候被回调到。
+
 
 
 # core部分代码
@@ -423,9 +439,55 @@ lv_event_send
 
 
 
+# 颜色
+
+颜色深度的宏
+
+透明度枚举，从0到100%，10%为一个步进值。
+
+调色板，就是预设的各种颜色吧。
+
+# lv_style_t
+
+属性键值对。可以看做css。
 
 
 
+# grid desc
+
+这个具体是指什么？
+
+分析lv_demo_widgets里的代码。
+
+这个是如何对布局进行指定的？
+
+```
+if(disp_size == DISP_LARGE) {
+        static lv_coord_t grid_main_col_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
+        static lv_coord_t grid_main_row_dsc[] = {LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST};
+
+        /*Create the top panel*/
+        static lv_coord_t grid_1_col_dsc[] = {LV_GRID_CONTENT, 5, LV_GRID_CONTENT, LV_GRID_FR(2), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
+        static lv_coord_t grid_1_row_dsc[] = {LV_GRID_CONTENT, LV_GRID_CONTENT, 10, LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST};
+
+        static lv_coord_t grid_2_col_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
+        static lv_coord_t grid_2_row_dsc[] = {
+                LV_GRID_CONTENT,  /*Title*/
+                5,                /*Separator*/
+                LV_GRID_CONTENT,  /*Box title*/
+                30,               /*Boxes*/
+                5,                /*Separator*/
+                LV_GRID_CONTENT,  /*Box title*/
+                30,               /*Boxes*/
+                LV_GRID_TEMPLATE_LAST
+        };
+```
+
+# vscode sdl sim的makefile分析
+
+值得作为简单的C语言Makefile模板来使用。
+
+简单清晰。
 
 
 

@@ -374,3 +374,12 @@ https://www.zhihu.com/question/56816282/answer/150639596
 CNN为什么相比于全连接神经网络减少了计算量？
 
 https://cloud.tencent.com/developer/article/1163625
+
+
+
+这篇文章对基本概念讲得非常好。
+
+TensorFlow 快速入门必看！一文读懂 Demo
+
+https://discuss.tf.wiki/t/topic/893
+

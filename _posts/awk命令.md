@@ -164,11 +164,15 @@ teddy@VM-0-17-ubuntu:~/work$ awk 'begin{ignorecase=1} /this/' 1.txt
 2 this is a test
 ```
 
+# 思维导图
+
+https://blog.csdn.net/yexiangCSDN/article/details/79801082
 
 
 
 
-参考资料
+
+# 参考资料
 
 https://www.runoob.com/linux/linux-comm-awk.html
 

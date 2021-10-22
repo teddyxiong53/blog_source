@@ -36,13 +36,13 @@ git log --pretty=oneline
 git reset hard
 ```
 
-## 查看某个文件的修改历史
+# 查看某个文件的修改历史
 
 ```
 git log -- xx.c
 ```
 
-## git remote命令
+# git remote命令
 
 1、查看远程的仓库情况。列出已经存在的远程分支。
 
@@ -55,6 +55,14 @@ git remote
 
 
 git远程建立仓库。
+
+# git命令思维导图
+
+这里，可以帮助梳理思路。
+
+https://zhuanlan.zhihu.com/p/59616525
+
+# 常用命令速查
 
 
 

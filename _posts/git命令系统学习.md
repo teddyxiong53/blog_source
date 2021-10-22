@@ -479,9 +479,27 @@ HEAD 现在位于 b54a995 first commit
 
 
 
+# 一些git问题解答
+
+命令 **git cherry-pick** 通常用于把特定提交从存储仓库的一个分支引入到其他分支中。常见的用途是从维护的分支到开发分支进行向前或回滚提交。
+
+这与其他操作（例如：合并（merge）、变基（rebase））形成鲜明对比，后者通常是把许多提交应用到其他分支中。 小结：
+
+```text
+git cherry-pick <commit-hash>
+```
 
 
-#参考资料
+
+
+
+参考资料
+
+https://zhuanlan.zhihu.com/p/45280433
+
+
+
+# 参考资料
 
 1、git_toturial
 

@@ -141,3 +141,52 @@ btHandleEvents.h
 
 这个头文件找不到。
 
+
+
+libasexternal_input.so
+
+这个动态库包含了哪些内容？起什么作用？
+
+symbolic link to libasexternal_m6350.so
+
+对应的就是src/external下面的文件。
+
+外面用一个结构体进行包装，把这个动态库load进来，把一些接口函数抽取出来赋值给包装结构体。
+
+AS_Config_GetEDID
+
+在conf文件里，是这样写的内容：
+
+```
+"edid": [
+        "0x35",
+        "0x09", "0x7f", "0x07",
+        "0x0f", "0x7f", "0x07",
+        "0x15", "0x07", "0x50",
+        "0x3d", "0x1e", "0xc0",
+        "0x57", "0x07", "0x03",
+        "0x5f", "0x7e", "0x01",
+        "0x67", "0x7e", "0x03"
+        ],
+```
+
+创建了一个线程来跟hdmi repeater来通信。
+
+mcuinfochange_int_thread
+
+```
+//使用epoll来等待事件
+external_input_interrupt_poll
+```
+
+是把这个加入到epoll的监听中。
+
+```
+#define GPIO_I2S_INT  "/sys/class/gpio/gpio415/value"
+#define GPIO_I2S_MUTE_INT  "/sys/class/gpio/gpio455/value"
+```
+
+这个本质还是靠gpio的变化来通知的。
+
+这里感知到gpio变化，然后就去读取i2c的数据。得到详细的信息。
+

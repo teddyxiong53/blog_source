@@ -1630,3 +1630,11 @@ https://www.agora.io/cn/community/blog/123-category/21377
 
 https://zhuanlan.zhihu.com/p/69116079
 
+# 10月20日
+
+现在看tflite-micro的代码。
+
+这个系列不错。主要特点是用思维导图来梳理知识点。这个跟我的风格一样。
+
+https://blog.csdn.net/u011279649/category_7222045.html
+
