@@ -94,7 +94,7 @@ snd_config_top
 
 如：
 
-<confdir:pcm/surround.conf>
+`<confdir:pcm/surround.conf>`
 
 
 

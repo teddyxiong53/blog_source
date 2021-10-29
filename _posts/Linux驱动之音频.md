@@ -207,7 +207,7 @@ asoc是alsa在soc上的发展和演变。
 
 alsa使用kcontrols来export audio的controls到用户空间，包括switch、volume等。
 
-这意味着用户程序例如pulseaudio，可以在检测到耳机拔出的是，进行关闭耳机，切到音箱的操作。
+这意味着用户程序例如pulseaudio，可以在检测到耳机拔出的时候，进行关闭耳机，切到音箱的操作。
 
 老的alsa jack代码，只是为每个注册的jack创建了input device，如果不是root身份运行，这些input device不能被用户程序读取。
 

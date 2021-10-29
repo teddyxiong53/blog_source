@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 目前Linux中主流的音频体系结构是alsa。
 
@@ -15,6 +15,132 @@ alsa在驱动层提供了alsa-driver，在应用层提供了alsa-lib。
 在Android里，没有使用标准的alsa，而是使用了简化版本的tinyalsa。但是在内核中仍然使用ALSA框架的驱动框架。
 
 Android中使用tinyalsa控制管理所有模式的音频通路。
+
+![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/2018070400313735)
+
+
+
+![img](https://img-blog.csdn.net/20180706001400321?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MTk2NTI3MA==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+
+
+
+4.1 Platform
+
+           指某款soc平台的音频模块，比如qcom,omap,amlogic,atml等等。platform又可细分为二个部分：
+
+cpu dai:
+
+在嵌入式系统里面通常指soc的i2s,pcm总线控制器，
+
+负责把音频数据从I2S tx FIFO搬运到codec(playback,capture则相反)。
+
+cpu_dai通过 snd_soc_register_dai()来注册。
+
+注：
+
+DAI是Digital Audio Interface的简称，
+
+分为cpu_dai和codec_dai,这两者通过i2s/pcm总线连接；
+
+AIF是Audio Interface母的简称，嵌入式系统中一般是I2S和PCM接口。
+
+
+
+PCM dma:
+
+负责把dma buffer中的音频数据搬运到i2s tx fifo。
+
+值得留意的是：
+
+某些情形下是不需要dma操作的，
+
+比如modem和codec直连，
+
+因为modem本身已经把数据送到fifo了，
+
+这时只需要启动codec_dai接收数据即可；
+
+该情形下，machine驱动dai_link中需要设定.platform_name = "snd_soc_dummy",
+
+这是虚拟dma驱动，实现见sound/soc/soc-utils.c. 
+
+音频dma驱动通过 snd_soc_register_platform()来注册，
+
+故也常用platform来指代音频dma驱动(这里的platform需要与soc platfrom区分开）。
+
+Codec:
+
+对于回放来说，userspace送过来的音频数据是经过采样量化的数字信号，
+
+在codec经过DAC转换成模拟信号然后输出到外放或耳机，
+
+这样我么你就可以听到声音了。
+
+codec字面意思是编解码器，但芯片(codec)里面的功能部件很多，
+
+常见的有AIF,DAC,ADC,Mixer,PGA,line-in,line-out，
+
+有些高端的codec芯片还有EQ,DSP,SRC,DRC,AGC,Echo-Canceller,Noise-Suppression等部件。
+
+比如本文中的npcp215x,自带Maxx算法。
+
+Machine:
+
+指某款机器，通过配置dai_link把cpu_dai,codec_dai,modem_dai各个音频接口给链结成一条条音频链路，
+
+然后注册snd_soc_card.
+
+和上面两个不一样，platform和codec驱动一般是可以重用的，
+
+而machine有它特定的硬件特性，几乎是不可重用的。
+
+所谓的硬件特性指：
+
+Soc Platform与Codec的差异；DAIs之间的链结方式；通过某个GPIO打开Amplifier;通过某个GPIO检测耳机插拔；使用某个时钟如MCLK/External-OSC作为i2s,CODEC的时钟源等等。
+
+
+
+![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20180708144223271)
+
+
+
+dai_link:
+
+machine驱动中定义的音频数据链路，
+
+它指定链路用到的codec,codec_dai,cpu_dai,platform.
+
+比如对于amlogci这款，
+
+通过dts来配置media链路：
+
+codec ="npcp215x",codec-dai="npcp215x_e6",cpu_dai = "aml_tdmc",platform="aml-audio-card".
+
+amlogic这款cpu通过dts来配置声卡的连接，
+
+其相关解析和注册声卡都在soc/amlogic相关文件下。
+
+.所以本文也会参考前言博主的的media链路：
+
+codec="wm8994-codec",codec-dai="wm8994-aif1",cpu_dai="samsung-i2s",platform="samsung-audio",
+
+这四者就构成了一条音频数据链路用于多媒体声音的回放和录制。
+
+一个系统可能有多个音频数据链路，
+
+比如media和voice,
+
+因此可以定义多个dai_link.
+
+如wm8994的典型设计，
+
+有三个dai_link,分别是
+
+API<>AIF1的"HIFI"(多媒体声音链路)，
+
+BP<>AIF2的“voice”（通话语音链路），
+
+以及BT<>AIF3(蓝牙sco语音链路)。
 
 
 
@@ -142,6 +268,30 @@ PCM有两种模式：
 
 模式B：上升沿传输。
 
+#### 以adc3101为例分析
+
+天猫精灵X1
+
+德州仪器的型号为TAS5751M的数字音频功率放大器
+
+背面还有一颗S0903的灯控芯片。
+
+该麦克风阵列由思必驰提供，而模拟麦克风则来自敏芯微电子。该电路板上还有4块德州仪器型号为TLV320ADC3101低功耗立体声ADC(模数变换器)。此外，还有一块A1semi的型号为AS9050D的触摸控制器。
+
+
+
+在S400的板子上，有一颗CS4354的ADC芯片。连接到line out端口。
+
+https://www.cn.cirrus.com/products/cs4354/
+
+输入这个是接到了soc的I2S引脚上。
+
+
+
+年度盘点：6款内置晶晨方案智能音箱拆解汇总
+
+https://www.52audio.com/archives/15302.html
+
 
 
 ### mixer和control
@@ -251,6 +401,10 @@ Codec 驱动。这一部分只关心 Codec 本身，与 CPU 平台相关的特�
 
 
 
+# 音频相关参数
+
+
+
 # 参考资料
 
 1、linux驱动由浅入深系列：tinyalsa(tinymix/tinycap/tinyplay/tinypcminfo)音频子系统之一
@@ -276,3 +430,11 @@ https://blog.csdn.net/vertor11/article/details/79211719
 5、
 
 https://blog.csdn.net/moonlinux20704/article/details/88417361
+
+6、Linux ALSA音频系统:platform,machine,codec
+
+https://blog.csdn.net/wenjin359/article/details/83002041
+
+7、音频相关参数的记录（MCLK、BCLK、256fs等等）
+
+https://blog.csdn.net/lugandong/article/details/72468831

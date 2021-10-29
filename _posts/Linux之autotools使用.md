@@ -25,6 +25,16 @@ autoconf这个工具就是用来帮我们生成configure文件的。
 
 
 
+当然如果你想搭建自己的采用automake编译的项目，那么你需要再去学习一下如何编写configure.ac和Makefile.am文件。
+
+一般我们从github上clone下来的需要采用automake编译的项目都包含了configure.ac和Makefile.am文件或者里面还包含了一个autogen.sh的脚本（一般都是调用了autoreconf这个工具）。编译这样一个项目基本上可以三步完成：
+
+1. 在项目根目录运行"autoreconf　-if",　你会发现项目目录下会多出m4文件目录, config.h.in文件, Makefile.in文件, configure脚本, compile脚本, depcomp脚本等文件；
+2. 接着运行./configure进行配置生成makefile文件，譬如enbale/disbale一些特性，设置交叉编译平台（例如--host=linux-mips），设置编译安装目录（例如--prefix=path_to_your_build_directory）具体可以查看help信息；
+3. 执行make && make install。
+
+
+
 # autoconf
 
 为什么出现了autoconf？
@@ -317,6 +327,38 @@ autoscan: /usr/bin/autom4te failed with exit status: 1
 
 
 
+configure.ac由一些宏组成
+
+（如果已经有源代码，你可以运行autoscan来产生一个configure.scan文件，在此基础修改成configure.ac将更加方便）
+
+最基本的组成可以是下面的
+
+```
+AC_INIT([PACKAGE], [VERSION], [BUG-REPORT-ADDRESS])
+# Checks for programs.
+# Checks for libraries.
+# Checks for header les.
+# Checks for typedefs, structures, and compiler characteristics.
+# Checks for library functions.
+# Output les.
+AC_CONFIG_FILES([FILES])
+AC_OUTPUT
+```
+
+
+
+## 参考资料
+
+1、
+
+https://blog.csdn.net/john_crash/article/details/49889949
+
+2、
+
+这里有个简单的例子。
+
+https://renenyffenegger.ch/notes/development/GNU/toolchain/Build-System/Autoconf/macros/AC_SUBST
+
 # Makefile.am变量
 
 ```
@@ -467,3 +509,9 @@ https://blog.csdn.net/wh8_2011/article/details/78828020
 8、
 
 https://blog.csdn.net/weixin_33985507/article/details/85636537
+
+9、
+
+这篇文章非常好。
+
+https://blog.csdn.net/u010020404/article/details/82770848

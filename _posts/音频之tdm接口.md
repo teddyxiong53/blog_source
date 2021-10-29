@@ -92,8 +92,20 @@ PDM在尺寸受限应用中优势明显，
 
 
 
+TDM相比I2S 可以传输多ch音频数据，分为2种模式:dsp_a 和dsp_b
+
+![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20210623154352113.png)
+
 参考资料
 
 1、TDM格式介绍 - 音频数据传输的常见IC间数字接口介绍
 
 http://www.elecfans.com/video/yinpinjishu/20121210301406_2.html
+
+2、
+
+http://www.wangdali.net/wp-content/uploads/2014/10/%E6%95%B0%E5%AD%97%E9%9F%B3%E9%A2%91%E6%8E%A5%E5%8F%A3.pdf
+
+3、数字音频接口之TDM
+
+https://blog.csdn.net/songche123/article/details/118154829

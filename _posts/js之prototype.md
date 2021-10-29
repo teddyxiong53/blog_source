@@ -98,7 +98,37 @@ js是单继承的。
 
 
 
-# js创建对象的方法
+JavaScript对每个创建的对象都会设置一个原型，指向它的原型对象。
+
+当我们用`obj.xxx`访问一个对象的属性时，**JavaScript引擎先在当前对象上查找该属性，如果没有找到，就到其原型对象上找，如果还没有找到，就一直上溯到`Object.prototype`对象，最后，如果还没有找到，就只能返回`undefined`。**
+
+例如，创建一个`Array`对象：
+
+```
+var arr = [1, 2, 3];
+```
+
+其原型链是：
+
+```
+arr ----> Array.prototype ----> Object.prototype ----> null
+```
+
+`Array.prototype`定义了`indexOf()`、`shift()`等方法，因此你可以在所有的`Array`对象上直接调用这些方法。
+
+当我们创建一个函数时：
+
+```
+function foo() {
+    return 0;
+}
+```
+
+函数也是一个对象，它的原型链是：
+
+```
+foo ----> Function.prototype ----> Object.prototype ----> null
+```
 
 
 
@@ -119,3 +149,7 @@ https://zhuanlan.zhihu.com/p/34693209
 4、Javascript继承机制的设计思想
 
 http://www.ruanyifeng.com/blog/2011/06/designing_ideas_of_inheritance_mechanism_in_javascript.html
+
+5、
+
+https://www.liaoxuefeng.com/wiki/1022910821149312/1023022043494624

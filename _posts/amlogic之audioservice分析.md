@@ -114,7 +114,7 @@ homeapp.c
 input_manage.c
 	Install_Input_Apps 这个函数比较重要。
 led.c
-	这个是显示昨天信息的。
+	这个是显示状态信息的。
 	可以显示文字。
 ota_upgrade.c
 resource_manage.c
@@ -189,4 +189,85 @@ external_input_interrupt_poll
 这个本质还是靠gpio的变化来通知的。
 
 这里感知到gpio变化，然后就去读取i2c的数据。得到详细的信息。
+
+
+
+我还是觉得这里的事件机制非常坑。导致逻辑非常不清晰。
+
+主要是没有必要。
+
+而且dbus的方式很难读。
+
+换成jsonrpc就会清晰多了。
+
+
+
+```
+AM_CONDITIONAL([HALAUDIO_ENABLE], [test x$halaudio = xtrue])
+```
+
+
+
+当前各种枚举太多了。感觉相互关系很不清晰。
+
+audioservice.h里的枚举
+
+```
+AS_Input_e
+特点是：
+INPUT_XX_ALL = 0x18100
+INPUT_XX_1 = 0X18101
+INPUT_XX_2 = 0X18102
+可以用下面这样的宏来判断是否属于这一类。
+其实也是挺别扭的。
+#define IsLINEINInput(a)  \
+  (AML_AS_INPUT_LINEIN_ALL == ((a) & (~AML_AS_INPUT_INDEX_MASK)))
+  
+  
+
+AS_Output_e
+	输出有Speaker、headphone、arc、spdif、bt这5种。
+	
+AML_AS_AudioFormat_e
+	pcm、ac3、dts、MP3
+	MP3、aac、flac、dolby true hd
+	
+AML_AS_NOTIFYID_e
+	通知有这些：
+	用100的间隔来分割不同的通知。
+	0:3个，audio format、volume、mute改变。
+	100：4个。src改变前，src改变后，halaudio切换完成，input chn改变
+	300:2个。解码开始，解码ringbuf的状态。
+	400：1个。dbus的状态。
+	500:2个，SD卡插入、移除。
+	600:1个。mcu变化。
+	700：3个。日志优先级变化、日志级别变化、trace级别变化。
+	900：4个。电源变化。
+	2000:1个。有ota升级。
+	
+```
+
+event，很多都是在一个文件内部，自己产生，自己处理。
+
+主要应该是为了不阻塞。
+
+# usb player
+
+这个逻辑比较集中。适合用来做分析入口。
+
+# 用shm做了什么
+
+DataPlayerRingbufHead_t
+
+AS_Client_Play函数里调用了client_shm_init
+
+client_shm_init的流程：
+
+```
+shmget(key, size, 0666);
+```
+
+用来把文件读取到这里来进行播放。
+
+具体用法有点没看懂。不知道头部的长度怎么来的。
 

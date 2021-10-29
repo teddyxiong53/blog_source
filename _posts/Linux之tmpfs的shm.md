@@ -8,7 +8,7 @@ tags:
 
 
 
-#跟ramdisk比较
+# 跟ramdisk比较
 
 /dev/shm跟ramdisk不同。shm是一个tmpfs。
 
@@ -16,7 +16,7 @@ tags:
 
 
 
-#tmpfs的优点
+# tmpfs的优点
 
 1、动态文件系统的大小。
 
@@ -24,7 +24,7 @@ tags:
 
 
 
-#修改shm大小
+# 修改shm大小
 
 默认是内存大小的一半，而且默认的inode数量不多，我们可以用mount来重新挂载。
 

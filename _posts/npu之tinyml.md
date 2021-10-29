@@ -746,7 +746,612 @@ open('sine_model_quantized.tflite', 'wb').write(tflite_model)
 
 
 
+# 再学习
 
+现在是可能有这个方向的应用。
+
+所以要往实践的方向来看。
+
+从这里开始发散。
+
+https://github.com/mit-han-lab/tinyml
+
+官网：
+
+https://hanlab.mit.edu/
+
+我们的 TinyML 项目旨在通过减少计算、减少工程师和减少从算法到硬件、从推理到训练的数据来提高深度学习的效率。我们拥抱边缘 AI 和 AIoT 时代。
+
+Song Han 是麻省理工学院 EECS 的助理教授。
+
+他在斯坦福大学获得博士学位。
+
+他的研究重点是高效的深度学习计算。
+
+他提出了“深度压缩”技术，可以在不损失精度的情况下将神经网络大小减少一个数量级，
+
+以及首先利用深度学习加速器中的剪枝和权重稀疏性的硬件实现“高效推理引擎”。
+
+他的团队在硬件感知神经架构搜索（ProxylessNAS、Once-for-All Network (OFA)、MCUNet）方面的工作被集成到 Facebook、亚马逊、微软，
+
+在旗舰 AI 会议上获得了六项低功耗计算机视觉竞赛奖。
+
+宋在 ICLR’16 和 FPGA’17 上获得了最佳论文奖，
+
+以及来自亚马逊、索尼、Facebook、英伟达和三星的多项教师奖。
+
+宋被麻省理工科技评论评为“35 位 35 岁以下创新者”，
+
+因为他对“深度压缩”技术的贡献“让强大的人工智能 (AI) 程序在低功耗移动设备上更高效地运行”。
+
+ Song 因“用于加速机器学习的高效算法和硬件”获得 NSF CAREER 奖和 IEEE“值得关注的 10 个人工智能：人工智能的未来”奖
+
+所以这个实验室是以他的名字命名的？中文名是宋涵。
+
+
+
+包括的项目有：mcunet、tinytl。
+
+https://github.com/mit-han-lab/tinyml/tree/master/mcunet
+
+mcunet说是还在开发中。
+
+我们的 TinyEngine 推理引擎可以成为基于 MCU 的 AI 应用程序的有用基础设施。
+
+与 TF-Lite Micro、CMSIS-NN、MicroTVM 等现有库相比，
+
+它显着提高了推理速度并减少了内存使用
+
+的确代码看起来还没有完整。
+
+
+
+tinytl提出了理念，可以在设备上进行训练，而不仅仅是推理。
+
+目前还没看到具体在设备端的代码示例。
+
+
+
+# uTensor
+
+https://utensor.github.io/website/
+
+uTensor 是一个免费的开源嵌入式机器学习基础设施，
+
+专为快速原型设计和部署而设计。
+
+该项目包括一个推理引擎、一个高度可定制的图形处理工具和一个数据收集框架（正在进行中）。
+
+设备代码针对只有几千字节内存的硬件进行了优化
+
+嵌入式运行时
+
+小至 2kb，C++ 图形实现既可以手工编码，也可以从经过训练的模型自动生成。
+
+简单部署
+
+从 Jupyter 笔记本到 MCU，uTensor 是数据科学家和嵌入式工程师的渠道。
+
+图处理
+
+嵌入式机器学习的创新需要快速迭代想法。 uTensor SDK 在 Python 中提供易于定制的图形转换器。
+
+开放生态系统
+
+uTensor 是一个嵌入式机器学习基础设施。带来您自己的操作、图形转换，或将其移植到新平台；它适合所有人。
+
+## 端到端的demo
+
+从训练到推理。
+
+需要安装的Python工具：
+
+mbed-cli
+
+utensor-cgen
+
+```
+pip install mbed-cli ugensor-cgen
+```
+
+下载示例代码
+
+```
+git clone https://github.com/uTensor/utensor-helloworld.git
+```
+
+代码没有什么可看的。很简单。
+
+
+
+
+
+自强产品
+
+联邦学习的说明（来源）
+
+设备在现场部署后可以不断改进。
+
+ Google 的 Gboard 使用一种称为联邦学习的技术，
+
+该技术涉及每台设备收集数据并进行单独改进。
+
+这些单独的改进在中央服务上聚合，然后每个设备都使用组合结果进行更新
+
+
+
+uTensor 将继续利用最新的软件和硬件进步，例如 CMSIS-NN、Arm 的 Cortex-M 机器学习 API。
+
+这些将被集成到 uTensor 中，以确保 Arm 硬件的最佳性能。
+
+开发人员和研究人员将能够使用 uTensor 轻松测试他们的最新想法，例如新算法、分布式计算或 RTL。
+
+# 收集的相关项目
+
+这里有一些收集的项目。
+
+https://github.com/gigwegbe/tinyml-papers-and-projects
+
+
+
+在数据无处不在的时代，TinyML 变得越来越流行。
+
+但是，最需要的数据受到严格的隐私和安全保证。
+
+此外，TinyML 硬件在现实世界中的部署具有传统 ML 无法解决的显着内存和通信限制。
+
+鉴于这些挑战，我们采用了 TinyFedTL，这是在资源受限的微控制器上首次实现**联合迁移学习**。
+
+## study-group
+
+这里是一个课程的，ppt过了一下。好像没有什么收获。
+
+https://github.com/scaledown-team/study-group
+
+## 垃圾分类arduino
+
+这个用arduino来实现垃圾分类的。
+
+https://github.com/lightb0x/arduino_trash_classification
+
+arduino nano 33 BLE Sense + ArduCAM OV2640
+
+MobileNet v1 25% on 96x96 RGB input
+
+6-way classification
+
+- cardboard
+- glass
+- metal
+- paper
+- plastic
+- trash
+
+可以分辨上面这6种。
+
+MobileNet v1 model was trained on custom ImageNet/96x96 dataset
+
+speed : takes about `930ms` per inference (takes 260ms on Raspberry Pi Zero W)
+
+基于tflite-micro实现。
+
+就是很常规的流程。
+
+获取图像靠
+
+`GetImage(error_reporter, kNumCols, kNumRows, kNumChannels, image_data)`
+
+结果的判断：
+
+```
+int8_t score[kCategoryCount];
+  for (int i = 0; i < kCategoryCount; i++)
+    score[i] = output->data.int8[i];
+```
+
+摄像头得到的是jpeg的图片。会解码并转成灰度图。然后再进行判断。
+
+## 空气吉他
+
+这个创意不错。
+
+## esp32上的tinyml
+
+https://blackwalnut.zucc.edu.cn/codelabs/TinyML
+
+这个网站是vue+express搭建的。
+
+做得不错。
+
+文档写得很详细。
+
+https://github.com/HollowMan6/TinyML-ESP32
+
+## 电机异常检测
+
+数据是靠给风扇加负重块来产生并收集。
+
+基于esp32的。
+
+https://github.com/ShawnHymel/tinyml-example-anomaly-detection
+
+## 检测野生动物动向
+
+https://www.hackster.io/dhruvsheth_/eletect-tinyml-and-iot-based-smart-wildlife-tracker-c03e5a
+
+## 自动驾驶
+
+https://www.edgeimpulse.com/blog/autonomous-driving-using-computer-vision
+
+## 自动读取水表的值
+
+https://github.com/jomjol/water-meter-system-complete
+
+是完整的端到端的实现。
+
+这是一个为家庭监控用水量的水表拍照的系统。它是房屋自动化系统的一部分，用于监控和检查用水量。
+
+该系统由3个主要部分组成：
+
+我的水表的圆形夹紧适配器 = 水表上的无螺丝固定系统，可以根据不同的几何形状进行调整
+
+朝向相机的管子 - 此处由两部分完成以允许调整高度
+
+带 OV2640 的 ESP32-CAM 相机支架。 
+
+ESP32-CAM 模块具有内置闪光灯 LED，因此无需额外照明
+
+
+
+在这里，这种边缘计算被引入了一个面向实际的示例，其中在 ESP32 设备上实现了 AI 网络，因此：AI 在边缘。
+
+主要特点：
+
+Tensorflow Lite (TFlite) 集成 - 包括易于使用的包装器
+
+内联图像处理（特征检测、对齐、ROI 提取）
+
+小而便宜的设备（3x4.5x2 cm³，< 10 EUR）
+
+摄像头和照明集成
+
+用于管理和控制的 Web 界面
+
+OTA-Interface 直接通过网页界面更新
+
+易于集成的 API
+
+
+
+这是关于图像识别和数字化，完全在廉价的 ESP32 板上使用卷积神经网络 (CNN) 形式的人工智能完成。从图像捕获 (OV2640)、图像预处理（自动对齐、ROI 识别）一直到图像识别（CNN 结构）和结果可信度，一切都在 10 欧元的廉价设备上完成。
+
+这一切都集成在一个易于设置和使用的环境中，负责所有后台处理和处理，包括常规作业调度程序。用户界面是一个集成的 Web 服务器，可以轻松调整并以不同选项的 API 提供数据。
+
+这里要演示的任务是模拟水表的自动读数。用水量将在房屋自动化中记录，水表是完全模拟的，没有任何电子接口。因此，通过定期拍摄水表的图像并将读数数字化来解决该任务。
+
+有两种类型的 CNN 实现，用于读取数字数字的分类网络和用于数字化子数字读数的模拟指针的单个输出网络。
+
+这个项目是水表系统完整的演进，它使用 ESP32-CAM 来获取图像和一个 1GB-Docker 图像来运行神经网络主干。这里所有东西都集成在一个 ESP32-CAM 模块中，带有 8MB 的 RAM 和一个 SD 卡作为数据存储。
+
+
+
+该系统实现了几个功能：
+
+水表读数
+
+图片提供者
+
+文件服务器
+
+OTA功能
+
+图形配置管理器
+
+网络服务器
+
+
+
+## 手写识别
+
+这些项目只是在板端的逻辑都差不多。都是tflite-micro的流程。
+
+重点理解创意。
+
+## 接收语音命令的小车
+
+https://www.survivingwithandroid.com/arduino-machine-learning-tensorflow-lite/
+
+```c++
+void RespondToCommand(tflite::ErrorReporter* error_reporter,
+                      int32_t current_time, const char* found_command,
+                      uint8_t score, bool is_new_command) {
+  static bool is_initialized = false;
+  
+  static int32_t last_command_time = 0;
+  static int count = 0;
+  static int certainty = 220;
+
+  if (is_new_command) {
+    TF_LITE_REPORT_ERROR(error_reporter, "Heard %s (%d) @%dms", found_command,
+                         score, current_time);
+    // If we hear a command, light up the appropriate LED
+    if (found_command[0] == 'l') {
+      last_command_time = current_time;
+      TF_LITE_REPORT_ERROR(error_reporter, "---- Left -----");
+      //left();
+    }
+
+    if (found_command[0] == 'r') {
+      last_command_time = current_time;
+      TF_LITE_REPORT_ERROR(error_reporter, "---- Right -----");
+      // right();
+    }
+
+    if (found_command[0] == 'g') {
+      last_command_time = current_time;
+      TF_LITE_REPORT_ERROR(error_reporter, "---- Go -----");
+      // go();
+    }
+
+     if (found_command[0] == 's') {
+      last_command_time = current_time;
+      TF_LITE_REPORT_ERROR(error_reporter, "---- Stop -----");
+      // stop();
+    }
+
+    if (found_command[0] == 'u') {
+      last_command_time = current_time;
+    }
+  }
+
+ 
+}
+```
+
+## 实现语音助手
+
+https://mjrobot.org/2021/01/27/building-an-intelligent-voice-assistant-from-scratch/
+
+这篇文章还是非常详细具体的。可操作性非常好。
+
+
+
+我们将尝试在这个项目中回答这个问题，使用 RaspberryPi 和 Arduino Nano 模拟 Google 助手。
+
+介绍
+
+首先，必须意识到市场上的语音助手，如 Google Home 或 Amazon Echo-Dot，只有在人类被特定关键字“唤醒”时才会做出反应，例如第一个“嘿谷歌”和“ Alexa”在第二个。
+
+换句话说，识别语音命令的整个过程基于多阶段模型或级联检测。
+
+第 1 阶段：Echo-Dot 或 Google Home 内的一个较小的微处理器会持续收听声音，等待发现关键字。对于此类检测，使用了边缘的 TinyML 模型。
+
+第 2 阶段：只有在被触发时，数据才会被发送到云端，并在更大的模型上进行处理。
+
+
+
+TinyML 是一个出色的概念，它使机器智能紧邻物理世界；此外，在微处理器级别运行机器学习模型 (ML) 可避免延迟、功耗和安全性等问题
+
+
+
+对于本项目的第 1 阶段（KWS 或关键字定位），
+
+我们将使用 Arduino Nano 33 BLE Sense 微控制器。
+
+在几个集成的传感器中，它有一个数字麦克风，用于识别关键字。
+
+对于第 2 阶段，一旦 Arduino 触发，RaspberryPi 将用于联系云上的 Google 服务以执行更复杂的任务
+
+
+
+该项目将分为两部分：
+
+第 1 部分：在 RPi 上模拟 Google Assistant
+
+第 2 部分：在 Arduino Nano 上实现 KWS
+
+在这里，您可以对最终项目有所了解
+
+
+
+除了将开发允许 RPi 模拟 Google Assistant 的软件外，还需要一些额外的硬件。
+
+为简单起见，您可以安装外部麦克风和扬声器或使用 HAT。
+
+在这个项目中，我们将使用HAT，即 ReSpeaker 2-Mics Pi HAT。
+
+ReSpeaker 2-Mics Pi HAT
+
+![image-20211029105323736](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20211029105323736.png)
+
+对应的驱动代码：
+
+```
+git clone https://github.com/respeaker/seeed-voicecard.git
+cd seeed-voicecard
+sudo ./install.sh
+reboot
+```
+
+所以，就我而言，声卡是：
+
+卡 0：树莓派 HDMI
+
+卡 1：RPi 耳机音频插孔
+
+卡片 2：ReSpeaker 2-Mics Pi HAT
+
+Card 2 应该是默认的，你可以在 Pi Preferences/Audio Device Settings 上验证它
+
+就我而言，ReSpeaker 2-Mics Pi HAT（音频插孔）上的输出无法正常工作，因此我将卡 2 定义为输入（ReSpeaker 上的麦克风），将标准 Rpi 音频插孔（卡 1）作为输出。
+
+下载谷歌服务
+
+```
+git clone -b voicekit https://github.com/google/aiyprojects-raspbian.git 
+```
+
+一套使用对接谷歌服务的python脚本。
+
+## 用tinyml预测天气
+
+https://github.com/BaptisteZloch/Weather_forcasting
+
+现在代码功能齐全，您可以将文件上传到您的电路板并进行推理。
+
+该模型将使用嵌入在 nano 33 BLE 传感器上的内置传感器捕获压力、湿度、温度。
+
+推断是使用 EloquentTinyML 库进行的，
+
+该库是使用模型轻松运行预测的绝佳工具。
+
+它使用 tensorflow lite micro header c++ 文件。
+
+该模型位于 /TinyML_weather/include。
+
+该模型使用 python、google colab 和 tensorflow 构建，使用 kaggle 数据集。
+
+然后模型在tensorflow lite模型中转换，后来在tensorflow lite micro模型中转换。 
+
+（有两种方法可以转换模型，都显示在 .ipynb 中）
+
+天气非常这么几类
+
+```
+String value(float out[5]) {
+  Array<float> my_classes = Array<float>(out, NUMBER_OF_OUTPUTS);
+  if (my_classes.getMaxIndex() == 0) {
+    return "Sunny";
+  } else if (my_classes.getMaxIndex() == 1) {
+    return "Partly cloudy";
+  } else if (my_classes.getMaxIndex() == 2) {
+    return "Overcast";
+  } else if (my_classes.getMaxIndex() == 3) {
+    return "Cloudy";
+  } else {
+    return "Sunny";
+  }
+}
+```
+
+输入是温度、湿度、气压这3个。
+
+## 定位你的猫
+
+https://github.com/filipsPL/cat-localizer
+
+1、在猫的身上放一个ble beacon。
+
+2、在房子里放一些esp32或者树莓派做ble检测器。
+
+3、把ble beacon的RSSI发送给服务器。
+
+4、服务器上跑模型，根据收到的数据，给出推理的结果，例如猫在厨房里。
+
+这里的挑战上，尽量使用更少的检测器。比房间数要少。
+
+靠机器学习来完成剩下的事情。
+
+
+
+BLE 发射器。 BLE 信标。什么都会好的。我使用了 NotiOne 按钮，它们运行良好并且具有附加功能（此处未使用）。但更便宜的东西也会起作用。 n x 10-20 $
+
+BLE 检测器。我用了四个 ESP32。我想中等房屋/公寓的 4-6 应该足够了。也可以使用带有 BLE 的现代树莓派。 n x 4 $
+
+数据处理。服务器/计算机。我使用 amd64 Debian，但任何 Raspberry Pi 都应该也不错。可以远程。可以在微控制器中完成（参见：进一步说明）
+
+WiFi 连接（ESP 到服务器）
+
+## 在树莓派pico上使用mnist
+
+https://github.com/iwatake2222/pico-mnist
+
+这个看起来不错。
+
+具体操作是：在屏幕上手写一个数字，然后就输出对应的值。
+
+体验比较完整。
+
+## mlperf tiny
+
+MLPerf Tiny 的目标是提供一组具有代表性的深度神经网络和基准代码，以比较嵌入式设备之间的性能。嵌入式设备包括微控制器、DSP 和微型神经网络加速器。这些设备通常在 10MHz 到 250MHz 之间运行，并且可以使用不到 50mW 的功率执行推理。
+
+MLPerf Tiny 提交将使设备制造商和研究人员能够为其用例选择最佳硬件，并允许硬件和软件供应商展示他们的产品。
+
+参考基准是使用 TensorFlow Lite for Microcontrollers (TFLM) 提供的。提交者可以直接使用 TFLM，但鼓励提交者使用最适合其硬件的软件堆栈
+
+https://github.com/mlcommons/tiny
+
+# nnom
+
+https://github.com/majianjia/nnom
+
+Neural Network on Microcontroller (NNoM)
+
+NNoM是一个专门为了神经网络在 MCU 上运行的框架。 
+
+NNoM 是一个定点神经网络库，
+
+ 现在支持 8-bit定点格式。
+
+ 当前 NNoM 支持数十种操作，
+
+卷积，池化，激活，矩阵计算等等。
+
+ 此外还提供多种在线评估方法，包括时间统计，内存统计，Top-K 准确度，Confusion Matrix 等等。
+
+它拥有以下优点：
+
+- **快速开发**： 电脑上训练的 Keras 模型直接转换成 C 文件。
+- **默认纯C后端**： 移植和使用畅通无阻，支持32/64bit，MCU/PC。
+- **支持复杂结构**： 支持多种复杂的网络模型结构。
+- **完善的文档**： 拥有 API 文档，入门指南，优化指南。
+- **入门简单**： 多个从简单到复杂的例子，完全开源。
+
+**MCU 上的神经网络能做什么？**
+
+- 语音关键词识别 （KeyWord Spotting）
+- 使用运动传感器识别活动状态 （Human Activity Recognition）
+- 神经网络控制系统 （替代PID等传统控制方法）
+- 图像处理 （带专用加速器的 MCU）
+
+2014年后的网络，更高效，也更复杂。
+
+CMSIS-NN 之类的库太底层，需要设置的参数众多，不够灵活，
+
+只能应用在比较传统的单路径网络上。
+
+ 而新的网络倾向于从结构上做优化，不可避免地需要在结构上做设计和优化。 
+
+复杂的网络结构导致非常难以使用传统的底层库进行部署。 
+
+最初，NNoM 在 CMSIS-NN 上封装了一层结构层专门用于处理复杂的网络路径并且简化了参数计算。 后来 NNoM 有了自己的脚本可以一键生成相应的 C 文件，更进一步提升了使用性。
+
+ 新的纯 C 后端也使得使用 NNoM 后，网络的部署几乎没有平台的限制。
+
+这个是在rt-thread上运行的。
+
+NNoM 默认使用纯 C 后端， 同时支持 CMSIS-NN/DSP 后端。选择 CMSIS 后端后，会有5倍左右的性能提升.
+
+这个是中国人写的项目。好像是个人项目。
+
+但是文档都用英文写的。的确很有耐心了。
+
+
+
+# 一些理解
+
+看太多种的框架意义好像也不大。
+
+还是以tflite-micro为主。
+
+
+
+## 参考资料
+
+官网文档
+
+https://github.com/uTensor/website/blob/master/docs.md
 
 # 参考资料
 

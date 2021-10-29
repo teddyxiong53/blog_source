@@ -127,6 +127,12 @@ bass管理是指跟低频内容处理相关的功能。
 
 LFE是：Low-frequency effects 
 
+# 相关开源代码
+
+就在github上搜索“dolby”。看看能找到什么。
+
+
+
 # 参考资料
 
 1、杜比全景声（Dolby Atmos）到底是什么？告诉你怎么才能享受到杜比全景声！

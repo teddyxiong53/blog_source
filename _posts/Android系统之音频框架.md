@@ -173,6 +173,12 @@ LOCAL_SHARED_LIBRARIES := \
 
 libmedia.so在aosp-rpi3\frameworks\av\media\libmedia
 
+# 音频子系统系列文章
+
+## （01）音频基础知识
+
+![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20200413105421830.png)
+
 
 
 参考资料
@@ -186,3 +192,9 @@ https://blog.csdn.net/dahailinan/article/details/24294655
 2、ANDROID音频系统散记之四：4.0音频系统HAL初探
 
 https://www.cnblogs.com/wanqieddy/archive/2012/07/27/2611435.html
+
+3、音频子系统
+
+这个专栏很好。很系统。值得学习。
+
+https://blog.csdn.net/vviccc/category_9805017.html

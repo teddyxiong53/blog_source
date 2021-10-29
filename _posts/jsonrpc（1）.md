@@ -182,6 +182,63 @@ RPC中的主体都是动作，是个动词，表示我要做什么。
 
 
 
+# 各种语言的实现版本
+
+## C语言
+
+https://github.com/hmng/jsonrpc-c
+
+依赖了libev和cjson。
+
+这个是基于autotools来进行编译的。
+
+代码少。可以参考一下。
+
+编译方法：
+
+```
+autorefconf -i
+./configure
+make
+```
+
+cjson的文件是直接放进来的。因为就2个。而libev是靠依赖的。
+
+这个怎么进行测试呢？
+
+这里是一个python写的命令行工具。
+
+https://github.com/joehillen/jsonrpcake
+
+用pip可以安装。安装后试了，连不上去。
+
+想了一下，可以用netcat来做。
+
+这里有例子。
+
+https://github.com/paritytech/jsonrpc/issues/120
+
+运行有效果：
+
+```
+amlogic@amlogic-BAD-INDEX:~$ netcat localhost 1234 -
+{"id":1,"jsonrpc":"2.0","method":"sayHello"}
+{
+        "result":       "Hello!",
+        "id":   1
+}
+```
+
+现在可以分析一下代码了。
+
+流程用思维导图画再这里：
+
+https://naotu.baidu.com/file/1ff3a94bb69723da429f7fa34eacab48
+
+做的都是最基础的处理。够用。健壮性肯定还是不太够的。
+
+连接的buffer，默认分配了1500字节，如果发现接近了这个数字，那么就自动分配多一倍的空间。
+
 
 
 参考资料
@@ -201,3 +258,4 @@ https://www.cnblogs.com/liangzp/p/9088792.html
 4、WEB开发中，使用JSON-RPC好，还是RESTful API好？
 
 https://www.zhihu.com/question/28570307
+
