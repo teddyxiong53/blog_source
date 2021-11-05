@@ -123,6 +123,14 @@ CONFIG_GPIO_SYSFS   定义此宏后 会在/sys/class/gpio/下面导出gpio的设
 
 
 
+# 手动挂载debugfs
+
+```
+mount -t debugfs none /sys/kernel/debug
+```
+
+
+
 参考资料
 
 1、Linux驱动调试中的Debugfs的使用简介

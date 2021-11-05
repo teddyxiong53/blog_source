@@ -65,6 +65,24 @@ chmod 600 .ssh/teddy
 
 
 
+# lindenis项目举例
+
+这个是一个linux开发板。项目相对来说没有那么复杂。
+
+可以作为学习材料。
+
+```
+repo init -u https://github.com/lindenis-org/manifest.git -b v831 -m v833-lindenis.xml
+```
+
+https://github.com/lindenis-org/manifest.git 这个是github上一个仓库。里面就放的一个xml文件。
+
+这个仓库的一个分支叫v831，这个分支下，有v833-lindenis.xml文件。
+
+所以，并不存在一个repo服务器。
+
+repo的xml文件，也只是一个普通的git仓库。
+
 
 
 参考资料

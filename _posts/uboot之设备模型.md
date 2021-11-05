@@ -133,6 +133,58 @@ uboot设备树是用自己的设备树，而不是用kernel的那个。
 
 
 
+# amlogic uboot相关分析
+
+以drivers/gpio/amlogic_gpio.c为例分析。
+
+入口
+
+```
+U_BOOT_DRIVER(gpio_aml) = {
+	.name	= "gpio_aml",
+	.id	= UCLASS_GPIO,
+	.ops	= &gpio_aml_ops,
+	.probe	= aml_gpio_probe,
+};
+```
+
+ops是这样：
+
+```
+static const struct dm_gpio_ops gpio_aml_ops = {
+	.request			= aml_gpio_request,
+	.direction_input	= aml_gpio_direction_input,
+	.direction_output	= aml_gpio_direction_output,
+	.get_value		= aml_gpio_get_value,
+	.set_value		= aml_gpio_set_value,
+	.get_function		= aml_gpio_get_function,
+};
+```
+
+
+
+上层使用的接口是在gpio-uclass.c里的函数。
+
+以i2c的作为gpio的使用者的来分析。
+
+```
+./drivers/i2c/i2c-gpio.c:327:   if (gpio_request(i2c->sda, plat->sda))
+```
+
+
+
+```
+gpio_request
+gpio_requestf
+gpio_free
+gpio_direction_input
+gpio_direction_output
+gpio_get_value
+gpio_set_value
+```
+
+
+
 参考资料
 
 1、uboot 设备驱动模型

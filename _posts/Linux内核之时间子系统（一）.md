@@ -39,6 +39,30 @@ UTC时间：为了让UTC时间跟GMT保持一致，需要设置闰秒。
 
 linux里的时间起点是1970年1月1日0时0分0秒。
 
+# clocksource
+
+clock source用于为linux内核提供一个时间基线，
+
+如果你用linux的date命令获取当前时间，
+
+内核会读取当前的clock source，
+
+转换并返回合适的时间单位给用户空间。
+
+在硬件层，它通常实现为一个由固定时钟频率驱动的计数器，计数器只能单调地增加，直到溢出为止。
+
+时钟源是内核计时的基础，
+
+系统启动时，内核通过硬件RTC获得当前时间，
+
+在这以后，在大多数情况下，内核通过选定的时钟源更新实时时间信息（墙上时间），
+
+而不再读取RTC的时间。
+
+在系统的启动阶段，内核注册了一个基于jiffies的clocksource，代码位于kernel/time/jiffies.c：
+
+
+
 # 代码文件
 
 时间子系统的文件在kernel/time目录下，文件及对应的作用如下：
@@ -177,3 +201,7 @@ https://blog.csdn.net/flaoter/article/details/77413163
 这个是一个系列，有14篇文章。
 
 http://www.wowotech.net/timer_subsystem/time_concept.html
+
+3、
+
+https://blog.csdn.net/DroidPhone/article/details/7975694

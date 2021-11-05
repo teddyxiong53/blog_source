@@ -75,7 +75,7 @@ struct pinctrl_desc {
 
 我们做bsp的时候，就是定义一个pinctrl_desc结构体，然后把这个结构体注册到pinctrl-core里去。
 
-在仅进行pinctrl_desc代码编写之前，我们需要搞清楚几个概念。
+在进行pinctrl_desc代码编写之前，我们需要搞清楚几个概念。
 
 ```
 pin
@@ -170,6 +170,131 @@ key {
 ```
 
 
+
+# amlogic pinctrl分析
+
+以axg的为例进行分析。
+
+代码在drivers/amlogic/pinctrl/pinctrl-meson-axg.c里。
+
+pinctrl对应一组寄存器。所以也是一个平台设备。
+
+核心数据是这个：
+
+```
+static struct meson_pinctrl_data meson_axg_aobus_pinctrl_data
+	.pins		= meson_axg_aobus_pins,
+	.groups		= meson_axg_aobus_groups,
+	.funcs		= meson_axg_aobus_functions,
+	.banks		= meson_axg_aobus_banks,
+```
+
+pins是这个范围：
+
+```
+	MESON_PIN(GPIOAO_0),
+	MESON_PIN(GPIOAO_1),
+	MESON_PIN(GPIOAO_2),
+	MESON_PIN(GPIOAO_3),
+	MESON_PIN(GPIOAO_4),
+	MESON_PIN(GPIOAO_5),
+	MESON_PIN(GPIOAO_6),
+	MESON_PIN(GPIOAO_7),
+	MESON_PIN(GPIOAO_8),
+	MESON_PIN(GPIOAO_9),
+	MESON_PIN(GPIOAO_10),
+	MESON_PIN(GPIOAO_11),
+	MESON_PIN(GPIOAO_12),
+	MESON_PIN(GPIOAO_13),
+```
+
+functions对应这些
+
+```
+	FUNCTION(gpio_aobus),
+	FUNCTION(uart_ao_a),
+	FUNCTION(uart_ao_b),
+	FUNCTION(i2c_ao),
+	FUNCTION(i2c_ao_slave),
+	FUNCTION(remote_input_ao),
+	FUNCTION(remote_out_ao),
+	FUNCTION(pwm_ao_a),
+	FUNCTION(pwm_ao_b),
+	FUNCTION(pwm_ao_c),
+	FUNCTION(pwm_ao_d),
+	FUNCTION(jtag_ao),
+```
+
+还有一组meson-axg-periphs-pinctrl
+
+代码里还有这样的：
+
+```
+/* i2c0 */
+static const unsigned int i2c0_sck_pins[] = {GPIOZ_6};
+static const unsigned int i2c0_sda_pins[] = {GPIOZ_7};
+```
+
+
+
+很多结构体都是自己定义的，而且不是从标准的继承的。
+
+就3个文件
+
+pinctrl-meson.h
+pinctrl-meson-axg.c
+pinctrl-meson-axg-pmx.c
+
+画了思维导图：
+
+https://naotu.baidu.com/file/d73289ce1f845e72f3bd65b68b221dc4
+
+再回过头看dts里的配置。
+
+
+
+```
+每个 GPIO pad 有 6 个相关寄存器，其中 
+GPIO_O_REG 
+	用于控制pad的输出，
+GPIO_I_REG
+	用于存储pad的输入值；
+GPIO_OEN_REG 
+	用于使能 GPIO 输出功能，
+PINMUX _REG 
+	用于定义复用功能
+GPIO_PULL_EN_REG 
+	用于使能GPIO pad的上拉功能，
+GPIO_PULL_UP_REG 
+	用于设置GPIO 输出电平。 
+
+对于 AO GPIO 焊盘，
+请参阅 AO GPIO 寄存器。
+```
+
+对应的dts
+
+```
+pinctrl_periphs: pinctrl@ff634480{
+		compatible = "amlogic,meson-axg-periphs-pinctrl";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		gpio: banks@ff634480{
+			reg = <0x0 0xff634480 0x0 0x40>,//这个对应的就是mux，跟下面的reg-names顺序一样。
+				  <0x0 0xff6344e8 0x0 0x14>,
+				  <0x0 0xff634520 0x0 0x14>,
+				  <0x0 0xff634430 0x0 0x3c>;
+			reg-names = "mux",
+				"pull",
+				"pull-enable",
+				"gpio";
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+	};
+```
 
 
 

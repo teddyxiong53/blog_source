@@ -281,6 +281,39 @@ Simple mixer control 'Master',0
 amixer sset Master 40
 ```
 
+# speaker-test代码分析
+
+这个有测试各个位置的喇叭。怎么做的？
+
+代码总共1000行。
+
+```
+static const int	channels4[] = {
+  0, /* Front Left  */
+  1, /* Front Right */
+  3, /* Rear Right  */
+  2, /* Rear Left   */
+};
+static const int	channels6[] = {
+  0, /* Front Left  */
+  4, /* Center      */
+  1, /* Front Right */
+  3, /* Rear Right  */
+  2, /* Rear Left   */
+  5, /* LFE         */
+};
+static const int	channels8[] = {
+  0, /* Front Left  */
+  4, /* Center      */
+  1, /* Front Right */
+  7, /* Side Right  */
+  3, /* Rear Right  */
+  2, /* Rear Left   */
+  6, /* Side Left   */
+  5, /* LFE         */
+};
+```
+
 
 
 # 参考资料

@@ -19,7 +19,7 @@ tags:
 
 cpu0直接往下运行，进行设备初始化以及运行Linux Kernel。
 
-**其他cpu0则在栅栏外进入睡眠状态。**
+**其他cpu则在栅栏外进入睡眠状态。**
 
 cpu0在初始化smp的时候，会在cpu-release-addr里面填入一个地址并唤醒其他 cpu。
 

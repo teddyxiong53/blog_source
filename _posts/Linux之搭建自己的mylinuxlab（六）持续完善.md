@@ -8,7 +8,7 @@ tags:
 
 
 
-#从initramfs转到SD卡的rootfs
+# 从initramfs转到SD卡的rootfs
 
 我试了一下给qemu加上-sd，是正常的。
 

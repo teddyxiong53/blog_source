@@ -1324,6 +1324,115 @@ So GPIO controller driver will be initialized before I2C drivers.
 
 https://stackoverflow.com/questions/57202134/device-tree-dependency-between-two-nodes
 
+# overlay支持
+
+```
+/**
+ * Overlay support
+ */
+
+#ifdef CONFIG_OF_OVERLAY
+```
+
+
+
+# kernel启动时的解析dts过程
+
+例如在 ARM 上，arch/arm/kernel/setup.c 中的 setup_arch() 将调用 arch/arm/kernel/devtree.c 中的 setup_machine_fdt()，
+
+它搜索 machine_desc 表并选择最匹配设备树数据的 machine_desc .
+
+它通过查看根设备树节点中的“兼容”属性来确定最佳匹配，
+
+并将其与 struct machine_desc 中的 dt_compat 列表（在 arch/arm/include/asm/mach/arch.h 中定义，如果您很好奇）
+
+```
+void __init setup_arch (char ** cmdline_p)
+{
+	const struct machine_desc * mdesc;
+	…
+	mdesc = setup_machine_fdt (__ atags_pointer);
+	if (! mdesc)
+	mdesc = setup_machine_tags (__ atags__pointer, __machine_arch_type);
+	…
+}
+```
+
+https://titanwolf.org/Network/Articles/Article?AID=e7246afb-bfcb-4cf5-b537-3c97651e4812
+
+
+
+DeviceTree的结构非常简单，由两种元素组成：Node(节点)、Property(属性)。
+
+- Node节点。在DTS中使用一对花括号”node-name{}”来定义;
+- Property属性。在Node中使用”property-name=value”字符串来定义；
+
+Node、Property的名字和值都是可以自定义的，没有太大限制。
+
+但是DeviceTree的标准还是预定义了一些标准的Node和Property，
+
+在标准Node和Property之间还定义了一些约束规则。
+
+
+
+Devicetree.org 是许多公司和个人的社区努力，旨在促进 Devicetree 标准的未来发展。
+
+设备树是描述硬件的数据结构。
+
+不是将设备的每个细节都硬编码到操作系统中，
+
+而是可以在启动时传递给操作系统的数据结构中描述硬件的许多方面。
+
+设备树由 OpenFirmware、OpenPOWER 抽象层 (OPAL)、电源架构平台要求 (PAPR) 和独立扁平设备树 (FDT) 形式使用。
+
+devicetree 规范提供了 devicetree 数据格式和最佳实践的完整技术描述。
+
+
+
+- “compatible”属性通常用来device和driver的适配，推荐的格式为”manufacturer,model”。
+- “model”属性只是简单的表示型号，root节点用其来传递值给machine_desc_str。
+
+
+
+在DeviceTree中通过另一种方式进行phandle的定义和引用更加常见：
+
+- 定义一个“label：”来引用Node，在编译是系统会自动为node生成一个phandle属性。”cpu0”是一个label，用来引用node”cpu@0”：
+
+```
+cpu0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a35";
+			reg = <0x000>;
+```
+
+这样来引用
+
+```
+cpu = <&cpu0>;
+```
+
+- “ranges”属性用来做当前node和父node之间的地址映射，格式为(child-bus-address, parentbus-address, length)。其中child-bus-address的解析长度受当前node的#address-cells属性控制，parentbus-address的解析长度受父node的#address-cells属性控制length的解析长度受当前node的#size-cells属性控制。
+
+
+
+Node Name常常由两部分组成“node-name@unit-address”，主要是为了防止Node Name重复冲突：
+
+- “node-name”是node的名字；
+- “unit-address”是node中“reg”属性描述的开始地址；
+
+/aliases node
+
+用来给一些绝对路径定义别名：
+
+```
+aliases {
+    serial0 = "/simple-bus@fe000000/serial@llc500";
+    ethernet0 = "/simple-bus@fe000000/ethernet@31c000";
+};
+```
+
+
+
 # 参考文章
 
 1、
@@ -1348,3 +1457,9 @@ https://www.cnblogs.com/Oude/p/12064017.html
 6、Device Tree（三）：代码分析
 
 https://my.oschina.net/fileoptions/blog/2864465
+
+7、魅族内核团队
+
+这篇比较详细。
+
+https://kernel.meizu.com/device-tree.html

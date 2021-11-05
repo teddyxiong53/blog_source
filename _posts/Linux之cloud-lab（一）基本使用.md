@@ -103,7 +103,7 @@ make boot #会在qemu里运行rt-thread。
 qemu-system-arm -M $(BOARD) -net nic,model=$(NET_DEV) -net tap -kernel $(BSP_DIR)/rt-thread.elf
 ```
 
-#系统分析
+# 系统分析
 
 看看我系统里当前的docker镜像情况：
 
@@ -296,7 +296,7 @@ vexpress主要是面向soc设计者，所以板子的设计方法也很特别。
 
 主板提供各种外围接口，子板提供CPU核心。
 
-##自己编译并执行
+## 自己编译并执行
 
 使用vexpress-a9来进行编译。
 
@@ -357,7 +357,7 @@ Makefile的默认目标是board。它的行为是：
 
 编译完了，只是看镜像大了很多。可以了。
 
-#分析执行过程
+# 分析执行过程
 
 当前的命令是：
 
@@ -447,7 +447,7 @@ bootdev也可以指定为tftp。
 
 # 顶层目录分析
 
-# 
+
 
 ```
 teddy@teddy-ubuntu:~/work/txkj/cloud-lab/labs/linux-lab$ tree -L 1

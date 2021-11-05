@@ -24,6 +24,10 @@ make xx
 cannot access '/usr/lib/alsa-lib/libasound_module_conf_pulse.so': No such file or directory
 ```
 
+这个很容易，就是ln -s 把对于的目录软链接到/usr/lib/alsa-lib/目录就好了。
+
+
+
 我现在需要深入阅读和调试alsalib的代码。
 
 怎么搭建环境呢？
@@ -292,7 +296,54 @@ dshare plugin把可用channels分配给需要的clients，
 
 
 
-参考资料
+# test代码分析
+
+## audio_time
+
+没看懂这个有什么用。统计时间的？
+
+## chmap
+
+这个的意义又是什么？
+
+是指声道布局。
+
+就是这些东西
+
+```
+enum {
+	SNDRV_CHMAP_UNKNOWN = 0,
+	SNDRV_CHMAP_NA,		/* N/A, silent */
+	SNDRV_CHMAP_MONO,	/* mono stream */
+	/* this follows the alsa-lib mixer channel value + 3 */
+	SNDRV_CHMAP_FL,		/* front left */
+	SNDRV_CHMAP_FR,		/* front right */
+	SNDRV_CHMAP_RL,		/* rear left */
+	SNDRV_CHMAP_RR,		/* rear right */
+```
+
+
+
+## control
+
+```
+	snd_ctl_t *handle;
+	snd_ctl_card_info_t *info;
+	snd_pcm_info_t *pcminfo;
+	snd_rawmidi_info_t *rawmidiinfo;
+```
+
+# async机制分析
+
+是靠sigio来做的。
+
+# alsa-ioctl-test
+
+这个库似乎不错。
+
+https://github.com/takaswie/alsa-ioctl-test
+
+# 参考资料
 
 1、how to compile test examples alsa
 

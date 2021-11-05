@@ -357,29 +357,37 @@ struct FrontendConfig {
 
 有个readme进行说明。
 
-原始音频输入预计为 16 位 PCM 功能，具有可配置的采样率。 
-
-更具体地说，音频信号经过预加重过滤器（可选）；
-
- 然后被切成（可能重叠）帧和窗口函数应用于每一帧； 
-
-之后，我们做一个傅立叶对每一帧进行变换（或更具体地说是短时傅立叶变换）并计算功率谱；
-
- 然后计算滤波器组。
-
-默认情况下，库配置了一组默认值来执行不同的处理任务。
 
 
 
-在上面的例子中需要注意的是，前端消耗了尽可能多的从音频数据中生成单个特征向量所需的样本（根据到前端配置）。 
 
-如果没有足够的样本可用于生成一个特征向量，返回的大小将为 0，值指针将为`空`。
+在上面的例子中需要注意的是，前端使用了尽可能多的音频数据，来生成单个特征向量所需的样本 
 
-frontend_main.cc 及其中提供了如何使用前端的示例frontend_main。
+如果没有足够的样本，可用于生成一个特征向量，返回的大小将为 0，值指针将为`空`。
 
- 此示例需要包含“int16”的文件的路径PCM 功能的采样率为 16KHz，
+frontend_main.cc 这个是一个完整的例子，
 
-执行时将打印输出根据前端默认配置的系数。
+输入是16bit的16k采样率的pcm数据文件。
+
+输出是特征的值。
+
+代码说明就是这样的：
+
+```c++
+struct FrontendConfig frontend_config;
+FrontendFillConfigWithDefaults(&frontend_config);
+int sample_rate = 16000;
+FrontendPopulateState(&frontend_config, &frontend_state, sample_rate);
+int16_t* audio_data = ;  // PCM audio samples at 16KHz.
+size_t audio_size = ;  // Number of audio samples.
+size_t num_samples_read;  // How many samples were processed.
+struct FrontendOutput output =
+    FrontendProcessSamples(
+        &frontend_state, audio_data, audio_size, &num_samples_read);
+for (i = 0; i < output.size; ++i) {
+  printf("%d ", output.values[i]);  // Print the feature vector.
+}
+```
 
 
 
@@ -397,6 +405,47 @@ frontend_main.cc 及其中提供了如何使用前端的示例frontend_main。
 
 主要实现了什么功能？
 
+我觉得应该是frontend.h和frontend_util.h。
+
+对外提供的功能就是把时域信号转成频域信号。
+
+主要的2个结构体是：
+
+```
+FrontendConfig
+FrontendState
+FrontendOutput
+	这个把数据类型固定为uint16*的。那么就只能处理16bit的音频数据了。
+```
+
+对外的主要函数是：
+
+FrontendPopulateState
+
+FrontendProcessSamples
+
+函数调用流程是这样：
+
+```
+loop
+	PopulateFeatureData
+		InitializeMicroFeatures
+			FrontendPopulateState
+		GetAudioSamples
+		GenerateMicroFeatures
+			FrontendProcessSamples
+```
+
+以frontend_main.cc为例分析一下接口的使用。
+
+这个例子的作用是：
+
+./frontend_main 1.pcm
+
+输入的文件，要是16bit的pcm数据。
+
+音频的采样率是可以变的。
+
 
 
 封装了kissfft的fft计算接口现在是这样用的。
@@ -409,6 +458,16 @@ FftCompute(&state, kFakeWindow, kScaleShift);
 ```
 
 封装也很浅，因为这个就已经很直观了。没什么太多可以搞的东西。
+
+现在看看为什么当前的fft_test.cc的代码测试不过。
+
+随便选一个：
+
+```
+Testing FftTest_CheckOutputValuesstate.output[i].imag == expected[i].imag failed at test.cc:34 (32247 vs 0)state.output[i].real == expected[i].real failed at test.cc:33 (0 vs -10)
+```
+
+这数值差别很大。
 
 
 
