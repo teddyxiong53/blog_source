@@ -52,7 +52,7 @@ lodash的模块化方法，非常适用于：
 
 
 
-api分析
+# api分析
 
 ```
 Array相关
@@ -60,7 +60,7 @@ Array相关
 Collection相关
 	
 Date相关
-	只有一个函数，_.now()返回当前描述。
+	只有一个函数，_.now()返回当前秒数。
 Function相关
 	
 Language相关
@@ -342,7 +342,7 @@ ES6 确实已经大行其道了，但是 lodash 仍然有不可取代的地方�
 
 
 
-参考资料
+# 参考资料
 
 1、lodash入门
 

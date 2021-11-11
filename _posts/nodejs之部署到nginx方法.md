@@ -95,10 +95,7 @@ hlxiong@hlxiong-VirtualBox ~/work/test/node $ pm2 start hello.js
 
 [PM2] Starting /home/hlxiong/work/test/node/hello.js in fork_mode (1 instance)
 [PM2] Done.
-┌──────────┬────┬─────────┬──────┬───────┬────────┬─────────┬────────┬─────┬───────────┬─────────┬──────────┐
-│ App name │ id │ version │ mode │ pid   │ status │ restart │ uptime │ cpu │ mem       │ user    │ watching │
-├──────────┼────┼─────────┼──────┼───────┼────────┼─────────┼────────┼─────┼───────────┼─────────┼──────────┤
-│ hello    │ 0  │ N/A     │ fork │ 31268 │ online │ 0       │ 0s     │ 0%  │ 27.3 MB   │ hlxiong │ di
+
 ```
 
 可以用pm2 list查看。
@@ -108,6 +105,18 @@ hlxiong@hlxiong-VirtualBox ~/work/test/node $ pm2 start hello.js
 用pm2 stop hello停止。
 
 用pm2 delete hello来删除这个任务。
+
+# 实际操作
+
+我当前有个公网服务器。
+
+nodejs服务都是这么弄的：
+
+nginx服务器通过宝塔面板来管理。
+
+创建一个网站，给网站设置反向代理，来绑定nodejs进程所在的端口，就可以完美运行。
+
+很简直实用。
 
 
 

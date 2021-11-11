@@ -20,7 +20,7 @@ CEC功能为用户带来许多方便，
 
 
 
-HDMI-CEC功能，功能上大致都是**借着CEC信号让用户可以控制****[HDMI接口](https://www.baidu.com/s?wd=HDMI接口&tn=44039180_cpr&fenlei=mv6quAkxTZn0IZRqIHckPjm4nH00T1Y3uhm1nHPhPjTYmWPWn1Pb0ZwV5Hcvrjm3rH6sPfKWUMw85HfYnjn4nH6sgvPsT6KdThsqpZwYTjCEQLGCpyw9Uz4Bmy-bIi4WUvYETgN-TLwGUv3EPWfYn1fzP1f)上所连接的装置**。
+HDMI-CEC功能，功能上大致都是**借着CEC信号让用户可以控制[HDMI接口](https://www.baidu.com/s?wd=HDMI接口&tn=44039180_cpr&fenlei=mv6quAkxTZn0IZRqIHckPjm4nH00T1Y3uhm1nHPhPjTYmWPWn1Pb0ZwV5Hcvrjm3rH6sPfKWUMw85HfYnjn4nH6sgvPsT6KdThsqpZwYTjCEQLGCpyw9Uz4Bmy-bIi4WUvYETgN-TLwGUv3EPWfYn1fzP1f)上所连接的装置**。
 
 如单键播放(One Touch Play)，
 
@@ -50,6 +50,108 @@ CEC使得建立于现有的点对点E-DDC的“插入并播放（Plug&Play）”
 
 
 
+不过可以简单的这么理解，
+
+在HDMI CEC最小系统里，
+
+所有通过HDMI连接在一起的设备（包括电视、DVD、机顶盒等等） 在物理连接上，
+
+各自的CEC的是全部连接在一起，
+
+可以看做，在一条CEC线（标准HDMI接头的第13个腿）上挂着所有的设备。
+
+
+
+# cec调节音量
+
+但是多了一个音响设备操作上就会麻烦很多，
+
+用电视遥控器开电视、音响遥控器开音响和调节音量，
+
+切换机顶盒、[游戏机](https://www.smzdm.com/fenlei/youxiji/)等信号源
+
+还要看你把它们接到电视还是音响设备上，
+
+用不同的遥控器去控制对应的设备。
+
+**而标题里所说的CEC正是为了解决这一麻烦而存在的，**
+
+**有了它就可以用一个遥控器控制所有的设备。**
+
+比如音响会自动跟随电视开关机，就不用再担心关了电视忘记关音响了
+
+用电视遥控器调整音量，它实际上会通过CEC去调整音响的音量，所以一个遥控器就能解决问题。
+
+
+
+CEC全文为Consumer Electronics Control，
+
+用来传送工业规格的AV Link协议信号，
+
+以便支持单一遥控器操作多台AV机器。
+
+简单来说它就是通过HDMI线传送控制信号，
+
+[电视机](https://www.smzdm.com/fenlei/dianshi/)开关机就通过HDMI发送控制信号给音箱开关机，
+
+电视机遥控音量时候也自动调整音箱的音量，
+
+**就无需用到音响自己的遥控器了。**
+
+现在多数电视机都支持这个功能，
+
+但各个厂家都各自取了花骚的名字，
+
+而不是简单就叫CEC：
+
+Philips - EasyLink
+Sony - BRAVIA Link and BRAVIA Sync
+Samsung - AnyNet+
+Sharp - Aquos Link
+Hitachi - HDMI-CEC
+AOC - E-Link
+Pioneer - Kuro Link
+Toshiba - CE-Link and Regza Link
+Onkyo - RIHD (Remote Interactive over HDMI)
+LG - SimpLink
+Panasonic - HDAVI Control, EZ-Sync, VIERA Link
+
+
+
+所以支持CEC一直是我对音响的基本要求。
+
+其实惠威M200/M300之类2.0多媒体音响，
+
+效果会远好于价格贵几倍的声吧类产品，但不支持HDMI及附带的CEC、ARC功能，实际使用起来会麻烦很多。
+
+
+
+ARC全文为Audio Return Channel即音频回传，
+
+这个功能可以把电视机的音频“上传”到音响设备去。
+
+音响设备只要用一根HDMI线连到电视，
+
+**然后游戏机、HTPC、机顶盒等设备也接到电视机，**
+
+**电视就会自动把正在播放设备的音频“上传”到音响，**
+
+而无需在音响上做切换信号源的操作。
+
+
+
+ARC则是HDMI接口附带的另一个极有用的功能，
+
+比如你把音响、游戏机、电脑等设备同时接到电视的HDMI接口，
+
+就可以用电视遥控器在设备间随意切换，
+
+**而这些设备的声音都会通过ARC功能回传到音响去放大。**
+
+**可以说有了CEC和ARC的HDMI才能让所有设备形成一个整体，**
+
+不再担心老人孩子开了这个忘记开那个，折腾半天看不成电视玩不成游戏，也不用担心关机时候会漏掉哪个设备。
+
 
 
 参考资料
@@ -58,3 +160,10 @@ CEC使得建立于现有的点对点E-DDC的“插入并播放（Plug&Play）”
 
 https://www.cnblogs.com/yuanqiangfei/p/11023162.html
 
+2、
+
+https://blog.csdn.net/qq_30624591/article/details/106635069
+
+3、居家DIY系列 篇二十三：音响、声吧失效了？五种方案解决机顶盒CEC缺陷
+
+https://post.smzdm.com/p/738281/

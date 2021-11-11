@@ -58,8 +58,149 @@ A5：不一定。
 
 
 
-参考资料
+# SpeakerAlloc的意义
+
+根据Data Block结构，首字节的bit7~5为**Speaker Allocation Data Block** = 4，bit4~0为**Speaker Allocation Data Block**长度(固定为3)，后面跟的3字节，结构如下：
+
+ ![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/1288047-20180705102624339-1655499531.png)
+
+注：F为前置，L为左置，R为右置，C为中置，Fxx=0表示预留位
+
+在代码上是这么写的：
+
+```
+  BYTE value[4] = {0};
+  value[0] = (EDID_EXT_TAG_SPEAKER_ALLOCATION << 5) | 0x03;//EDID_EXT_TAG_SPEAKER_ALLOCATION就是4 
+  value[1] = channles;//channels传递的是0x7f。相当于所有有意义的bit都设置为1了。
+  value[2] = value[3] = 0;
+```
+
+
+
+# audio data block
+
+根据Data Block结构，
+
+首字节的bit7~5为Audio Data Block = 1，
+
+bit4~0为Video Data Block长度，后面跟的字节为1个或多个CEA short Audio Descriptor,每个CEA short Audio Descripto由三个字节组级，分为LPCM，AC3，MPEG2等各种Audio Format Code,  Audio Format Code及CEA short Audio DZescriptor结构如下：
+
+![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/1288047-20180705102547547-2145846685.png)
+
+代码上这么写：
+
+```
+I2C_write(i2c_handle, REG_ADDR_HDMI_EDID_AudioDataBlock_0, edid+4, *edid_len);
+```
+
+
+
+
+
+HDMI 以增强型扩展显示识别数据 (E-EDID) 结构的形式引入信令，
+
+允许源设备（例如机顶盒、游戏机）检测连接的接收设备（例如电视、条形音箱、A /V 接收器），
+
+然后再发送任何音频或视频。
+
+这确保源设备仅传输接收设备支持的格式，确保没有空白屏幕或静音扬声器。 
+
+E-EDID 中的主要音频参数承载在一个或多个短音频描述符 (SAD) 中。
+
+每个 SAD 都描述了一种支持的音频格式，
+
+包括采样率、比特率和（对于 PCM）比特深度。
+
+以下是来自电视的 HDMI EDID 示例：
+
+
+
+由于杜比全景声不是编解码器，
+
+而是作为现有编解码器的扩展进行携带，
+
+因此每个 SAD 中都有一个“音频格式特定”字节，
+
+指示设备是否支持杜比全景声。
+
+想要将 Atmos 发送到接收设备的源设备
+
+可以在每个杜比音频编解码器的 SAD 中检查杜比全景声支持
+
+
+
+电视通常支持立体声 PCM、Dolby Digital、Dolby Digital Plus，
+
+而 AVR 和条形音箱通常还支持 Dolby TrueHD。
+
+当源设备连接到接收设备时，
+
+它会在发送音频之前读取 E-EDID 以查看它支持哪些编解码器。
+
+如果接收设备不支持源的音频编解码器，
+
+源设备将解码音频并发送立体声或 5.1 PCM 音频。
+
+
+
+当通过 HDMI 传输编码音频格式时，
+
+通常由 PCM 音频数据占用的数据空间可以被视为一个大数据管道，
+
+其中时钟速率决定了可以通过管道发送多少数据。
+
+对杜比编解码器很重要的 3 个主要时钟速率是 48 kHz、192 kHz 和 768 kHz。
+
+数据管道是 2 个通道，每个通道 16 位，
+
+因此当您将管道大小和时钟速率相乘时，
+
+您将分别获得 1.5 Mbps、6 Mbps 和 24.5 Mbps。
+
+杜比音频编解码器适合不同的时钟速率，如下所示：
+
+
+
+ 一般在VGA、DVI和HDMI接口中会用到EDID相关信息。
+
+DVI有多种规格，
+
+分别是
+
+DVI-A（实际上就是VGA）、
+
+DVI-D（数据信号，TMDS电平）、
+
+DVI-I（A+D，兼容模拟和数字信号）。
+
+**HDMI就是在DVI-D的基础上封装了音频信号和具有加密传输的功能。**
+
+EDID[基础版](https://www.baidu.com/s?wd=基础版&tn=24004469_oem_dg&rsv_dl=gh_pl_sl_csd)一共包含128字节有效信息。需要多字节表示一个信息项的，高地址处存储高字节，低地址处存储低字节。256字节的扩展版不是强制必须的
+
+# 参考资料
 
 1、
 
 https://blog.csdn.net/Jkf40622/article/details/48311455
+
+2、
+
+https://blog.csdn.net/weixin_34273481/article/details/93785478
+
+3、
+
+https://www.cnblogs.com/fire909090/p/10523604.html
+
+4、
+
+https://developer.dolby.com/blog/dolby-audio-over-hdmi-part-2-signaling-and-carriage/
+
+5、高清多媒体接口（HDMI）EDID规范详解
+
+http://www.cesi.cn/images/editor/20181031/20181031090234756.pdf
+
+6、
+
+这篇表格不错。
+
+https://blog.csdn.net/dxpqxb/article/details/87864787

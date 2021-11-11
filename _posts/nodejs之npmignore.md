@@ -5,9 +5,9 @@ tags:
 	- nodejs
 ---
 
-1
+--
 
-跟gitignore类型，如果没有提供npmigore，而有gitignore，那么就把gitignore当成npmignore来用。
+跟gitignore类似，如果没有提供npmigore，而有gitignore，那么就把gitignore当成npmignore来用。
 
 
 

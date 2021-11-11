@@ -285,7 +285,8 @@ http.listen(3344, function() {
 <body>
     <ul id="messages"></ul>
     <form action="">
-        <input id="m" autocomplete="off"><button>Send</button>
+        <input id="m" autocomplete="off">
+        <button>Send</button>
     </form>
 </body>
 </html>

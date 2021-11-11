@@ -127,20 +127,53 @@ spdif_encoder_api.c
 standard_alsa_manager.c
 ```
 
+# 实现了什么功能
 
+做了这么复杂的封装，最终这个模块提供的价值是什么？
 
-struct aml_audio_device  
+仅仅是对alsa的封装吗？
 
-这个是核心数据结构。
+是可以做到linux和Android的通用？
 
-看test.c里的内容。
+封装了对atmos的支持？
+
+除了标准的alsa接口，也自己封装了一套跟alsa接口并列的实现。
 
 ```
-//1、拿到mod
-audio_hw_device_get_module(&mod);
-//2、拿到dev。
-audio_hw_device_open(mod, &dev);
-//3、设置参数。
-dev->set_parameters(dev, "speakers=lr:c:lfe:lrs:lre");
+#if 1//def USE_ALSA_PLUGINS
+    aml_output_function.output_open  = standard_alsa_output_open;
+    aml_output_function.output_close = standard_alsa_output_close;
+    aml_output_function.output_write = standard_alsa_output_write;
+    aml_output_function.output_getinfo = standard_alsa_output_getinfo;
+#else
+    aml_output_function.output_open  = aml_alsa_output_open;
+    aml_output_function.output_close = aml_alsa_output_close;
+    aml_output_function.output_write = aml_alsa_output_write;
+#endif
+```
+
+
+
+
+
+# audio_hal.h
+
+这个是对外的主要接口。
+
+```
+struct audio_stream
+struct audio_stream_out 
+struct audio_stream_in 
+struct audio_module 
+struct audio_hw_device 
+```
+
+# audio_hw.h
+
+```
+struct aml_audio_device
+	继承了struct audio_hw_device
+struct aml_stream_out
+struct aml_stream_in
 ```
 

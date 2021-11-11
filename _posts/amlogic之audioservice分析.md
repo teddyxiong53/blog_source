@@ -271,3 +271,219 @@ shmget(key, size, 0666);
 
 具体用法有点没看懂。不知道头部的长度怎么来的。
 
+# 硬件图和音频通路分析
+
+现在对照着D621的硬件框图和audioservice的配置文件一起看，就对得上了。
+
+例如，板端aplay -l，信息是这样：
+
+```
+aplay -l
+**** List of PLAYBACK Hardware Devices ****
+card 0: AMLAUGESOUND [AML-AUGESOUND], device 0: TDM-A-dummy multicodec-0 []
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 0: AMLAUGESOUND [AML-AUGESOUND], device 1: TDM-B-dummy-alsaPORT-i2sCapture dummy-1 []
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 0: AMLAUGESOUND [AML-AUGESOUND], device 2: TDM-C-tas5782m multicodec-2 []
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 0: AMLAUGESOUND [AML-AUGESOUND], device 4: SPDIF-A-dummy dummy-4 []
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+```
+
+在audioservice的配置文件里是这样：
+
+```
+"speaker_8ch": {
+        "MAX_CHANNELS": 8,
+        "ALSA_Config": {
+            "HDMI_IN": {
+                "card": 0,
+                "device": 1
+            },
+            "SPDIF_IN": {
+                "card": 0,
+                "device": 4
+            },
+            "LINE_IN": {
+                "card": 0,
+                "device": 1
+            },
+            "BT_IN": {
+                "card": 0,
+                "device": 0
+            },
+            "LOOPBACK_IN": {
+                "card": 1,
+                "device": 1
+            },
+            "Speaker_Out": {
+                "card": 0,
+                "device": 2
+            },
+            "Spdif_out": {
+                "card": 0,
+                "device": 4
+            }
+        },
+```
+
+可以看到hdmi输入的对应hw:0,1，spdif in的对应hw:0,4
+
+而在D621（hdmi repeater板）的硬件框图上，是这样：
+
+![image-20211111162324898](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20211111162324898.png)
+
+可以看到，hdmi in是连接到了tdmb这个口上。
+
+这个在aplay -l里看到的是：
+
+```
+card 0: AMLAUGESOUND [AML-AUGESOUND], device 1: TDM-B-dummy-alsaPORT-i2sCapture dummy-1 []
+```
+
+而蓝牙的，是连到了tdma上，就是hw:0,0了。
+
+而spdif的，是对应hw:0,4的。
+
+# homeapp分析
+
+这个还可以把avs和gva的对接进来？
+
+对应的函数实现在这里：
+
+```
+./multimedia/avs/Client/AvsClient.c
+```
+
+是在avs的源代码里，自己写了一个c文件。输出一个动态库。
+
+先不细看。
+
+
+
+homeapp里的内容还比较多。
+
+包括了对mcu进行在线升级的内容。
+
+把目录梳理一下
+
+```
+├── airplay_client.c 对接AirPlay
+├── airplay_client.h
+├── aml_uart   这个没有被编译。
+│   ├── aml_uart.c
+│   ├── aml_uart.h
+│   ├── Android.mk
+│   ├── cmd_define.h
+│   ├── device_status.c
+│   ├── device_status.h
+│   ├── dsp_sendback.c
+│   ├── dsp_sendback.h
+│   ├── mcu_cmds.c
+│   ├── mcu_cmds.h
+│   ├── ringqueue.c
+│   ├── ringqueue.h
+│   ├── syscfg.c
+│   ├── syscfg.h
+│   ├── sys_tool.c
+│   ├── sys_tool.h
+│   ├── tcl_ota
+│   │   ├── aml_downloader.c
+│   │   ├── aml_downloader.h
+│   │   ├── aml_gethostbyname.c
+│   │   ├── aml_md5.c
+│   │   ├── aml_md5.h
+│   │   ├── Android.mk
+│   │   ├── common.h
+│   │   ├── Makefile
+│   │   ├── swupdate-md5check.sh
+│   │   ├── tcl_ota.c
+│   │   ├── tcl_ota.h
+│   │   ├── tcl_ota_test.c
+│   │   ├── upgrade_config_file
+│   │   └── upgrade_test.c
+│   ├── uartcmd.c
+│   ├── uartcmd.h
+│   ├── uart_mcu_upgrade
+│   │   ├── Android.mk
+│   │   └── mcu_upgrade.c
+│   ├── wifi_mgr.c
+│   └── wifi_mgr.h
+├── Android.mk
+├── avs_client.c 
+├── avs_client.h
+├── bt_client.cpp
+├── bt_client.h
+├── gen_simulate_key_h.sh
+├── gva_castcontrol.h
+├── gva_client.cpp
+├── gva_client.h
+├── halaudio_client.c
+├── halaudio_client.h
+├── homeapp.c
+├── input_manage.c
+├── input_manage.h
+├── led.c
+├── led_char_16.h
+├── led.h
+├── Makefile.am
+├── ota_upgrade.c
+├── resource_manage.c
+├── resource_manage.h
+├── sh_cmd.c
+├── simulate_key.c
+├── speaker_process.c
+├── syskey.c
+├── syskey.h
+├── tm1640_anode.c
+├── tm1640_anode.h
+├── tm2_external.c
+├── tm2_external.h
+├── usb_player.c
+└── usb_player.h
+```
+
+当前只编译了这些
+
+```
+homeapp_SOURCES = homeapp.c syskey.c tm1640_anode.c led.c \
+                  resource_manage.c input_manage.c
+```
+
+还是可以选配编译uart的。
+
+```
+if AML_UART_ENABLE
+homeapp_SOURCES += \
+	aml_uart/dsp_sendback.c \
+	aml_uart/mcu_cmds.c \
+	aml_uart/ringqueue.c \
+	aml_uart/sys_tool.c \
+	aml_uart/syscfg.c \
+	aml_uart/uartcmd.c \
+	aml_uart/aml_uart.c \
+	aml_uart/device_status.c
+```
+
+resource request，资源管理
+
+包括了改变CPU的频率。
+
+例如这个：
+
+```
+case INPUT_NOTIFY_TYPE_RES_CHANGE:
+       if (!IsHDMIInput(param->input_id)) {
+         halaudio_switch_cpu_frequency(_HALAUDIO_CPU_1_2_G_);
+       }
+       break;
+```
+
+bt_client.cpp没有编译。里面的函数也是找不到的。
+
+android.mk的有加。所以是只对GVA的有使用。
+

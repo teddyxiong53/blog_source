@@ -157,7 +157,7 @@ DTS音频格式：DTS、DTS-HDMaster Audio、DTS:X。
 
 
 
-参考资料
+# 参考资料
 
 1、
 
@@ -166,3 +166,9 @@ https://zhuanlan.zhihu.com/p/76274259
 2、
 
 https://zhuanlan.zhihu.com/p/50016339
+
+3、
+
+这个操作很强，用逻辑分析仪把波形分析了一遍。
+
+https://zhuanlan.zhihu.com/p/80772947

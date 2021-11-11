@@ -15,7 +15,7 @@ post会有body。而get不会有。
 
 现在我们看看怎么来做。
 
-#获取get请求数据
+# 获取get请求数据
 
 ```
 var http = require('http')
