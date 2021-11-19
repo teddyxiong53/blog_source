@@ -487,3 +487,481 @@ bt_client.cpp没有编译。里面的函数也是找不到的。
 
 android.mk的有加。所以是只对GVA的有使用。
 
+## homeapp.c文件
+
+这个相当于跟用户交互的前端部分。
+
+asclient_callback 这个是处理后端的通知消息的回调。
+
+audioservice调用了这个来发送通知：
+
+```
+snprintf(notify_str, 64,
+            "{\"id\": %d,"
+            "\"input_chs\": %d}",
+            AML_AS_NOTIFY_INPUT_CHS_NUM_CHANGE, pHandle->channel_num);
+      audioservice_notify_system_update(notify_str);
+```
+
+led的显示，都是靠这个来做的。
+
+```
+收到AML_AS_NOTIFY_AUDIO_FORMAT_CHANGED消息，调用show_audioinfo
+
+```
+
+
+
+# 打开日志调试
+
+编译层面：
+
+```
+#ifdef AML_LOG_ENABLE
+#include "aml_log.h"
+#endif
+```
+
+AML_LOG_ENABLE这个宏是定义了的。
+
+用加编译错误的方式确认了。
+
+那么日志函数就是这样的：
+
+```
+#ifdef AML_LOG_ENABLE
+#define AML_SYSLOG(priority, args...)                                          \
+  do {                                                                         \
+    AML_LOG(priority_to_level(priority), ##args);                              \
+  } while (0)
+#else
+```
+
+AML_LOG在哪里定义？
+
+应该是这个头文件
+
+```
+#include "aml_log.h"
+```
+
+在这个目录下./vendor/amlogic/aml_commonlib/aml_log/aml_log.h
+
+```
+#define AML_LOG(level, fmt, ...) AML_LOG_CAT(DEFAULT, level, fmt, ##__VA_ARGS__)
+```
+
+```
+#define AML_LOG_CAT(cat, level, fmt, ...)                                                          \
+    do {                                                                                           \
+        if (AML_LOG_CAT_ENABLE(&(AML_LOG_GET_CAT_(cat)), level)) {                                 \
+            aml_log_msg(&(AML_LOG_GET_CAT_(cat)), level, __FILE__, __func__, __LINE__, fmt,        \
+                            ##__VA_ARGS__);                                                        \
+        }                                                                                          \
+    } while (0)
+```
+
+AML_LOG_CAT_ENABLE这个决定了级别。
+
+aml_log_msg这个的实现是怎样的？
+
+```
+    va_start(ap, fmt);
+    vsnprintf(&buf[len], sizeof(buf) - len, fmt, ap);
+    va_end(ap);
+    fprintf(log_fp ?: stdout, "%s", buf);
+```
+
+如果没有log_fp，那么打印到stdout上。
+
+
+
+当前在/tmp目录下，有这2个以AML_LOG开头的文件。
+
+```
+AML_LOG_audioservice 
+AML_LOG_homeapp      
+```
+
+里面内容是：
+
+```
+# cat AML_LOG_homeapp
+all:LOG_ERR
+```
+
+那么看起来是基本配置。
+
+这个是在aml_log.c里默认生成的。
+
+动态监听了这2个配置文件的。
+
+我修改一下看看。
+
+改成LOG_DEBUG。
+
+现在从运行层面看看。
+
+当前怎么启动的audioservice和homeapp。
+
+```
+/usr/bin/audioservice /etc/default_audioservice.conf&
+/usr/bin/homeapp -r /dev/input/event0 -a /dev/input/event3 -D music_vol -s &
+```
+
+都是后台运行。
+
+我改成手动前台运行的，就可以看到在stdout上打印的日志了。
+
+对于默认启动的，可以加重定向到文件的方式来记录日志。
+
+不过，log_fp为什么没有是有效值呢？
+
+是需要调用这个aml_log_set_output_file函数才有效。
+
+## asplay设置set-logpriority和set-loglevel过程
+
+trace level是指什么？跟loglevel有什么区别？
+
+都是被audioservice的on_handle_system_command函数处理。
+
+sys_command_setloglevel函数处理。
+
+调用了这个函数aml_log_set_from_string
+
+是设置给了aml_log.c里的函数。
+
+有这么两个函数
+
+```
+void aml_log_set_from_string(const char *str);
+void aml_trace_set_from_string(const char *str);
+```
+
+区别是这样：
+
+```
+void aml_log_set_from_string(const char *str) {
+    if (!strncmp(level_str, str, strlen(str))) return;
+    strncpy(level_str, str, 256);
+    aml_log_sync_config_file(str);
+    get_setting_from_string(AML_DEBUG_LOG, str);
+}
+
+void aml_trace_set_from_string(const char *str) {
+    get_setting_from_string(AML_TRACE_LOG, str);
+}
+```
+
+AML_SYSLOG展开是这样
+
+```
+AML_SYSLOG(LOG_INFO, "aaa");
+展开得到：
+AML_LOG_CAT(DEFAULT,  LOG_INFO, "aaa")
+进一步展开：
+do {                                                                                           \
+        if (AML_LOG_DEFAULT->log_level > LOG_INFO) {                                 \
+            aml_log_msg(&(AML_LOG_DEFAULT), LOG_INFO, __FILE__, __func__, __LINE__, "aaa");                                                        \
+        }                                                                                          \
+    } while (0)
+	
+static struct AmlLogCat AML_LOG_LAST = {NULL, 0, 0, NULL};
+struct AmlLogCat AML_LOG_DEFAULT = {"default", 1, 1, &AML_LOG_LAST};
+aml_log_msg里面就是把buf构造处理，然后调用fprintf打印。
+
+```
+
+LOG_INFO 这个宏是从syslog里借用来的。
+
+```
+#define LOG_EMERG   0
+#define LOG_ALERT   1
+#define LOG_CRIT    2
+#define LOG_ERR     3
+#define LOG_WARNING 4
+#define LOG_NOTICE  5
+#define LOG_INFO    6
+#define LOG_DEBUG   7
+```
+
+当前这么设计，没有看出什么特别的用处来，是可以分文件、分模块来设置吗？怎么配置呢？
+
+
+
+下面这个是控制halaudio层的打印
+
+```
+echo "AML_AUDIO_DEBUG=1" >/tmp/AML_AUDIO_DEBUG
+echo "AML_AUDIO_DEBUG=2" >/tmp/AML_AUDIO_DEBUG
+echo "AML_AUDIO_DEBUG=3" >/tmp/AML_AUDIO_DEBUG
+echo "AML_AUDIO_DEBUG=4" >/tmp/AML_AUDIO_DEBUG
+echo "AML_AUDIO_DEBUG=5" >/tmp/AML_AUDIO_DEBUG
+1=LEVEL_INFO  2=LEVEL_DEBUG  3=LEVEL_WARN  4=LEVEL_ERROR 5=LEVEL_FATAL
+```
+
+文件是被动态监听的，所以修改可以实时生效。
+
+
+
+这样来按模块控制日志级别。
+
+```
+AML_LOG_DEFINE(USBPlayer)
+#define AML_LOG_DEFAULT AML_LOG_GET_CAT(USBPlayer)
+```
+
+目前audioservice里，只有2个单独定义的。
+
+```
+halaudio_client.c (homeapp) line 41 : AML_LOG_DEFINE(halaudio_client)
+usb_player.c (homeapp) line 40 : AML_LOG_DEFINE(USBPlayer)
+```
+
+```
+AML_LOG_DEFINE(USBPlayer)
+展开是：
+struct AmlLogCat AML_LOG_USBPlayer = {
+	"USBPlayer",
+	AML_LOG_LEVEL_INVALID,
+	AML_LOG_LEVEL_INVALID,
+	NULL
+};
+```
+
+如果要单独关闭USBPlayer的日志，应该这样配置
+
+```
+aml_log_set_from_string("USBPlayer:LOG_ERR,halaudio_client:LOG_INFO");
+
+aml_log_set_from_string("USBPlayer:LOG_QUIET");
+```
+
+```
+echo all:LOG_ERR,USBPlayer:LOG_INFO > /tmp/AML_LOG_homeapp
+```
+
+
+
+参考资料
+
+https://confluence.amlogic.com/pages/viewpage.action?pageId=74514632
+
+https://confluence.amlogic.com/display/SW/BR-AML_LOG
+
+# 当前的日志分析
+
+开头的一段：注意这个声卡的分配情况。
+
+```
+audio_hw_device_get_module 
+it is TV
+max channel 8
+Device name=HDMI_IN card=0 device=1
+Device name=SPDIF_IN card=0 device=4
+Device name=LINE_IN card=0 device=1
+Device name=BT_IN card=0 device=0
+Device name=LOOPBACK_IN card=1 device=1
+Device name=Speaker_Out card=0 device=2
+Device name=Spdif_out card=0 device=4
+```
+
+然后有一个这个错误
+
+```
+6.786332 audioservice[2333] default ERR tid:2333 (as_volume.c 1107 in_AS_Volume_ParseVolumeConfig): unable to open pcm device(tas5782m): No such file or directory
+```
+
+然后设置了halaudio的音量
+
+```
+6.809002 audioservice[2333] default DEBUG tid:2333 (as_volume.c 566 in_HalAudio_SetVolume): Set hal master volume soft = 100.000000, hardware = 0.000000
+6.811026 audioservice[2333] default DEBUG tid:2333 (halaudio_spdif.c 453 HalAudio_SetCommand):  cmd = master_vol=1.000000
+```
+
+然后调用了
+
+```
+(external/mcu6350_func.c 80 mcu6350_set_update): type:2
+```
+
+然后设置了settings里的各个配置项。
+
+一连串的这个打印
+
+```
+6.818988 audioservice[2333] default DEBUG tid:2333 (halaudio_spdif.c 416 allinput_halaudio): set halaudio config=file=/etc/dap_tuning_files.xml:endpoint=internal_speaker:virt-enable
+6.820516 audioservice[2333] default DEBUG tid:2333 (halaudio.c 127 HalAudio_InputSet): enter6.820540 audioservice[2333] default DEBUG tid:2333 (halaudio_spdif.c 656 halaudio_input_set): setting type = speakers
+```
+
+然后打印了
+
+```
+(input_mgr.c 1327 AS_Input_Init): Input init successfully
+```
+
+
+
+# 完整测试环境
+
+现在打算用树莓派4b来作为hdmi输出。
+
+当前的情况是：
+
+1、切换到hdmi输出，没有声音出来。
+
+2、切换到bt的。手机连上来播放，有声音。
+
+3、切换到hdmi arc，会打印内核错误，但是没有死机。
+
+4、直接在板子上执行speaker-test -t pink，有声音输出到外部Speaker。
+
+5、树莓派的耳机孔，接到板子的LINEIN，且板子这边切到LINEIN输入方式，可以正常听到声音。
+
+
+
+是树莓派的hdmi输出有问题？
+
+我用电脑试一下。也是不行。
+
+
+
+现在是所有的板子的HDMI输入都没有声音。
+
+另外再找了一块板子，这个就可以了。电脑这边连接是有显示声音设备的，播放声音也可以正常出来。
+
+
+
+# event机制
+
+就是一个异步机制，跟我一般用的Executor是类似的，相当于提交一个任务到专门的线程来处理，避免阻塞。
+
+# IT66321
+
+电平变化，外面不知道有没有进行一个电平反转。
+
+
+
+# audioservice和homeapp的通信协议
+
+收到
+
+```
+Method call: GetInputSettings
+{"name": "volume"}
+```
+
+返回
+
+```
+{"name": "volume", "return": 60.0}
+```
+
+然后从这个json里解析出需要的60.0这个值。
+
+协议是很简单，但是实现真的很麻烦。主要cjson使用太麻烦了。
+
+
+
+在xml里是这样定义的：
+
+```
+    <method name="GetInputSettings">
+      <arg name="input" direction="in" type="s"/>
+      <arg name="settings" direction="out" type="s"/>
+      <arg name="reply" direction="out" type="i"/>
+    </method>
+```
+
+# atmos调试
+
+这里有一些经验文章
+
+https://confluence.amlogic.com/pages/viewpage.action?pageId=74514632
+
+
+
+# audioservice的文档
+
+在这里有详细的文档。
+
+https://confluence.amlogic.com/display/SW/aml_log
+
+```
+asplay set-loglevel “all:LOG_ERR” or  asplay set-logpriority LOG_ERR
+```
+
+# AS resource管理
+
+当前资源管理只管理了alsa device。
+
+尽管当前使用了dmix插件来避免冲突，但是dmix可能导致延迟，导致某些GVA/C4A认证测试通不过。
+
+![image-20211119141847864](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20211119141847864.png)
+
+
+
+HalInput_Client: Manage the input like HDMI, AUX, SPDIF, ARC
+
+
+
+## C4A
+
+
+
+# bt_client
+
+这个在buildroot下，并没有编译。只有c4a的android.mk里有加入编译。
+
+但是buildroot下确实可以用蓝牙，那么具体是怎么实现的呢？
+
+如果要替换为bluez，应该怎么替换呢？
+
+是通过halaudio统一管理的？应该是。bt的是连接到tdma接口上的。反正都是当成声卡来处理的。
+
+这一点从硬件层面怎么理解呢？
+
+蓝牙模块上有pcm引脚，直接接到芯片的tdma引脚上，就这么回事。
+
+所以当前蓝牙是一直开启的，即使没有切换到蓝牙模式。
+
+那么这样播放音乐，蓝牙的声音会出来吗？
+
+不会出来。
+
+# ffmpeg
+
+默认没有配置
+
+```
+# BR2_PACKAGE_AUDIOSERVICE_FFMPEG is not set
+```
+
+# main volume
+
+这个的意义是什么？
+
+就调节amixer的音量就够了吧。
+
+另外弄一个软件音量，用在什么情况？
+
+遥控能调到吗？
+
+
+
+HALAUDIO_EXT_ARCVOLUME_CHANGE
+
+这个是表示什么场景？
+
+表示通过arc连接tv？tv遥控器修改了tv的音量？
+
+把什么信息传递给soundbar了？
+
+是mcu有中断来了。且当前是arc input的模式。
+
+先拿到arc的音量值，然后跟当前的main volume比较，发现不同，就进行设置。
+
+还把external_input_arc_setvolume再设回到tv。
+
+
+
