@@ -215,9 +215,97 @@ iotjs的处理过程如下
 
 https://jerryscript.net/api-reference/
 
+# jerryscript的设计
+
+JerryScript 和当前多级自适应即时编译（JIT）引擎相比，是一个纯粹的解释器。
+
+所以它没有保存编译后代码的开销，
+
+甚至它的解析器也不保存抽象语法树（AST）。
+
+它直接将源码按行解释成字节码。
+
+对于数据表现，JerryScript 中的对象在大小上做了优化。
+
+JerryScript 使用压缩的指针、固定大小的字节码块、预分配对象池和数值对象的多种表示等方式同时达到遵守标准和内存优化。
+
+我们将持续不断的用各种方式减少内存消耗。
+
+JavaScript 在嵌入式设备开发中是非常便利的。
+
+它支持异步函数回调和异步 I/O，
+
+这对基于事件驱动的硬件编程是非常有用的。
+
+最后，JavaScript 是网页编程中使用最广的语言。
+
+将物联网设备和互联网生态系统（web ecosystem）相互配合，
+
+对于构建物联网生态系统来说是一个明智的选择。
+
+因此，许多互联网标准，如 HTTP、JSON、REST 已经成为物联网连接标准化的中心，
+
+唯一缺少的就是 JavaScript。
+
+我们认为 JavaScript 在应用程序和服务互通层上是最重要的一环。
+
+
+
+IoT.js 的核心是向下兼容 Node.js。
+
+为了做到这一点，IoT.js 遵守 CommonJS 规范中的模块化编程，
+
+并且支持 Node.js API 中核心功能的子集。
+
+针对物联网，我们正在定义嵌入式设备控制和物联网编程的标准模块。
+
+截至目前，我们定义了第一个通用输入输出接口（GPIO）访问 API 的候选规范，并且实现了它的原型。
+
+我们认为，为了体现它的真正价值，这些活动应该在物联网社区的共识下完成。
+
+这就是我们开源 IoT.js 的原因。
+
+
+
+参考资料
+
+https://www.infoq.cn/article/2015/08/iotjs-jerryscript-samsung
+
 # libuv设计文档
 
 http://docs.libuv.org/en/v1.x/design.html
+
+
+
+刚刚开源的「鸿蒙 2.0」以 JavaScript 作为 IoT 应用开发的框架语言。
+
+
+
+对于 JerryScript 的使用，有同场景重度应用经验的当属 [RT-Thread](https://link.zhihu.com/?target=https%3A//github.com/RT-Thread/rt-thread) 创始人 
+
+[@午夜熊](https://www.zhihu.com/people/ae873d644f3c069551f734c3db6a5867)
+
+，他们和某国内一线厂商合作研发的智能手表就用 JerryScript 实现了 UI，目前产品马上就要上市了。他们团队对 JerryScript 的一些使用反馈也吻合上述评价，概括说来是这样的：
+
+
+
+- JerryScript 在体积和内存占用上，相比 QuickJS 有更好的表现。
+- JerryScript 的稳定性弱于 QuickJS，有一些难以绕过的问题。
+- JerryScript 面对稍大（1M 以上）的 JS 代码库，就有些力不从心了。
+
+
+
+HarmonyOS是一款面向万物互联时代的、全新的分布式操作系统；
+
+它实现了一个非常轻量级的 MVVM 模式。
+
+通过使用和 vue2 相似的属性劫持技术实现了响应式系统。
+
+鸿蒙 JS 框架支持 ECMAScript 5.1；js runtime 没有使用 V8，也没有使用 jscore。而是选择了 JerryScript。
+
+JerryScript 是用于物联网的超轻量 JavaScript 引擎。
+
+Jerryscript是由三星开发的一款JavaScript引擎，是为了让JavaScript开发者能够构建物联网应用。物联网设备在CPU性能和内存空间上都有着严重的制约。因此，三星设计了JerryScript引擎，它能够运行在小于64KB内存上，且全部代码能够存储在不足200KB的只读存储（ROM）上。说到这里，我想身为前端的我们是不是该搞点事情，比如给自己的华为手表上写一个APP应用，让他定时叫你敷面膜；或者写一个新闻APP，类似今日头条，数据么，可以造假；
 
 
 
@@ -236,3 +324,19 @@ https://github.com/jerryscript-project/iotjs/blob/master/docs/devs/Developer-Tut
 高级话题
 
 https://github.com/jerryscript-project/iotjs/blob/master/docs/devs/Advanced-Development.md
+
+3、官方pdf文档
+
+https://wiki.tizen.org/images/d/db/01-IoTjs_and_JerryScript_Overview.pdf
+
+4、这个个人网站有不少相关文章，值得读一下。
+
+https://txiaozhe.github.io/2019/12/13/javascript-in-iot/
+
+5、jerryscript文档集合
+
+https://www.lhsz.xyz/read/jerryscript-2.1-en/f403b80e7a4c1a7a.md
+
+6、
+
+https://www.jb51.net/article/220411.htm
