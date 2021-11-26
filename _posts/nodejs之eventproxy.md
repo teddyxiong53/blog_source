@@ -431,6 +431,147 @@ ep.emit('read', 'abc')
 
 
 
+# 例子
+
+读2个文件，把内容组合起来。相当于多个异步结果的组合。
+
+出错了。则是undefined。
+
+```
+var fs = require('fs')
+var eventproxy = require('eventproxy')
+
+var ep = new eventproxy()
+ep.all('file1', 'file2', function(data1, data2) {
+    console.log(`data1:${data1}`)
+    console.log(`data2:${data2}`)
+})
+fs.readFile('1.txt', function(err, data) {
+    ep.emit('file1', data)
+
+})
+fs.readFile('2.txt', function(err, data) {
+    ep.emit('file2', data)
+})
+
+```
+
+
+
+```
+var ep = new eventproxy()
+ep.all('file1', 'file2', function(data1, data2) {
+    console.log(`data1:${data1}`)
+    console.log(`data2:${data2}`)
+})
+等价于
+var ep = eventproxy.create('file1','file2', function(data1, data2) {
+    
+})
+```
+
+同一个操作做多次
+
+```
+var fs = require('fs')
+var eventproxy = require('eventproxy')
+
+var ep = new eventproxy()
+files = ['1.txt', '2.txt']
+
+ep.after('get_data', files.length, function(list) {
+    for(let i=0; i<list.length; i++) {
+        console.log(`data[${i}]:${list[i]}`)
+    }
+})
+for(let i=0;i<files.length; i++) {
+    fs.readFile(files[i], function(err, data) {
+        ep.emit('get_data', data)
+    })
+}
+```
+
+持续异步协作
+
+```
+var fs = require('fs')
+var eventproxy = require('eventproxy')
+
+var ep = new eventproxy()
+ep.tail('file1', 'file2', function(data1, data2) {
+    console.log(`data1:${data1}`)
+    console.log(`data2:${data2}`)
+})
+fs.readFile('1.txt', function(err, data) {
+    ep.emit('file1', data)
+})
+setInterval(function() {
+    fs.readFile('2.txt', function(err, data) {
+        ep.emit('file2', data)
+    })
+}, 2000)
+
+```
+
+这个的运行效果是，每两秒，都把data1和data2一起打印出来。
+
+```
+data1:123
+data2:abc
+data1:123
+data2:abc
+data1:123
+data2:abc
+```
+
+# 异常处理
+
+```
+var fs = require('fs')
+var eventproxy = require('eventproxy')
+
+var getContent = function(callback) {
+    var ep = new eventproxy()
+    ep.all('file1', 'file2', function(data1, data2) {
+        callback(null, {data1,data2})
+    })
+    ep.fail(callback)
+    fs.readFile('1.txt', function(err, data) {
+        if(err) {
+            ep.emit('error', err)
+            return
+        }
+        ep.emit('file1', data)
+    })
+
+    fs.readFile('3.txt', function(err, data) {
+        if(err) {
+            ep.emit('error', err)
+            return
+        }
+        ep.emit('file2', data)
+    })
+}
+function contentProcess(err, data) {
+    if(err) {
+        console.log('err happens')
+        return
+    }
+    console.log(data)
+}
+getContent(contentProcess)
+```
+
+
+
+```
+ep.emit('error', err)
+等价于
+ep.throw(err)
+```
+
+
+
 # 参考资料
 
 1、使用 eventproxy 控制并发

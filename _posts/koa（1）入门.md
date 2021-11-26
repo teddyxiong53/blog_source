@@ -30,6 +30,23 @@ Koa
 
 
 
+看ninja这个程序是用koa写的backend，所以还是学习一下。
+
+koa的HelloWorld更加简洁易懂。
+
+```
+var Koa = require('koa')
+var app = new Koa()
+app.use(ctx=> {
+    ctx.body = 'hello koa'
+})
+app.listen(3000)
+```
+
+读这个代码，看到不懂的就搜索一下。
+
+https://github.com/MoonBegonia/ninja/blob/main/backend/app.js
+
 
 
 参考资料
@@ -45,3 +62,11 @@ https://koa.bootcss.com/
 3、Express和koa各有啥优缺点?
 
 https://www.zhihu.com/question/38879363
+
+4、
+
+https://github.com/koajs/koa
+
+5、
+
+https://demopark.github.io/koa-docs-Zh-CN/

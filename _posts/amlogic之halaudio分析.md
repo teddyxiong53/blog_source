@@ -177,3 +177,73 @@ struct aml_stream_out
 struct aml_stream_in
 ```
 
+# 提交日志分析
+
+现在通过git提交日志来看代码的演进过程。
+
+## ==
+
+从第一个提交信息看
+
+```
+* audio: Linux Audio Framework [1/2]
+
+PD#SWPL-110
+
+Problem:
+ we need unify the hal audio code for linux & Android
+
+Solution:
+ Merge the original Android 8.1 hal audio code to Linux
+```
+
+对应jira单上有对应的设计文档和接口文档，但是不是太详细。
+
+## ==
+
+```
+PD#SWPL-2579
+
+Problem:
+  HDMI input doesn't support different samplerate
+
+Solution:
+  Add ALSA plugins to support different audio samplerate
+
+```
+
+之前都没有使用标准alsa api。这里才添加了。
+
+是在这里注册的
+
+```
+void aml_output_init(void)
+{
+
+    ALOGD("Init the output module\n");
+#ifndef USE_PULSE_AUDIO
+#if 1//def USE_ALSA_PLUGINS
+    aml_output_function.output_open  = standard_alsa_output_open;//这里
+    aml_output_function.output_close = standard_alsa_output_close;
+    aml_output_function.output_write = standard_alsa_output_write;
+    aml_output_function.output_getinfo = standard_alsa_output_getinfo;
+#else
+    aml_output_function.output_open  = aml_alsa_output_open;
+    aml_output_function.output_close = aml_alsa_output_close;
+    aml_output_function.output_write = aml_alsa_output_write;
+#endif
+#else
+    aml_output_function.output_open  = aml_pa_output_open;
+    aml_output_function.output_close = aml_pa_output_close;
+    aml_output_function.output_write = aml_pa_output_write;
+#endif
+    return;
+}
+```
+
+而input的，则仍然只使用了tinyalsa的接口。
+
+halaudio相当于把tinyalsa和alsa的揉在了一起。
+
+优先使用tinyalsa，搞不定部分用alsa来做。
+

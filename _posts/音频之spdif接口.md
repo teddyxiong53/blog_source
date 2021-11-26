@@ -80,12 +80,20 @@ CREATIVE的FPS2000 Digital、Sound Works 2.1Digital就属于这种类型。
 
 
 
+spdif上传输pcm格式数字音频。数字的抗干扰能力比模拟信号好得多。
+
+传输容易受到干扰。
+
+S/PDIF往往被用来传输压缩过的音频讯号，它由 IEC 61937标准而定制。
 
 
 
-
-参考资料
+# 参考资料
 
 1、SPDIF
 
 https://baike.baidu.com/item/SPDIF/7208010?fr=aladdin
+
+2、
+
+https://www.touying.com/t-43734-1.html

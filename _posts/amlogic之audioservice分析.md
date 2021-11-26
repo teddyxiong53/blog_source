@@ -8,6 +8,14 @@ tags:
 
 --
 
+# 学习方式
+
+1、直接看代码。
+
+2、通过提交记录看代码的修改历史。了解之前碰到和解决过什么问题。
+
+
+
 src目录下
 
 ```
@@ -254,6 +262,103 @@ event，很多都是在一个文件内部，自己产生，自己处理。
 # usb player
 
 这个逻辑比较集中。适合用来做分析入口。
+
+## 入口函数
+
+```
+USBPlayer_Init
+	处理逻辑：
+	1、拿到json文件里的ffmpeg和dolby配置。保存起来。
+	2、分配通知参数结构体。InputNotifyParam_t
+	3、创建事件处理线程，作为模块内的异步机制。
+	4、创建U盘检测线程。
+	5、创建资源管理器，注册对应的回调。
+	6、拿到当前的input id
+	7、如果当前的input id是usb player，那么调用AmlRes_AppRequest请求资源。
+```
+
+## usb player status枚举定义
+
+```
+invalid = 0
+usb inserted 这个是0x8000 0000 ，用bit31来做标识。
+active 0x1
+scan 0x2 
+playing 0x4 
+stopping 0x8
+starting 0x10
+```
+
+## usb event枚举
+
+```
+事件分为三大类
+1、player事件。播放、停止等。
+2、res 资源管理事件。grant、revoke、release这3个。
+3、U盘事件。插入，拔出、开机挂载、扫描结束，找到music。
+```
+
+## U盘检测线程的处理逻辑
+
+```
+usb_detect_thread
+	1、创建一个netlink socket。使用select来监听。
+	2、while循环里
+		recv读取到buf。
+		如果buf的开头是add@，说明是插入。
+		如果buf的开头是remove@，说明是移除。
+		其他情况，不管。
+		buf里还有usb设备的节点名字。
+		通过这个把事件触发。
+		AmlEvent_AddEvent(usbhandler, USB_PLAYER_USBDISK_INSERT, (void*)usb_device);
+		
+对insert事件的处理
+	1、usb_mount。调用system函数来mount。
+	2、给status加上inserted的flag（bit31）
+```
+
+## U盘扫描线程
+
+在usb_player_start函数里才调用的，这个是不是有点晚？
+
+```
+usb_scan_thread
+	这个不是死循环。主要是为了不阻塞。
+	主要调用scan_dir这个函数。
+```
+
+这个逻辑能不能提取出来做通用工具函数呢？
+
+这个扫描肯定是需要时间的，如果扫描中途拔掉了U盘，能不能正确释放相关的内存？
+
+
+
+## notify_param
+
+这个是usbplayer、btplayer、airplayer这些才有的一个机制。
+
+结构体构成：
+
+```
+typedef struct _tag_notify_param {
+  char input_name[MAX_INPUT_NAME_LENGTH];
+  char sub_app[MAX_INPUT_NAME_LENGTH];
+  int play_state;
+  int connect_state;
+  double during_time; // seconds
+  double current_time; // seconds
+  double total_time; // seconds
+  double machine_time;
+  InputMusicInfo_t music_info;
+  InputAudioFormat_t audio_format;
+  bool enable_pairing;
+  AS_Input_e input_id;
+} InputNotifyParam_t;
+```
+
+
+
+
 
 # 用shm做了什么
 
@@ -873,6 +978,23 @@ Method call: GetInputSettings
     </method>
 ```
 
+## 协议扒出来
+
+可以从asplay.py里来扒，因为这个json的生成和解析都比较直观。
+
+syscommand
+
+```
+发送
+{"syscommand": "exit"}
+返回
+NULL 有些是不用返回的。
+有些是需要返回的，例如：
+
+```
+
+
+
 # atmos调试
 
 这里有一些经验文章
@@ -964,4 +1086,363 @@ HALAUDIO_EXT_ARCVOLUME_CHANGE
 还把external_input_arc_setvolume再设回到tv。
 
 
+
+# uart cmd
+
+这个的主要作用是什么？
+
+什么情况下使能？
+
+针对哪些芯片可以正常工作？
+
+是单独编译得到asr_uartcmd这个可执行文件。
+
+有一个对应的启动脚本S91asr_uartcmd。
+
+感觉这个是对S410这个板子专用的代码。
+
+这样启动服务
+
+```
+function start_srv(){
+	echo "start_srv............................................."
+	if [ ! -d "/sys/class/gpio/gpio415/" ];then
+		echo 415 > /sys/class/gpio/export
+	fi
+	echo out > /sys/class/gpio/gpio415/direction
+
+	if [ ! -d "/sys/class/gpio/gpio416/" ];then
+		echo 416 > /sys/class/gpio/export
+	fi
+	echo out > /sys/class/gpio/gpio416/direction
+
+	/usr/bin/asr_uartcmd &
+}
+```
+
+就是把2个引脚设置为output。
+
+从代码看，感觉就是通过uart对mcu进行升级的代码。
+
+那不用管，现在用不上。
+
+
+
+/etc/alsa_bsa.conf  
+
+这个文件里只有一行：device=default
+
+在post_build.sh里
+
+```
+# Change the ALSA device for BT
+if [ -f $1/etc/alsa_bsa.conf ] ; then
+	textexist=$(cat $1/etc/alsa_bsa.conf | grep 2to8)
+	# echo "textexist = $textexist"
+	if [ -z "$textexist" ] ; then
+		sed -i 's/dmixer_avs_auto/2to8/g' $1/etc/alsa_bsa.conf
+	fi
+fi
+```
+
+
+
+# /etc/halaudio目录
+
+下面有这些文件
+
+```
+2.1chaml_audio_config.json  8ch_aml_audio_config.json
+2ch_aml_audio_config.json   aml_audio_config.json
+6chaml_audio_config.json
+```
+
+从multimedia/aml_halaudio/config这个目录拷贝过来的。
+
+2.1和2的区别如下，左边是2.1的。
+
+![image-20211122135608997](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20211122135608997.png)
+
+
+
+# AS_EXTERNAL_ENABLE
+
+这个是指使能tas5707这个东西吗？
+
+也就是控制音量有一个external的配置？而当前并没有配置。
+
+但是mcu6350的也被归入这个宏的配置范围。确实是这样。
+
+```
+#ifdef AS_EXTERNAL_ENABLE
+#include "mcu6350_func.h"
+#endif
+```
+
+但是现在为什么好像是mcu6350的打开，而tas5707的单独被关闭呢？
+
+AS_EXTERNAL_TAS5782_ENABLE
+
+还有一个这样的宏来控制TAS的。
+
+
+
+# 一些提交记录
+
+## ==
+
+看git log，里面有个这样的修改。
+
+```
+#ifdef AS_S400SBR_ENABLE
+  // temp solution for slove the conflict of HDMI and LINEIN
+  if (id_json->valueint == AML_AS_INPUT_HDMI1 || id_json->valueint == AML_AS_INPUT_HDMI2)
+    system("echo 0xff6344AC 0x11111101 > /sys/kernel/debug/aml_reg/paddr; cat /sys/kernel/debug/aml_reg/paddr");
+  else if (id_json->valueint == AML_AS_INPUT_LINEIN1)
+    system("echo 0xff6344AC 0x11111111 > /sys/kernel/debug/aml_reg/paddr; cat /sys/kernel/debug/aml_reg/paddr");
+#endif
+```
+
+## ==
+
+有个这样的提交。
+
+```
+config BR2_PACKAGE_AUDIOSERVICE_S400_SBR
+	bool  "Amlogic SoundBar Refernece platform"
+	default n
+	help
+	  It's for dynamic control MCLK and SCLK. 注意这里
+```
+
+对应的提交日志
+
+```
+Problem:
+    HDMI not need MCLK_B, but LINEIN need MCLK_B, they have conflit
+
+Solution:
+    temp solution: app change reg directly
+
+```
+
+port to gva的，很多都是小的改动，估计是Android编译框架的检查规则比较严。
+
+代码的确是一步步完善起来的，例如i2c的操作，之前都是没有加锁的，后面为了解决问题才加的锁。
+
+最开始的poll机制也是poll，而不是现在的epoll。
+
+HDMI ARC是后面添加的。
+
+homeapp是后面添加的
+
+```
+PD#SWPL-4741
+
+Problem:
+  System need a homeapp to key management, app management
+
+Solution:
+  Add homeapp which include as_client and gva_client
+
+```
+
+usbplayer也是后面加的。
+
+## 切换到linein有噪音的解决
+
+提交日志
+
+```
+PD#SWPL-9454
+
+Problem:
+  Audio Noise when switch to LINEIN
+
+Solution:
+  Rootcause: MCU 6350 switch is asynchronous, when halaudio start to
+  capture LINEIN data, it still does not finish switching. So halaudio
+  capture the HDMI's data, and cause the noise.
+  Add a delay (100ms) after MCU6350 switching
+
+```
+
+代码体现上就是这个
+
+```
+    case AML_AS_INPUT_LINEIN1:
+      AML_SYSLOG(LOG_INFO, " Switch to INPUT LINE\n");
+      mcu6350_select_linein();
+      // wait MCU to finish switching, delay 100ms
+      // according to ITE's feedback, this no way to know when it's done
+      usleep(100*1000);
+```
+
+在后面，把100ms，提取到外面，所有情况下都做这个延时。
+
+```
+  // wait MCU to finish switching, delay 100ms
+  // according to ITE's feedback, this no way to know when it's done
+  usleep(100*1000);
+```
+
+## audio focus管理
+
+在这次提交增加的
+
+```
+PD#SWPL-7736
+Problem:
+     add set focus audio, mute all another audio except focus audio.
+
+Solution:
+     set focus audio will mute all another audio except focus audio.
+     softaudio mainly include: halaudio, music audio and notify audio.
+     hal audio: HDMI, LineIN, and SPDIF.
+     music audio: USB, BT and airplay.
+     nofity audio: avs and gva.
+
+```
+
+改动的文件较多。
+
+as_client.c就增加这2个接口。
+
+```
+ASErrorCode_e AS_Client_SetAudioFocus(AS_Input_e source_id, bool enable);
+ASErrorCode_e AS_Client_GetAudioFocus(AS_Input_e *source_id);
+```
+
+as_volume进行了较多改动，集中在各种音量。
+
+还有一个AS_Volume_SetAudioFocus函数。
+
+focus这个主要是给gva和avs用的。
+
+## ==
+
+```
+PD#SWPL-11925
+
+Problem:
+  USBPlayer cannot output mormally on Purely SoundBar environment
+
+Solution:
+  On purely SoundBar environment, there is no dmix exist, so when
+  open alsa device, it must wait other input is closed totally.
+
+```
+
+## ==
+
+```
+* audioservice: HDMI no audio [1/1]
+
+PD#SWPL-11688
+
+Problem:
+  Switch HDMI1 to BT then switch back to HDMI1, no audio output.
+
+Solution:
+  Now current solution, when switch to HDMI, audioservice will wait
+  MCU's HDMI format interrupt, then enable audio output.
+  But for this case, for MCU side, HDMI port is no changed. So there
+  is not format interrupt.
+  Solution, when switch to APP input source, ask MCU to switch to
+  linein. It's temporary solution, final solution should ask MCU to
+  power off HDMI repeater.
+
+```
+
+## app这边收到的volume变化慢
+
+```
+PD#SWPL-23563
+
+Problem:
+  Mobile's UI change is not smooth when press mobile volume up/down
+  continuously.
+
+Solution:
+  When APP update volume change, homeapp will handle it cycle bye cycle.
+  If one cycle is not finished, do not start a new cycle.
+
+```
+
+这个就是为了as_volume设计那么复杂的原因之一。
+
+
+
+# bitstream
+
+这个在代码里有几处体现。具体是指什么呢？
+
+有个这样的提交记录
+
+```
+PD#SWPL-5184
+
+Problem:
+  HDMI Audio break when audio format is bitstream
+
+Solution:
+  Root cause: audio service handles some audio format change,
+ which causes audio break, because audioservice should close
+ and re-open current halaudio patch.
+  Solution: AudioService only handle audio format change when
+ stream_type or channel number is changed. Ignore sample rate
+ change
+
+```
+
+# 音量调节
+
+在这次提交增加的。
+
+```
+PD#SWPL-6319
+
+Problem:
+    control external amplifier and halaudio software volume at the same time
+
+Solution:
+    control external amplifier and halaudio software volume at the same time
+
+```
+
+# GPIO_I2S_MUTE_INT
+
+这个是gpio A18，这个是专门改的。
+
+```
+* audioservice: add HDMI I2S IN MUTE control [1/1]
+
+PD#SWPL-11688
+
+Problem:
+    IT66321 will get audio data error, audio stop
+    or switch different audio format in HDMI input,
+    need close HDMI I2S output
+
+Solution:
+    add HDMI I2S IN MUTE control
+
+```
+
+是把pdm in的din3引脚改了做这个用途。是因为没有用mic输入，所以可以占用这个？
+
+这个是后面改板子，手动飞线的。mic用了，但是只用pdin0的引脚。后面的都是空闲的。
+
+```
+	pdmin: pdmin {
+		mux {
+			groups = "pdm_dclk_a14",
+				"pdm_din0",
+				"pdm_din1",
+				"pdm_din2";
+				/* "pdm_din3"; */ /* HDMI I2S IN MUTE control*/
+			function = "pdm";
+		};
+	};
+```
 

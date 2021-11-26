@@ -40,7 +40,7 @@ http协议规定post请求提交的数据，必须放在entity-body里。
 
 然后再对主体进行解码。
 
-#application/x-www-form-urlencoded
+# application/x-www-form-urlencoded
 
 ```
 application/x-www-form-urlencoded
