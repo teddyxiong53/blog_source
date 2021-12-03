@@ -68,6 +68,8 @@ print s.get("http://httpbin.org/get").json()
 print s.post("http://httpbin.org/post", {"key": "value"}, headers={'user-agent':'xhl'}).text
 ```
 
+# 用postwoman来调试
+
 
 
 # 代码分析
@@ -128,15 +130,13 @@ python
 192.168.190.1 - - [20/Jun/2018 23:40:55] "GET /static/favicon.ico HTTP/1.1" 200 -
 ```
 
+# express实现httpbin
 
-
-这个是一个详细的教程。
-
-http://www.pythondoc.com/flask-mega-tutorial/
+https://github.com/sheharyarn/httpbin-node
 
 
 
-http://www.pythondoc.com/
+# php版本
 
-
+https://github.com/zhanghuid/httpbin
 

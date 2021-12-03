@@ -1015,7 +1015,7 @@ asplay set-loglevel “all:LOG_ERR” or  asplay set-logpriority LOG_ERR
 
 # AS resource管理
 
-当前资源管理只管理了alsa device。
+当前资源管理只管理了alsa device。其实很简单，就是在使用input A的时候，先把input B的停掉，就是做这个事情。
 
 尽管当前使用了dmix插件来避免冲突，但是dmix可能导致延迟，导致某些GVA/C4A认证测试通不过。
 
@@ -1444,5 +1444,252 @@ Solution:
 			function = "pdm";
 		};
 	};
+```
+
+# as_client_shm.c
+
+这个是如何实现播放的？
+
+play_thread函数里，只是把数据读取到shm里。
+
+解码器怎么来读取使用的呢？
+
+```
+    pt = ((unsigned char *)pHead) + sizeof(DataPlayerRingbufHead_t) + w_index;
+
+    if (buf_left > 0x1000)
+      buf_left = 0x1000;
+    ret = fread((void *)pt, 1, buf_left, client_fp);
+```
+
+这里有传递shm的id过来。
+
+```
+bool client_start(char *parameter) {
+  GError *error = NULL;
+  int reply;
+
+  client_shm_start();
+  ASCLIENT_MUTEX_LOCK();
+  audioservice_call_decoder_start_sync(as_proxy, parameter, &reply, NULL, &error);
+  ASCLIENT_MUTEX_UNLOCK();
+
+  return reply;
+}
+```
+
+所以调用到这里
+
+```
+AS_dataplayer_start((char *)arg_dhandle);
+```
+
+板端直接播放音频文件的，只打开了ffmpeg的。dolby的没有做。
+
+dolby应该只支持通过hdmi这些方式进行输入的。
+
+当前从U盘读取内容放入ringbuf，跟界面取用，这二者的同步性是怎么保证的？
+
+这是一个典型的生产者消费者模型。
+
+
+
+# ffmpeg decoder
+
+层次关系是这样：
+
+```
+data_player.c 抽象层，被上层调用。
+	ffmpeg_decoder.c
+	dolby_decoder.c
+```
+
+注册函数指针进去。
+
+AudioDecoderHandler_t 这个是主要结构体。
+
+里面是函数指针，和一些ctx结构体指针。
+
+上层接口
+
+```
+AS_dataplayer_open
+```
+
+在as_common.h里，就这3个重要结构体
+
+```
+typedef struct _tag_decoder_config {
+  unsigned int audio_format;
+  unsigned int ringbuf_size; // 0, audio service will allocate a default size 2M
+                             // This default size 2M which should negotiate with
+                             // decoder owner
+  int decoder_type;
+  char output_type[20]; // alsa or pulse
+} DataPlayerConfig_t;
+
+typedef struct _tag_decoder_handler {
+  int channel_id; // decoder channel_id, for multiple decoders
+  key_t shm_key;  // Share memory id
+  unsigned int shm_size;
+} DataPlayerHandler_t;
+
+typedef struct _tag_as_ringbuf_head {
+  unsigned int size;
+  unsigned int w_index;
+  unsigned int r_index;
+} DataPlayerRingbufHead_t;
+```
+
+对ffmpeg，填充的output参数是这样
+
+```
+  pHandle->output_config.out_format = AV_SAMPLE_FMT_S16;
+  pHandle->output_config.out_codec = AV_CODEC_ID_PCM_S16LE;
+  pHandle->output_config.out_channels = 2;
+  pHandle->output_config.out_samples = 512;
+  pHandle->output_config.sample_rate = 44100;
+```
+
+一个典型的解码线程处理。
+
+# 架构分析
+
+# audioservice和homeapp公共头文件分析
+
+重要的就这3个头文件。
+
+## audioservice.h
+
+```
+定义了枚举和结构体。
+一部分是AML_AS开头，一部分是AS_开头。
+
+AS_Input_e
+AS_Output_e
+AML_AS_AudioFormat_e
+AML_AS_NOTIFYID_e
+AML_AS_Power_e
+VolumeMap_e
+
+
+AML_AS_AudioInfo_t
+AML_AS_Volume_t
+```
+
+### 通知枚举
+
+这个值得展开说一下。
+
+```
+音频格式改变
+音量改变
+mute改变
+
+source改变前
+source改变后
+halaudio切换完成
+通道数改变
+
+解码开始
+解码ringbuf状态变化
+
+dbus服务状态变化
+
+U盘插入
+U盘移除
+
+mcu中断
+
+log级别改变
+
+power改变
+
+有ota可用
+
+设置app名字
+查询app名字
+更新app名字
+
+
+```
+
+
+
+## as_client.h
+
+```
+ASClientNotifyParam_u
+	这个联合体，把各种通知都集合到一起。
+ASClientNotifyParam_t
+	这个进一步包含ASClientNotifyParam_u，再加2个成员，一个cjson指针，一个通知枚举。通知枚举就是audioservice.h里的那个。
+ASClientNotify
+		这个函数类型。参数就是通知枚举和ASClientNotifyParam_t。
+输入相关的
+	AS_Client_OpenInput
+	AS_Client_CloseInput
+	AS_Client_CloseCurInput
+	AS_Client_OpenInputByName
+	AS_Client_CloseInputByName
+音量相关的
+	AS_Client_GetVolume
+	AS_Client_SetVolume
+	AS_Client_GetMute
+	AS_Client_SetMute
+	AS_Client_GetVolumeByType
+播放相关
+	AS_Client_Play
+	AS_Client_Stop
+	AS_Client_Pause
+	AS_Client_Resume
+设置相关
+	AS_Client_GetSetting
+	AS_Client_SetSetting
+	AS_Client_SetHalSetting
+	AS_Client_GetHalSetting
+```
+
+## as_common.h
+
+```
+就定义了3个文件播放相关的结构体。
+DataPlayerConfig_t
+DataPlayerHandler_t
+DataPlayerRingbufHead_t
+成员都不多。就4个左右。
+```
+
+# audioservice独有头文件分析
+
+## as_config.h
+
+这个就是以配置文件json解析为核心。
+
+没有什么特别的。
+
+## halaudio.h
+
+```
+函数
+	input相关
+	output相关
+		都是留空的。
+	setting相关
+	
+结构体
+	AmlHalAudioEventParam_u共用体。
+	用来做内部事件通知用的。
+```
+
+
+
+## input_mgr.h
+
+这个封装了halaudio的接口，主要使用这里的接口来进行input的设置。
+
+```
+只有一下函数API。没有数据结构。
+函数都是AS_XX这种格式的。
+大多数都有一个char *arg_input的参数。
 ```
 

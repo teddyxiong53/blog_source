@@ -236,6 +236,157 @@ min:-5100, max:0
 
 
 
+# ctl和mixer是什么关系
+
+一个mixer上可以挂一个ctl链表。
+
+一个ctl，是通过name来打开的。例如default这样的名字。
+
+一个mixer内部，是没有明确包含哪个网卡的信息的。
+
+靠mixer里的slaves链表来包含。
+
+
+
+ctl也有element。
+
+mixer也有element。
+
+ctl的type有hw、shm。
+
+mixer的type只有一个simple。
+
+二者建立关联的地方，就是attach的时候，
+
+```
+snd_mixer_attach
+```
+
+这个函数的实现是：
+
+```
+int snd_mixer_attach(snd_mixer_t *mixer, const char *name)
+{
+	snd_hctl_t *hctl;
+	int err;
+
+	err = snd_hctl_open(&hctl, name, 0);
+	if (err < 0)
+		return err;
+	err = snd_mixer_attach_hctl(mixer, hctl);
+	if (err < 0)
+		return err;
+	return 0;
+}
+```
+
+就是这里，把private指针设置为了mixer。
+
+```
+snd_hctl_set_callback(hctl, hctl_event_handler);
+snd_hctl_set_callback_private(hctl, mixer);
+```
+
+poll fd，是哪个fd的？这个是open pcm设备的fd。
+
+```
+pcm->poll_fd = fd;
+pcm->poll_events = info.stream == SND_PCM_STREAM_PLAYBACK ? POLLOUT : POLLIN;
+```
+
+
+
+还有这样一个函数，把mixer的element和ctl的element关联起来，作用是什么？
+
+```
+int snd_mixer_elem_attach(snd_mixer_elem_t *melem,
+			  snd_hctl_elem_t *helem)
+```
+
+
+
+ctl和mixer都是对应clt设备的，而不是pcm设备的。
+
+open pcm设备的时候，也会打开clt设备，例如在snd_pcm_hw_open里，就调用了snd_ctl_hw_open
+
+不过就用了一下，然后就close了。
+
+```
+ret = snd_ctl_pcm_prefer_subdevice(ctl, subdevice);
+```
+
+
+
+snd_hctl_throw_event 这个函数里，调用hctl的callback函数。
+
+可以有的event是这些：
+
+```
+add
+remove
+tlv
+info
+value
+```
+
+例如snd_hctl_elem_add的时候，就throw了add event。
+
+snd_mixer_handle_events调用了snd_hctl_handle_events，遍历slave链表。
+
+snd_mixer_handle_events就是被用户代码调用的。在wait之后调用。
+
+会有哪些mixer event产生呢？也就是ctl event了。
+
+读取事件是这个函数：
+
+```
+static int snd_ctl_hw_read(snd_ctl_t *handle, snd_ctl_event_t *event)
+```
+
+通过读取pcmcontrol节点的
+
+```
+read(hw->fd, event, sizeof(*event));
+```
+
+读取到event如何处理？
+
+snd_hctl_handle_event这个公共处理。
+
+例如add，通过snd_hctl_elem_add来处理。
+
+对于remove和value事件，会调用到snd_hctl_elem_throw_event，里面会通过回调调用到用户代码注册进来的回调。当前注册进去的回调是处理volume和mute发生变化时的处理。
+
+
+
+snd_mixer_class_t
+
+这个结构体的作用是什么？
+
+每个snd_mixer_elem_t都有一个snd_mixer_class_t指针，表示elem的类型？
+
+每种class的elem处理event不一样。
+
+```
+err = class->event(class, mask, helem, melem);
+```
+
+class的event处理函数在哪里指定的？
+
+snd_mixer_class_register
+
+默认都注册了一个simple_event的处理函数。
+
+```
+	snd_mixer_class_set_event(class, simple_event);
+	snd_mixer_class_set_compare(class, snd_mixer_selem_compare);
+	err = snd_mixer_class_register(class, mixer);
+```
+
+有必要再读一下amixer的代码。
+
+
+
 # 参考资料
 
 1、

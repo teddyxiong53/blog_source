@@ -1516,6 +1516,30 @@ endef
 
 
 
+添加用户举例：
+
+```
+teddy -1 teddy -1 !=123456 /home/teddy /bin/sh sys,www-data my name is teddy
+```
+
+放到users.txt里，
+
+然后配置BR2_ROOTFS_USERS_TABLES到这个文件。
+
+重新make。但是没有被添加进去。
+
+不知道为什么。
+
+再编译一次就有了。
+
+但是登陆不进去。
+
+
+
+https://buildroot.org/downloads/manual/manual.html#makeuser-syntax
+
+https://github.com/hifiberry/hifiberry-os/blob/master/buildroot/configs/minimal_config
+
 # 提交历史
 
 https://git.busybox.net/buildroot/
@@ -1531,7 +1555,7 @@ https://git.busybox.net/buildroot/
 我先把所有的提交历史保存下来。
 
 ```
-git --no-pager l^C --pretty=oneline > ~/work/br.txt
+git --no-pager  --pretty=oneline > ~/work/br.txt
 ```
 
 使用git checkout xx。
@@ -1694,6 +1718,12 @@ BR2_TARGET_ENABLE_ROOT_LOGIN 这个设置为n。应该可以。
 # 查看当前编译了哪些package
 
 make show-targets
+
+# buildroot不同package里定义了同名变量导致的错乱
+
+如果有2个package，里面的mk里定义了相同的变量名，则会导致错误。
+
+后面生效的变量会覆盖前面的，导致错乱。
 
 
 

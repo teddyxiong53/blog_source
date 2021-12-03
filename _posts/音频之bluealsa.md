@@ -673,7 +673,7 @@ Connections:
 
 
 
-参考资料
+# 参考资料
 
 1、
 
@@ -702,3 +702,7 @@ https://stackoverflow.com/questions/28191350/is-there-any-way-to-control-connect
 7、Playing BlueZ on the D-Bus
 
 https://www.landley.net/kdocs/ols/2006/ols2006v1-pages-421-426.pdf
+
+8、**树莓派连接天猫精灵蓝牙音箱-篇1**
+
+https://bbs.hassbian.com/thread-5375-1-1.html
