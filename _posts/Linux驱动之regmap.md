@@ -60,7 +60,76 @@ static struct regmap_bus regmap_i2c = {
 
 
 
-参考资料
+一般怎么使用的呢？
+
+使用regmap比较简单，使用前，只需根据外设属性配置总线类型、寄存器位宽、缓存类型、读写属性等参数；接着注册一个regmap实例；然后调用抽象访问接口访问寄存器。
+
+- 第一步，配置regmap信息
+- 第二步，注册regmap实例
+- 第三步，访问寄存器
+- 第四步，释放regmap实例
+
+
+
+以i2c为例，以伪代码访问寄存器比较传统方式和通过regmap访问方式。
+
+传统方式
+
+```
+
+static int read_regs(struct i2c_client *client, uint8_t reg, uint8_t *pdata, int size)
+{
+	int ret = 0;
+	struct i2c_msg msg[2];
+	if(size == 0)
+	{
+		return 0;
+	}
+	msg[0].addr  = client->addr;  	 
+    msg[0].buf   = &reg;               
+    msg[0].len   = 1;                     
+    msg[0].flags = 0; 
+	msg[1].addr  = client->addr;  	 
+    msg[1].buf   = pdata;               
+    msg[1].len   = size;                     
+    msg[1].flags = I2C_M_RD; 
+
+	if(i2c_transfer(client->adapter, msg, 2) != 2)
+	{
+		ret =-1;
+	}
+
+	return ret;
+}
+```
+
+使用regmap方式
+
+```
+
+/* 第一步配置信息 */
+static const struct regmap_config regmap_config = 
+{     
+	.reg_bits = 8,     
+	.val_bits = 8,       
+	.max_register = 255,     
+	.cache_type = REGCACHE_RBTREE,     
+	.volatile_reg = false,
+};   
+
+/* 第二步，注册regmap实例 */
+regmap = regmap_init_i2c(i2c_client, &regmap_config);  
+
+/* 第三步，访问操作 */
+static int read_regs(uint8_t reg, uint8_t *pdata, int size)
+{
+	 return regmap_raw_read(regmap, reg, pdata, size);
+}
+```
+
+
+
+# 参考资料
 
 1、设备驱动中的regmap
 
@@ -69,3 +138,7 @@ https://blog.csdn.net/viewsky11/article/details/54295679
 2、regmap简介
 
 https://blog.csdn.net/lk07828/article/details/50587879
+
+3、
+
+https://blog.csdn.net/qq_20553613/article/details/110357322

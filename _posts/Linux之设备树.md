@@ -1358,9 +1358,83 @@ void __init setup_arch (char ** cmdline_p)
 }
 ```
 
+它基本上就是画一棵电路板上CPU、总线、设备组成的树，
+
+Bootloader会将这棵树传递给内核，
+
+然后内核可以识别这棵树，
+
+并根据它展开出Linux内核中的platform_device、i2c_client、spi_device等设备。
+
+这些设备用到的内存、IRQ等资源，
+
+也被传递给了kernel，kernel会将这些资源绑定给展开的相应的设备。
+
+linux下执行：sudo apt-get install device-tree-compiler安装dtc工具。其中还提供了一个fdtdump的工具，可以反编译dtb文件。
+
+
+
+Device Tree文件结构描述就以上struct fdt_header、struct fdt_node_header及struct fdt_property三个结构体描述。
+
+kernel根据Device Tree中所有的属性解析出数据填充struct property结构体。struct property结构体描述如下：
+
+
+
+在early_init_dt_scan_nodes()中会做以下三件事：
+
+1、扫描/chosen或者/chose@0节点下面的bootargs属性值到boot_command_line，此外，还处理initrd相关的property，并保存在initrd_start和initrd_end这两个全局变量中；
+
+2、扫描根节点下面，获取{size,address}-cells信息，并保存在dt_root_size_cells和dt_root_addr_cells全局变量中；
+
+3、扫描具有device_type =“memory”属性的/memory或者/memory@0节点下面的reg属性值，并把相关信息保存在meminfo中，全局变量meminfo保存了系统内存相关的信息。
+
+<img src="https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20170818221207453" alt="图7 函数调用过程" style="zoom:150%;" />
+
+Device Tree中的每一个node节点经过kernel处理都会生成一个struct device_node的结构体，
+
+struct device_node最终一般会被挂接到具体的struct device结构体。
+
+下面分析以上信息是如何得来的。Device Tree的解析首先从unflatten_device_tree()开始，代码列出如下：
+
+
+
+```
+只有包含"compatible"属性的node节点才会生成相应的platform_device结构体
+```
+
+
+
+```
+/* 递归调用节点解析函数，为子节点继续生成platform_device结构体，前提是父节点
+     * 的“compatible” = “simple-bus”，也就是匹配of_default_bus_match_table结构体中的数据
+     */
+```
+
+经过customize_machine()函数的初始化，
+
+DTB已经转换成platform_device结构体，
+
+这其中就包含i2c adapter设备，
+
+不同的SoC需要通过平台设备总线的方式自己实现i2c adapter设备的驱动。
+
+例如：i2c_adapter驱动的probe函数中会调用i2c_add_numbered_adapter()注册adapter驱动，函数流执行如图9所示。
+
+设备树跟sysfs关系
+
+kernel启动流程为start_kernel()→rest_init()→kernel_thread():kernel_init()→do_basic_setup()→driver_init()→of_core_init()，在of_core_init()函数中在sys/firmware/devicetree/base目录下面为设备树展开成sysfs的目录和二进制属性文件，所有的node节点就是一个目录，所有的property属性就是一个二进制属性文件。
+
+参考资料
+
+1、
+
 https://titanwolf.org/Network/Articles/Article?AID=e7246afb-bfcb-4cf5-b537-3c97651e4812
 
+2、
 
+https://blog.csdn.net/smcdef/article/details/77387975
+
+# 简介
 
 DeviceTree的结构非常简单，由两种元素组成：Node(节点)、Property(属性)。
 
@@ -1430,6 +1504,112 @@ aliases {
     ethernet0 = "/simple-bus@fe000000/ethernet@31c000";
 };
 ```
+
+
+
+# GPIO_ACTIVE_HIGH
+
+这个点，可以没有。因为你可以不用。
+
+取决于驱动里怎么写。
+
+如果你驱动里直接gpio_output(1)这样的写法，则是完全不管GPIO_ACTIVE_HIGH配置的。
+
+如果你是这样
+
+```
+gpio_output(on_value)//on_value取决于你配置的GPIO_ACTIVE_HIGH，那么就是有用。
+```
+
+
+
+参考资料
+
+https://wiki.t-firefly.com/zh_CN/AIO-3288C/driver_gpio.html
+
+
+
+# 给2440增加设备树支持
+
+
+
+参考资料
+
+1
+
+https://www.cnblogs.com/pengdonglin137/p/6241895.html
+
+2、
+
+http://www.codetd.com/article/12662644
+
+
+
+# ranges属性
+
+1、ranges属性值的格式 <**local地址**， **parent地址**， **size**>， 表示将local地址向parent地址的转换。
+
+比如对于#address-cells和#size-cells都为1的话，以<0x0  0x10 0x20>为例，表示将local的从0x0~(0x0 + 0x20)的地址空间映射到parent的0x10~(0x10 + 0x20)
+
+ 
+
+其中，**local地址**的个数取决于当前含有ranges属性的节点的#address-cells属性的值，**size**取决于当前含有ranges属性的节点的#size-cells属性的值。
+
+而**parent地址**的个数取决于当前含有ranges属性的节点的parent节点的#address-cells的值。
+
+ 
+
+2、对于含有ranges属性的节点的子节点来说，其reg都是基于**local地址**的
+
+ 
+
+3、ranges属性值为空的话，表示1:1映射
+
+ 
+
+4、对于没有ranges属性的节点，代表不是memory map区域
+
+
+
+参考资料
+
+https://www.cnblogs.com/pengdonglin137/p/7401049.html
+
+
+
+
+
+# 配置spi设备的复位引脚
+
+以spi的为例，除了基本的cs、di、do、clk这4个引脚，还需要一个复位引脚。
+
+但是这个复位引脚，应该算在spi设备的上面，而不是算在spi的上面。
+
+单独的gpio，那么mute引脚就算一个。
+
+那都是这样来配置。
+
+```
+spk_mute-gpios = <&gpio GPIOD_2 GPIO_ACTIVE_LOW>;
+```
+
+不配置复用，那么默认就都是gpio。
+
+以i2c芯片的复位引脚为例。也都是在设备驱动里加的。
+
+```
+tas5707_36: tas5707_36@1b {
+		compatible = "ti,tas5707";
+		#sound-dai-cells = <0>;
+		reg = <0x1b>;
+		status = "disabled";
+		reset_pin = <&gpio GPIOT_19 GPIO_ACTIVE_HIGH>;
+	};
+```
+
+# flattened device tree
+
+缩写为fdt。具体是指什么？
 
 
 

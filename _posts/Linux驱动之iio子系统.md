@@ -177,6 +177,36 @@ struct device_type iio_device_type = {
  };
 ```
 
+# dht11
+
+这个的单总线的温湿度计。
+
+这个是不单独写的dht11的驱动。没有用iio框架。
+
+https://blog.csdn.net/qq_23922117/article/details/72861182
+
+
+
+# 用户态读取iio数据
+
+只有两种方法可以使用IIO框架访问数据; 
+
+通过sysf通道进行一次性捕获，
+
+或通过IIO字符设备进行连续模式（触发缓冲）。
+
+```
+# cd /sys/bus/iio/devices/iio:device0
+# cat in_voltage3_raw
+6646
+# cat in_voltage_scale
+0.305175781
+```
+
+
+
+https://blog.csdn.net/helloworld717/article/details/89575710
+
 
 
 # 参考资料

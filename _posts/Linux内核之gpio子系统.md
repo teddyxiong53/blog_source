@@ -82,7 +82,7 @@ pi@raspberrypi:/sys/class/gpio/gpio4$ echo 0 > value
 
 
 
-#内核代码分析
+# 内核代码分析
 
 ```
 #ifdef CONFIG_GPIOLIB //定义了。

@@ -31,8 +31,26 @@ Soc slave\codec master模式下：soc向codec提供mclk，bclk\lrclk由codec提�
 
 
 
+另外I2S只能传2个声道的数据，
+
+**PCM可以传多达16路数据，采用时分复用的方式，就是TDM。**
+
+像现在最流行的语音智能音箱的7麦克风矩阵，一般都是用TDM来传的数据，同时可以传输7路麦克风输入和3路以上的音频反馈信号。
+
+**AP处理器和蓝牙之间也是通过PCM来传输语音数据，打电话的蓝牙数据走的是PCM，放音乐的蓝牙数据走的是串口（不是PCM）。**
+
+**TDM**: 包括PCM format 和 I2S format，下图是TDM-I2S Mode, 在I2S format下传输多channel。
+
+
+
+
+
 参考资料
 
 1、
 
 https://blog.csdn.net/lugandong/article/details/72468831
+
+2、
+
+https://www.cnblogs.com/blogs-of-lxl/p/14722603.html

@@ -13,7 +13,7 @@ cpio是Linux下的一个命令。
 
 用来把文件打包进行archive，或者从archive里解包。
 
-cpio跟tar这些打包文件的不同在于，它甚至可以把/dev下的东西都打包进archive。
+cpio跟tar这些打包文件的不同在于，**它甚至可以把/dev下的东西都打包进archive。**
 
 不过cpio有个问题，就是它不会自己家去找文件来备份。
 
@@ -49,7 +49,7 @@ find ./* | cpio -H newc -o > test.cpio
 
 
 
-参考资料
+# 参考资料
 
 1、linux 下cpio使用
 

@@ -153,7 +153,7 @@ find . | cpio -o -H newc | gzip -c > initrd.img
 
 
 
-uboot用的，前面多了64个自己，内容具体是什么？
+uboot用的，前面多了64个字节，内容具体是什么？
 
 https://www.denx.de/wiki/DULG/RootFileSystemOnARamdisk
 

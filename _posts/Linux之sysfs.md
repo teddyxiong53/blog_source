@@ -79,6 +79,26 @@ sysfs需要增加的代码最少。可维护性也最好。
 
 
 
+一个比喻：
+
+sysfs提供对包装的访问，而dev提供对盒子里的东西的访问。
+
+
+
+/dev 独立于 /sys 存在的部分原因是历史性的：
+
+/dev 可以追溯到 Unix 诞生之初，
+
+而 /sys 是一个更近的发明。
+
+如果 Linux 是在没有历史背景的情况下设计的，
+
+那么 /dev/sda 可能是 /sys/block/sda/content。
+
+
+
+
+
 什么是uevent机制。
 
 这个得从热插拔设备开始说起。
@@ -138,3 +158,7 @@ https://www.ibm.com/developerworks/cn/linux/l-cn-sysfs/index.html
 2、内核Uevent事件机制 与 Input子系统
 
 https://www.cnblogs.com/sky-heaven/p/6394267.html
+
+3、
+
+https://unix.stackexchange.com/questions/176215/difference-between-dev-and-sys

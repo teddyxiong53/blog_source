@@ -16,13 +16,13 @@ tdm：就是时分复用调制的缩写。
 
 但这样的方法显然会增加数据传输所需要的管脚数量。
 
-当同一个数据线上传输两个以上通道的数据时，就要使用TDM格式。
+**当同一个数据线上传输两个以上通道的数据时，就要使用TDM格式。**
 
 TDM数据流可以承载多达16通道的数据，并有一个类似于I2S的数据/时钟结构。
 
 
 
-每个通道的数据都使用数据总线上的一个槽（Slot），
+**每个通道的数据都使用数据总线上的一个槽（Slot），**
 
 其宽度相当于帧的1/N， 其中N是传输通道的数量。
 
@@ -96,7 +96,48 @@ TDM相比I2S 可以传输多ch音频数据，分为2种模式:dsp_a 和dsp_b
 
 ![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20210623154352113.png)
 
-参考资料
+
+
+PCM数字音频接口，
+
+即说明接口上传输的音频数据通过PCM方式采样得到的，
+
+以区别于PDM方式。
+
+在音频领域，PCM接口常用于板级音频数字信号的传输，与I2S相似。
+
+PCM和I2S的区别于数据相对于帧时钟（FSYNC/WS）的位置、时钟的极性和帧的长度。
+
+**其实，I2S上传输的也是PCM类型的数据，因此可以说I2S不过是PCM接口的特例。**
+
+
+
+相比于I2S接口，PCM接口应用更加灵活。
+
+通过时分复用（TDM, Time Division Multiplexing）方式，
+
+PCM接口支持同时传输多达N个（N>8）声道的数据，
+
+**减少了管脚数目（实际上是减少I2S的“组”数，因为每组I2S只能传输两声道数据嘛）。**
+
+TDM不像I2S有统一的标准，不同的IC厂商在应用TDM时可能略有差异，
+
+这些差异表现在时钟的极性、声道配置的触发条件和对闲置声道的处理等。
+
+
+
+综合不少厂商的数据手册，笔者发现，在应用PCM音频接口传输单声道数据（如麦克风）时，其接口名称为***PCM\***；双声道经常使用***I2S\***；而***TDM\***则表示传输两个及以上声道的数据，同时区别于I2S特定的格式。
+
+
+
+在实际应用中，总是以帧同步时钟FSYNC的上升沿表示一次传输的开始。帧同步时钟的频率总是等于音频的采样率，比如44.1 kHz，48 kHz等。多数应用只用到FSYNC的上升沿，而忽略其下降沿。根据不同应用FSYNC[脉冲宽度](https://www.zhihu.com/search?q=脉冲宽度&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"article"%2C"sourceId"%3A373060896})的差别，PCM帧同步时钟模式大致分为两种：
+
+- **长帧同步** Long Frame Sync
+- **短帧同步** Short Frame Sync
+
+
+
+# 参考资料
 
 1、TDM格式介绍 - 音频数据传输的常见IC间数字接口介绍
 
@@ -109,3 +150,7 @@ http://www.wangdali.net/wp-content/uploads/2014/10/%E6%95%B0%E5%AD%97%E9%9F%B3%E
 3、数字音频接口之TDM
 
 https://blog.csdn.net/songche123/article/details/118154829
+
+4、TDM协议
+
+https://zhuanlan.zhihu.com/p/373060896

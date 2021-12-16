@@ -59,6 +59,18 @@ dts文件编译成为dtb文件之后供给内核解析，
 
 **（IIC、SPI节点下的子节点即使满足条件也不应被转化为platform_device节点，应该交由对应的总线驱动程序去处理，而不是platform总线）。**
 
+```
+const struct of_device_id of_default_bus_match_table[] = {
+	{ .compatible = "simple-bus", },
+	{ .compatible = "simple-mfd", },
+	{ .compatible = "isa", },
+#ifdef CONFIG_ARM_AMBA
+	{ .compatible = "arm,amba-bus", },
+#endif /* CONFIG_ARM_AMBA */
+	{} /* Empty terminated list */
+};
+```
+
 
 
 补充：

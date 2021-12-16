@@ -655,6 +655,31 @@ probe函数
 
 驱动的私有数据结构体是aml_card_data
 
+## 代码分析
+
+devm_snd_soc_register_card 在amlogic目录下，有3个地方调用了
+
+```
+./soc/amlogic/meson/tv.c:2062:  ret = devm_snd_soc_register_card(&pdev->dev, card);
+./soc/amlogic/meson/meson.c:780:        ret = devm_snd_soc_register_card(&pdev->dev, card);
+./soc/amlogic/auge/card.c:1229: ret = devm_snd_soc_register_card(&pdev->dev, &priv->snd_card);
+```
+
+axg芯片实际用的是card.c这个。这个是设备树里决定的。
+
+```
+devm_snd_soc_register_card
+	snd_soc_register_card
+		snd_soc_instantiate_card
+			snd_card_new
+				snd_ctl_create
+					snd_device_initialize
+					设置controlC0这样的名字。
+					snd_device_new
+				snd_info_card_create
+					这个就是创建proc下面的目录和文件
+```
+
 
 
 # dapm
@@ -858,9 +883,42 @@ struct soc_enum {
 
 
 
+# soc.h
+
+函数
+
+```
+snd_soc_register_dai
+snd_soc_add_dai_link
+
+snd_soc_card_jack_new
+snd_soc_register_platform
+
+snd_soc_register_card
+
+```
+
+结构体
+
+```
+snd_soc_platform
+snd_soc_platform_driver
+snd_soc_card
+snd_soc_codec
+snd_soc_codec_driver
+snd_soc_component
+snd_soc_component_driver
+snd_soc_dai_link
+snd_soc_dai_link_component
+snd_soc_pcm_runtime
+snd_soc_pcm_stream
+snd_soc_jack
+snd_soc_jack_gpio
+```
 
 
-参考资料
+
+# 参考资料
 
 1、ALSA声卡驱动中的DAPM详解之一：kcontrol
 
@@ -897,3 +955,13 @@ https://blog.csdn.net/wenjin359/article/details/83002041
 7、音频相关参数的记录（MCLK、BCLK、256fs等等）
 
 https://blog.csdn.net/lugandong/article/details/72468831
+
+8、Linux ALSA 音频系统：物理链路篇
+
+这篇文章非常好。
+
+https://blog.csdn.net/zyuanyun/article/details/59170418
+
+9、
+
+https://blog.csdn.net/melody157398/article/details/109792317

@@ -177,16 +177,15 @@ teddy@teddy-ubuntu:~/work/mylinuxlab/kernel/linux-stable$ find -name "*.c" | xar
 
 分别分布在这么几大块。
 
-##调试打印
+## 调试打印
 
 1、console=
 
-
-##nfs相关
+## nfs相关
 
 nfsroot=
 
-##初始化相关
+## 初始化相关
 
 init=
 rdinit=
@@ -202,10 +201,16 @@ rootfstype=
 rootdelay=
 noinitrd
 
-##网络相关
+## 网络相关
 
 ether=
 ip=
 netdev=
 
-##用户自定义
+## 用户自定义
+
+# 参考资料
+
+1、
+
+https://blog.csdn.net/skyflying2012/article/details/41142801

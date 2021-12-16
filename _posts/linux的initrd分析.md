@@ -69,9 +69,9 @@ start_kernel-->
 ./scripts/gen_initramfs_list.sh -o ramfs.gz ../ramfs/  
 ```
 
-#initrd和initramfs
+# initrd和initramfs
 
-##区别
+## 区别
 
 1、原理不同。
 
@@ -171,7 +171,241 @@ default_rootfs 这个函数很简单，就是做了三件事情：
 
 
 
-参考资料
+# buildroot里使用initramfs
+
+BR2_TARGET_ROOTFS_INITRAMFS
+
+看看rdinit和root在内核中是如何被处理的，
+
+如果bootargs设置了rdinit和root，
+
+那么内核在启动阶段解析并分别赋给ramdisk_execute_command和saved_root_name。
+
+```
+static int __init rdinit_setup(char *str)
+{
+	unsigned int i;
+
+	ramdisk_execute_command = str;
+	/* See "auto" comment in init_setup */
+	for (i = 1; i < MAX_INIT_ARGS; i++)
+		argv_init[i] = NULL;
+	return 1;
+}
+__setup("rdinit=", rdinit_setup);
+```
+
+当前S400的板子上的启动命令里有这些。
+
+```
+rootfstype=ramfs 
+ root=/dev/ubi0_0 rootfstype=ubifs init=/sbin/init
+```
+
+从vm[linux](https://so.csdn.net/so/search?from=pc_blog_highlight&q=linux).lds.h文件可知，
+
+ramfs根据CONFIG_BLK_DEV_INITRD定义是否使用。
+
+INIT_RAM_FS存放ramfs相关内容，包括.init.ramfs和.init.ramfs.info两个段。
+
+
+
+INITRAMFS_IMAGE从哪里来？需要查看/usr/目录下Makefile。
+
+从Makefile中可知，以CONFIG_INITRAMFS_SOURCE对应的rootfs.cpio文件作为输入，调用gen_init_cpio和gen_initramfs_list.sh生成initramfs_data.cpio.gz文件。
+
+然后INITRAMFS_IMAGE对应，/usr/initramfs_data.cpio$(suffix_y)文件。
+
+最终通过.incbin将INITRAMFS_IMAGE编译到initramfs_data.o文件中，即对应.init.ramfs段。
+
+ramfs作为init数据的一部分，位于`__init_begin和__init_end的末端`，在free_initmem()中被释放。
+
+ramfs是以压缩包的形式存放在`__initramfs_start和__initramfs_size`之间，在kernel_init()-->kernel_init_freeable()-->do_basic_setup()-->populate_rootfs()中调用unpack_to_rootfs()中解压。
+
+
+
+rootfs其实不是一种实际的文件系统，他根据实际情况可能使用ramfs或者tmpfs。
+
+这里分析rootfs是如何对应ramfs，并且简单介绍ramfs。
+
+下面来看看rootfs文件系统是如何挂载的？rootfs没有自己的固定类型，或者使用ramfs或者使用tmpfs。
+
+
+
+BR2_TARGET_ROOTFS_INITRAMFS_LIST
+
+这个变量在./fs/cpio/cpio.mk里被使用。
+
+
+
+内核里有这样一个配置项
+
+```
+Initial RAM filesystem and RAM disk (initramfs/initrd) support 
+```
+
+在./init/Kconfig
+
+help信息写着：initramfs是一个ramfs，被bootloader载入，在正常的启动流程之前，作为root来挂载。
+
+主要是用来载入必要的模块，从而可以挂载真正的rootfs。
+
+挂载了真正的rootfs后，之前的rootfs被move到一个目录下，然后被卸载掉。
+
+initrd主要用来保持kernel不要编译进太多不需要的驱动，而把更多的驱动放在initrd里。
+
+使用initrd的时候，系统的流程是这样的：
+
+```
+1、bootloader载入kernel和initrd。
+2、kernel把initrd转成一个ram disk，然后把initrd占用的内存释放掉。
+3、如果root device不是/dev/ram0，那么就会执行一个change_root的操作（这个是过时的）
+4、如果root device是/dev/ram0，那么initrd就被挂载为root
+5、执行/sbin/init。这个init可以是二进制，也可以看是脚本。
+6、/sbin/init里，挂载真正的root
+7、init使用pivot_root来切换root
+8、init执行新的rootfs里的/sbin/init来执行真正的初始化流程。
+9、initrd被移除。
+```
+
+跟boot相关的bootargs有
+
+```
+initrd=path
+noinitrd
+root=/dev/ram0
+```
+
+
+
+文档在Documentation/initrd.txt里。
+
+如果同时使能了BLK_DEV_RAM，那么就会使能initrd。
+
+Documentation/early-userspace/README
+
+这个文档也要看看。
+
+
+
+一般的来说，使用ramdisk并不是一件好事，
+
+系统自己会更加有效的使用可用的内存；
+
+但是，在启动或者制作启动盘时，
+
+使用ramdisk可以很方便的装载软盘等设备上的映象(尤其是安装程序、启动过程中)，
+
+因为在正真使用物理磁盘之前，必须要加载一些必要的模块，
+
+比如文件系统模块，scsi驱动等
+
+(可以参见我的initrd-x.x.x.img文件分析－制作安装程序不支持的根文件系统)。
+
+
+
+# noinitrd
+
+noinitrd
+
+(仅当内核配置了选项 CONFIG_BLK_DEV_RAM和CONFIG_BLK_DEV_INITRD)
+
+现在的内核都可以支持initrd了，
+
+引导进程首先装载内核和一个初始化的ramdisk，
+
+然后内核将initrd转换成普通的ramdisk，
+
+也就是读写模式的根文件系统设备。
+
+然后[linux](https://so.csdn.net/so/search?from=pc_blog_highlight&q=linux)rc执行，然后装载真正的根文件系统，之后ramdisk被卸载，最后执行启动序列，比如/sbin/init。
+
+选项noinitrd告诉内核不执行上面的步骤，
+
+即使内核编译了initrd，
+
+**而是把initrd的数据写到 /dev/initrd，**
+
+只是这是一个一次性的设备。
+
+
+
+# load_ramdisk=N
+
+如果N＝1，就加载ramdisk；如果N＝0，就不加载ramdisk；默认值为0。
+
+# root dev
+
+```
+enum {
+	Root_NFS = MKDEV(UNNAMED_MAJOR, 255),
+	Root_RAM0 = MKDEV(RAMDISK_MAJOR, 0),
+	Root_RAM1 = MKDEV(RAMDISK_MAJOR, 1),
+	Root_FD0 = MKDEV(FLOPPY_MAJOR, 0),
+	Root_HDA1 = MKDEV(IDE0_MAJOR, 1),
+	Root_HDA2 = MKDEV(IDE0_MAJOR, 2),
+	Root_SDA1 = MKDEV(SCSI_DISK0_MAJOR, 1),
+	Root_SDA2 = MKDEV(SCSI_DISK0_MAJOR, 2),
+	Root_HDC1 = MKDEV(IDE1_MAJOR, 1),
+	Root_SR0 = MKDEV(SCSI_CDROM_MAJOR, 0),
+};
+```
+
+
+
+nitrd-x.x.x.img首先是一个用gzip压缩的文件，
+
+因为内核里包含解压缩的代码，
+
+这主要是为了制作启动盘，
+
+因为启动盘只有1.44M，这个文件的原始大小
+
+是2.9M左右，压缩后大概3、4百K。
+
+这个文件使用mkinitrd命令产生。
+
+
+
+先解压，在mount到某个目录下来查看里面的内容。
+
+还可以查看里面的linuxrc脚本的内容。
+
+
+
+buildroot里有这样的配置，默认是选配的
+
+ remount root filesystem read-write during boot
+
+
+
+
+
+
+
+# prepare_namespace
+
+从设备文件路径名到处设备标识符，调用mount_root安装根文件系统
+
+CONFIG_AMLOGIC_MODIFY   amlogic的修改用这个宏来包裹的。
+
+```
+void __init prepare_namespace(void)
+{
+	int is_floppy;
+#ifdef CONFIG_AMLOGIC_MODIFY
+	dev_t res = 0;
+	int wait = 80; /* 8s max wait*/
+#endif /* CONFIG_AMLOGIC_MODIFY */
+```
+
+
+
+
+
+
+
+# 参考资料
 
 1、《Linux启动过程分析》之区别Initramfs与initrd
 
@@ -180,3 +414,11 @@ https://blog.csdn.net/tankai19880619/article/details/16885615
 2、安卓8 Android O 进入recovery判断流程
 
 https://blog.csdn.net/shangyexin/article/details/86565711
+
+3、linux 内核 ramdisk,使用 RAMDISK的参数
+
+https://blog.csdn.net/weixin_33387339/article/details/116642946
+
+4、
+
+https://www.cxybb.com/article/hellfly2000/1940267

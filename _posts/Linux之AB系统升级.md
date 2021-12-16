@@ -33,7 +33,7 @@ rk3308的AB系统的flash布局如下：
 
 AB系统的引导，需要一些数据来描述，方便uboot在启动时进行选择。
 
-泽火革数据存放在misc分区偏移2K的位置。
+这个数据存放在misc分区偏移2K的位置。
 
 有2个数据结构：
 
@@ -286,7 +286,7 @@ update_engine命令不能直接用。因为这个需要用curl来下载。
 
 
 
-参考资料
+# 参考资料
 
 1、android avb（Android Verified Boot）验证
 

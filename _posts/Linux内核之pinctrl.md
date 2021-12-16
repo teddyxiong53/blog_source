@@ -296,9 +296,179 @@ pinctrl_periphs: pinctrl@ff634480{
 	};
 ```
 
+# pinctrl-names
+
+```
+	backlight{
+		compatible = "amlogic, backlight-axg";
+		status = "okay";
+		key_valid = <0>;
+		pinctrl-names = "pwm_on","pwm_off";
+		pinctrl-0 = <&bl_pwm_on_pins>;
+		pinctrl-1 = <&bl_pwm_off_pins>;
+```
+
+这个似乎有随意性。
+
+看看最常见的default这个名字在代码里怎么体现的。
+
+```
+
+```
+
+pinctrl-names定义了clientdevice用到的state列表。
+
+```
+goodix@5d{
+
+compatible= "goodix,gt9xx";
+
+reg= <0x5d>;
+
+pinctrl-names= "gt9xx_int_active", "gt9xx_int_suspend";
+
+pinctrl-0= <&gt9xx_int_active>;
+
+pinctrl-1= <&gt9xx_int_sleep>;
+
+interrupt-parent= <&msm_gpio>;
+
+interrupts= <13 0x2>;
+
+}
+```
 
 
-参考资料
+
+state有两种标识，
+
+一种就是pinctrl-names定义的字符串列表，
+
+另外一种就是ID。
+
+ID从0开始，依次加一。
+
+根据例子中的定义，
+
+stateID等于0（名字是"gt9xx_int_active"）的state对应pinctrl-0属性，
+
+stateID等于1（名字是"gt9xx_int_suspend"）的state对应pinctrl-1属性。
+
+pinctrl-x*是一个句柄（*phandle*）列表，每个句柄指向一个*pinconfiguration*。
+
+
+
+如果pin只定义了default状态，
+
+那么在设备驱动中不需要再对该pin作处理，
+
+**因为在启动时会自动设为default状态。**
+
+
+
+在加载驱动模块时，如果驱动和设备匹配，最终就会调到driver定义的probe函数。
+
+在这个过程中，**如果使能了pinctrl，而且定义了pin的default状态，**
+
+就会配置pin脚为该状态。
+
+**pinctrl_bind_pins(dev);**
+
+
+
+## 使用不同的pinctrl
+
+在sound的代码里，在初始化的时候，有这样的用法
+
+```
+pinctrl_pm_select_sleep_state
+```
+
+对应的结构体
+
+```
+struct dev_pin_info {
+	struct pinctrl *p;
+	struct pinctrl_state *default_state;
+	struct pinctrl_state *init_state;
+#ifdef CONFIG_PM
+	struct pinctrl_state *sleep_state;
+	struct pinctrl_state *idle_state;
+#endif
+};
+```
+
+```
+
+#define PINCTRL_STATE_DEFAULT "default"
+#define PINCTRL_STATE_IDLE "idle"
+#define PINCTRL_STATE_SLEEP "sleep"
+
+```
+
+但是有些是不同的。例如
+
+```
+pinctrl-names = "emmc_clk_cmd_pins", "emmc_all_pins";
+```
+
+但是emmc_clk_cmd_pins在代码里搜索不到。
+
+还有
+
+```
+pinctrl-names = "tdm_pins";
+```
+
+这个则是在代码里有用到
+
+```
+./sound/soc/amlogic/auge/tdm.c:2035:    p_tdm->pin_ctl = devm_pinctrl_get_select(dev, "tdm_pins");
+./sound/soc/amlogic/auge/tdm.c:2127:            state = pinctrl_lookup_state(p_tdm->pin_ctl, "tdm_pins");
+```
+
+几个音频接口的名字都是特别的。
+
+主要是需要被获取在代码里使用。
+
+继续以tdm_pins的为例。
+
+这个名字在设备树里没有什么特别的，只是标记一下。在代码里，比default这样的名字更有识别性。
+
+在probe函数里，这样获取到
+
+```
+p_tdm->pin_ctl = devm_pinctrl_get_select(dev, "tdm_pins");
+```
+
+在suspend和resume的时候，这样操作
+
+```
+ps = pinctrl_lookup_state(p_tdm->pin_ctl, "tdmout_a_gpio");
+```
+
+这就是为什么tdm的gpio里面还要分成好几种。就是为了这个操作。
+
+```
+pinctrl-names = "tdm_pins";
+pinctrl-0 = <&tdmout_a &tdmin_a &tdmout_a_data>;
+```
+
+
+
+## 参考资料
+
+1、
+
+这篇文章讲得很好。
+
+https://bbs.huaweicloud.com/blogs/308130
+
+2、
+
+https://blog.csdn.net/u012830148/article/details/80609337
+
+# 参考资料
 
 1、Linux pinctrl子系统学习（一）
 

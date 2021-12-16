@@ -41,9 +41,30 @@ int __init devtmpfs_init(void)
     }
 ```
 
+对于devtmpfs，会挂载两次，
+
+```
+第一次，挂载到/
+在devtmpfs模块初始化时，在其处理线程中，通过调用sys_mount将其挂载至"/"目录下，其代码如下：
+*err = sys_mount("devtmpfs", "/", "devtmpfs", MS_SILENT, options);
+
+第二次，挂载到/dev
+而在prepare_namespace接口中，通过调用devtmpfs_mount接口，将其挂载至/dev目录下，其代码如下：
+
+/*
+
+挂载devtmpfs_mount函数。
+
+该接口主要调用sys_mount接口实现sys_mount接口的挂载。
+
+目前该接口被prepare_namespace接口调用，进行devtmpfs接口的二次挂载操作，且挂载点为/dev目录。
+
+*/
+```
 
 
-参考资料
+
+# 参考资料
 
 1、
 
@@ -52,3 +73,7 @@ http://blog.chinaunix.net/uid-27717694-id-3574368.html
 2、
 
 https://blog.csdn.net/longwang155069/article/details/52757592
+
+3、
+
+https://blog.csdn.net/lickylin/article/details/101922106
