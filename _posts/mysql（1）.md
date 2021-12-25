@@ -128,7 +128,74 @@ select * from xxx;
 
 
 
+# 触发器是什么
+
+现在看这个代码，里面有用到一些特别的sql语句。
+
+https://github.com/AllenOris/CloudDisk
+
+```
+let query = "set @path='';" +
+        "call download(?, ?, @path);" +
+        "select @path as path;";
+```
+
+在csdn里搜索“mysql set call“。就找到触发器这个主题的。看看。
+
+我对mysql其实一直没有掌握。
+
+主要我都是随便写着玩，没有动力去深入。
+
+一次性看太多资料，也看不进去。
+
+所以还是看代码，碰到问题点，就深入进去搞清楚，这样逐步来掌握。
+
+
+
+# MySQL的存储过程
+
+call实际对应的是存储过程。实际是调用层次过程。
+
+调用存储过程的前提是先创建，create procedure 
+
+mysql的存储过程是从mysql5.0开始增加的特性。
+
+主要的优点是：提高执行效率，封装sql代码。
+
+特别是封装sql代码这一条，对于复杂业务很有用。不然需要在php等代码里写一堆复杂的sql语句。
+
+有了存储过程，就可以把把业务逻辑封装到存储过程里。
+
+不仅便于维护，也提高了执行效率。
+
+## 简单示例
+
+下面以创建一个简单的无参存储过程为例。
+
+以mysql里自带的test数据库作为测试对象。
+
+```
+> use test;
+
+```
+
+
+
+
+
+
+
 参考资料
+
+1、
+
+https://blog.csdn.net/gaokcl/article/details/83182002
+
+2、
+
+https://blog.csdn.net/qq_33157666/article/details/87877246
+
+# 参考资料
 
 1、
 
