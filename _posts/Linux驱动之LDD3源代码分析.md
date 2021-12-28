@@ -14,6 +14,34 @@ LDD3是基于linux2.6的。比较老了。有人移植了相关例程到linux新
 
 代码在这里。https://github.com/duxing2007/ldd3-examples-3.x
 
+这个是更新的版本。
+
+https://github.com/martinezjavier/ldd3
+
+在ubuntu20.04上测试。插入会失败。
+
+看dmesg。
+
+```
+[6218933.591005] Lockdown: insmod: unsigned module loading is restricted; see man kernel_lockdown.7
+[6218951.737022] Lockdown: insmod: unsigned module loading is restricted; see man kernel_lockdown.7
+[6218986.801836] Lockdown: insmod: unsigned module loading is restricted; see man kernel_lockdown.7
+[6219370.083498] Lockdown: insmod: unsigned module loading is restricted; see man kernel_lockdown.7
+```
+
+需要这样处理一下
+
+```
+To get the module loading, disable kernel lockdown via sys-rq:
+
+# echo 1 > /proc/sys/kernel/sysrq
+# echo x > /proc/sysrq-trigger
+```
+
+也还是不行。
+
+
+
 书的目录结构：
 
 ```

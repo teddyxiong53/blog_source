@@ -454,6 +454,43 @@ pinctrl-names = "tdm_pins";
 pinctrl-0 = <&tdmout_a &tdmin_a &tdmout_a_data>;
 ```
 
+## backlight的例子
+
+amlogic S400板子的例子。
+
+屏幕亮的时候，是配置为pwm。
+
+不亮的时候，是配置为gpio。给高电平。
+
+配置为普通gpio的时候，是function = "gpio_periphs";
+
+```
+bl_pwm_on_pins: bl_pwm_on_pin {
+		mux {
+			groups = "pwm_b_z";
+			function = "pwm_b";
+		};
+	};
+	bl_pwm_off_pins:bl_pwm_off_pin {
+		mux {
+			pins = "GPIOZ_4";
+			function = "gpio_periphs";
+			output-high;
+		};
+	};
+```
+
+驱动代码里
+
+```
+./media/vout/backlight/aml_bl.c:334:    "pwm_off",              /* 5 */
+./media/vout/backlight/aml_bl.dts:22:   pinctrl-names = "pwm_on","pwm_off","pwm_vs_on","pwm_vs_off",
+```
+
+别说，背光这个比我想象的要复杂。
+
+D:\study\linux-4.9\drivers\amlogic\media\vout\backlight\aml_bl.c
+
 
 
 ## 参考资料

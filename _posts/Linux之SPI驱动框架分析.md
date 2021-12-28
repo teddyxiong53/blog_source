@@ -357,3 +357,39 @@ struct i2c_driver {
 };
 ```
 
+
+
+# 硬件
+
+**4 线 SPI 器件有四个信号：**
+
+● 时钟(SPICLK,SCLK)
+● 片选(CS)主机输出
+● 从机输入(MOSI)主机输入
+● 从机输出(MISO)
+
+
+
+SPI比较混乱，主要是没有标准的协议，只有moto的事实标准。所以衍生出多个版本，但没有本质的差异。
+
+常见的SPI信号有：SS片选、SCK同步时钟、MISO、MOSI（也有叫SDI、SDO的）数据输入和输出，还的有包括DCX命令数据选择。
+
+SPI分4线和3线，
+
+4线接口：包括SCLK、SDO、SDI、SS；
+
+3线接口：包括SCLK、SDA、SS。
+
+所以3线和4线的不同在于，4线接口可以实现的是master in和master out。
+
+但3线只有master out。
+
+不管是3线还是4线，SS是必须有的。
+
+master使用不同的SS信号可以连接多个salve
+
+
+
+# 参考资料
+
+https://blog.csdn.net/wofreeo/article/details/89159059

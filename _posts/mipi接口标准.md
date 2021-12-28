@@ -100,10 +100,46 @@ CSI/DSI的物理层（PHY Layer）由专门的工作组负责制定，
 
 
 
+# mipi dsi
+
+最近调一个显示屏。
+
+看到kernel头文件mipi_display.h里，有这样一些宏定义
+
+```
+/* MIPI DCS commands */
+enum {
+	MIPI_DCS_NOP			= 0x00,
+	MIPI_DCS_SOFT_RESET		= 0x01,
+	MIPI_DCS_GET_DISPLAY_ID		= 0x04,
+```
+
+搜索一下MIPI DCS。
+
+DCS (DisplayCommandSet)：DCS是一个标准化的命令集，用于命令模式的显示模组。
+
+DSI兼容的外设支持Command或Video操作模式，用哪个模式由外设的构架决定
+
+Command模式
+
+是指采用发送命令和数据到具有显示缓存的控制器。
+
+主机通过命令间接的控制外设。Command模式采用双向接口
+
+Video模式是指从主机传输到外设采用时实象素流。
+
+这种模式只能以高速传输。
+
+为减少复杂性和节约成本，只采用Video模式的系统可能只有一个单向数据路径
 
 
-参考资料
+
+# 参考资料
 
 1、Understanding MIPI Interface
 
 https://zhuanlan.zhihu.com/p/100476927
+
+2、MIPI DSI协议介绍
+
+https://blog.csdn.net/longxiaowu/article/details/24410021

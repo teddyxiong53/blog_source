@@ -54,3 +54,7 @@ find ./* | cpio -H newc -o > test.cpio
 1、linux 下cpio使用
 
 https://blog.csdn.net/lhl_blog/article/details/7910145
+
+2、
+
+https://www.cnblogs.com/f-ck-need-u/p/7008380.html

@@ -353,7 +353,7 @@ enum {
 
 
 
-nitrd-x.x.x.img首先是一个用gzip压缩的文件，
+initrd-x.x.x.img首先是一个用gzip压缩的文件，
 
 因为内核里包含解压缩的代码，
 
@@ -401,9 +401,129 @@ void __init prepare_namespace(void)
 
 
 
+# uboot配置使用initramfs
+
+使用initramfs的内核启动参数
+
+不需要”initrd=”和”root=”参数,
+
+但是必须在initramfs中创建/init文件或者修改内核启动最后代码(init文件是软连接，指向什么? init -> bin/busybox，否则内核启动将会失败)
+
+```
+使用 initrd的内 核启动参数:
+initrd=addr,0x400000 root=/dev/ram rw
+```
+
+使用initramfs的内核配置(使用initramfs做根文件系统): 
+
+General setup  —>
+[*] Initial RAM filesystem and RAM disk (initramfs/initrd) support
+(/rootfs_dir) Initramfs source file(s)  //输入根文件系统的所在目录 
 
 
 
+当前S400上是这样的内核配置
+
+```
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_INITRAMFS_SOURCE=""
+```
+
+在buildroot的配置里
+
+```
+BR2_TARGET_ROOTFS_INITRAMFS_LIST="board/amlogic/common/initramfs/initramfs-49/ramfslist-32-ubi-release"
+BR2_TARGET_ROOTFS_CPIO_UIMAGE=y
+```
+
+BR2_TARGET_ROOTFS_INITRAMFS_LIST 为什么没有传递给内核呢？
+
+
+
+看一个原始的buildroot的fs/cpio里的内容。
+
+有一个init脚本。内容是这样
+
+```
+#!/bin/sh
+# devtmpfs does not get automounted for initramfs
+/bin/mount -t devtmpfs devtmpfs /dev
+
+# use the /dev/console device node from devtmpfs if possible to not
+# confuse glibc's ttyname_r().
+# This may fail (E.G. booted with console=), and errors from exec will
+# terminate the shell, so use a subshell for the test
+if (exec 0</dev/console) 2>/dev/null; then
+    exec 0</dev/console
+    exec 1>/dev/console
+    exec 2>/dev/console
+fi
+
+exec /sbin/init "$@"
+```
+
+cpio.mk里
+
+```
+define ROOTFS_CPIO_CMD
+	cd $(TARGET_DIR) && \
+	find . \
+	| LC_ALL=C sort \
+	| cpio $(ROOTFS_CPIO_OPTS) --quiet -o -H newc \
+	> $@
+endef
+```
+
+那就是把target下面的都打包到cpio里去了。
+
+而amlogic的，会有一个blacklist，去掉不需要打包进去的内容。
+
+去掉了大部分独立的可执行文件。去掉了一些动态库。但是我看把C库都去掉了。
+
+这个就有点奇怪了。
+
+
+
+这个目录下，有个ramdisk目录
+
+```
+buildroot/board/amlogic/common/ota/ramdisk$ tree
+.
+├── etc
+│   ├── hotplug
+│   │   ├── insert.sh
+│   │   └── remove.sh
+│   ├── init.d
+│   │   ├── rcS
+│   │   └── S01swupdate
+│   └── mdev.conf
+└── init
+```
+
+如果在buildroot里要单独编译得到ramdisk，执行
+
+```
+make rootfs-cpio-rebuild
+```
+
+就可以了。
+
+```
+Image Name:   
+Created:      Wed Dec 22 17:24:05 2021
+Image Type:   AArch64 Linux RAMDisk Image (uncompressed)
+Data Size:    2818665 Bytes = 2752.60 KiB = 2.69 MiB
+Load Address: 00000000
+Entry Point:  00000000
+```
+
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/androidstar_cn/article/details/53165941
 
 # 参考资料
 

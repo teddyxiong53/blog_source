@@ -135,6 +135,23 @@ TDM不像I2S有统一的标准，不同的IC厂商在应用TDM时可能略有差
 - **长帧同步** Long Frame Sync
 - **短帧同步** Short Frame Sync
 
+# 设备树配置相关
+
+最近配置amlogic的tdm接口，发现这个还比较复杂。需要通过多读文章来加深理解。
+
+比如我们要配置一个12.288MHz，BCLK的TDM总线， **WS/LRCK**一般都是配置48Khz，位深度是32 bit，然后有8个声道，计算起来**SCLK/BCLK**就是12.288MHz。
+
+```
+
+ 12.288 MHz =  48 kHz * 32 bits per slot * 8 slots/channels
+```
+
+改了之后用示波器抓波形，然后执行以下tinyalsa命令使得总线工作：
+
+```cpp
+tinymix "MultiMedia1 Mixer SEN_TDM_TX_0" "1"
+```
+
 
 
 # 参考资料
@@ -154,3 +171,7 @@ https://blog.csdn.net/songche123/article/details/118154829
 4、TDM协议
 
 https://zhuanlan.zhihu.com/p/373060896
+
+5、
+
+https://blog.csdn.net/Codeliang666/article/details/113859859

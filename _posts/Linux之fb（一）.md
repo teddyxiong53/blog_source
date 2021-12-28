@@ -387,5 +387,95 @@ linux支持大道几个TB的文件。访问大文件的时候，page cache里就
 
 **/sys/class/graphics**
 
+# fb保留内存的作用
+
+项目需要在spl中显示logo，
+
+其中就需要分配framebuffer，
+
+如果framebuffer较小，
+
+一般可以直接用芯片的OCMC_RAM做framebuffer，
+
+我的芯片上的**OCMC_RAM2**和**OCMC_RAM3** 的2M内存足够显示较小的图片。
+
+当然，2M往往是不够的用的（比如使用bmp格式的image），
+
+这时候就需要在DDR中分配framebuffer了，下面分配一个10MB的framebuffer为例：
+
+gd->ram_size最终会保存到内核设备树的memory节点中，修改gd->ram_size会改变内核使用的的DDR大小！
+
+因为logo在内核阶段也要显示，所以这里直接在gd->ram_size上修改。修改的时候如果**CONFIG_SYS_MEM_TOP_HIDE**没有用，直接定义这个宏在DDR顶端保留一段内存（当然也可以自己定义一个宏）：
+
+
+
+amlogic的设备树里，有这样来保留内存。这个内存怎么被使用的？
+
+```
+fb_reserved:linux,meson-fb {
+			//compatible = "amlogic, fb-memory";
+			//reg = <0x0 0x3e000000 0x0 0x1f00000>;
+			compatible = "shared-dma-pool";
+			reusable;
+			size = <0x0 0x2000000>;
+			alignment = <0x0 0x400000>;
+			alloc-ranges = <0x0 0x3e000000 0x0 0x2000000>;
+		};
+```
+
+搜索shared-dma-pool
+
+有这3个地方
+
+```
+./base/dma-contiguous.c:291:RESERVEDMEM_OF_DECLARE(cma, "shared-dma-pool", rmem_cma_setup);
+./base/dma-coherent.c:337:RESERVEDMEM_OF_DECLARE(dma, "shared-dma-pool", rmem_dma_setup);
+./of/of_reserved_mem.c:140:         && of_flat_dt_is_compatible(node, "shared-dma-pool")
+```
+
+先看of_reserved_mem.c
+
+最多保留16个
+
+```
+#define MAX_RESERVED_REGIONS	16
+```
+
+用这个结构体来描述
+
+```
+struct reserved_mem {
+	const char			*name;
+	unsigned long			fdt_node;
+	unsigned long			phandle;
+	const struct reserved_mem_ops	*ops;
+	phys_addr_t			base;
+	phys_addr_t			size;
+	void				*priv;
+};
+```
+
+
+
+使用是这样被用到的
+
+```
+	meson-fb {
+		compatible = "amlogic, meson-axg";
+		memory-region = <&fb_reserved>;
+```
+
+我当前spi lcd，没有用到meson-fb的。
+
+
+
+参考资料
+
+https://blog.csdn.net/z1026544682/article/details/104775740
+
+# 参考资料
+
+1、
+
 
 

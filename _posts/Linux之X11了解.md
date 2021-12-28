@@ -70,8 +70,28 @@ Qt for embedd linux在这方面则完全不同，它并没有构建在X Window�
 
 
 
+# 从fbtft探索x11
 
-参考资料
+现在看fbtft的，看到可以在很小的tft屏幕上显示linux图形界面。
+
+https://github.com/notro/fbtft-spindle/wiki/Appendix#x-windows-backlight-script
+
+而且还提供了不少可操作的系统，我觉得这个可以作为一个了解x11的切入点。
+
+可以同时有2个X windows会话，一个在lcd上，一个在hdmi上。
+
+但是这样有一个问题，就是input device只能属于其中一个。
+
+```
+startx -- -layout HDMI &
+startx -- -layout TFT &
+```
+
+startx 这个命令值得玩味。
+
+
+
+# 参考资料
 
 1、
 
@@ -83,4 +103,4 @@ https://www.cnblogs.com/xuzhaoping/p/11074290.html
 
 3、Qt for destop Linux 和 Qt/E最大的区别
 
-https://blog.csdn.net/sh_danny/article/details/6115902?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522158408453119724839251904%2522%252C%2522scm%2522%253A%252220140713.130056874..%2522%257D&request_id=158408453119724839251904&biz_id=0&utm_source=distribute.pc_search_result.none-task
+https://blog.csdn.net/sh_danny/article/details/6115902

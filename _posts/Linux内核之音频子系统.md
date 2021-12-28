@@ -42,7 +42,7 @@ DAI是Digital Audio Interface的简称，
 
 分为cpu_dai和codec_dai,这两者通过i2s/pcm总线连接；
 
-AIF是Audio Interface母的简称，嵌入式系统中一般是I2S和PCM接口。
+**AIF是Audio Interface的简称，嵌入式系统中一般是I2S和PCM接口。**
 
 
 
@@ -54,15 +54,15 @@ PCM dma:
 
 某些情形下是不需要dma操作的，
 
-比如modem和codec直连，
+**比如modem和codec直连，**
 
-因为modem本身已经把数据送到fifo了，
+**因为modem本身已经把数据送到fifo了，**
 
-这时只需要启动codec_dai接收数据即可；
+**这时只需要启动codec_dai接收数据即可；**
 
-该情形下，machine驱动dai_link中需要设定.platform_name = "snd_soc_dummy",
+**该情形下，machine驱动dai_link中需要设定.platform_name = "snd_soc_dummy",**
 
-这是虚拟dma驱动，实现见sound/soc/soc-utils.c. 
+**这是虚拟dma驱动，实现见sound/soc/soc-utils.c.** 
 
 音频dma驱动通过 snd_soc_register_platform()来注册，
 
@@ -96,7 +96,15 @@ Machine:
 
 所谓的硬件特性指：
 
-Soc Platform与Codec的差异；DAIs之间的链结方式；通过某个GPIO打开Amplifier;通过某个GPIO检测耳机插拔；使用某个时钟如MCLK/External-OSC作为i2s,CODEC的时钟源等等。
+Soc Platform与Codec的差异；
+
+DAIs之间的链结方式；
+
+通过某个GPIO打开Amplifier;
+
+通过某个GPIO检测耳机插拔；
+
+使用某个时钟如MCLK/External-OSC作为i2s,CODEC的时钟源等等。
 
 
 
@@ -110,7 +118,7 @@ machine驱动中定义的音频数据链路，
 
 它指定链路用到的codec,codec_dai,cpu_dai,platform.
 
-比如对于amlogci这款，
+比如对于amlogic这款，
 
 通过dts来配置media链路：
 
@@ -276,7 +284,11 @@ PCM有两种模式：
 
 背面还有一颗S0903的灯控芯片。
 
-该麦克风阵列由思必驰提供，而模拟麦克风则来自敏芯微电子。该电路板上还有4块德州仪器型号为TLV320ADC3101低功耗立体声ADC(模数变换器)。此外，还有一块A1semi的型号为AS9050D的触摸控制器。
+该麦克风阵列由思必驰提供，而模拟麦克风则来自敏芯微电子。
+
+该电路板上还有4块德州仪器型号为TLV320ADC3101低功耗立体声ADC(模数变换器)。
+
+此外，还有一块A1semi的型号为AS9050D的触摸控制器。
 
 
 
@@ -395,9 +407,9 @@ Codec 驱动。这一部分只关心 Codec 本身，与 CPU 平台相关的特�
 
 并且强化了snd_soc_pcm_runtime的作用，
 
-同时还增加了另外两个数据结构snd_soc_codec_driver和snd_soc_platform_driver，
+**同时还增加了另外两个数据结构snd_soc_codec_driver和snd_soc_platform_driver，**
 
-用于明确代表Codec驱动和Platform驱动。
+**用于明确代表Codec驱动和Platform驱动。**
 
 
 
@@ -694,7 +706,7 @@ DAPM是为了使基于linux的移动设备上的音频子系统，
 
 DAPM对用户空间的应用程序来说是透明的，
 
-所有与电源相关的开关都在ASoc core中完成。
+**所有与电源相关的开关都在ASoc core中完成。**
 
 用户空间的应用程序无需对代码做出修改，也无需重新编译，
 
@@ -712,7 +724,7 @@ DAPM是**基于kcontrol改进**过后的相应框架，
 
 ## dapm的基本单位：widget
 
-widget把kcontrol和动态电源管理进行了有机的结合，
+**widget把kcontrol和动态电源管理进行了有机的结合，**
 
 同时还具备音频路径的连结功能，
 
@@ -774,7 +786,15 @@ snd_soc_dapm_route 则表示widget的连接关系。
 
 
 
-和普通的kcontrol一样，DAPM框架为我们提供了大量的辅助宏用来定义各种各样的widget控件，这些宏定义根据widget的类型，按照它们的电源所在的域，被分为了几个域，他们分别是：
+和普通的kcontrol一样，
+
+DAPM框架为我们提供了**大量的辅助宏**用来定义各种各样的widget控件，
+
+这些宏定义根据widget的类型，
+
+按照它们的电源所在的域，
+
+被分为了几个域，他们分别是：
 
 - codec域   比如VREF和VMID等提供参考电压的widget，这些widget通常在codec的probe/remove回调中进行控制，当然，在工作中如果没有音频流时，也可以适当地进行控制它们的开启与关闭。
 - platform域   位于该域上的widget通常是针对平台或板子的一些需要物理连接的输入/输出接口，例如耳机、扬声器、麦克风，因为这些接口在每块板子上都可能不一样，所以通常它们是在machine驱动中进行定义和控制，并且也可以由用户空间的应用程序通过某种方式来控制它们的打开和关闭。
@@ -793,6 +813,8 @@ https://www.cnblogs.com/linhaostudy/p/8509899.html
 
 https://www.cnblogs.com/linhaostudy/p/8513276.html
 
+
+
 # kcontrol是什么
 
 Control接口主要让用户空间的应用程序（alsa-lib）可以访问和控制音频codec芯片中的多路开关，滑动控件等。
@@ -801,13 +823,15 @@ Control接口主要让用户空间的应用程序（alsa-lib）可以访问和�
 
 从ALSA 0.9.x版本开始，
 
-所有的mixer工作都是通过control接口的API来实现的。
+**所有的mixer工作都是通过control接口的API来实现的。**
 
 要自定义一个Control，我们首先要定义3个回调函数：info，get和put。
 
 然后，定义一个snd_kcontrol_new结构：
 
-如果声卡中有不止一个codec，每个codec中有相同名字的control，这时我们可以通过index来区分这些controls。当index为0时，则可以忽略这种区分策略。
+如果声卡中有不止一个codec，每个codec中有相同名字的control，这时我们可以通过index来区分这些controls。
+
+当index为0时，则可以忽略这种区分策略。
 
 
 
@@ -881,7 +905,103 @@ struct soc_enum {
 };
 ```
 
+控制接口对于许多开关(switch)和调节器(slider)应用广泛，
 
+它能被用户空间存取，从而读写CODEC相关寄存器。
+
+control的主要用于mixer。
+
+它用snd_kcontrol_new结构体描述。
+
+```
+struct snd_kcontrol_new {    
+    snd_ctl_elem_iface_t iface; /* interface identifier */    
+    unsigned int device;        /* device/client number */    
+    unsigned int subdevice;     /* subdevice (substream) number */    
+    unsigned char *name;        /* ASCII name of item */    
+    unsigned int index;     /* index of item */    
+    unsigned int access;        /* access rights */    
+    unsigned int count;     /* count of same elements */    
+    snd_kcontrol_info_t *info;    
+    snd_kcontrol_get_t *get;    
+    snd_kcontrol_put_t *put;    
+    union {    
+        snd_kcontrol_tlv_rw_t *c;    
+        const unsigned int *p;    
+    } tlv;    
+    unsigned long private_value;    
+};  
+```
+
+
+
+iface 字段定义了control的类型，
+
+形式为SNDRV_CTL_ELEM_IFACE_XXX，
+
+对于mixer是SNDRV_CTL_ELEM_IFACE_MIXER，
+
+对于不属于mixer的全局控制，使用CARD；
+
+如果关联到某类设备，则是PCM、RAWMIDI、TIMER或SEQUENCER。
+
+在这里，我们主要关注mixer。
+
+***\*name\****字段是名称标识，
+
+这个字段非常重要，因为control的作用由名称来区分，
+
+对于名称相同的control，则使用index区分。
+
+下面会详细介绍上层应用如何根据name名称标识来找到底层相应的control。
+
+name定义的标准是“SOURCE DIRECTION FUNCTION”即“源 方向 功能”，
+
+SOURCE定义了control的源，如“Master”、“PCM”等；
+
+DIRECTION 则为“Playback”、“Capture”等，如果DIRECTION忽略，意味着Playback和capture双向；
+
+FUNCTION则可以是“Switch”、“Volume”和“Route”等。
+
+
+
+上层也可以根据numid来找到对应的control，
+
+snd_ctl_find_id()也是优先判断上层是否传递了numid，
+
+是则直接返回这个numid对应的control。
+
+用户层设置numid和control的关联时，
+
+可用alsa-lib的snd_mixer_selem_set_enum_item()函数。
+
+**snd_kcontrol_new结构体并没有numid这个成员，**
+
+**是因为numid是系统自动管理的，**
+
+原则是该control的注册次序，保存到snd_ctl_elem_value结构体中。
+
+
+
+***\*access\****字段是访问控制权限。
+
+SNDRV_CTL_ELEM_ACCESS_READ意味着只读，这时put()函数不必实现；
+
+SNDRV_CTL_ELEM_ACCESS_WRITE意味着只写，这时get()函数不必实现。
+
+**若control值频繁变化，则需定义 VOLATILE标志。**
+
+**当control处于非激活状态时，应设置INACTIVE标志。**
+
+***\*private_value\****字段包含1个长整型值，可以通过它给info()、get()和put()函数传递参数。
+
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/lininglive/article/details/52151998
 
 # soc.h
 
@@ -916,6 +1036,551 @@ snd_soc_jack
 snd_soc_jack_gpio
 ```
 
+这些结构体，可以分为这些：
+
+1、platform的。
+
+2、codec的。
+
+3、dai的。
+
+4、component的。
+
+5、card的。
+
+6、jack的。
+
+这些函数，也可以看到可以给这些东西增加kcontrol。
+
+```
+int snd_soc_add_component_controls
+int snd_soc_add_codec_controls
+int snd_soc_add_platform_controls
+int snd_soc_add_card_controls
+int snd_soc_add_dai_controls
+```
+
+# sound/core.h
+
+这个是音频子系统的核心头文件之一。
+
+```
+enum snd_device_type 
+	设备类型有jack、timer、rawmidi、control、pcm等。
+
+enum snd_device_state 
+	有3个主题，build、registered、disconnected
+struct snd_device
+	包含了snd_device_type、snd_device_state
+	还有snd_card指针。
+	
+struct snd_card
+	有这么几个重要链表。
+	struct list_head devices;
+	struct list_head controls;
+	struct list_head ctl_files;
+	
+struct snd_minor 
+	这个结构体，作用还不清楚。
+```
+
+函数
+
+```
+snd_card_xx
+	这个规律的，在core/init.c里。
+snd_device_xx
+	这种是在core/device.c里。
+```
+
+
+
+# alsa soc pdf文档总结
+
+链接在这里
+
+https://elinux.org/images/b/b5/Belloni-alsa-asoc.pdf
+
+# snd_soc_component_driver
+
+这个component是怎么理解？
+
+snd_soc_component结构体
+
+```
+
+```
+
+snd_soc_dai_link_component
+
+这个作用又是什么？
+
+snd_soc_component被很多其他的东西包含。感觉像是一个接口。就像socket类似。
+
+例如snd_soc_codec和snd_soc_platform都包含了它。而且snd_soc_platform除了它之外就没有什么东西了。感觉主要就是通过snd_soc_component来包含实际功能。
+
+```
+struct snd_soc_platform {
+	struct device *dev;
+	const struct snd_soc_platform_driver *driver;
+
+	struct list_head list;
+
+	struct snd_soc_component component;
+};
+```
+
+配套的结构体就是snd_soc_component_driver。
+
+在soc.h里，设备是snd_soc_xxx，对应的驱动名字是snd_soc_xxx_driver。都是这个规律。
+
+还有component转codec工具函数
+
+```
+static inline struct snd_soc_codec *snd_soc_component_to_codec(
+	struct snd_soc_component *component)
+{
+	return container_of(component, struct snd_soc_codec, component);
+}
+```
+
+在soc-core.c里，有定义这样3个链表
+
+```
+static LIST_HEAD(platform_list);
+static LIST_HEAD(codec_list);
+static LIST_HEAD(component_list);
+```
+
+# asoc debugfs
+
+在这个目录下，有这些东西。
+
+```
+# ls
+AML-AUGESOUND  codecs         dais           platforms
+# pwd
+/sys/kernel/debug/asoc
+```
+
+```
+# cat codecs 
+tlv320adc3101.0-0019
+tas5782m
+tas5782m
+tas5782m
+tas5782m
+tas5782m
+tas5782m
+dummy
+snd-soc-dummy
+```
+
+````
+# cat dais 
+ff642000.audiobus:loopback@0
+ff642000.audiobus:pdm
+SPDIF-A
+TDM-C
+TDM-B
+TDM-A
+tlv320adc3101-hifi
+tas5782m
+tas5782m
+tas5782m
+tas5782m
+tas5782m
+tas5782m
+dummy
+snd-soc-dummy-dai
+````
+
+```
+# cat platforms 
+ff642000.audiobus:loopback@0
+ff642000.audiobus:pdm
+ff642000.audiobus:spdif
+ff642000.audiobus:tdmc
+ff642000.audiobus:tdmb
+ff642000.audiobus:tdma
+snd-soc-dummy
+```
+
+而在AML-AUGESOUND下面
+
+```
+# cd AML-AUGESOUND/
+# ls
+codec:dummy                            ff642000.audiobus:tdmb
+codec:tas5782m                         ff642000.audiobus:tdmc
+dapm                                   platform:ff642000.audiobus:loopback@0
+dapm_pop_time                          platform:ff642000.audiobus:pdm
+ff642000.audiobus:loopback@0           platform:ff642000.audiobus:spdif
+ff642000.audiobus:pdm                  platform:ff642000.audiobus:tdma
+ff642000.audiobus:spdif                platform:ff642000.audiobus:tdmb
+ff642000.audiobus:tdma                 platform:ff642000.audiobus:tdmc
+```
+
+```
+# cd ../codec\:dummy/
+# ls
+codec_reg  dapm
+# cat codec_reg 
+# cd dapm/
+# ls
+HIFI Capture   LOUTL          Left DAC       bias_level
+HIFI Playback  LOUTR          Right DAC
+# ls -lh
+total 0      
+-r--r--r--    1 root     root           0 Jan  1  1970 HIFI Capture
+-r--r--r--    1 root     root           0 Jan  1  1970 HIFI Playback
+-r--r--r--    1 root     root           0 Jan  1  1970 LOUTL
+-r--r--r--    1 root     root           0 Jan  1  1970 LOUTR
+-r--r--r--    1 root     root           0 Jan  1  1970 Left DAC
+-r--r--r--    1 root     root           0 Jan  1  1970 Right DAC
+-r--r--r--    1 root     root           0 Jan  1  1970 bias_level
+# cat HIFI\ Capture 
+HIFI Capture: Off  in 0 out 0
+ stream HIFI Capture inactive
+# 
+```
+
+asoc debugfs是这里初始化的
+
+```
+static int __init snd_soc_init(void)
+{
+	snd_soc_debugfs_init();
+	snd_soc_util_init();
+
+	return platform_driver_register(&soc_driver);
+}
+```
+
+# DroidPhone博客对音频子系统的梳理
+
+这个作者有个csdn系列文章。
+
+按照顺序梳理总结一下。
+
+## Linux ALSA声卡驱动之一：ALSA架构简介
+
+讲了dev下面的文件和代码目录的分布。
+
+## Linux ALSA声卡驱动之二：声卡的创建
+
+### 1. struct snd_card
+
+snd_card可以说是整个ALSA音频驱动最顶层的一个结构，整个声卡的软件逻辑结构开始于该结构，几乎所有与声音相关的逻辑设备都是在snd_card的管理之下，声卡驱动的第一个动作通常就是创建一个snd_card结构体。正因为如此，本节中，我们也从 struct cnd_card开始吧。
+
+struct list_head devices     记录该声卡下所有逻辑设备的链表
+struct list_head controls    记录该声卡下所有的控制单元的链表
+void *private_data            声卡的私有数据，可以在创建声卡时通过参数指定数据的大小
+
+**看内核结构体，重点关注链表。对应的成员一般是核心成员。**
+
+### 2. 声卡的建立流程
+
+![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/0_13014670816zCV.gif)
+
+### 3. snd_card_create()
+
+### 4. snd_card_register()
+
+## Linux ALSA声卡驱动之三：PCM设备的创建
+
+### 1. PCM是什么
+
+### 2. alsa-driver中的PCM中间层
+
+ALSA已经为我们实现了功能强劲的PCM中间层，
+
+自己的驱动中只要实现一些底层的需要访问硬件的函数即可。
+
+
+
+要访问PCM的中间层代码，
+
+你首先要包含头文件<sound/pcm.h>，
+
+另外，如果需要访问一些与 hw_param相关的函数，
+
+可能也要包含<sound/pcm_params.h>。
+
+ 
+
+每个声卡最多可以包含4个pcm的实例，
+
+每个pcm实例对应一个pcm设备文件。
+
+pcm实例数量的这种限制源于linux设备号所占用的位大小，
+
+如果以后使用64位的设备号，我们将可以创建更多的pcm实例。
+
+不过大多数情况下，在嵌入式设备中，一个pcm实例已经足够了。
+
+ 
+
+一个pcm实例由一个playback stream和一个capture stream组成，
+
+这两个stream又分别有一个或多个substreams组成。
+
+![image-20211224141548708](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20211224141548708.png)
+
+在嵌入式系统中，通常不会像图2.1中这么复杂，大多数情况下是一个声卡，一个pcm实例，pcm下面有一个playback和capture stream，playback和capture下面各自有一个substream。
+
+
+
+### 3. 新建一个pcm
+
+### 4. 设备文件节点的建立（dev/snd/pcmCxxDxxp、pcmCxxDxxc）
+
+每个snd_minor结构体保存了声卡下
+
+**某个逻辑设备的上下文信息，**
+
+他在逻辑设备建立阶段被填充，
+
+在逻辑设备被使用时就可以从该结构体中得到相应的信息。
+
+pcm设备也不例外，也需要使用该结构体。
+
+该结构体在include/sound/core.h中定义。
+
+在sound/sound.c中定义了一个snd_minor指针的全局数组：
+
+```
+static struct snd_minor *snd_minors[SNDRV_OS_MINORS];
+```
+
+## Linux ALSA声卡驱动之四：Control设备的创建
+
+### Control接口
+
+Control接口主要让用户空间的应用程序（alsa-lib）可以访问和控制音频codec芯片中的多路开关，滑动控件等。
+
+对于Mixer（混音）来说，Control接口显得尤为重要，
+
+从ALSA 0.9.x版本开始，所有的mixer工作都是通过control接口的API来实现的。
+
+ALSA已经为AC97定义了完整的控制接口模型，如果你的Codec芯片只支持AC97接口，你可以不用关心本节的内容。
+
+<sound/control.h>定义了所有的Control API。
+
+如果你要为你的codec实现自己的controls，请在代码中包含该头文件。
+
+### Control的名字
+
+control的名字需要遵循一些标准，通常可以分成3部分来定义control的名字：源--方向--功能。
+
+源，可以理解为该control的输入端，alsa已经预定义了一些常用的源，例如：Master，PCM，CD，Line等等。 
+方向，代表该control的数据流向，例如：Playback，Capture，Bypass，Bypass Capture等等，也可以不定义方向，这时表示该Control是双向的（playback和capture）。 
+功能，根据control的功能，可以是以下字符串：Switch，Volume，Route等等。
+
+
+
+也有一些命名上的特例：
+
+全局的capture和playback    "Capture Source"，"Capture Volume"，"Capture Switch"，它们用于全局的capture source，switch和volume。
+
+同理，"Playback Volume"，"Playback Switch"，它们用于全局的输出switch和volume。
+Tone-controls    音调控制的开关和音量命名为：Tone Control - XXX，例如，"Tone Control - Switch"，"Tone Control - Bass"，"Tone Control - Center"。
+
+3D controls    3D控件的命名规则：，"3D Control - Switch"，"3D Control - Center"，"3D Control - Space"。
+
+Mic boost    麦克风音量加强控件命名为："Mic Boost"或"Mic Boost(6dB)"。
+
+### Control设备的建立
+
+Control设备和PCM设备一样，**都属于声卡下的逻辑设备。**
+
+用户空间的应用程序通过alsa-lib访问该Control设备，
+
+读取或控制control的控制状态，从而达到控制音频Codec进行各种Mixer等控制操作。
+
+
+
+我们需要在我们的驱动程序初始化时主动调用snd_pcm_new()函数创建pcm设备，
+
+而control设备则在snd_card_create()内被创建，
+
+snd_card_create()通过调用snd_ctl_create()函数创建control设备节点。
+
+所以我们无需显式地创建control设备，
+
+**只要建立声卡，control设备被自动地创建。**
+
+## Linux ALSA声卡驱动之五：移动设备中的ALSA（ASoC）
+
+###  ASoC的由来
+
+ASoC--ALSA System on Chip ，是建立在标准ALSA驱动层上，
+
+为了更好地支持嵌入式处理器和移动设备中的音频Codec的一套软件体系。
+
+在ASoc出现之前，内核对于SoC中的音频已经有部分的支持，
+
+不过会有一些局限性：
+
+1、Codec驱动与SoC CPU的底层耦合过于紧密，这种不理想会导致代码的重复，例如，仅是wm8731的驱动，当时Linux中有分别针对4个平台的驱动代码。
+
+2、音频事件没有标准的方法来通知用户，例如耳机、麦克风的插拔和检测，这些事件在移动设备中是非常普通的，而且通常都需要特定于机器的代码进行重新对音频路劲进行配置。
+3、当进行播放或录音时，驱动会让整个codec处于上电状态，这对于PC没问题，但对于移动设备来说，这意味着浪费大量的电量。同时也不支持通过改变过取样频率和偏置电流来达到省电的目的。
+
+```
+总的来说，asoc的提出，是为了解决3个问题：
+1、解耦合。
+2、事件机制。
+3、低功耗。
+```
+
+ASoC正是为了解决上述种种问题而提出的，目前已经被整合至内核的代码树中：sound/soc。ASoC不能单独存在，他只是建立在标准ALSA驱动上的一个它必须和标准的ALSA驱动框架相结合才能工作。
+
+下面这种图的画法值得学习
+
+![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/0_13294571789RUX.gif)
+
+
+
+## Linux ALSA声卡驱动之六：ASoC架构中的Machine
+
+ASoC的一切都从Machine驱动开始，包括声卡的注册，绑定Platform和Codec驱动等等，下面就让我们从Machine驱动开始讨论吧。
+
+我把amlogic的auge的card的代码读了一下。
+
+这个的内容不不看了。
+
+## Linux ALSA声卡驱动之七：ASoC架构中的Codec
+
+在移动设备中，Codec的作用可以归结为4种，分别是：
+
+1、对PCM等信号进行D/A转换，把数字的音频信号转换为模拟信号
+
+2、对Mic、Linein或者其他输入源的模拟信号进行A/D转换，把模拟的声音信号转变CPU能够处理的数字信号
+
+3、对音频通路进行控制，比如播放音乐，收听调频收音机，又或者接听电话时，音频信号在codec内的流通路线是不一样的
+
+4、对音频信号做出相应的处理，例如音量控制，功率放大，EQ控制等等
+
+
+
+ASoC对Codec的这些功能都定义好了一些列相应的接口，以方便地对Codec进行控制。
+
+ASoC对Codec驱动的一个基本要求是：
+
+驱动程序的代码必须要做到平台无关性，
+
+以方便同一个Codec的代码不经修改即可用在不同的平台上
+
+描述Codec的最主要的几个数据结构分别是：snd_soc_codec，snd_soc_codec_driver，snd_soc_dai，snd_soc_dai_driver，
+
+
+
+## Linux ALSA声卡驱动之八：ASoC架构中的Platform
+
+对于amlogic的，snd_soc_platform_driver体现在
+
+```
+./soc/amlogic/auge/tdm.c:1048:struct snd_soc_platform_driver aml_tdm_platform = {
+```
+
+这样来注册的
+
+```
+return devm_snd_soc_register_platform(dev, &aml_tdm_platform);
+```
+
+主要就是把tdm ops注册进去
+
+```
+static struct snd_pcm_ops aml_tdm_ops = {
+	.open = aml_tdm_open,
+	.close = aml_tdm_close,
+	.ioctl = snd_pcm_lib_ioctl,
+	.hw_params = aml_tdm_hw_params,
+	.hw_free = aml_tdm_hw_free,
+	.prepare = aml_tdm_prepare,
+	.pointer = aml_tdm_pointer,
+	.mmap = aml_tdm_mmap,
+};
+```
+
+
+
+## ALSA声卡驱动中的DAPM详解之一：kcontrol
+
+DAPM是Dynamic Audio Power Management的缩写，直译过来就是动态音频电源管理的意思，DAPM是为了使基于linux的移动设备上的音频子系统，在任何时候都工作在最小功耗状态下。DAPM对用户空间的应用程序来说是透明的，所有与电源相关的开关都在ASoc core中完成。用户空间的应用程序无需对代码做出修改，也无需重新编译，DAPM根据当前激活的音频流（playback/capture）和声卡中的mixer等的配置来决定那些音频控件的电源开关被打开或关闭。
+
+
+
+这一篇主要讲解kcontrol的概念和相关的宏。
+
+## ALSA声卡驱动中的DAPM详解之二：widget-具备路径和电源管理信息的kcontrol
+
+上一篇文章中，我们介绍了音频驱动中对基本控制单元的封装：kcontrol。
+
+利用kcontrol，我们可以完成对音频系统中的mixer，mux，音量控制，音效控制，以及各种开关量的控制，
+
+通过对各种kcontrol的控制，
+
+使得音频硬件能够按照我们预想的结果进行工作。
+
+同时我们可以看到，kcontrol还是有以下几点不足：
+
+1、只能描述自身，无法描述各个kcontrol之间的连接关系；
+2、没有相应的电源管理机制；
+3、没有相应的时间处理机制来响应播放、停止、上电、下电等音频事件；
+4、为了防止pop-pop声，需要用户程序关注各个kcontrol上电和下电的顺序；
+5、当一个音频路径不再有效时，不能自动关闭该路径上的所有的kcontrol；
+
+为此，DAPM框架正是为了要解决以上这些问题而诞生的，DAPM目前已经是ASoc中的重要组成部分，让我们先从DAPM的数据结构开始，了解它的设计思想和工作原理。
+
+### DAPM的基本单元：widget
+
+文章的开头，我们说明了一下目前kcontrol的一些不足，
+
+而DAPM框架为了解决这些问题，引入了widget这一概念，
+
+所谓widget，
+
+其实可以理解为是**kcontrol的进一步升级和封装，**
+
+她同样是指音频系统中的某个部件，
+
+比如mixer，mux，输入输出引脚，电源供应器等等，
+
+甚至，我们可以定义虚拟的widget，
+
+例如playback stream widget。
+
+widget把kcontrol和动态电源管理进行了有机的结合，
+
+```
+widget = kcontrol + pm
+```
+
+同时还具备音频路径的连结功能，
+
+一个widget可以与它相邻的widget有某种**动态的连结关系**。
+
+在DAPM框架中，widget用结构体snd_soc_dapm_widget来描述：
+
+### widget之间的连接器：path
+
+## ALSA声卡驱动中的DAPM详解之三：如何定义各种widget
+
+## ALSA声卡驱动中的DAPM详解之四：在驱动程序中初始化并注册widget和route
+
+
+## ALSA声卡驱动中的DAPM详解之五：建立widget之间的连接关系
+
+
+
+
+
+## ALSA声卡驱动中的DAPM详解之六：精髓所在，牵一发而动全身
+## ALSA声卡驱动中的DAPM详解之七：dapm事件机制（dapm event）
+
 
 
 # 参考资料
@@ -944,6 +1609,8 @@ https://blog.csdn.net/droidphone/category_1118446.html
 
 https://blog.csdn.net/vertor11/article/details/79211719
 
+https://blog.csdn.net/u012489236/category_9186190.html
+
 5、
 
 https://blog.csdn.net/moonlinux20704/article/details/88417361
@@ -965,3 +1632,7 @@ https://blog.csdn.net/zyuanyun/article/details/59170418
 9、
 
 https://blog.csdn.net/melody157398/article/details/109792317
+
+10、stm32的音频配置，图画得很直观。
+
+https://wiki.stmicroelectronics.cn/stm32mpu/wiki/Soundcard_configuration

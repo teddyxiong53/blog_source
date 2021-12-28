@@ -848,6 +848,23 @@ echo all:LOG_ERR,USBPlayer:LOG_INFO > /tmp/AML_LOG_homeapp
 
 
 
+## 最终处理方法
+
+把S90audioservice的start方法这样改。
+
+```
+start() {
+    echo "all:LOG_DEBUG" > /tmp/AML_LOG_audioservice
+    echo "all:LOG_DEBUG" > /tmp/AML_LOG_homeapp
+    printf "Starting audioservice: "
+    /usr/bin/audioservice /etc/default_audioservice.conf > /tmp/audioservice.log &
+    /usr/bin/homeapp -r /dev/input/event0 -a /dev/input/event3 -D music_vol  -s > /tmp/homeapp.log &
+    echo "OK" 
+}
+```
+
+
+
 参考资料
 
 https://confluence.amlogic.com/pages/viewpage.action?pageId=74514632
@@ -1162,6 +1179,12 @@ fi
 2.1和2的区别如下，左边是2.1的。
 
 ![image-20211122135608997](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20211122135608997.png)
+
+这个内容，在audioservice的配置文件里也有。
+
+应该是从这里弄过去的。
+
+我们用的应该是audioservice的。
 
 
 
@@ -1613,6 +1636,27 @@ power改变
 
 
 ```
+
+搜索AML_AS_NOTIFYID_e，就可以看到，每种播放器，以及homeapp都会去处理这个通知。
+
+大部分只处理其中一小部分。
+
+homeapp处理多一些。
+
+播放器的都是通过InputMgr_CallbackHandler这里来遍历调用的。
+
+```
+temp = InputHandler_list;
+  while (NULL != temp) {
+    if (temp->ASCallback_handler)
+      temp->ASCallback_handler(type, param);
+    temp = temp->next;
+  }
+```
+
+所以，实际上，可以说是homeApp和inputManager这2个进行了处理。
+
+更进一步看，实际上只有homeapp是最上层的调用。InputManager也是在homeapp的回调里调用的。
 
 
 

@@ -384,6 +384,20 @@ ln -s .vscode-server ~/work/.vscode-server
 
 
 
+# 显示宽度标尺
+
+https://blog.csdn.net/weixin_39449570/article/details/78445199
+
+
+
+# 格式化C语言失败
+
+是因为clang-format.exe插件升级了。需要修改对应的路径。
+
+https://blog.csdn.net/qq_39549803/article/details/111877597
+
+
+
 
 # 参考资料
 
