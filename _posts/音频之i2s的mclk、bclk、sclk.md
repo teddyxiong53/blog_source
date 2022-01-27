@@ -25,9 +25,21 @@ SD：serial data line，传输音频数据；
 
 
 
-Soc master\codec slave模式下：bclk\lrclk由soc提供，playback时soc通过dataline传输数据，codec采样；capture时codec通过dataline传输数据，soc采样；
+Soc master\codec slave模式下：
 
-Soc slave\codec master模式下：soc向codec提供mclk，bclk\lrclk由codec提供；
+bclk\lrclk由soc提供，
+
+playback时soc通过dataline传输数据，codec采样；
+
+capture时codec通过dataline传输数据，soc采样；
+
+
+
+Soc slave\codec master模式下：
+
+**soc向codec提供mclk，**
+
+**bclk\lrclk由codec提供；**
 
 
 

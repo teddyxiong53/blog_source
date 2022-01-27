@@ -342,6 +342,32 @@ https://github.com/notro/fbtft/wiki/Backlight
 
 
 
+
+
+# 在树莓派上使用
+
+https://blog.csdn.net/qq_29210333/article/details/107770261
+
+https://www.waveshare.net/wiki/1.3inch_LCD_HAT
+
+配置引脚是这里。
+
+
+
+用树莓派4B连接测试一下。
+
+连线怎么连？
+
+| SCLK | P11/SCLK | SPI时钟线     |
+| ---- | -------- | ------------- |
+| MOSI | P10/MOSI | SPI数据线     |
+| CS   | P8/CE0   | 片选          |
+| DC   | P25      | 数据/命令选择 |
+| RST  | P27      | 复位          |
+| BL   | P24      | 背光          |
+
+
+
 # 参考资料
 
 1、

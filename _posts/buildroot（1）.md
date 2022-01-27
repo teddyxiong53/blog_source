@@ -1725,7 +1725,25 @@ make show-targets
 
 后面生效的变量会覆盖前面的，导致错乱。
 
+# toolchain修改全局编译选项
 
+Buildroot支持从零开始用原材料软件包自动构造工具链，也支持直接使用第三方制作好的工具链。
+
+在make menuconfig –> Toolchain –>Toolchain type中，有2个选项，选择buildroot toolchain则是使用buildroot默认的自动化脚本从零开始制作交叉编译工具链，如果是选择externaltoolchain 则是使用外部制作好的工具链。
+
+在mini2440_defconfig的配置文件中，我们可以看到，它并没有toochain相关的选项，只是在cpu指令集部分选择了ARM920T ，这种情况它会采用buildroot-toolchain也就是buildroot默认的自动化脚本，从零开始制作工具链。
+
+实际上，你只要make toolchain然后等待几分钟，
+
+**Buildroot就会将制作好的全新工具链放到output/host/目录下了。**
+
+整个工具链自动化制作过程可以参考toolchain/ 目录下的toolchain-buildroot/ 、toolchain.mk、helpers.mk、toolchain-wrapper.mk等几个脚本，我就不详细说了。但是有几个关键点我还是强在下面列一下。总之制作过程还是很复杂的，所以如果是初学者，用手工方法从零开始做交叉编译工具链，将是多大的挑战。
+
+
+
+参考资料
+
+https://www.cnblogs.com/zzb-Dream-90Time/p/7644051.html
 
 # 参考资料
 

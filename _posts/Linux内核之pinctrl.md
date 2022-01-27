@@ -20,7 +20,7 @@ arm soc提供了很多的gpio，这些gpio还有管脚复用功能。还可以�
 
 这种方式，很容易出现冲突，出现错误也不容易排查。
 
-kernel引入dts设备树之后，这种情况得到很大的改善，pinctrl就是跟这设备树一起实现的。
+kernel引入dts设备树之后，这种情况得到很大的改善，**pinctrl就是跟这设备树一起实现的。**
 
 
 
@@ -261,7 +261,7 @@ GPIO_I_REG
 	用于存储pad的输入值；
 GPIO_OEN_REG 
 	用于使能 GPIO 输出功能，
-PINMUX _REG 
+PINMUX_REG 
 	用于定义复用功能
 GPIO_PULL_EN_REG 
 	用于使能GPIO pad的上拉功能，
