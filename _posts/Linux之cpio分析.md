@@ -7,7 +7,9 @@ tags:
 
 ---
 
-1
+--
+
+# cpio命令
 
 cpio是Linux下的一个命令。
 
@@ -46,6 +48,8 @@ find ./* | cpio -H newc -o > test.cpio
 ```
 
 
+
+# cpio格式
 
 
 

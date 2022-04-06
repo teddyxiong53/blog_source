@@ -1745,6 +1745,32 @@ Buildroot支持从零开始用原材料软件包自动构造工具链，也支�
 
 https://www.cnblogs.com/zzb-Dream-90Time/p/7644051.html
 
+# target-finalize做的事情
+
+```
+
+ifneq ($(BR2_PACKAGE_GDB),y)
+	rm -rf $(TARGET_DIR)/usr/share/gdb
+endif
+ifneq ($(BR2_PACKAGE_BASH),y)
+	rm -rf $(TARGET_DIR)/usr/share/bash-completion
+endif
+rm -rf $(TARGET_DIR)/usr/man $(TARGET_DIR)/usr/share/man
+rm -rf $(TARGET_DIR)/usr/info $(TARGET_DIR)/usr/share/info
+rm -rf $(TARGET_DIR)/usr/doc $(TARGET_DIR)/usr/share/doc
+rm -rf $(TARGET_DIR)/usr/share/gtk-doc
+mkdir -p $(TARGET_DIR)/etc
+	( \
+		echo "NAME=Buildroot"; \
+		echo "VERSION=$(BR2_VERSION_FULL)"; \
+		echo "ID=buildroot"; \
+		echo "VERSION_ID=$(BR2_VERSION)"; \
+		echo "PRETTY_NAME=\"Buildroot $(BR2_VERSION)\"" \
+	) >  $(TARGET_DIR)/usr/lib/os-release
+```
+
+
+
 # 参考资料
 
 1、HOWTO: Use BuildRoot to create a Linux image for QEMU

@@ -4,7 +4,16 @@ date: 2016-12-01 21:24:13
 tags:
 	- linux
 ---
-chroot的本质是把某个程序的根目录指定到某个特定路径。而这么做的目的，主要是为了安全。一般是把web server这样的程序chroot到指定路径，这样即使web server被黑客攻破，黑客也只能在这个假的根目录下打转，无法直接对服务器的整个环境带来危害。
+--
+
+chroot的本质是把某个程序的根目录指定到某个特定路径。
+
+而这么做的目的，主要是为了安全。
+
+一般是把web server这样的程序chroot到指定路径，
+
+这样即使web server被黑客攻破，黑客也只能在这个假的根目录下打转，无法直接对服务器的整个环境带来危害。
+
 chroot还有一个用途就在linux系统下安装另外一个linux系统。
 
 chroot的格式
@@ -12,8 +21,11 @@ chroot的格式
 chroot 选项  路径名 命令
 ```
 例如`chroot /home/teddy/test_chroot /bin/bash` 。
+
 但是你当前执行这条语句会失败，提示没有/bin/bash。所以现在做的是，先退出来，输入exit就可以了。
+
 把/bin/bash软件及依赖的动态库拷贝到`/home/teddy/test_chroot`先。
+
 1. 先把目录建好。
 ```
 export J=/home/teddy/test_root

@@ -284,6 +284,10 @@ update_engine命令不能直接用。因为这个需要用curl来下载。
 "/dev/block/by-name/misc"
 ````
 
+# bootloader_message
+
+Android从7.0开始引入新的OTA升级方式，`A/B System Updates`，这里将其叫做`A/B`系统，涉及的内容较多，分多篇对`A/B`系统的各个方面进行分析。
+
 
 
 # 参考资料
@@ -291,3 +295,7 @@ update_engine命令不能直接用。因为这个需要用curl来下载。
 1、android avb（Android Verified Boot）验证
 
 https://blog.csdn.net/weixin_43836778/article/details/90400147
+
+2、
+
+https://blog.csdn.net/guyongqiangx/article/details/72480154

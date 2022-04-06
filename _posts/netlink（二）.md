@@ -26,4 +26,5 @@ netlink是面向数据包的服务。为内核和用户之间搭建了一个高�
 
 1、Netlink实现热拔插监控
 
-https://www.baidu.com/link?url=C-7T3NhM_-EUoBzAato-ulbq3OwiQ_LMqMzE7Pi9OGssb9zVaRRDnuEL6LJmddtKIv91JXHMEbsZkDzLCKrAHq&wd=&eqid=c195b88e0009c314000000035ac336ca
+http://blog.chinaunix.net/uid-24943863-id-3223000.html
+

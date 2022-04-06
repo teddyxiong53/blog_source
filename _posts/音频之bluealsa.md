@@ -671,6 +671,25 @@ Connections:
 
 
 
+# 问题解决
+
+```
+		case 6 /* --a2dp-force-mono */ :
+			config.a2dp_force_mono = true;
+			break;
+		case 7 /* --a2dp-force-audio-cd */ :
+			config.a2dp_force_44100 = true;
+			break;
+		case 8 /* --a2dp-volume */ :
+			config.a2dp_volume = true;
+			break;
+
+```
+
+# 关闭打开服务
+
+现在要进行一个连接断开的操作。
+
 
 
 # 参考资料

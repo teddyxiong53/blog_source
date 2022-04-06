@@ -35,6 +35,20 @@ hifiberryos是一个针对音频播放的最小的linux发行版。
 
 https://github.com/hifiberry/hifiberry-os/tree/master/buildroot/package/hifiberry-updater
 
+用户界面是基于BeoCreate这个项目。
+
+项目在这里
+
+https://github.com/bang-olufsen/create
+
+BeoCreate2是BeoCreate这个4ch放大器的板端软件。
+
+配套的电脑软件是BeoCreate Connect，会自动发现网络里的BeoCreate声音系统。
+
+这个软件是基于electron框架的。
+
+浏览一下hifiberry的仓库，找到raspidmx，这个似乎有点意思。
+
 
 
 参考资料

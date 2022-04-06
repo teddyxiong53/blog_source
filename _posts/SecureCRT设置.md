@@ -20,6 +20,7 @@ ansi color不选的话，make menuconfig就会混乱。
 
 ```
 d:\securecrt_log\[%S]-%M-%D-[%h-%m-%s].log
+在on each line上，设置
 [%h:%m:%s:%t]
 ```
 

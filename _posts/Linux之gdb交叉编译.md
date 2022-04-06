@@ -132,7 +132,7 @@ linux-nat.h:63:18: error: field ‘siginfo’ has incomplete type
 
 
 
-#参考资料
+# 参考资料
 
 1、GDB 编译--with-python unusable python问题
 
