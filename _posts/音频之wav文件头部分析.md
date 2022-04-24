@@ -104,3 +104,9 @@ int main()
 1、wav文件头分析
 
 https://blog.csdn.net/xieyanyi1/article/details/48207663
+
+2、
+
+这个的图片画得好。
+
+https://blog.csdn.net/Guet_Kite/article/details/114625653

@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 用rk3308的做项目。
 
@@ -689,6 +689,55 @@ Connections:
 # 关闭打开服务
 
 现在要进行一个连接断开的操作。
+
+
+
+
+
+```
+a2dp-codecs.h
+	定义了codec的宏定义和结构体。sbc这些。
+a2dp-rtp.h
+	2个结构体。
+at.c
+at.h
+	rfcomm at命令。
+bluealsa.c
+bluealsa.h
+	ba_config这个核心结构体。
+	init和free函数。
+bluez-a2dp.c
+bluez-a2dp.h
+	定义结构体bluez_a2dp_sbc
+bluez-iface.c
+bluez-iface.h
+	gdbus结构体。就这2个。
+	const GDBusInterfaceInfo bluez_iface_endpoint;
+	const GDBusInterfaceInfo bluez_iface_profile;
+bluez.c
+bluez.h
+	这3个函数
+	void bluez_register_a2dp(void);
+    void bluez_register_hfp(void);
+    int bluez_subscribe_signals(void);
+ctl.c
+ctl.h
+	控制处理线程。
+hfp.h
+io.c
+io.h
+	io处理线程。
+main.c
+rfcomm.c
+rfcomm.h
+transport.c
+transport.h
+	ba_transport 这个核心结构体。
+	ba_device
+	ba_pcm
+utils.c
+utils.h
+```
 
 
 

@@ -1841,3 +1841,74 @@ client主要需要一个回调来处理signal。
 其余的主动调用，都是用audioservice_call_get_input_list_sync这样的函数。
 ```
 
+# notify机制分析
+
+```
+把notify逻辑梳理一下。
+哪些地方调用了notify？
+这个结构体
+ASClientNotifyParam_t
+这个回调类型
+ASClientNotify
+
+as_client.c里，saved_callback，这个保存了代码里唯一的一个ASClientNotify回调。
+这个callback的调用逻辑是这样的：
+AS_Client_MainLoop主循环函数，
+	main_loop_func
+		监听了这个dbus signal "system-update"
+		对应的处理函数asclient_system_update_handler
+			AmlEvent_AddEvent 添加事件，事件固定为0
+			事件的处理函数 asclient_notify_handle_func
+				调用saved_callback
+saved_callback是homeapp.c里注册的。
+对应asclient_callback
+处理都是一些显示的操作，或者只是简单的打印。
+而通知的发起，是靠这里
+audioservice_notify_system_update
+通知的参数是字符串。
+这个函数被很多地方调用。
+都是先拼接一个json字符串，通过dbus进行signal。
+dbus client收到后进行解析显示。
+```
+
+homeapp.c的那个回调，可以算是总的。
+
+各个播放器模块本身，也有进行监听。
+
+回调的定义本质是一样的，参数和返回值都一样。
+
+```
+int (*ASCallback_handler)(AML_AS_NOTIFYID_e type, ASClientNotifyParam_t *param);
+```
+
+# mcu中断处理循环
+
+```
+event线程和中断线程都是在halaudio.c里。
+mcuinfochange_int_thread
+	while (1) {
+		ext_input_handle->external_input_interrupt_poll//返回非0，则continue，但是好像不会返回非0的。
+			external_input_interrupt_poll//这里就是中断触发。
+				while(1) {
+					//最后会return，这个这并不是死循环。
+					//前提是等到了event。没有event还是一直阻塞的。
+					//设置的event，在下面被处理。
+				}
+		//格式改变：
+			HalAudio_SetHDMIAudioInfo
+				触发事件HALAUDIO_INPUT_SET_AUDIOINFO，所以这里就涉及到一个事件线程。==
+				in_HalAudio_HandleHDMIAudioInfo
+					对halaudio进行close再open。
+			发notify。
+		//arc音量改变
+		//mute
+			直接调用函数：（没有通过事件）
+			in_HalAudio_HandleExtMute
+				先删除事件HALAUDIO_INPUT_SET_AUDIOINFO
+				in_HalAudio_HandleExtMute
+					halaudio close
+					清空格式。
+					
+	}
+```
+

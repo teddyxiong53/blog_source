@@ -181,7 +181,7 @@ libmedia.so在aosp-rpi3\frameworks\av\media\libmedia
 
 
 
-参考资料
+# 参考资料
 
 1、Android音频系统之音频框架
 
@@ -198,3 +198,7 @@ https://www.cnblogs.com/wanqieddy/archive/2012/07/27/2611435.html
 这个专栏很好。很系统。值得学习。
 
 https://blog.csdn.net/vviccc/category_9805017.html
+
+4、
+
+https://juejin.cn/post/7011154855590887437

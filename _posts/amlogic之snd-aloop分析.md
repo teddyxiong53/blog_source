@@ -128,3 +128,7 @@ https://blog.getreu.net/projects/snd-aloop-device/body.html
 2、Linux上用ALSA aloop driver实现录制其他程序播放的声音
 
 https://blog.csdn.net/lsheevyfg/article/details/116799564
+
+3、
+
+https://blog.csdn.net/weixin_38387929/article/details/122411732

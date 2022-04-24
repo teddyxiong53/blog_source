@@ -1769,6 +1769,19 @@ mkdir -p $(TARGET_DIR)/etc
 	) >  $(TARGET_DIR)/usr/lib/os-release
 ```
 
+# 并行编译
+
+```
+buildroot是这样来获取最大并行编译CPU个数的。
+ifeq ($(BR2_JLEVEL),0)
+PARALLEL_JOBS := $(shell echo \
+	$$((1 + `getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1`)))
+else
+PARALLEL_JOBS := $(BR2_JLEVEL)
+endif
+
+```
+
 
 
 # 参考资料

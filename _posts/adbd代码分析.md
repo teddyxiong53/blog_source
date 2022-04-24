@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 rk3308的Linux开发包支持adb的方式进行调试。
 
@@ -147,12 +147,44 @@ ffs的functionfs的缩写。
 
 
 
+# amlogic
+
+```
+插上usb
+
+[10908.072309@0]  android_work: sent uevent USB_STATE=CONNECTED
+[10908.148132@0]  configfs-gadget gadget: high-speed config #1: amlogic
+[10908.148898@0]  android_work: sent uevent USB_STATE=CONFIGURED
+[10908.248995@1]  android_work: sent uevent USB_STATE=DISCONNECTED
+[10908.259319@0]  read descriptors
+[10908.259358@0]  read strings
+[10908.731871@0]  android_work: sent uevent USB_STATE=CONNECTED
+```
 
 
 
+首先，我们知道，开发中在使用[ADB](https://so.csdn.net/so/search?q=ADB&spm=1001.2101.3001.7020)的时经常使用的是USB连接Android开发设备。
 
-参考资料
+我们今天就主要对USB通信进行分析；
+
+不过我们不会对USB本身的协议、原理、实现等方面进行说明，
+
+那些不在我们讨论的范围内，我们只是就USB通信在ADB的的使用进行源代码层面的梳理。
+
+我们的USB通信是连接host端的adb程序和Android端的adbd程序，
+
+所以我们需要分别对adb 和adbd 的运行过程有所了解，
+
+具体可以参考前面讨论过的文章；
+
+
+
+# 参考资料
 
 1、
 
 https://developer.toradex.com/knowledge-base/usb-device-mode-(linux)
+
+2、ADB(七)_USB连接 (ABD通过USB连接的流程分析)
+
+https://blog.csdn.net/weixin_38140931/article/details/104523213

@@ -180,3 +180,76 @@ typedef struct {
 } snd_pcm_copy_t;
 ```
 
+
+
+支持的插件类型：
+
+```
+enum _snd_pcm_type {
+	/** Kernel level PCM */
+	SND_PCM_TYPE_HW = 0,
+	/** Hooked PCM */
+	SND_PCM_TYPE_HOOKS,
+	/** One or more linked PCM with exclusive access to selected
+	    channels */
+	SND_PCM_TYPE_MULTI,
+	/** File writing plugin */
+	SND_PCM_TYPE_FILE,
+	/** Null endpoint PCM */
+	SND_PCM_TYPE_NULL,
+	/** Shared memory client PCM */
+	SND_PCM_TYPE_SHM,
+	/** INET client PCM (not yet implemented) */
+	SND_PCM_TYPE_INET,
+	/** Copying plugin */
+	SND_PCM_TYPE_COPY,
+	/** Linear format conversion PCM */
+	SND_PCM_TYPE_LINEAR,
+	/** A-Law format conversion PCM */
+	SND_PCM_TYPE_ALAW,
+	/** Mu-Law format conversion PCM */
+	SND_PCM_TYPE_MULAW,
+	/** IMA-ADPCM format conversion PCM */
+	SND_PCM_TYPE_ADPCM,
+	/** Rate conversion PCM */
+	SND_PCM_TYPE_RATE,
+	/** Attenuated static route PCM */
+	SND_PCM_TYPE_ROUTE,
+	/** Format adjusted PCM */
+	SND_PCM_TYPE_PLUG,
+	/** Sharing PCM */
+	SND_PCM_TYPE_SHARE,
+	/** Meter plugin */
+	SND_PCM_TYPE_METER,
+	/** Mixing PCM */
+	SND_PCM_TYPE_MIX,
+	/** Attenuated dynamic route PCM (not yet implemented) */
+	SND_PCM_TYPE_DROUTE,
+	/** Loopback server plugin (not yet implemented) */
+	SND_PCM_TYPE_LBSERVER,
+	/** Linear Integer <-> Linear Float format conversion PCM */
+	SND_PCM_TYPE_LINEAR_FLOAT,
+	/** LADSPA integration plugin */
+	SND_PCM_TYPE_LADSPA,
+	/** Direct Mixing plugin */
+	SND_PCM_TYPE_DMIX,
+	/** Jack Audio Connection Kit plugin */
+	SND_PCM_TYPE_JACK,
+	/** Direct Snooping plugin */
+	SND_PCM_TYPE_DSNOOP,
+	/** Direct Sharing plugin */
+	SND_PCM_TYPE_DSHARE,
+	/** IEC958 subframe plugin */
+	SND_PCM_TYPE_IEC958,
+	/** Soft volume plugin */
+	SND_PCM_TYPE_SOFTVOL,
+	/** External I/O plugin */
+	SND_PCM_TYPE_IOPLUG,
+	/** External filter plugin */
+	SND_PCM_TYPE_EXTPLUG,
+	/** Mmap-emulation plugin */
+	SND_PCM_TYPE_MMAP_EMUL,
+	SND_PCM_TYPE_LAST = SND_PCM_TYPE_MMAP_EMUL
+};
+```
+

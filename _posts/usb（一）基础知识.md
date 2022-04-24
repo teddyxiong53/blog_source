@@ -22,7 +22,7 @@ usb是主从结构的，设备与设备之间、主机与主机之间不能相�
 
 # usb的特点
 
-##usb的速度
+## usb的速度
 
 在usb1.0和usb1.1里面，只支持1.5Mbps的低速和12Mbps的全速模式。
 
@@ -50,9 +50,9 @@ usb3.0里，速度可以达到5Gbps。
 
 
 
-#usb的资源
+# usb的资源
 
-www.usb.org
+https://www.usb.org
 
 这个网站是公布usb协议和标准的官方网站。可以从这里下载协议文档。
 
@@ -81,7 +81,7 @@ usb是主从结构的，主机叫host，从机叫device。
 
 所有的数据传输，都是由host发起，device只是被动负责应答。
 
-**usb OTG增加了一根线，叫做id标识线。用来表面它是host还是device。**
+**usb OTG增加了一根线，叫做id标识线。用来表明它是host还是device。**
 
 
 

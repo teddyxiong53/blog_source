@@ -577,6 +577,22 @@ snd_ctl_open(&handle, "hw:CARD=0", 0)
 
 https://blog.csdn.net/myzhzygh/article/details/8468210
 
+
+
+# pcm_params结构体
+
+struct pcm_params
+
+这个结构体相当于void。根本没有进行定义。只是声明了一下。
+
+真正使用的时候，都是这样：
+
+```
+struct snd_pcm_hw_params *params = (struct snd_pcm_hw_params *)pcm_params;
+```
+
+
+
 # 参考资料
 
 1、alsa-lib应用层接口分析
@@ -590,3 +606,11 @@ https://blog.csdn.net/u013209302/article/details/56835328
 3、
 
 https://bbs.csdn.net/topics/370092929
+
+4、
+
+https://blog.csdn.net/Guet_Kite/article/details/108126500
+
+5、
+
+https://blog.csdn.net/weixin_34332905/article/details/90333262

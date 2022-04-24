@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 耳机线插入，也属于input子系统的一部分。
 
@@ -318,3 +318,7 @@ https://blog.csdn.net/sinat_34606064/article/details/77932816
 6、mic in、line in&line out、speaker out、headphone out　区别
 
 https://blog.csdn.net/zhangchao0426/article/details/102288311
+
+7、
+
+https://blog.csdn.net/Guet_Kite/article/details/117520599
