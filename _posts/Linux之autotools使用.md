@@ -5,7 +5,7 @@ tags:
 	- Linux
 ---
 
-1
+--
 
 autotools是指3个gnu工具包。
 
@@ -148,7 +148,7 @@ aclocal是一个perl 脚本程序，
 
 先执行autoscan命令，得到configure.scan文件。
 
-手动修改configure.scan文件。然后把文件改名为configure.ac。
+**手动修改configure.scan文件。然后把文件改名为configure.ac。**
 
 然后执行aclocal命令。
 
@@ -192,7 +192,7 @@ noinst_HEADERS：
 
 
 
-一般推荐使用libtool库编译目标，
+**一般推荐使用libtool库编译目标，**
 
 因为automake包含libtool，这对于跨平台可移植的库来说，肯定是一个福音。
 

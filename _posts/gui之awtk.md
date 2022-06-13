@@ -517,6 +517,24 @@ vgcanvas
 
 表示动态数组。
 
+# 头文件层次分析
+
+```
+基础头文件的层次关系
+tkc：自己实现的基础库。
+
+action_queue.h
+action_thread.h
+	执行action的线程。难道是类似线程池的操作？
+action_thread_pool.h
+async.h
+	借助action_thread来进行非阻塞操作。
+	
+我觉得一定程度上对glib进行了实现。
+例如darray动态数组。
+
+```
+
 
 
 # 参考资料

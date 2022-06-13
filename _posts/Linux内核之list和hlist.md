@@ -23,3 +23,7 @@ hlist也是 一种双向链表，
 1、
 
 https://www.cnblogs.com/x_wukong/p/8506894.html
+
+2、
+
+https://blog.csdn.net/shenwanjiang111/article/details/105355016

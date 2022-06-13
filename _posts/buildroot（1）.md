@@ -1782,6 +1782,36 @@ endif
 
 ```
 
+# 依赖关系问题解决
+
+```
+make show-info > 1.json
+```
+
+这个命令得到依赖关系的json描述。
+
+可以看到谁引入了某些包的编译。
+
+现在我碰到问题，make host-python-pycrypto-rebuild有问题。
+
+是tdk依赖了这个。
+
+把tdk先关闭。保证可以编译过再说。
+
+```
+TDK_DEPENDENCIES = linux host-python-pycrypto tdk-driver
+```
+
+找到原因了，是我放入到PATH里的一个scancode的工具，影响了我的环境。
+
+把这个scancode的工具删掉就好了。
+
+# 编译gdb
+
+不能直接make gdb-rebuild。
+
+需要在配置里打开BR2_PACKAGE_GDB=y，然后用make编译才行。
+
 
 
 # 参考资料

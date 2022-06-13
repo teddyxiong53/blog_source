@@ -739,6 +739,32 @@ utils.c
 utils.h
 ```
 
+# 代码知识点
+
+```
+
+涉及的知识点
+1、getopt_long
+	多次调用可以的。
+2、一个全局config的风格。
+3、pthread的各种函数使用。
+	pthread_setname_np给线程改名。
+	
+4、group的使用。
+5、glib hashtable。
+6、hci_dev蓝牙编程。
+7、控制线程和io线程分开的处理方式。
+8、unix socket的使用。
+9、pipe的使用，ctl thread里。
+10、gdbus的使用。
+11、通过gdbus跟bluez通信。
+12、sigaction
+13、glib mainloop。
+14、alsa plugin的写法。
+15、pthread之cancel用法
+
+```
+
 
 
 # 参考资料

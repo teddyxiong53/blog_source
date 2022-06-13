@@ -798,6 +798,26 @@ https://confluence.amlogic.com/display/SW/SWUpdate
 
 https://wiki-china.amlogic.com/index.php?title=%e5%86%85%e9%83%a8%e4%ba%ba%e5%91%98%e5%8f%82%e8%80%83%e8%b5%84%e6%96%99/AE_internal-Q%26A/Common/Buildroot_recovery_%e5%8d%87%e7%ba%a7
 
+
+
+# sw-description
+
+
+
+参考资料
+
+这篇文章很全面了。
+
+https://blog.csdn.net/weixin_30312563/article/details/99878653
+
+
+
+# 增量升级
+
+目前增量升级依赖于system挂载为ro只读模式，否则差分升级具有局限性，且具有不安全性，待系统分区修改挂载为ro之后，再提交相关差分升级功能。
+
+
+
 # 参考资料
 
 1、
