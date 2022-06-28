@@ -179,6 +179,94 @@ ffs的functionfs的缩写。
 
 
 
+# 频繁自动断开的问题解决
+
+现在有个问题，就是一直自动断开又连接
+
+```
+[  605.302239@0]  android_work: sent uevent USB_STATE=DISCONNECTED
+[  605.389669@0]  android_work: sent uevent USB_STATE=CONNECTED
+```
+
+
+
+https://e2e.ti.com/support/processors-group/processors/f/processors-forum/403872/problem-with-adb
+
+这篇没用。
+
+https://blog.csdn.net/encourage2011/article/details/75807945
+
+这篇也没用。
+
+那就尝试用mdev来做。不要用当前的usb_monitor。
+
+```
+根本原因是androidtools 4.2.2版本 在usb拔掉后重新插拔后有一个DISCONNECTED状态  所以之前引入了 usb_monitor这个守护程序  现在这个程序不适用了
+在yocto上我们升级到5.1.1版本就可以解决这个问题了
+
+buildroot的 upstream 没有5.1.1版本  这个要升级比较困难
+
+https://wiki.archlinux.org/title/Udev
+udevadm: 检测事件
+udevadm monitor --environment --udev
+修改或添加/etc/udev/ 下的配置和脚本 (里面已经有例子 U盘插拔和网线插拔自动识别)
+```
+
+
+
+```
+在把usb拔掉，查看这个，还是有正确的值的。
+cat /sys/kernel/config/usb_gadget/amlogic/UDC
+再插上，这个值就清空了。插上后，收到了disconnected事件。
+清空了就不能正常使用adb了。
+所以之前在收到disconnect事件后，重新进行写入UDC值的操作。
+echo fdd00000.crgudc2 > /sys/kernel/config/usb_gadget/amlogic/UDC
+
+现在手动写入，不行。会提示device busy。
+先写none就可以
+echo none > /sys/kernel/config/usb_gadget/amlogic/UDC
+echo fdd00000.crgudc2 > /sys/kernel/config/usb_gadget/amlogic/UDC
+
+```
+
+明白这个了。就有思路了。
+
+就直接加时间过滤就好了。
+
+当前反复触发连接断开的原因就是：
+
+先有一个disconnect，然后进行了config，config也会有disconnect事件，就这样循环往复。
+
+就过滤连续2s内的disconnect事件就好了。
+
+不行。
+
+有其他的问题。
+
+```
+[54219.554690@1]  android_work: sent uevent USB_STATE=DISCONNECTED
+[54219.565404@2]  configfs-gadget fdd00000.crgudc2: failed to start amlogic: -19
+[54219.565412@0]  read descriptors
+[54219.565423@0]  read strings
+[54219.565689@2]  configfs-gadget fdd00000.crgudc2: failed to start amlogic: -19
+```
+
+这个是因为那个200ms的延时还是需要的。因为udc驱动加载需要一点时间。
+
+
+
+
+
+现在根本原因是要搞清楚，为什么UDC的内容会在拔掉usb后被清空。
+
+这个工作逻辑是什么？
+
+*UDC*（*USB*设备控制器）
+
+usbfs files 
+
+
+
 # 参考资料
 
 1、

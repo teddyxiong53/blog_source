@@ -765,6 +765,114 @@ utils.h
 
 ```
 
+# 按文件分析代码
+
+先读main.c
+
+```
+main
+	log_open
+	bluealsa_config_init：初始化全局ba_config结构体
+	hci_devlist：获取所有的hci设备
+	free(hci_devs); 使用后又释放掉
+	bluealsa_ctl_thread_init
+		创建/var/run/bluealsa目录。
+		创建socket(PF_UNIX 这个socket。
+		chmod为0660
+		chown为audio组的
+		listen在socket上。
+		对event创建pipe。
+		创建ctl_thread ，修改名字为bactl
+	g_dbus_address_get_for_bus_sync 拿到地址
+	g_dbus_connection_new_for_address_sync 用地址连接
+	bluez_subscribe_signals
+		g_dbus_connection_signal_subscribe 用这个函数进行订阅
+			订阅了2个消息：InterfacesAdded、PropertiesChanged
+	bluez_register_a2dp
+		bluez_register_a2dp_endpoint 用这个注册了sbc解码能力
+			g_dbus_message_new_method_call
+			g_dbus_connection_send_message_with_reply_sync
+	bluez_register_hfp
+	注册SIGTERM、SIGINT，用main_loop_stop函数处理
+		main_loop_stop里退出主循环
+	g_main_loop_new
+	g_main_loop_run(loop);
+		这里死循环
+		
+ctl_thread函数
+	while 1
+		poll(config.ctl.pfds 阻塞读取事件
+		recv 得到request结构体
+		从commands 命令数组里找到对应的命令进行处理。
+		
+commands 命令数组处理的命令分类
+	ctl_thread_cmd_ping
+		回复一个pong。
+	ctl_thread_cmd_subscribe
+		往config.ctl.subs 里填入事件
+		回复success。
+	ctl_thread_cmd_list_devices
+		先回复device list
+		再回复success
+	ctl_thread_cmd_list_transports
+		先回复transports list
+		再回复success
+```
+
+transport的概念
+
+对应了结构体ba_transport
+
+有3种类型：A2DP、sco、rfcomm。
+
+还对应了profile：A2DP source/sink、hfp ag/hf。
+
+transport状态有：idle、pending、active、paused、limbo。
+
+消息是一个union，包含了A2DP、rfcomm、sco这3种情况。
+
+例如a2dp的包括了：
+
+```
+ch1_mute
+ch2_mute
+ch1_volume
+ch2_volume
+delay
+ba_pcm结构体
+cconfig codec的配置
+```
+
+一个release函数。
+
+
+
+transport api
+
+```
+transport_new
+	不单独调用。
+	只被transport_new_a2dp和transport_new_rfcomm调用。
+transport_new_a2dp
+	只被bluez_endpoint_set_configuration调用。
+		bluez_endpoint_method_call
+```
+
+
+
+endpoint的概念
+
+```
+SelectConfiguration
+SetConfiguration
+ClearConfiguration
+Release
+```
+
+https://download.tizen.org/misc/media/conference2012/wednesday/bayview/2012-05-09-0900-0940-bluez-_plugging_the_unpluggable.pdf
+
+https://git.kernel.org/pub/scm/bluetooth/bluez.git/tree/doc
+
 
 
 # 参考资料

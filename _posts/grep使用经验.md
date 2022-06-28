@@ -8,17 +8,20 @@ tags:
 
 1
 
-grep速度太慢，怎样加快？
+服务器是多核，但是普通的grep，还是单核的，速度比较慢。
+
+怎么利用多核？
 
 ```
-
+alias mygrep='find . -type f -print0  | xargs -0 -P `nproc` grep'
 ```
 
 
 
-https://kb.kutu66.com/others/post_633110
+
 
 参考资料
 
 1、
 
+https://unix.stackexchange.com/questions/197352/how-to-start-multi-threaded-grep-in-terminal

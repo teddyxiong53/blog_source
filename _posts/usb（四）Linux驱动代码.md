@@ -160,6 +160,24 @@ struct usb_endpoint_descriptor
 8. u8 bSynchAddress //
 ```
 
+**USB**端点:
+
+USB设备与主机会有若干个通信的”端点”,
+
+每个端点都有个端点号,
+
+除了端点0外，
+
+每一个端点只能工作在一种传输类型(控制传输、中断传输、批量传输、实时传输)下,一个传输方向下
+
+**传输方向都是基于USB主机的立场说的,**
+
+比如:鼠标的数据是从鼠标传到PC机, 对应的端点称为"中断输入端点"
+
+其中端点0是设备的默认控制端点, 既能输出也能输入,用于USB设备的识别过程
+
+
+
 # 字符串描述符
 
 struct usb_string_descriptor
@@ -242,6 +260,18 @@ ochi、uhci都是usb1.1的接口。
 ehci是usb2.0的接口。
 
 xhci是usb3.0的接口。
+
+
+
+要想成为一个USB主机,硬件上就必须要有USB主机控制器才行,USB主机控制器又分为4种接口:
+
+**OHCI（Open Host Controller Interface）:** 微软主导的低速USB1.0(1.5Mbps)和全速USB1.1(12Mbps),OHCI接口的软件简单,硬件复杂  
+
+**UHCI（Universal Host Controller Interface）:** Intel主导的低速USB1.0(1.5Mbps)和全速USB1.1(12Mbps), 而UHCI接口的软件复杂,硬件简单  
+
+**EHCI（Enhanced Host Controller Interface）：**高速USB2.0(480Mbps),
+
+**xHCI（eXtensible Host Controller Interface）：**USB3.0(5.0Gbps),采用了9针脚设计,同时也支持USB2.0、1.1等
 
 
 
@@ -335,6 +365,64 @@ usb_register
 
 
 
+# 什么是udc驱动
+
+udc驱动跟Function驱动对应。
+
+
+
+USB设备控制器（UDC）驱动
+
+指的是作为其他USB主机控制器外设的USB硬件设备上底层硬件控制器的驱动，
+
+该硬件和驱动负责将一个USB设备依附于一个USB主机控制器上。
+
+```
+usb device --attach-> usb host 
+```
+
+
+
+例如，当某运行Linux系统的手机作为PC的U盘时，
+
+手机中的底层USB控制器行使USB设备控制器的功能，
+
+这时运行在底层的是UDC驱动，
+
+手机要成为U盘，在UDC驱动之上需要另外一个驱动，
+
+对于USB大容量存储器而言，这个驱动为File Storage驱动，称为**Function驱动**。
+
+https://codeantenna.com/a/yBnF5eY6DJ
+
+
+
+1、usb_gadget表示一个从机设备(UDC + 端点)，它包含一些端点(包括端点0和其他端点)。所以它有一个端点列表成员ep_list， 初始化过程中会将所有需要的端点放到该链表中。
+
+2、 usb_gadget_ops主要用来操作UDC。
+
+3、 usb_ep表示一个端点，每个端点都有自己的操作函数usb_ep_ops。
+
+4、 usb_ep_ops主要用来操作端点。
+
+
+
+udc驱动，就是操作soc的芯片的寄存器的实现。
+
+
+
+
+
+https://www.cnblogs.com/lifexy/p/7631900.html
+
+**USB****可以热插拔的硬件原理**
+
+　　 在USB集线器(hub)的每个下游端口的D+和D-上，分别接了一个15K欧姆的下拉电阻到地。这样，在集线器的端口悬空时，就被这两个下拉电阻拉到了低电平。
+
+而在USB设备端，在D+或者D-上接了1.5K欧姆上拉电阻。对于全速和高速设备，上拉电阻是接在D+上；而低速设备则是上拉电阻接在D-上。这样，当设备插入到集线器时，由1.5K的上拉电阻和15K的下拉电阻分压，结果就将差分数据线中的一条拉高了。集线器检测到这个状态后，它就报告给USB主控制器（或者通过它上一层的集线器报告给USB主控制器），这样就检测到设备的插入了。USB高速设备先是被识别为全速设备，然后通过HOST和DEVICE两者之间的确认，再切换到高速模式的。**在高速模式下，是电流传输模式，这时将D+上的上拉电阻断开。**
+
+
+
 
 
 # 参考资料
@@ -366,3 +454,7 @@ https://blog.csdn.net/wang__rongwei/article/details/70991748
 这个思路很好。但是不方便操作。
 
 https://blog.csdn.net/zoomdy/article/details/50954190
+
+7、
+
+https://blog.csdn.net/u011037593/article/details/123467147
