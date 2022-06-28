@@ -781,6 +781,39 @@ https://www.kancloud.cn/kangdandan/sqlite/64351
 
 
 
+# sqlite的各种限制
+
+最大的db文件可以到多大？
+
+存储的数据最大可以是多少？
+
+可以支持同时多少个连接？
+
+通过`.limit`命令可以查看。
+
+```
+              length 1000000000    // 字符串或BLOB的最大长度10亿，一行的最大长度
+          sql_length 1000000000    // sql语句最大长度
+              column 2000    // 列数，可以在编译时才可以将最大列出改为32767
+          expr_depth 1000    // 表达式树的最大深度，SQLite将表达式解析到树中进行处理。
+     compound_select 500    // 复合SELECT语句中的最大术语数
+             vdbe_op 25000    // 虚拟机程序中用于实现SQL语句的最大指令数
+        function_arg 127    // 一个函数的最大参数个数
+            attached 10        // ATTACH语句，附加数据库最大值为125
+ like_pattern_length 50000    // LIKE模式匹配算法或GLOB模式的最大长度
+     variable_number 250000    // 任何参数的索引号
+       trigger_depth 1000    // 触发递归的最大深度
+      worker_threads 0        // 可以启动的辅助工作线程的最大数量
+```
+
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/weixin_39465823/article/details/106348850
+
 # 参考资料
 
 1、sqlite教程

@@ -60,6 +60,12 @@ https://github.com/bailicangdu/node-elm
 
 https://www.wappalyzer.com/technologies/web-servers/express/
 
+# 一个简单实用网站
+
+实用了sqlite的。
+
+https://www.computerhope.com/issues/ch002076.htm
+
 # 基于express框架的其他框架
 
 http://expressjs.com/en/resources/frameworks.html
