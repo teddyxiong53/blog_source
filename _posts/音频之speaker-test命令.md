@@ -160,3 +160,9 @@ speaker-test -t pink -c 8 -s 7
 
 测试了可以。不会出现打开失败的。
 
+这个命令可以自动依次测试8个喇叭。就是播报单词。
+
+```
+speaker-test -t wav -c 8
+```
+

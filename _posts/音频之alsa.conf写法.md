@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 配置文件是在snd_pcm_open的时候，会进行调用。
 
@@ -462,6 +462,8 @@ asym是一个插件，作用是把半双工的插件（比如dsnoop、dmix）转
 
 dsnoop是d + snoop（探听）。
 
+跟dmix类似，只不过dmix用在播放上，而dsnoop用在录音上。
+
 d表示：direct。
 
 arecord -L，查看树莓派。
@@ -677,7 +679,7 @@ aplay -D"plug:'dmix:FORMAT=S32_LE'" <filename>
 
 
 
-参考资料
+# 参考资料
 
 1、asound.conf配置
 
@@ -734,3 +736,9 @@ https://www.volkerschatz.com/noise/alsa.html
 14、DeviceNames
 
 https://alsa-project.org/wiki/DeviceNames
+
+15、ALSA子系统（二）------PCM (digital audio) plugins
+
+这篇文章不错。
+
+https://blog.csdn.net/Guet_Kite/article/details/108124585

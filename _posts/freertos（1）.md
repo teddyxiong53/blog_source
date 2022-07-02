@@ -205,7 +205,83 @@ vmm.bin 这个文件是作为kernel。应该相当于uboot的作用。
 
 ```
 
+# api梳理
 
+```
+任务创建
+xTaskCreate
+	返回值：pdSUCCESS成功。
+	句柄是通过指针返回的。
+xTaskDelete
+	通过句柄删除。
+xEventGroupCreate
+	创建一个event group。
+	返回的就是handle。
+xQueueCreate
+	创建队列，返回handle。
+	输入参数是len和size。
+	
+```
+
+```
+任务控制
+vTaskSuspend
+	通过handle挂起任务。
+vTaskResume
+xTaskResumeFromISR
+vTaskDelay
+```
+
+```
+调度器控制
+vTaskStartScheduler
+	初始化的最后一步。
+vTaskEndScheduler
+	基本不用。
+vTaskSuspendAll
+xTaskResumeAll
+```
+
+```
+定时器
+xTimerCreate
+xTimerStart 
+xTimerStop
+pvTimerGetTimerID 
+```
+
+
+
+```
+变量有严格的前缀标识变量类型属性：
+
+c – char 字符型变量
+s – short 短型变量
+l – long  长整型变量
+x – portBASE_TYPE 在 portmacro.h 中定义，便于移植的数据类型转定义
+u – unsigned 无符号整型
+p - pointer 指针
+```
+
+```
+函数前缀：
+
+v ：void 无返回类型
+x ：返回portBASE_TYPE
+prv ：私有函数，模块内使用
+```
+
+```
+定义宏所属文件，也即在哪个文件内定义的：
+
+port：比如portable.h中portMAX_DELAY
+task：比如task.h中task_ENTER_CRITICAL
+pd ：例如projdefs.h中定义的pdTRUE
+config：例如 FreeRTOSConfig.h中定义的configUSE_PREEMPTION
+err：例如 projdefs.h中定义的errQUEUE_FULL
+```
+
+至于这么严格的代码规范是否值得推崇，这个见仁见智，个人比较喜欢Linux代码风格，对于过于复杂的代码规范，在实际开发中个人觉得有时候会让人不爽。
 
 # 参考资料
 
@@ -220,3 +296,7 @@ https://blog.csdn.net/sty124578/article/details/80534276
 3、
 
 https://www.cnblogs.com/iot-dev/p/11681067.html
+
+4、
+
+https://www.eet-china.com/mp/a35448.html

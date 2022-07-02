@@ -61,7 +61,7 @@ ptmx     ttyFIQ0  ttyS1    ttyS3
 
 
 
-#什么是termios
+# 什么是termios
 
 termios是在posix里定义的标准接口。类似system V里的termio接口。
 
@@ -122,3 +122,7 @@ https://www.cnblogs.com/einstein-2014731/p/6922977.html
 这个系列文章不错。
 
 https://blog.csdn.net/jazzsoldier/article/details/72457580
+
+4、
+
+https://blog.csdn.net/u010360266/article/details/107083977

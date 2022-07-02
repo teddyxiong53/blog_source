@@ -15,6 +15,10 @@ toybox跟busybox有哪些区别？
 
 在Android5.0之前，还有了一个toolbox。这个选择已经废弃了，被toybox替换了。
 
+toybox是BSD协议的，busybox的GPL协议的。
+
+toybox存在的价值就是为了规避协议问题。
+
 
 
 bin、xbin、sbin的区别

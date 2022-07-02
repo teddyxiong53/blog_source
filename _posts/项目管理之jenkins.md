@@ -76,10 +76,15 @@ gcc找不到。进入到容器，安装gcc。
 /var/jenkins_home/workspace/c_test
 ```
 
+# jenkins跟gitlab结合
 
 
-参考资料
+
+
+
+# 参考资料
 
 1、
 
 https://blog.csdn.net/wgl04193410/article/details/108615795
+

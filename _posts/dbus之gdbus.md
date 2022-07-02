@@ -6,7 +6,21 @@ tags:
 
 ---
 
-1
+--
+
+# gdbus和glib-dbus
+
+目前基于d-bus技术的几种编程框架有：glib-dbus，GDbus，QtDbus，dbus-python。这5种编程框架的复杂度有高有低，最简单的应该非QtDbus莫属了，最复杂的过程要属glib-dbus。鉴于我对GDBus的熟悉程度，这里只介绍GDBus的编程过程。
+
+ GDBus和glib-dbus都是由GNU组织开发的。GDBus可以认为是glib-dbus的升级版，其编程过程比起glib-dbus来要简单得多。
+
+
+
+参考资料
+
+https://blog.csdn.net/adlindary/article/details/80167840
+
+
 
 gdbus — Tool for working with D-Bus objects
 

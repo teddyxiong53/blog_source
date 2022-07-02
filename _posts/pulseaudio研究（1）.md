@@ -258,6 +258,64 @@ PulseAudio声音服务器试图以全新的架构来提供新的声音处理架�
 
 
 
+# 软件模块
+
+以前都是在pulseaudio里。
+
+后面也进行模块化。把比较独立的部分分离出来。
+
+```
+pulseaudio-alsa 提供alsa支持
+pulseaudio-bluetooth 添加bluez支持
+pulseaudio-equalizer 均衡器
+pulseaudio-jack 
+pulseaudio-lirc 红外支持
+pulseaudio-zeroconf mdns零配置支持
+```
+
+pulseaudio的前端
+
+```
+gtk gui: paprefs/pavucontrol
+音量控制器：pulseaudio-ctl / pavolume-git
+命令行混音器：ponymix/pamixer
+网页音量控制：PaWebControl
+系统托盘图标：pasystray
+
+```
+
+增加 `load-module <module-name-from-list>` 到文件 `/etc/pulse/default.pa`就可以启用对应的模块。
+
+支持的所有模块：
+
+https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/User/Modules/
+
+大多数X11环境会在启动X11会话时自动启动PulseAudio。
+
+正如之前所说, 如果用户安装了桌面环境，PulseAudio很可能通过 `/etc/X11/xinit/xinitrc.d/pulseaudio`文件或者 `/etc/xdg/autostart/`目录下的文件自动启动
+
+
+
+
+
+# 架构
+
+
+
+
+
+参考资料
+
+https://magodo.github.io/PulseAudio/
+
+https://developer.rokid.com/docs/rokidos-linux-docs/porting/audio/overview.html
+
+https://www.jianshu.com/p/f55e7634140b
+
+# volume入手分析
+
+volume功能简单直观。适合作为分析的切入点。
+
 
 
 # 参考资料
@@ -281,3 +339,11 @@ https://www.liangzl.com/get-article-detail-184781.html
 5、
 
 https://www.linuxidc.com/Linux/2019-02/156865.htm
+
+6、Android音频系统的改进设想和展望 PulseAudio介绍
+
+https://blog.csdn.net/landishu/article/details/39481123
+
+7、关于pulseaudio的一些总结
+
+https://blog.csdn.net/cgipro/article/details/6089422

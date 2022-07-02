@@ -283,7 +283,43 @@ db.all(sql, [], (err, rows) => {
 
 
 
+# 完整项目
+
+
+
 参考资料
+
+https://www.computerhope.com/issues/ch002076.htm
+
+
+
+# 路径问题
+
+我之前是这样写的
+
+```
+var db = new sqlite3.Database('./database/db.sqlite');
+```
+
+这样使用的时候，出现对应的table找不到。
+
+其实table是存在的。
+
+这个是因为路径引用的问题，导致程序在其他路径去找db.sqlite文件。
+
+而没有找到时，默认创建一个空的。所以空的文件里，当然我们要的表格，
+
+这样来改写就好了。
+
+```
+var db = new sqlite3.Database(path.join(__dirname,'/db.sqlite'),
+```
+
+
+
+
+
+# 参考资料
 
 1、
 

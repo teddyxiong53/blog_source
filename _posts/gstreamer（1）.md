@@ -968,9 +968,19 @@ Please either:
 gst-inspect-1.0 libav
 ```
 
+# 配置文件
+
+我现在碰到问题，是gst-play就会导致crash。
+
+发现我改默认的播放设备都没有起作用。
+
+于是看gstalsa下面的代码，发现gst自己有一个配置文件。
+
+gst-soundcard.conf。这个会指定gst使用的hw是哪个。
 
 
-#参考资料
+
+# 参考资料
 
 1、GStreamer基础教程01——Hello World
 

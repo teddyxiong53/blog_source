@@ -28,6 +28,20 @@ system函数使用起来容易出错，返回值也多。返回值容易跟传�
 
 popen的用法
 
+```
+
+```
+
+
+
+```
+由于我们一般在shell脚本中会通过返回值判断本脚本是否正常执行，如果成功返回0，失败返回正数。
+所以综上，判断一个system函数调用shell脚本是否正常结束的方法应该是如下3个条件同时成立：
+（1）-1 != status
+（2）WIFEXITED(status)为真
+（3）0 == WEXITSTATUS(status)
+```
+
 
 
 参考资料
@@ -35,3 +49,11 @@ popen的用法
 1、ENV33-C. Do not call system()
 
 https://wiki.sei.cmu.edu/confluence/pages/viewpage.action?pageId=87152177
+
+2、Linux system函数返回值
+
+https://blog.csdn.net/cheyo/article/details/6595955
+
+3、
+
+https://man7.org/linux/man-pages/man3/system.3.html

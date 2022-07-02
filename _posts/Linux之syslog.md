@@ -6,7 +6,29 @@ tags:
 
 ---
 
+--
 
+# syslogd
+
+syslogd 是busybox 中用来收集系统日志（不同的类型，如kernel，user层）的一个守护进程，
+
+而busybox 大家都比较熟悉，为嵌入式 开发提供了一个相对完整的运行环境。
+
+一般syslogd 在编译后生成于/bin/下 或/sbin 下。
+
+不同的进程（client）都可以将log 输送给syslogd（server），
+
+由syslogd 集中收集。
+
+client 里面特殊的接口、特殊格式进行log 输送，下面会详细说明。
+
+![img](../images/random_name/20190408201411598.png)
+
+
+
+https://blog.csdn.net/shift_wwx/article/details/89105854
+
+# C语言接口
 
 Linux应用要使用log，只需要3个api函数就够了。
 
@@ -268,7 +290,25 @@ Android中没有syslogd和klogd，但为了兼容使用syslog的程序，在bion
 
 一个是RFC5424 sylog协议。这个限制是2048字节。
 
+# syslogd和klogd
 
+总结一下:
+
+1>  所有系统信息是输出到ring buffer中去的.dmesg所显示的内容也是从ring buffer中读取的.
+
+2> LINUX系统中/etc/init.d/sysklogd会启动2个守护进程:Klogd&&Syslogd
+
+3> klogd是负责读取内核信息的,有2种方式:
+
+​      syslog()系统调用(这个函数用法比较全,大家去MAN一下看看)
+
+​       直接的对/proc/kmsg进行读取(再这提一下,/proc/kmsg是专门输出内核信息的地方)
+
+4>  Klogd的输出结果会传送给syslogd进行处理,syslogd会根据/etc/syslog.conf的配置把log
+
+   信息输出到/var/log/下的不同文件中.
+
+https://blog.csdn.net/baidu_24256693/article/details/43112537
 
 
 # 参考资料

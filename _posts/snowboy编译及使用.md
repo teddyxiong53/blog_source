@@ -26,6 +26,16 @@ https://snowboy.kitt.ai/dashboard
 
 
 
+现在再来研究一下snowboy的。
+
+https://github.com/Kitt-AI/snowboy
+
+在github上的readme写着在 2020年12月31日起，完全停止snowboy相关的产品。
+
+这个产品从2016年起。
+
+因为AI领域变化非常快。这个产品设计已经落伍了。
+
 
 
 # 参考资料

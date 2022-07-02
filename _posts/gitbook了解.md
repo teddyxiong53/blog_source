@@ -109,7 +109,34 @@ gitbook init python_data_structure
 
 所以我打算用docker来搭建。
 
+```
+docker pull billryan/gitbook
+```
 
+
+
+```
+# init
+docker run --rm -v "$PWD:/gitbook" -p 4000:4000 billryan/gitbook gitbook init
+# serve
+docker run --rm -v "$PWD:/gitbook" -p 4000:4000 billryan/gitbook gitbook serve
+# build
+docker run --rm -v "$PWD:/gitbook" -p 4000:4000 billryan/gitbook gitbook build
+```
+
+这样加alias
+
+```
+alias gitbook='docker run --rm -v "$PWD":/gitbook -p 4000:4000 billryan/gitbook gitbook'
+# init
+gitbook init
+# serve
+gitbook serve
+# build
+gitbook build
+# pdf output
+gitbook pdf .
+```
 
 
 
@@ -122,3 +149,7 @@ https://skyao.io/learning-gitbook/
 2、
 
 http://tinylab.org/docker-quick-start-docker-gitbook-writing-a-book/
+
+3、
+
+https://hub.docker.com/r/billryan/gitbook

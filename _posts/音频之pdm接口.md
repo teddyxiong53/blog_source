@@ -56,6 +56,13 @@ PDM：
 
 
 
+一个pdm data in引脚可以接2个mic，靠select信号脚来分时复用。
+
+高电平采样一个mic，低电平采样一个mic
+取决于mic有个控制脚是接地还是接电源
+
+
+
 参考资料
 
 1、PDM接口介绍
@@ -65,3 +72,7 @@ https://blog.csdn.net/weixin_42509369/article/details/83549211
 2、音频传输的PCM和PDM有什么区别
 
 https://www.icxbk.com/ask/detail/37151.html
+
+3、
+
+https://blog.csdn.net/wenjin359/article/details/87717896

@@ -196,8 +196,16 @@ module.exports = {
 
 
 
-参考资料
+# 参考资料
 
 1、VuePress 手摸手教你搭建一个类Vue文档风格的技术文档/博客
 
 https://segmentfault.com/a/1190000016333850
+
+2、Leader让我做CMS帮助中心的技术选型，我撸了VuePress和GitBook，然后选择...
+
+https://zhuanlan.zhihu.com/p/96031517
+
+3、
+
+https://segmentfault.com/a/1190000020971477

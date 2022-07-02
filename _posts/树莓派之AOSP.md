@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 https://github.com/tab-pi/platform_manifest
 
@@ -1116,7 +1116,7 @@ lrwxrwxrwx 1 root root    7 1970-01-01 00:00 watchdogd -> ../init
 
 
 
-参考资料
+# 参考资料
 
 1、[ROM] [Testing] Tab-Pi | AOSP/Android TV for Raspberry Pi 3 android-7.1.2_r17
 

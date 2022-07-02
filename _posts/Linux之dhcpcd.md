@@ -71,18 +71,26 @@ avahi是什么？
 
 # 参考资料
 
+1、
+
 https://bbs.archlinux.org/viewtopic.php?id=103278
 
+2、
 
+https://www.baidu.com/link?url=uszStiQ3oDsijAWyEKWVW3Up90wamA0lMAQc6EUp1YyNjI1MixXn0xAsPVyNQn3S3-1Qf9ydSjojmh_uIlIjRa&wd=&eqid=8d2d33e00001200a000000065b7e7383/
 
-https://www.baidu.com/link?url=uszStiQ3oDsijAWyEKWVW3Up90wamA0lMAQc6EUp1YyNjI1MixXn0xAsPVyNQn3S3-1Qf9ydSjojmh_uIlIjRa&wd=&eqid=8d2d33e00001200a000000065b7e7383
-
-
+3、
 
 参数详解
 
 https://blog.csdn.net/haomcu/article/details/8446109
 
+4、
+
 dhcpcd 移植
 
 https://www.cnblogs.com/helloworldtoyou/p/5457504.html
+
+5、Linux 使用 iw, wpa_supplicant, dhcpcd 连接 WiFi
+
+https://blog.csdn.net/qq_36485711/article/details/106018940

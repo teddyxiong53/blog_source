@@ -72,7 +72,7 @@ as_config.c
 	大部分都是Get接口，用来获取json里的某个元素。
 	还有init、save、restore。
 as_external_wrap.c
-	默认没有使能。
+	对external的内容进行包装，对外提供接口。
 asplay.c
 	命令行工具。地位相当于as_client.c。
 as_volume.c
@@ -147,7 +147,7 @@ usb_player.c
 
 btHandleEvents.h
 
-这个头文件找不到。
+这个头文件找不到。对于buildroot的，bt完全没有在代码里体现，都是靠开机脚本启动的bluealsa来做的。
 
 
 
@@ -235,6 +235,7 @@ INPUT_XX_2 = 0X18102
 
 AS_Output_e
 	输出有Speaker、headphone、arc、spdif、bt这5种。
+	其实只用了Speaker这一种。其余的都没有用。
 	
 AML_AS_AudioFormat_e
 	pcm、ac3、dts、MP3
@@ -861,6 +862,14 @@ start() {
     /usr/bin/homeapp -r /dev/input/event0 -a /dev/input/event3 -D music_vol  -s > /tmp/homeapp.log &
     echo "OK" 
 }
+```
+
+
+
+还有方法是，运行后，设置这个，可以动态调整级别。
+
+```
+asplay set-logpriority LOG_DEBUG
 ```
 
 
@@ -1735,5 +1744,171 @@ DataPlayerRingbufHead_t
 只有一下函数API。没有数据结构。
 函数都是AS_XX这种格式的。
 大多数都有一个char *arg_input的参数。
+```
+
+# input_manager.h
+
+## volume相关
+
+关于volume，定义了这12个宏。
+
+```
+INPUTMGR_VOLUME_DEFINE
+INPUTMGR_VOLUME_INIT
+INPUTMGR_VOLUME_DEINIT  就是free内存。
+
+INPUTMGR_MUTE_SYNC_APP
+INPUTMGR_MUTE_SYNC_AS
+INPUTMGR_MUTE_FORCESYNC_AS
+
+INPUTMGR_INTVOLUME_SYNC_APP
+INPUTMGR_INTVOLUME_SYNC_AS
+INPUTMGR_INTVOLUME_FORCESYNC_AS
+
+INPUTMGR_DBVOLUME_SYNC_APP
+INPUTMGR_DBVOLUME_SYNC_AS
+INPUTMGR_DBVOLUME_FORCESYNC_AS
+```
+
+定义音量，
+
+```
+airplay_client.c (homeapp) line 75 : INPUTMGR_VOLUME_DEFINE(airplay);
+airplay_client.c (homeapp) line 548 : INPUTMGR_VOLUME_DEFINE(gva);
+bt_client.cpp (homeapp) line 55 :   INPUTMGR_VOLUME_DEFINE(bt);
+```
+
+就是定义一个指针
+
+```
+static VolumeMap_t* psaved_volume_##name = NULL
+```
+
+初始化音量
+
+例如在AirPlay_Init里，分配结构体，并赋值。
+
+```
+INPUTMGR_VOLUME_INIT(airplay, -144.0f, 0.0f, -30.0f);
+```
+
+## notify相关
+
+InputNotifyParam_t 核心结构体是这个。
+
+# dbus分析
+
+```
+audioservice这边
+1、
+guint own_id = g_bus_own_name(
+      G_BUS_TYPE_SESSION, "aml.linux.dbus.audioservice",
+      G_BUS_NAME_OWNER_FLAGS_NONE, GBusAcquired_Callback,
+      GBusNameAcquired_Callback, GBusNameLost_Callback, (gpointer)s, NULL);
+2、
+GBusAcquired_Callback
+就这个进行了实现，另外2个回调都是空的。
+static Audioservice *skeleton = NULL;
+skeleton = audioservice_skeleton_new(); 创建skeleton
+安装函数
+g_signal_connect(skeleton, "handle-get-input-list",
+                   G_CALLBACK(on_handle_get_input_list), NULL);
+输出
+g_dbus_interface_skeleton_export(G_DBUS_INTERFACE_SKELETON(skeleton),
+                                   connection, "/aml/linux/dbus/audioservice",
+                                   &error);
+在audioservice_gdbus.c里。
+handle-get-input-list对应了GetInputList这个名字。表示client是使用这个名字来调用的。
+但是好像也不像。
+AS_Client_GetInputList里，调用了audioservice_call_get_input_list_sync
+
+处理函数
+on_handle_get_input_list
+
+对于client端
+
+static Audioservice *as_proxy = NULL;
+连接到总线
+as_proxy = audioservice_proxy_new_for_bus_sync(
+      G_BUS_TYPE_SESSION, G_DBUS_PROXY_FLAGS_NONE,
+      "aml.linux.dbus.audioservice", "/aml/linux/dbus/audioservice", NULL,
+      &error);
+g_signal_connect(as_proxy, "notify::g-name-owner",
+                  G_CALLBACK (cb_OwnerNameChangedNotify), NULL);
+				  
+超过10s没有连上，就会退出。
+client主要需要一个回调来处理signal。
+其余的主动调用，都是用audioservice_call_get_input_list_sync这样的函数。
+```
+
+# notify机制分析
+
+```
+把notify逻辑梳理一下。
+哪些地方调用了notify？
+这个结构体
+ASClientNotifyParam_t
+这个回调类型
+ASClientNotify
+
+as_client.c里，saved_callback，这个保存了代码里唯一的一个ASClientNotify回调。
+这个callback的调用逻辑是这样的：
+AS_Client_MainLoop主循环函数，
+	main_loop_func
+		监听了这个dbus signal "system-update"
+		对应的处理函数asclient_system_update_handler
+			AmlEvent_AddEvent 添加事件，事件固定为0
+			事件的处理函数 asclient_notify_handle_func
+				调用saved_callback
+saved_callback是homeapp.c里注册的。
+对应asclient_callback
+处理都是一些显示的操作，或者只是简单的打印。
+而通知的发起，是靠这里
+audioservice_notify_system_update
+通知的参数是字符串。
+这个函数被很多地方调用。
+都是先拼接一个json字符串，通过dbus进行signal。
+dbus client收到后进行解析显示。
+```
+
+homeapp.c的那个回调，可以算是总的。
+
+各个播放器模块本身，也有进行监听。
+
+回调的定义本质是一样的，参数和返回值都一样。
+
+```
+int (*ASCallback_handler)(AML_AS_NOTIFYID_e type, ASClientNotifyParam_t *param);
+```
+
+# mcu中断处理循环
+
+```
+event线程和中断线程都是在halaudio.c里。
+mcuinfochange_int_thread
+	while (1) {
+		ext_input_handle->external_input_interrupt_poll//返回非0，则continue，但是好像不会返回非0的。
+			external_input_interrupt_poll//这里就是中断触发。
+				while(1) {
+					//最后会return，这个这并不是死循环。
+					//前提是等到了event。没有event还是一直阻塞的。
+					//设置的event，在下面被处理。
+				}
+		//格式改变：
+			HalAudio_SetHDMIAudioInfo
+				触发事件HALAUDIO_INPUT_SET_AUDIOINFO，所以这里就涉及到一个事件线程。==
+				in_HalAudio_HandleHDMIAudioInfo
+					对halaudio进行close再open。
+			发notify。
+		//arc音量改变
+		//mute
+			直接调用函数：（没有通过事件）
+			in_HalAudio_HandleExtMute
+				先删除事件HALAUDIO_INPUT_SET_AUDIOINFO
+				in_HalAudio_HandleExtMute
+					halaudio close
+					清空格式。
+					
+	}
 ```
 

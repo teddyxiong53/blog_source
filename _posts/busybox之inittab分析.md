@@ -15,9 +15,9 @@ inittab每一行的格式是：
 id : runlevel_ignored : action: command
 ```
 
-#四个元素解释
+# 四个元素解释
 
-##id
+## id
 
 一般可以留空。
 
@@ -27,7 +27,7 @@ id : runlevel_ignored : action: command
 
 busybox里的id代表是ttyXXX。
 
-##runlevel_ignored
+## runlevel_ignored
 
 busybox留空。不管就是了。
 
@@ -79,7 +79,7 @@ console::respawn:/sbin/getty -L console 0 vt100
 
 
 
-##respawn分析
+## respawn分析
 
 如果相应的进程还不存在，那么init就启动这个进程，然后init进程不会等这个进程结束，init会继续扫描分析inittab里的内容。
 

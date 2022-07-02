@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 用rk3308的做项目。
 
@@ -670,6 +670,208 @@ Connections:
 搞定了。就用命令行的方式。
 
 
+
+# 问题解决
+
+```
+		case 6 /* --a2dp-force-mono */ :
+			config.a2dp_force_mono = true;
+			break;
+		case 7 /* --a2dp-force-audio-cd */ :
+			config.a2dp_force_44100 = true;
+			break;
+		case 8 /* --a2dp-volume */ :
+			config.a2dp_volume = true;
+			break;
+
+```
+
+# 关闭打开服务
+
+现在要进行一个连接断开的操作。
+
+
+
+
+
+```
+a2dp-codecs.h
+	定义了codec的宏定义和结构体。sbc这些。
+a2dp-rtp.h
+	2个结构体。
+at.c
+at.h
+	rfcomm at命令。
+bluealsa.c
+bluealsa.h
+	ba_config这个核心结构体。
+	init和free函数。
+bluez-a2dp.c
+bluez-a2dp.h
+	定义结构体bluez_a2dp_sbc
+bluez-iface.c
+bluez-iface.h
+	gdbus结构体。就这2个。
+	const GDBusInterfaceInfo bluez_iface_endpoint;
+	const GDBusInterfaceInfo bluez_iface_profile;
+bluez.c
+bluez.h
+	这3个函数
+	void bluez_register_a2dp(void);
+    void bluez_register_hfp(void);
+    int bluez_subscribe_signals(void);
+ctl.c
+ctl.h
+	控制处理线程。
+hfp.h
+io.c
+io.h
+	io处理线程。
+main.c
+rfcomm.c
+rfcomm.h
+transport.c
+transport.h
+	ba_transport 这个核心结构体。
+	ba_device
+	ba_pcm
+utils.c
+utils.h
+```
+
+# 代码知识点
+
+```
+
+涉及的知识点
+1、getopt_long
+	多次调用可以的。
+2、一个全局config的风格。
+3、pthread的各种函数使用。
+	pthread_setname_np给线程改名。
+	
+4、group的使用。
+5、glib hashtable。
+6、hci_dev蓝牙编程。
+7、控制线程和io线程分开的处理方式。
+8、unix socket的使用。
+9、pipe的使用，ctl thread里。
+10、gdbus的使用。
+11、通过gdbus跟bluez通信。
+12、sigaction
+13、glib mainloop。
+14、alsa plugin的写法。
+15、pthread之cancel用法
+
+```
+
+# 按文件分析代码
+
+先读main.c
+
+```
+main
+	log_open
+	bluealsa_config_init：初始化全局ba_config结构体
+	hci_devlist：获取所有的hci设备
+	free(hci_devs); 使用后又释放掉
+	bluealsa_ctl_thread_init
+		创建/var/run/bluealsa目录。
+		创建socket(PF_UNIX 这个socket。
+		chmod为0660
+		chown为audio组的
+		listen在socket上。
+		对event创建pipe。
+		创建ctl_thread ，修改名字为bactl
+	g_dbus_address_get_for_bus_sync 拿到地址
+	g_dbus_connection_new_for_address_sync 用地址连接
+	bluez_subscribe_signals
+		g_dbus_connection_signal_subscribe 用这个函数进行订阅
+			订阅了2个消息：InterfacesAdded、PropertiesChanged
+	bluez_register_a2dp
+		bluez_register_a2dp_endpoint 用这个注册了sbc解码能力
+			g_dbus_message_new_method_call
+			g_dbus_connection_send_message_with_reply_sync
+	bluez_register_hfp
+	注册SIGTERM、SIGINT，用main_loop_stop函数处理
+		main_loop_stop里退出主循环
+	g_main_loop_new
+	g_main_loop_run(loop);
+		这里死循环
+		
+ctl_thread函数
+	while 1
+		poll(config.ctl.pfds 阻塞读取事件
+		recv 得到request结构体
+		从commands 命令数组里找到对应的命令进行处理。
+		
+commands 命令数组处理的命令分类
+	ctl_thread_cmd_ping
+		回复一个pong。
+	ctl_thread_cmd_subscribe
+		往config.ctl.subs 里填入事件
+		回复success。
+	ctl_thread_cmd_list_devices
+		先回复device list
+		再回复success
+	ctl_thread_cmd_list_transports
+		先回复transports list
+		再回复success
+```
+
+transport的概念
+
+对应了结构体ba_transport
+
+有3种类型：A2DP、sco、rfcomm。
+
+还对应了profile：A2DP source/sink、hfp ag/hf。
+
+transport状态有：idle、pending、active、paused、limbo。
+
+消息是一个union，包含了A2DP、rfcomm、sco这3种情况。
+
+例如a2dp的包括了：
+
+```
+ch1_mute
+ch2_mute
+ch1_volume
+ch2_volume
+delay
+ba_pcm结构体
+cconfig codec的配置
+```
+
+一个release函数。
+
+
+
+transport api
+
+```
+transport_new
+	不单独调用。
+	只被transport_new_a2dp和transport_new_rfcomm调用。
+transport_new_a2dp
+	只被bluez_endpoint_set_configuration调用。
+		bluez_endpoint_method_call
+```
+
+
+
+endpoint的概念
+
+```
+SelectConfiguration
+SetConfiguration
+ClearConfiguration
+Release
+```
+
+https://download.tizen.org/misc/media/conference2012/wednesday/bayview/2012-05-09-0900-0940-bluez-_plugging_the_unpluggable.pdf
+
+https://git.kernel.org/pub/scm/bluetooth/bluez.git/tree/doc
 
 
 

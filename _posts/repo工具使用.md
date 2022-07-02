@@ -300,7 +300,7 @@ _FindRepo函数，从当前目录开始往上找，直到根目录停止。如�
 
 那么就使用REPO_URL和REPO_REV。这个默认是
 
-REPO_ULR=https://gerrit.googlesource.com/git-repo
+REPO_URL=https://gerrit.googlesource.com/git-repo
 
 REPO_REV=stable
 

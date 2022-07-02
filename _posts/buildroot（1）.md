@@ -1725,6 +1725,93 @@ make show-targets
 
 后面生效的变量会覆盖前面的，导致错乱。
 
+# toolchain修改全局编译选项
+
+Buildroot支持从零开始用原材料软件包自动构造工具链，也支持直接使用第三方制作好的工具链。
+
+在make menuconfig –> Toolchain –>Toolchain type中，有2个选项，选择buildroot toolchain则是使用buildroot默认的自动化脚本从零开始制作交叉编译工具链，如果是选择externaltoolchain 则是使用外部制作好的工具链。
+
+在mini2440_defconfig的配置文件中，我们可以看到，它并没有toochain相关的选项，只是在cpu指令集部分选择了ARM920T ，这种情况它会采用buildroot-toolchain也就是buildroot默认的自动化脚本，从零开始制作工具链。
+
+实际上，你只要make toolchain然后等待几分钟，
+
+**Buildroot就会将制作好的全新工具链放到output/host/目录下了。**
+
+整个工具链自动化制作过程可以参考toolchain/ 目录下的toolchain-buildroot/ 、toolchain.mk、helpers.mk、toolchain-wrapper.mk等几个脚本，我就不详细说了。但是有几个关键点我还是强在下面列一下。总之制作过程还是很复杂的，所以如果是初学者，用手工方法从零开始做交叉编译工具链，将是多大的挑战。
+
+
+
+参考资料
+
+https://www.cnblogs.com/zzb-Dream-90Time/p/7644051.html
+
+# target-finalize做的事情
+
+```
+
+ifneq ($(BR2_PACKAGE_GDB),y)
+	rm -rf $(TARGET_DIR)/usr/share/gdb
+endif
+ifneq ($(BR2_PACKAGE_BASH),y)
+	rm -rf $(TARGET_DIR)/usr/share/bash-completion
+endif
+rm -rf $(TARGET_DIR)/usr/man $(TARGET_DIR)/usr/share/man
+rm -rf $(TARGET_DIR)/usr/info $(TARGET_DIR)/usr/share/info
+rm -rf $(TARGET_DIR)/usr/doc $(TARGET_DIR)/usr/share/doc
+rm -rf $(TARGET_DIR)/usr/share/gtk-doc
+mkdir -p $(TARGET_DIR)/etc
+	( \
+		echo "NAME=Buildroot"; \
+		echo "VERSION=$(BR2_VERSION_FULL)"; \
+		echo "ID=buildroot"; \
+		echo "VERSION_ID=$(BR2_VERSION)"; \
+		echo "PRETTY_NAME=\"Buildroot $(BR2_VERSION)\"" \
+	) >  $(TARGET_DIR)/usr/lib/os-release
+```
+
+# 并行编译
+
+```
+buildroot是这样来获取最大并行编译CPU个数的。
+ifeq ($(BR2_JLEVEL),0)
+PARALLEL_JOBS := $(shell echo \
+	$$((1 + `getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1`)))
+else
+PARALLEL_JOBS := $(BR2_JLEVEL)
+endif
+
+```
+
+# 依赖关系问题解决
+
+```
+make show-info > 1.json
+```
+
+这个命令得到依赖关系的json描述。
+
+可以看到谁引入了某些包的编译。
+
+现在我碰到问题，make host-python-pycrypto-rebuild有问题。
+
+是tdk依赖了这个。
+
+把tdk先关闭。保证可以编译过再说。
+
+```
+TDK_DEPENDENCIES = linux host-python-pycrypto tdk-driver
+```
+
+找到原因了，是我放入到PATH里的一个scancode的工具，影响了我的环境。
+
+把这个scancode的工具删掉就好了。
+
+# 编译gdb
+
+不能直接make gdb-rebuild。
+
+需要在配置里打开BR2_PACKAGE_GDB=y，然后用make编译才行。
+
 
 
 # 参考资料

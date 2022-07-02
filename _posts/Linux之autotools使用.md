@@ -5,7 +5,7 @@ tags:
 	- Linux
 ---
 
-1
+--
 
 autotools是指3个gnu工具包。
 
@@ -148,7 +148,7 @@ aclocal是一个perl 脚本程序，
 
 先执行autoscan命令，得到configure.scan文件。
 
-手动修改configure.scan文件。然后把文件改名为configure.ac。
+**手动修改configure.scan文件。然后把文件改名为configure.ac。**
 
 然后执行aclocal命令。
 
@@ -192,7 +192,7 @@ noinst_HEADERS：
 
 
 
-一般推荐使用libtool库编译目标，
+**一般推荐使用libtool库编译目标，**
 
 因为automake包含libtool，这对于跨平台可移植的库来说，肯定是一个福音。
 
@@ -468,7 +468,206 @@ prog2_SOURCES = main.cpp
 表示生成可执行文件prog2，其中源文件为main.cpp  
 ```
 
+
+
+Makefile.am将指明工程需要哪些源文件，建造的是什么，如何安装它们。
+具体语法如下：
+**option_where_PRIMARY = targets …**
+
+**targets**是要建造的目标
+**PRIMARY**可以是下面的一个：
+
+| 可能值          | 解释             |
+| --------------- | ---------------- |
+| **PROGRAMS**    | 目标是可执行程序 |
+| **LIBRARIES**   | 目标是静态库     |
+| **LTLIBRARIES** | 目标是动态库     |
+| **HEADERS**     | 目标是头文件     |
+| **SCRIPTS**     | 目标是脚本       |
+| **DATA**        | 目标是数据       |
+
+**where** 表示目标被安装那里，可以是下面的值:
+
+| 可能项 | 解释                 |
+| ------ | -------------------- |
+| bin    | $(bindir)            |
+| lib    | $(libdir)            |
+| custom | 自定义目录           |
+| noinst | 不安装               |
+| check  | 由’make check’建造。 |
+
+
+
+**在where前面还可以有一个可选项option**
+dist_ 分发目标(默认)。
+nodist_ 不分发。
+
+
+
+举例：Makefile.am
+
+```shell
+bin_PROGRAMS = foo run-me
+foo_SOURCES = foo.c foo.h print.c print.h
+run_me_SOURCES = run.c run.h print.c
+```
+
+首先第一句表示产生两个程序foo,run-me，并且将它们安装到bin中。
+foo_SOURCES 表示foo需要的源文件。
+run_me_SOURCES 表示run-me需要的源文件。
+**注意：不能转换的符号用’_’代替。**
+
+头文件不参加编译，列出来用于分发。automake将自动计算列表对象并编译链接它们。
+
+第二个例子：Makefile.am
+
+```shell
+lib_LIBRARIES = libfoo.a libbar.a
+libfoo_a_SOURCES = foo.c privfoo.h
+libbar_a_SOURCES = bar.c privbar.h
+include_HEADERS = foo.h bar.h
+```
+
+这将产生两个静态库文件libfoo.a,libbar.a。
+libfoo_a_SOURCES 表明编译libfoo.a需要的源文件。
+libbar_a_SOURCES 表明编译libbar.a需要的源文件。
+include_HEADERS 表明需要安装的头文件。
+
+
+
+也许你在几个目录里面编译，这些目录里面都放置Makefile.am文件。它们必须在configure.ac文件中声明。例如：configure.ac、
+
+
+
+参考资料
+
+https://codeantenna.com/a/SvqqMUpkgb
+
 # acmkdir
+
+
+
+# BUILT_SOURCES
+
+现在碰到一个问题，
+
+It’s a different story if foo.h doesn’t exist by the first `make` run. For instance, there might be a rule to build foo.h.
+
+The `BUILT_SOURCES` variable is a workaround for this problem. 
+
+A source file listed in `BUILT_SOURCES` is made when ‘make all’, ‘make check’, ‘make install’, ‘make install-exec’ (or `make dist`) is run, before other targets are processed.
+
+So, to conclude our introductory example, we could use ‘BUILT_SOURCES = foo.h’ to ensure foo.h gets built before any other target (including foo.o) during ‘make all’ or ‘make check’.
+
+需要注意的是，`BUILT_SOURCES`只支持`make all`，`make check`和`make install`，如果单个执行`make A`是不行的。
+
+https://www.gnu.org/software/automake/manual/html_node/Sources.html
+
+http://vinllen.com/makefile-amzhi-built_sources/
+
+
+
+```
+AC_PREREQ
+	autoconf的最低版本，例如AC_PREREQ([2.59])
+AC_INIT([x],[y],[z])
+	告诉autoconf自己的名字，版本，自己的email
+	例如：AC_INIT([mybluealsa],[1.0],[1073167306@qq.com])
+AM_INIT_AUTOMAKE
+	初始化automake，后面跟一下选项。
+	常用选项：
+	-Wall
+	-Werror
+	foreign：放宽一下gnu标准要求。
+	-1.11.1 automake的最低版本。
+	例如：AM_INIT_AUTOMAKE([foreign -Wall])
+AC_CHECK_HEADERS([string.h])
+	检查是否有string.h这个头文件。
+	代码里是这样使用：
+	#if HAVE_STRING_H
+	#include <string.h>
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_MACRO_DIR([m4])
+	local Autoconf macros autoconf宏定义的目录，一般有一个m4的目录。
+```
+
+
+
+https://www.gnu.org/software/autoconf/manual/autoconf-2.69/html_node/Input.html
+
+https://blog.csdn.net/qigaohua/article/details/112028018
+
+# libtool.m4
+
+这个的作用是什么？
+
+```
+当autoconf和automake时使用时，用户自定义宏应该放在 acinclude.m4和m4/*.m4（GNU autoconf手册上说好像是 aclocal/*.m4），流程是这样的：
+
+acinclude.m4 \
+
+aclocal/*.m4 ｜ === aclocal perl script （由automake提供） ===> aclocal.m4
+
+configure.ac /
+
+然后 autoconf 会在处理 configure.ac 之前先处理 aclocal.m4，使 acinclude.m4 aclocal/*.m4中包含的宏定义可在configure.ac中使用
+```
+
+
+
+在代码中适当的运用宏，创造优雅易读的代码，这样或许更能体现编程是一种艺术。虽然有些编程语言未提供宏功能，但是我们总是会有 GNU m4 这种通用的宏处理器可用。
+
+
+
+m4 是一种宏处理器，它扫描用户输入的文本并将其输出，期间如果遇到宏就将其展开后输出。
+
+宏有两种，一种是内建的，另一种是用户定义的，
+
+它们能接受任意数量的参数。
+
+**除了做展开宏的工作之外，m4 内建的宏能够加载文件，执行 Shell 命令，做整数运算，操纵文本，形成递归等等。**
+
+**m4 可用作编译器的前端，或者单纯作为宏处理器来用**。
+
+所有的 Unix 系统都会提供 m4 宏处理器，因为它是 POSIX 标准的一部分。
+
+通常只有很少一部分人知道它的存在，这些发现了 m4 的人往往会在某个方面成为专家。
+
+这不是我说的，这是 m4 手册说的。
+
+
+
+有些人对 m4 非常着迷，他们先是用 m4 解决一些简单的问题，然后解决了一个比一个更大的问题，
+
+直至掌握如何编写一个复杂的 m4 宏集。
+
+若痴迷于此，往往会对一些简单的问题写出复杂的 m4 脚本，然后耗费很多时间去调试，
+
+反而不如直接手动解决问题更有效。
+
+所以，对于程序猿中的强迫症患者，要对 m4 有所警惕，
+
+它可能会危及你的健康。这也不是我说的，是 m4 手册说的。
+
+
+
+让这世界再多一份 GNU m4 教程 (1)
+
+https://segmentfault.com/a/1190000004104696
+
+
+
+# 用autotools来创建一个开源项目
+
+https://github.com/happyAnger6/anger6_autotools
+
+这个脚本很好，靠gen.sh就生成了一个不错的autotools框架。
+
+
+
+这篇文档不错，还可以用eclipse插件来做。
+
+https://blog.csdn.net/xlxxcc/article/details/51112826
 
 
 
@@ -515,3 +714,7 @@ https://blog.csdn.net/weixin_33985507/article/details/85636537
 这篇文章非常好。
 
 https://blog.csdn.net/u010020404/article/details/82770848
+
+10、
+
+https://blog.csdn.net/qigaohua/article/details/112028018
