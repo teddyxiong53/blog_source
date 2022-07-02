@@ -82,6 +82,12 @@ nedb可用看做精简版本的mongodb。
 
 使用async语法。
 
+这个资源挺多的。可以研究一下。
+
+https://github.com/feathersjs/awesome-feathersjs
+
+
+
 ## itemsapi
 
 这个的方向是：快速搜索。
@@ -204,7 +210,7 @@ https://github.com/ashes167/vue-mall
 
 https://github.com/hzz07/bookstore
 
-
+expressCart
 
 ## express+小程序
 
@@ -410,6 +416,14 @@ box.appendChild(canvas);
 
 
 
+这个作者的其他项目。这个是用vue+express仿造的one app的例子。
+
+https://github.com/eidonlon/imitate-beautiful-thing
+
+这个可以做tab界面例子的。可以复用。简单。
+
+
+
 ## express+云计算
 
 ## express+在线布局系统
@@ -435,6 +449,8 @@ https://github.com/windlany/happy-chat
 
 
 ## express+大数据
+
+
 
 ## express+在线终端tty
 
@@ -527,6 +543,16 @@ https://github.com/yym-yumeng123/Express-Stickynotes
 ## express+在线代码编辑器
 
 https://github.com/songquanpeng/online-code-editor
+
+写得很简单，本质是利用了codemirror的功能。express实现的功能就是新建文件，保存文件等几个简单的功能。
+
+https://github.com/songquanpeng 这个作者倒是写了不少有意思的项目。可以看看。
+
+https://iamazing.cn/ 这个是他的个人网站。
+
+https://wechat-message.herokuapp.com/ 这个是搭建的微信推送服务。可以研究一下。
+
+
 
 ## express+在线学习
 

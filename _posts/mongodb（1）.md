@@ -198,7 +198,19 @@ local
 
 config
 
+# 安装与启动
 
+输入mongod，会提示你没有安装，并给出安装命令。复制安装命令进行安装即可。
+
+```
+mongod 
+```
+
+这样就启动了。默认的db目录是/data/db目录如果没有，会出错退出，手动创建这个目录再启动就可以了。
+
+参考资料
+
+https://blog.csdn.net/AustinBoris/article/details/70098199
 
 # 连接
 
@@ -209,6 +221,38 @@ config
 ```
 show dbs
 ```
+
+# gui客户端操作
+
+
+
+Nosqlclient是一个免费的开源MongoDB管理工具，具有基于Web的GUI界面。
+
+但是搜索这个工具的官网居然都没有了。
+
+还是直接找vscode插件。
+
+搜索mongodb，第一个就是的。
+
+我当前的安装方式，并没有添加启动脚本。
+
+是用mongod命令手动启动的。
+
+需要这样来启动
+
+```
+mongod --bind_ip 0.0.0.0:27017
+```
+
+修改etc下的配置文件不会生效。
+
+
+
+参考资料
+
+1、
+
+https://developer.aliyun.com/article/721720
 
 # 数据库操作
 
