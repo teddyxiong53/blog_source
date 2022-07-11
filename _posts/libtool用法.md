@@ -114,7 +114,7 @@ non_pic_object='func.o'
 
 
 
-参考资料
+# 参考资料
 
 1、libtool简介
 

@@ -428,7 +428,64 @@ Yocto tips (5): Yocto如何更改source code的下载与git clone地址
 - 再一次获取,提示找不到branch，于是我们到我们本地的repo中将此branch切出来，也可以将其制作成bare repo：
 - 然后再一次进行fetch就可以了：
 
+# varFlag
 
+varflags用来控制task的function和deps。
+
+对varflag的读写是这样：
+
+```
+var = d.getVarFlags("var")
+self.d.setVarFlags("FOO", {"func": True})
+```
+
+varflags基本跟普通的变量一样。
+
+除了一点不同，varflags不能使用OVERRIDES机制。
+
+bitbake预定义了一组用于bb和bbclass的varflags。
+
+```
+cleandirs
+	在task运行之前创建空目录。
+depends
+	控制task之间的依赖。
+deptask
+	控制build时的依赖。
+dirs
+	在运行task之前应该创建的目录。
+	如果目录已经存在，那么什么都不做。
+lockfiles
+	指定在执行task时需要锁定的文件。
+noexec
+	设置为1时，任务不执行。
+nostamp
+	设置为1，表示始终执行该任务。
+number_threads
+	限制task的线程数。
+	例如 do_fetch[number_threads] = "2"
+postfuncs
+	在task完成后调用的函数。
+prefuncs
+	在task执行前调用的函数。
+rdepends
+	控制任务的runtime依赖。
+	
+```
+
+下面这几个varflag是控制task hash值的生成的。
+
+```
+vardeps
+	把变量添加到变量的从属关系中。
+	do_fetch[vardeps] += "SRCREV"
+	这个表示的含义：
+	fetch时，如果发现SRCREV变了，那么就要重新进行下载。
+vardepsexclude
+	排除从属关系。
+```
+
+https://blog.csdn.net/aaaLG/article/details/107939692
 
 # 参考资料
 

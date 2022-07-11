@@ -174,3 +174,13 @@ crt是C Runtime的意思。
 crtbegin和crtend是给c++用的。
 
 crti和crto是进入和退出清理用的。
+
+
+
+
+
+# 参考资料
+
+1、GCC从头到尾自制编译脚本
+
+https://blog.csdn.net/qq_38782437/article/details/103724517

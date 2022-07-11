@@ -371,7 +371,7 @@ val = 1 则 ABC 赋值 true，否则 ABC 赋值 false
 
 
 
-Features
+# 各种Features
 
 [DISTRO_FEATURES](https://docs.yoctoproject.org/ref-manual/variables.html#term-DISTRO_FEATURES) 
 
@@ -383,11 +383,136 @@ Features
 
 
 
+## IMAGE_FEATURES
+
+在一个image里包含的feature。
+
+最好是写在image的bb文件里，
+
+你可以写在conf文件里，但是不推荐这么做。
+
+如果要在image的bb文件外面对image feature进行修改。
+
+使用EXTRA_IMAGE_FEATURES这个变量来进行操作。
+
+
+
+用IMAGE_FEATURES和
+
+https://docs.yoctoproject.org/dev-manual/common-tasks.html#customizing-images-using-custom-image-features-and-extra-image-features
+
 poky/meta/conf/bitbake.conf里定义了PN等变量的。值得看一下。
 
 
 
-[**PACKAGECONFIG**](https://docs.yoctoproject.org/ref-manual/variables.html?highlight=packageconfig#term-PACKAGECONFIG)
+
+
+# PACKAGECONFIG
+
+这个是configure的选项配置。
+
+我现在需要去掉gstreamer的libgles的配置。
+
+应该怎么做呢？
+
+
+
+在recipe的PACKAGECONFIG变量的基本架构如下:
+
+```
+PACKAGECONFIG[f1] = "--with-f1,--without-f1,build-deps-f1,rt-deps-f1"
+```
+
+在一个recipe中, 如果f1属性使能, 则--with-f1, build-deps-f1就会应用于这个recipe,
+
+而如果f1属性被禁止, --without-f1 和 rt-deps-f1则会被应用.
+
+
+
+使能recipe的某个属性
+
+如果要增加使能recipe的某个属性的话, 有以下两种方法
+
+方法一: 在recipe的附件文件即.bbappend文件中添加该依赖属性
+
+```
+PACKAGECONFIG_append = " f1"
+```
+
+方法二: 在bsp包的配置文件conf/local.conf中增加recipe的依赖属性
+
+```
+PACKAGECONFIG_append_pn-[recipename] = " f1"
+```
+
+
+
+应用实例
+
+接下来, 以qtbase增加sql-sqlite为例, 对PACKAGECONFIG进行介绍.
+
+在qtbase的recipe文件qtbase_git.bb中, sql-sqlite的属性配置为
+
+```
+PACKAGECONFIG[sql-sqlite] = "-sql-sqlite -system-sqlite,-no-sql-sqlite,sqlite3"
+```
+
+当sql-sqlite属性使能后, sqlite3会应用于qtbase中.
+
+有一下两种方法, 使能qtbase的sql-sqlite属性.
+
+方法一: 在qtbase_git.bbappend文件中增加sql-sqlite属性
+
+```
+PACKAGECONFIG_append = " sql-sqlite"
+```
+
+方法二: 在conf/local.conf文件中增加sql-sqlite属性
+
+```
+PACKAGECONFIG_append_pn-qtbase = " sql-sqlite"
+```
+
+
+
+用法说明：
+PACKAGECONFIG[foo] = "--enable-foo,--disable-foo,foo_depends,foo_runtime_depends"
+
+有四个参数，
+
+--enable-foo：表示如果有foo的那么使能它
+
+--disable-foo:表示没有foo的情况下就不是能它
+
+foo_depends： 表示如果有foo的情况下编译时的依赖。
+
+foo_runtime_depends:表示如果有foo的情况下，运行时的依赖
+
+上面的例子是pango对基于x11或direcrfb的情况
+
+如果是基于x11的`（${@base_contains('DISTRO_FEATURES', 'x11', 'x11', '', d)}），那么configure时，--with-x, 编译依赖${X11DEPENDS}`
+
+`如果是基于direcrfb(${@base_contains('DISTRO_FEATURES', 'directfb', 'directfb', '', d)})的，那么运行confiure时，--without-x，编译依赖direcrfb`
+
+
+
+这个是gstreamer-plugin-base的，在bbappend里增加opus配置。传递给meson程序来进行configure的。
+
+```
+DEPENDS += " libopus"
+RDEPENDS_${PN} += " libopus"
+
+PACKAGECONFIG_append = " opus"
+PACKAGECONFIG[opus]  = "-Dopus=enabled,-Dopus=disabled,libopus"
+```
+
+
+
+参考资料
+
+https://wiki.phytec.com/pages/viewpage.action?pageId=151257902
+
+https://blog.csdn.net/xiaofeng_yan/article/details/7018349
 
 
 
@@ -762,7 +887,7 @@ Yocto Project实现了**支持增量构建**的共享状态代码。
 
 在确定需要构建系统的哪些部分时，
 
-BitBake是以task为单位，而不是以recipe为单位。
+**BitBake是以task为单位，而不是以recipe为单位。**
 
 您可能会想知道为什么使用每个任务比每个配方优先级更高。
 
@@ -988,6 +1113,22 @@ wayland
 wifi
 x11
 ```
+
+现在实际使用中发现问题。
+
+我在amlogic-sbr-yocto.bb这个image的bb里修改DISTRO_FEATURES。
+
+对于我单独编译某一个package时，没有起作用。
+
+所以bb里改的，都是局部的。
+
+要全局的改动。还是要在local.conf里做。
+
+但是build/local.conf的改动，怎么进行保存呢？因为build目录是生成的临时目录。
+
+知道了。mesona5-av400.conf，conf文件都是全局的。在这个里面加也是可以的。
+
+之前的改动也是在这里。
 
 # COMBINED_FEATURES
 
@@ -1217,6 +1358,20 @@ TARGET_SYS="aarch64-poky-linux"
 export prefix="/usr"
 ```
 
+## 实际使用
+
+我发现OVERRIDES机制并不符合我的预期。
+
+```
+PACKAGES =+ "\
+    ${PN}-wifi-power \
+    ${PN}-usb-monitor \
+"
+PACKAGES_av400 =+ ""
+```
+
+PACKAGES_av400相当于 PACKAGES变量整个都清空了。
+
 
 
 # MACHINEOVERRIDES
@@ -1314,6 +1469,10 @@ EXTRA_IMAGE_FEATURES = "read-only-rootfs"
 不要使用IMAGE_INSTALL来指定要安装的包。
 
 而要使用PACKAGE_INSTALL变量。
+
+
+
+
 
 ## PACKAGE_INSTALL
 
@@ -1722,13 +1881,21 @@ TC是toolchain的缩写。
 EXTRA_IMAGEDEPENDS += "u-boot"
 ```
 
+在这里使用的：
+
+```
+./meta/classes/image.bbclass:143:        for dep in (d.getVar('EXTRA_IMAGEDEPENDS') or "").split():
+```
+
+
+
 # TARGET_PREFIX
 
 这个哪里定义的？怎么传递的？
 
 https://docs.yoctoproject.org/ref-manual/variables.html?highlight=target_prefix#term-TARGET_PREFIX
 
-TARGET_PREFIX的值根据情况变化：
+**TARGET_PREFIX的值根据情况变化：**
 
 1、对于target的，值是TARGET_SYS
 
@@ -1746,6 +1913,18 @@ Consider these two examples:
 
 - Given a native recipe on a 32-bit, x86 machine running Linux, the value is “i686-linux”.
 - Given a recipe being built for a little-endian, MIPS target running Linux, the value might be “mipsel-linux”.
+
+TARGET_ARCH在哪里被设置的？
+
+在bitbake.conf里来定义，来自于TUNE_ARCH，
+
+而TUNE_ARCH是这里：
+
+```
+./conf/machine/include/arm/arch-armv8a.inc:90:TUNE_ARCH = "${@bb.utils.contains('TUNE_FEATURES', 'aarch64', '${TUNE_ARCH_64}', '${TUNE_ARCH_32}' ,d)}"
+```
+
+
 
 # deploy
 
@@ -1994,7 +2173,7 @@ https://blog.csdn.net/BGK112358/article/details/83827172
 
 https://blog.csdn.net/punmpkin/article/details/103135537
 
-# 工具链的生成
+# 工具链toolchain的生成
 
 downloads目录下只有这2个压缩包：
 
@@ -2094,6 +2273,12 @@ which make
 /mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/code/build-av400/tmp/hosttools/make
 ```
 
+使用devshell带来了哪些便利呢？
+
+大家一般在什么情况下使用devshell呢？
+
+感觉也没有特别有用。可能就是在频繁编译的时候，可以少敲一些字符吧。
+
 
 
 参考资料
@@ -2101,6 +2286,12 @@ which make
 https://blog.csdn.net/weixin_44410537/article/details/90734459
 
 # cflags等编译选项的传递和修改
+
+在bb文件里
+
+```
+TARGET_CFLAGS_append = "xx"
+```
 
 
 
@@ -2201,7 +2392,45 @@ https://wiki.koansoftware.com/index.php/Building_Software_from_an_External_Sourc
 
 https://docs.yoctoproject.org/ref-manual/devtool-reference.html
 
+现在已经做了一段时间的yocto。觉得有必要把devtool研究一下了。
 
+devtool是一个命令行工具。
+
+提供了一些功能，帮助你build、test和打包软件。
+
+这个命令是跟随bitbake一起提供的。
+
+```
+常用的命令是：
+
+add                      添加recipes
+
+modify                  提取源码
+
+upgrade               更新recipes
+
+search                   搜索package
+```
+
+
+
+```
+devtool modify busybox
+```
+
+这个命令会把busybox的代码拷贝到workspace目录下面。
+
+这个时候在构建项目，则使用的是workspace目录下的源码，如下所示：
+
+参考资料
+
+
+
+https://blog.csdn.net/jiangwei0512/article/details/120407354
+
+
+
+https://blog.csdn.net/qq_34160841/article/details/107287365
 
 # PREFERRED_VERSION
 
@@ -2212,15 +2441,67 @@ PREFERRED_VERSION_linux-meson = "5.4.%"
 
 
 
-# STAGING_DIR_NATIVE
+# STAGING相关变量
 
-对于uboot，这个目录是在：
+STAGING_DIR_NATIVE，对于uboot，这个目录是在：
 
 ```
 /mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/code/build-av400/tmp/work/mesona5_av400-poky-linux/u-boot/v2019.01+git999-r1/recipe-sysroot-native
 ```
 
 重点是recipe-sysroot-native
+
+staging相关的变量有：
+
+```
+STAGING_BASE_LIBDIR_NATIVE
+STAGING_BASELIBDIR
+STAGING_BINDIR
+STAGING_BINDIR_CROSS
+STAGING_BINDIR_NATIVE
+STAGING_DATADIR
+STAGING_DATADIR_NATIVE
+STAGING_DIR
+STAGING_DIR_HOST
+STAGING_DIR_NATIVE
+STAGING_DIR_TARGET
+STAGING_ETCDIR_NATIVE
+STAGING_EXECPREFIXDIR
+STAGING_INCDIR
+STAGING_INCDIR_NATIVE
+STAGING_KERNEL_BUILDDIR
+STAGING_KERNEL_DIR
+STAGING_LIBDIR
+STAGING_LIBDIR_NATIVE
+```
+
+比较关键的是STAGING_DIR_TARGET这个。
+
+对于aml-halaudio，是这样：
+
+```
+bitbake -e aml-halaudio  |grep STAGING_DIR_TARGET
+
+STAGING_DIR_TARGET="/mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/code/build-av400/tmp/work/aarch64-poky-linux/aml-halaudio/git-r0/recipe-sysroot"
+```
+
+用file命令查看这个目录下的东西，是x64的。
+
+不是应该是aarch64的吗？
+
+对于yocto，
+
+host和target是一回事。
+
+native才是不一样的。
+
+```
+ bitbake -e aml-utils |grep  ^STAGING_DIR
+STAGING_DIR="/mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/code/build-av400/tmp/sysroots"
+STAGING_DIR_HOST="/mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/code/build-av400/tmp/work/aarch64-poky-linux/aml-utils/999-r0/recipe-sysroot"
+STAGING_DIR_NATIVE="/mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/code/build-av400/tmp/work/aarch64-poky-linux/aml-utils/999-r0/recipe-sysroot-native"
+STAGING_DIR_TARGET="/mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/code/build-av400/tmp/work/aarch64-poky-linux/aml-utils/999-r0/recipe-sysroot"
+```
 
 
 
@@ -2422,6 +2703,16 @@ palmqtdir	${palmtopdir}	        /usr/lib/opie
 
 
 
+下面的命令，相当于在本package的image目录下，创建了对应的目录。
+
+```
+install -d ${D}${libdir}
+install -d ${D}${includedir}
+install -d ${D}${bindir}
+```
+
+
+
 
 
 https://wiki.koansoftware.com/index.php/Directories_and_installation_variables
@@ -2550,9 +2841,15 @@ lists_dir ext /var/lib/opkg
 
 
 
+./poky/meta/recipes-devtools/opkg/opkg_0.4.2.bb
+
 https://blog.csdn.net/lyn631579741/article/details/108183021
 
 https://jumpnowtek.com/yocto/Using-your-build-workstation-as-a-remote-package-repository.html
+
+这篇文章讲得很详细了。
+
+https://wiki.phytec.com/pages/viewpage.action?pageId=128713168
 
 # 运行商业license软件的加入
 
@@ -2608,7 +2905,7 @@ BBCLASSEXTEND =+ "native nativesdk"
 BBCLASSEXTEND =+ "multilib:multilib_name"
 ```
 
-相当于对xxx这个recipe产生了2个新的recipe，名字为xxx-native.bb和xxx-nativesdk.bb。
+**相当于对xxx这个recipe产生了2个新的recipe，名字为xxx-native.bb和xxx-nativesdk.bb。**
 
 BitBake支持两个功能，便于从单个配方文件创建该配方文件的多个化身，其中所有化身都是可构建的。
 
@@ -2620,7 +2917,7 @@ Bitbake可以使用相同的配方为目标或本机构建主机构建配方.
 
 这可以通过`BBCLASSEXTEND = "native"`配方来实现.
 
-这将使您能够使用-native来引用本机构建主机的配方构建.
+**这将使您能够使用-native来引用本机构建主机的配方构建.**
 
 
 
@@ -2758,9 +3055,15 @@ hanliang.xiong@walle01-sz:/mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/co
 
 ```
 
+![img](../images/random_name/84cefaac40d0fbab93c8f1a773add19f.png)
 
+工具链是在这里指定的。
 
+poky\meta\recipes-devtools\gcc
 
+参考资料
+
+https://blog.csdn.net/Neutionwei/article/details/111059573
 
 # image-info.txt内容
 
@@ -2805,7 +3108,47 @@ SDK_NAME="poky-glibc-x86_64-defaultpkgname-aarch64-mesona5-av400"
 INHERIT=" buildhistory externalsrc poky-sanity uninative reproducible_build package_ipk buildstats debian devshell sstate license remove-libtool blacklist sanity"
 ```
 
+# toaster
 
+这个是启动网页来对yocto工程进行管理。
+
+在build目录下，执行：
+
+```
+source toaster start
+```
+
+如果提示确实python库，按照提示进行安装就好。
+
+然后访问地址：http://ip:8000 
+
+如果要指定port，使用：
+
+```
+source toaster start webport=8400
+```
+
+同时指定ip地址：
+
+```
+source toaster start webport=0.0.0.0:8400
+```
+
+
+
+启动会需要一些时间。
+
+但是进入界面，不能导入现有的工程。
+
+好像也没有什么大的用途。
+
+
+
+https://docs.yoctoproject.org/toaster-manual/setup-and-use.html
+
+
+
+https://www.cnblogs.com/liushuhe1990/articles/13096512.html
 
 # bb文件展开后的效果
 
@@ -3242,6 +3585,30 @@ PACKAGES =+ "${PN}-tools"
 FILES_${PN}-tools = "${bindir}/*"
 ```
 
+怎么查看所有的packages呢？
+
+好像没有办法从环境变量里查看出来。
+
+在某个具体的bb文件里，例如在aml-halaudio里。
+
+```
+do_print_info() {
+    echo -------${PACKAGES}--------
+}
+```
+
+这个打印出来是：
+
+```
+aml-halaudio-src aml-halaudio-dbg aml-halaudio-staticdev aml-halaudio-dev aml-halaudio-doc aml-halaudio-locale aml-halaudio
+```
+
+
+
+https://stackoverflow.com/questions/46878640/is-there-a-way-to-check-the-exact-list-of-packages-that-will-be-installed-in-the
+
+
+
 # bb文件里增加环境变量
 
 当前aml_halaudio的编译依赖了环境变量，所以需要在bb文件里产生环境变量。
@@ -3283,6 +3650,18 @@ S=${WORKDIR}/git
 ```
 
 这样写法表示什么？
+
+表示是外部的git仓库目录。
+
+workdir的作用是什么？
+
+对应recipe的工作目录吧。
+
+
+
+参考资料
+
+https://stackoverflow.com/questions/28827764/workdir-in-a-yocto-recipe
 
 # 添加external git仓库
 
@@ -3339,7 +3718,7 @@ https://wiki.koansoftware.com/index.php/Building_Software_from_an_External_Sourc
 
 TARGET_CFLAGS怎么传递给Makefile的CFLAGS的？
 
-
+bitbake会帮你转过去的。暂不深究。
 
 # oe_runmake
 
@@ -3357,6 +3736,713 @@ oe_runmake() {
 这个很简单。
 
 
+
+# sysroot-destdir
+
+安装头文件就是安装到这里。
+
+例如alsa-lib的。
+
+```
+./sysroot-destdir/usr/include/sys/asoundlib.h
+```
+
+aml-halaudio里依赖alsa-lib，表现是aml-halaudio的recipe-sysroot下面把alsa-lib的头文件都拷贝过来了
+
+```
+aarch64-poky-linux/aml-halaudio/git-r0/recipe-sysroot/usr/include
+```
+
+
+
+# DISTRO_FEATURES_BACKFILL_CONSIDERED 
+
+1. Initialization Manager的选择
+
+   yocto默认使用SysVinit作为启动器，然而yocto也支持systemd启动方式。若选择systemd则需要如下内容：
+
+   设置如下变量启用systemd：
+
+​     DISTRO_FEATURES_append = “ systemd”
+
+​     VIRTUAL-RUNTIME_init_manager = “systemd”
+
+   此时系统启动的时候默认采用systemd方式启动，但是sysvinit脚本也安装到image中只不过在rescure/minimal中使用sysvinit方式启动
+
+   **删除SysVinit脚本：**
+
+​     **DISTRO_FEATURES_BACKFILL_CONSIDERED = “sysvinit”**
+
+参考资料
+
+https://blog.csdn.net/faihung/article/details/82713816
+
+# HOST_ARCH
+
+这个跟TARGET_ARCH是一样的，都是aarch64 。
+
+总的来说，在yocto里，host和target，都是target。
+
+而native才是编译机器。native和build又基本都是指编译机器。
+
+这名字就奇怪了。
+
+BUILD_ARCH才是x86的。
+
+MACHINE_ARCH是mesona5_av400
+
+在bitbake.conf里定义的。
+
+```
+BUILD_ARCH := "${@os.uname()[4]}"
+BUILD_OS := "${@os.uname()[0].lower()}"
+BUILD_SYS = "${BUILD_ARCH}${BUILD_VENDOR}-${BUILD_OS}"
+
+HOST_ARCH = "${TARGET_ARCH}"
+HOST_OS = "${TARGET_OS}"
+HOST_VENDOR = "${TARGET_VENDOR}"
+HOST_SYS = "${HOST_ARCH}${HOST_VENDOR}-${HOST_OS}"
+
+T = "${WORKDIR}/temp"
+D = "${WORKDIR}/image"
+S = "${WORKDIR}/${BP}"
+B = "${S}"
+
+STAGING_DIR = "${TMPDIR}/sysroots"  这个目录是空的。
+COMPONENTS_DIR = "${STAGING_DIR}-components"
+
+export MAKE = "make"
+EXTRA_OEMAKE = ""
+EXTRA_OECONF = ""
+export LC_ALL = "en_US.UTF-8"
+export TZ = 'UTC'
+
+
+```
+
+
+
+# openbmc文章
+
+openbmc是yocto比较常见的使用场景。通过这个来找yocto的文章。
+
+https://blog.csdn.net/qq_34160841/article/details/119977679
+
+
+
+# bitbake里使用if else
+
+https://stackoverflow.com/questions/52492036/if-else-statement-using-external-variable-in-a-bitbake-file
+
+只能在匿名python函数里。
+
+
+
+# core-image.bbclass分析
+
+CORE_IMAGE_BASE_INSTALL
+
+```
+packagegroup-core-boot
+packagegroup-base-extended
+
+IMAGE_INSTALL ?= "${CORE_IMAGE_BASE_INSTALL}"
+```
+
+继承了image.bbclass。这个就有700行左右。
+
+
+
+
+
+```
+IMGCLASSES += "rootfs-postcommands"
+```
+
+这个是作用是什么？
+
+```
+IMAGE_FEATURES[validitems] += "debug-tweaks read-only-rootfs stateless-rootfs empty-root-password allow-empty-password allow-root-login post-install-logging"
+```
+
+
+
+```
+# Images are generally built explicitly, do not need to be part of world.
+EXCLUDE_FROM_WORLD = "1"
+```
+
+```
+def rootfs_command_variables(d):
+    return ['ROOTFS_POSTPROCESS_COMMAND','ROOTFS_PREPROCESS_COMMAND','ROOTFS_POSTINSTALL_COMMAND','ROOTFS_POSTUNINSTALL_COMMAND','OPKG_PREPROCESS_COMMANDS','OPKG_POSTPROCESS_COMMANDS','IMAGE_POSTPROCESS_COMMAND',
+            'IMAGE_PREPROCESS_COMMAND','RPM_PREPROCESS_COMMANDS','RPM_POSTPROCESS_COMMANDS','DEB_PREPROCESS_COMMANDS','DEB_POSTPROCESS_COMMANDS']
+```
+
+
+
+```
+addtask do_image_complete after do_image before do_build
+```
+
+
+
+```
+    packagegroup-core-boot \
+    packagegroup-base-extended \
+```
+
+packagegroup-core-boot定义在：
+
+meta-openembedded\meta-oe\recipes-core\packagegroups\packagegroup-boot.bb
+
+poky\meta\recipes-core\packagegroups\packagegroup-core-boot.bb
+
+
+
+```
+# Make sure we build the kernel
+DEPENDS = "virtual/kernel"
+```
+
+
+
+# VIRTUAL-RUNTIME
+
+
+
+# base-files
+
+poky\meta\recipes-core\base-files\base-files_3.0.14.bb
+
+# RRECOMMENDS和RDEPENDS
+
+https://stackoverflow.com/questions/14238825/anyone-tell-me-the-difference-for-rrecommends-and-rdepends
+
+我觉得RDEPENDS应该是对于opkg包管理进行安装的时候有用。
+
+当前我是直接使用整包烧录的，所以RDEPENDS没有正确指定还没有关系。
+
+RDEPENDS is a hard, runtime dependency.
+
+RRECOMMENDS is a soft, runtime dependency. 
+
+大多数的package的RDEPENDS是自动推导出来的。
+
+所以一般的bb文件里，不用写RDEPENDS变量。
+
+
+
+# poky\meta\conf\documentation.conf
+
+这个文件可以当帮助文档看。
+
+
+
+# elinux文档
+
+https://elinux.org/images/9/9a/Buildroot-vs-Yocto-Differences-for-Your-Daily-Job-Luca-Ceresoli-AIM-Sportline.pdf
+
+这个很好，对buildroot和yocto进行了全面的对比，很有启发。
+
+recipe hash
+
+每个task都会生成hash。
+
+hash值涉及的内容：
+
+1、所有的recipe变量和task的code内容。
+
+2、SRC_URI包含的文件的内容。
+
+只要这些内容有变化，hash就会变化，系统就可以根据需要执行task。
+
+结果存储在sstate里。
+
+要强制执行task，可以加-f参数。
+
+
+
+bitbake -c savedefconfig
+
+
+
+# overlay实现
+
+```
+Buildroot: System configuration menu:
+    • Root filesystem overlay directories
+    • Post-build and post-image scripts
+Yocto
+	• ROOTFS_POSTPROCESS_COMMAND and IMAGE_POSTPROCESS_COMMAND
+```
+
+ROOTFS_POSTPROCESS_COMMAND
+
+```
+./poky/meta/classes/rootfsdebugfiles.bbclass:31:ROOTFS_POSTPROCESS_COMMAND += "rootfs_debug_files ;"
+```
+
+poky\meta\classes\rootfsdebugfiles.bbclass
+
+这个是一个可以参考的例子。
+
+我们扩展的有一个。
+
+```
+./recipes-core/images/amlogic-sbr-yocto.bb:88:ROOTFS_POSTPROCESS_COMMAND += "version_hook; "
+```
+
+这个的作用是产生./tmp/work/mesona5_av400-poky-linux/amlogic-sbr-yocto/1.0-r0/rootfs/version.txt
+
+这个确实就相当于修改rootfs的内容了。
+
+我可以在这里来对rootfs进行修改。
+
+有两种方法：
+
+1、从目录进行拷贝。
+
+2、直接脚本进行文件的生成和修改。
+
+先看看当前buildroot里的overlay的文件有哪些。
+
+说实话，也不是非要不可的。
+
+主要是开机脚本。
+
+还有一些工具脚本和文件。
+
+怎么放合适？
+
+工具类的，我可以单独弄一个recipe，直接来进行文件的拷贝。
+
+文件覆盖的，这个就得考虑顺序问题。
+
+要理顺开机脚本的，就要先把systemd研究一下。
+
+例如，开机时是怎么挂载的？
+
+当前编译出来的/init，是一个脚本，分析一下内容。
+
+这个init是从哪个recipe来的？
+
+这样搜索，看了init不会直接的文件，估计是通过脚本修改出来的。
+
+```
+find -name "init" -type f | xargs grep "Cannot find root hash in initramfs" 
+./build-av400/tmp/work/mesona5_av400-poky-linux/amlogic-sbr-yocto/1.0-r0/rootfs/init:        echo "Cannot find root hash in initramfs"
+./build-av400/tmp/work/mesona5_av400-poky-linux/core-image-minimal/1.0-r0/rootfs/init:        echo "Cannot find root hash in initramfs"
+```
+
+是这个
+
+```
+./recipes-core/initrdscripts/files/init-meson.sh:239:        echo "Cannot find root hash in initramfs"
+```
+
+meta-meson\recipes-core\initrdscripts\initramfs-meson-boot_1.0.bb
+
+```
+do_install() {
+        install -m 0755 ${WORKDIR}/init-meson.sh ${D}/init
+        install -d ${D}/dev
+        mknod -m 622 ${D}/dev/console c 5 1
+}
+```
+
+init-meson.sh逻辑分析
+
+```
+early_setup
+	创建sys、proc等目录并挂载。
+	udev生成dev文件。
+从/proc/cmdline里读取参数，来决定rootfs的分区和类型。
+mount_and_boot
+	这个就是主要函数了。
+	等待root设备就绪。
+	dm_verity_setup system
+	dm_verity_setup vendor
+	boot_root
+		最后切换到switch_root，这个就转到systemd了。
+```
+
+```
+setup dm-verity for system partition(/dev/system) mount to /rootfs
+Cannot find root hash in initramfs
+setup dm-verity for vendor partition(/dev/vendor) mount to none
+Cannot find root hash in initramfs
+dm-verity is disabled
+```
+
+
+
+最后转到systemd，是靠
+
+```
+lrwxrwxrwx 1 root root 22 2018-03-09 12:34 /sbin/init -> ../lib/systemd/systemd
+```
+
+
+
+```
+mesona5-av400 login: root (automatic login)
+```
+
+
+
+有个神奇的现象，为什么我没有配网，默认可以联网？
+
+```
+sh-5.0# wpa_cli status                     
+Selected interface 'wlan0'                 
+bssid=28:80:88:1d:4b:c1                    
+freq=5240                                  
+ssid=libo-rax80-5g                         
+id=0                                       
+mode=station                               
+pairwise_cipher=NONE                       
+group_cipher=NONE                          
+key_mgmt=NONE                              
+wpa_state=COMPLETED                        
+ip_address=192.168.1.68                    
+address=08:e9:f6:a8:f0:0c                  
+uuid=341796ab-6b3a-5796-868a-a8f5cb5aaf92  
+```
+
+就是因为这个热点是没有密码的。所以下面的配置可以保证可以联网。
+
+```
+sh-5.0# cat /etc/wpa_supplicant.conf     
+ctrl_interface=/var/run/wpa_supplicant   
+ctrl_interface_group=0                   
+update_config=1                          
+                                         
+network={                                
+        key_mgmt=NONE                    
+}                                        
+```
+
+
+
+# 修改编译线程数
+
+有时候编译的时候占用资源太多。可以这样限制：
+
+```
+PARALLEL_MAKE="-j 2" bitbake 
+```
+
+# 在imx上学习yocto
+
+如果我们想删除的包没有显示在 IMAGE_INSTALL 和 IMAGE_IMAGE_FEATURES 的定义里，通常是被封装到了包组里面，这时，可以用 PACKAGE_EXCLUDE 变量设置：
+
+```
+PACKAGE_EXCLUDE = "package_name package_name package_name ..."
+```
+
+这些列出的包都不会被安装到目标镜像中。这里可能会出现一个问题，如果其他一些包依赖于这里列出的包（即在 RDEPENDS 变量中列出），构建时会报错，必须接触相应的依赖关系。
+
+
+
+自定义包组
+
+包组（packagegroup）就是按特定需求把几个包组合成一个变量，
+
+以 packagegroup- 为前缀，
+
+在类似 `meta*/recipes*/packagegroups/packagegroup*.bb`的文件中定义。
+
+以 poky/meta/recipes-core/packagegroups/packagegroup-base.bb 文件为例，
+
+文件内通过 PACKAGES 变量列出了要产生的包组，
+
+然后再用 RDEPENDS 和 RRECOMMENDS 项设置每个包组所包含的软件包。
+
+
+
+
+
+下面是一个简单的例子，我们自定义一个名为 packagegroup-custom.bb 的 recipe 文件：
+
+```bash
+DESCRIPTION = "My Custom Package Groups"
+
+inherit packagegroup
+
+PACKAGES = "\
+    ${PN}-apps \
+    ${PN}-tools \
+    "
+
+RDEPENDS_${PN}-apps = "\
+    dropbear \
+    portmap \
+    psplash"
+
+RDEPENDS_${PN}-tools = "\
+    oprofile \
+    oprofileui-server \
+    lttng-tools"
+
+RRECOMMENDS_${PN}-tools = "\
+    kernel-module-oprofile"
+```
+
+`${PN}` 是替代文件名（packagegroup-custom）的变量，
+
+所以，这里是定义了两个包组：
+
+packagegroup-custom-apps 和 packagegroup-custom-tools ，
+
+**然后用 `RDEPENDS_${PN}-*` 设置了每个包组依赖的软件包。**
+
+如果只想定义一般包组，
+
+可以不用 PACKAGES 变量，`${PN}` 即是包组的名称，用 `RDEPENDS_${PN}` 设置包组依赖的软件包。
+
+
+
+
+
+参考资料
+
+这篇文章对于镜像的裁剪有独到之处。
+
+https://shaocheng.li/posts/2020/12/12/
+
+# Yocto 应用开发
+
+Yocto 的应用开发有两种方式，一种是在 yocto 项目内新建 recipe ，另一种是导出 SDK ，然后使用 SDK 独立开发应用软件，第二种更方便一点。
+
+## 安装 SDK
+
+执行如下命令，生成扩展 SDK 安装脚本：
+
+```bash
+~/imx-yocto-bsp-5.4.47/imx6ullevk-fb$ bitbake imx-image-multimedia -c populate_sdk
+```
+
+生成的脚本位于 tmp/deploy/sdk 目录下，执行这个脚本即可安装：
+
+```bash
+~/imx-yocto-bsp-5.4.47/imx6ullevk-fb$ cd tmp/deploy/sdk/
+~/imx-yocto-bsp-5.4.47/imx6ullevk-fb/tmp/deploy/sdk$ ./fsl-imx-fb-glibc-x86_64-imx-image-multimedia-cortexa7t2hf-neon-imx6ull14x14evk-toolchain-5.4-zeus.sh
+```
+
+默认安装在 /opt 目录下。也可以把这个脚本复制到其他主机中执行。
+
+# d.getVar
+
+BB_DEFAULT_TASK ?= "build"
+
+d.getVar('INHIBIT_DEFAULT_DEPS', False)
+
+后面的False参数，表示不要进行展开。
+
+相当于shell里的`${XX}`
+
+https://stackoverflow.com/questions/37041117/bitbake-d-getvarx-true-what-does-true-mean
+
+
+
+```
+THISDIR = "${@os.path.dirname(d.getVar('FILE'))}"
+```
+
+# class-target和class-native
+
+看base.bbclass里有这个
+
+```
+BASEDEPENDS = ""
+BASEDEPENDS_class-target = "${@base_dep_prepend(d)}"
+BASEDEPENDS_class-nativesdk = "${@base_dep_prepend(d)}"
+```
+
+class-target和class-nativesdk后缀的具体产生了什么影响？
+
+bitbake可以用同一个recipe文件来build target或者native的包。
+
+类似于buildroot里的：
+
+```
+$(eval $(generic-package))
+$(eval $(host-generic-package))
+```
+
+bitbake默认是编译给target，要让recipe同时给native编译，需要加上：
+
+```
+BBCLASSEXTEND = "native"
+```
+
+有时候给target和native编译需要的内容有所区别。
+
+所有就要class-target和class-nativesdk后缀来进行override。
+
+
+
+
+
+参考资料
+
+https://stackoverflow.com/questions/49665642/difference-between-class-target-and-class-native-in-yocto-recipe
+
+#  任务校验和和setscene
+
+BitBake使用校验和（或签名）以及setcene来确定是否需要运行任务。 
+
+
+
+
+
+```
+export PACKAGE_INSTALL ?= "${IMAGE_INSTALL} ${ROOTFS_BOOTSTRAP_INSTALL} ${FEATURE_INSTALL}"
+```
+
+
+
+# COMPONENTS_DIR
+
+这个目录是sysroot内容的位置。
+
+`do_prepare_recipe_sysroot`这个task会通过软链接或者拷贝的方式，把各个recipe里的DEPENDS指定的包弄到本目录下。
+
+这个目录是通过sstate来处理的。
+
+recipe里不要直接使用这个目录。拷贝行为都是自动的。
+
+
+
+# recipe-sysroot
+
+每个菜谱在其工作目录中都有两个sysroot，一个用于目标文件(recipe-sysroot)，一个用于构建主机的本地文件(recipesysroot-native).
+
+
+
+recipe不能直接填充sysroot目录
+
+应该在${D}目录中的do_install任务期间将文件安装到标准位置
+
+https://www.cnblogs.com/liushuhe1990/articles/12466137.html
+
+
+
+https://stackoverflow.com/questions/53331063/how-to-simplify-recipe-sysroot-native
+
+
+
+# 编译64位kernel和32位应用的组合
+
+当前默认编译出来的是全部64位的。
+
+我们在buildroot上都是用的64bit kernel + 32bit app的组合。
+
+看看yocto上如何实现。
+
+看aml-setenv.sh脚本里有这样的语句：
+
+```
+    if [ -n "$(echo $TARGET_MACHINE | grep -- lib32)" ]; then
+      NEED_A6432_SUPPORT=y
+    fi
+
+    if [ "${NEED_A6432_SUPPORT+set}" = "set" ] && [ $(grep '^MULTTILIBS' conf/local.conf | grep -c 'multilib:lib32[^-]') -eq 0 ]; then
+      cat >> conf/local.conf <<EOF
+#Added for A6432 support
+require conf/multilib.conf
+MULTTILIBS = "multilib:lib32"
+DEFAULTTUNE_virtclass-multilib-lib32 = "armv7athf-neon"
+EOF
+    fi
+```
+
+具体能不能工作，还存在疑问。
+
+# 同时编译target和native版本
+
+以acl为例，看看这个是怎么同时编译了target和native 这2个版本的。
+
+就是靠bb文件的最后一行加上这个：
+
+```
+BBCLASSEXTEND = "native nativesdk"
+```
+
+acl是还有加这个package。
+
+```
+PACKAGES =+ "lib${BPN}"
+FILES_lib${BPN} = "${libdir}/lib*${SOLIBS}"
+```
+
+那就是得到libacl的package？
+
+给这个package分配的文件是自己的/usr/lib/lib*so的文件。
+
+
+
+```
+./recipes-devtools/avb/avb_2.0.bb:20:BBCLASSEXTEND = "native"
+```
+
+
+
+# TUNE_FEATURES
+
+这个是很基础的feature，决定了芯片的特点。
+
+
+
+# IMAGE_BOOT_FILES
+
+安装到boot分区的文件。
+
+
+
+搜索wks.in后缀的文件
+
+./code/poky/meta-yocto-bsp/wic/genericx86.wks.in
+
+
+
+参考资料
+
+https://stackoverflow.com/questions/56914301/how-to-deploy-files-to-boot-partition-with-yocto
+
+# WIC
+
+参考资料
+
+Yocto中WIC控制以及WKS文件
+
+https://blog.csdn.net/qq_38131812/article/details/124270885
+
+# WARN_QA
+
+最近项目需要在 Yocto 里面回退一个软件包到比较旧的版本，而新版本的软件包已经生成了 cache ，这样在编译的时候就会遇到如下错误：
+
+QA Issue: Package version for package went backwards which would break package feeds
+1
+主要原因是：
+
+如果启用了构建历史记录，
+
+那么当一个包在相同的名称下被构建出来时，
+
+Yocto 的 ERROR_QA 或者 WARN_QA 就会报告它的版本比以前构建的包的版本要低。
+
+如果你将旧版本包放置到镜像中，并使用该镜像升级目标系统上的包，
+
+则旧版本包可能导致目标系统无法正确升级到该包的“新”版本。
+
+
+
+解决我们这个问题的方法就是在配置文件里面去掉 ERROR_QA 里面的 version-going-backwards 报告项：
+
+```
+ERROR_QA_remove = "version-going-backwards"
+```
 
 # 参考资料
 
@@ -3445,3 +4531,11 @@ https://bootlin.com/doc/training/yocto/yocto-slides.pdf
 20、这里有文档翻译。
 
 https://blog.csdn.net/neutionwei/category_8031220.html
+
+21、
+
+这个网站文档格式不错。
+
+https://developer.toradex.com/linux-bsp/how-to/build-yocto/build-a-reference-image-with-yocto-projectopenembedded/
+
+http://trac.gateworks.com/wiki/Yocto/packages

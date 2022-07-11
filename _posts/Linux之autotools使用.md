@@ -669,7 +669,38 @@ https://github.com/happyAnger6/anger6_autotools
 
 https://blog.csdn.net/xlxxcc/article/details/51112826
 
+# top_srcdir
 
+top_srcdir应该是Makefile.am里内置的变量，指向的是代码顶层目录。
+
+对于yocto里使用，就有问题了。
+
+buildroot是正常的，因为编译目录和代码目录是同一个。
+
+现在yocto里分开了。
+
+所以top_srcdir里不会生成o文件和lib文件。
+
+
+
+`it is sufficient to use just ‘$srcdir’ instead of ‘$top_srcdir’.`
+
+```
+— Variable: top_builddir
+The relative name of the top level of the current build tree. In the top-level directory, this is the same as builddir.
+```
+
+就是用top_builddir就可以了。
+
+
+
+参考资料
+
+https://blog.csdn.net/qq_31324949/article/details/106439197
+
+
+
+https://www.gnu.org/software/autoconf/manual/autoconf-2.67/html_node/Preset-Output-Variables.html
 
 # 参考资料
 

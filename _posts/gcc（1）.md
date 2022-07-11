@@ -140,9 +140,21 @@ p2() {}
 
 ```
 
+# gcc和ld 中的参数 --whole-archive 和 --no-whole-archive
 
+首先 **--whole-archive** 和 **--no-whole-archive** 是**ld**专有的命令行参数，**gcc** 并不认识，要通gcc传递到 ld，需要在他们前面加**-Wl**，字串。
 
-参考资料
+--whole-archive 可以把 在其后面出现的静态库包含的函数和变量输出到动态库，--no-whole-archive 则关掉这个特性。
+
+比如你要**把 liba.a libb.a libc.a 输出到 libabc.dll(或libabc.so)**时应该这么写：
+
+libabc.dll:liba.c libb.a libc.a
+
+​    gcc -shared -o $@ -L. -Wl,--whole-archive -la -lb -lc -Wl,--no-whole-archive
+
+https://blog.csdn.net/weixin_30699235/article/details/97744931
+
+# 参考资料
 
 1、编译GNU/Linux共享库, 为什么要用PIC编译?( 转)
 
