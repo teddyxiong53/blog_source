@@ -129,7 +129,7 @@ transporter.sendMail(mailOptions, (error, info) => {
 
 看了一下代码，要吐血。居然在打开debug的时候，不发邮件。
 
-![image-20201230113215882](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201230113215882.png)
+![image-20201230113215882](../images/playopenwrt_pic/image-20201230113215882.png)
 
 把这个return注释掉。就可以收到邮件了。
 
@@ -157,7 +157,7 @@ http://192.168.1.102/active_account?key=3534992b8147695ea0353a9ed946c538&name=te
 
 把github登陆配置一下。
 
-![image-20201230161424069](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201230161424069.png)
+![image-20201230161424069](../images/playopenwrt_pic/image-20201230161424069.png)
 
 流程很顺利。但是碰到一点不常见的小问题。
 
@@ -175,7 +175,7 @@ http://192.168.1.102/active_account?key=3534992b8147695ea0353a9ed946c538&name=te
 
 search是靠谷歌来进行的。所以需要让谷歌可以索引本站。
 
-![image-20201230162625908](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201230162625908.png)
+![image-20201230162625908](../images/playopenwrt_pic/image-20201230162625908.png)
 
 
 
@@ -342,13 +342,13 @@ npm run dev
 
 靠的是这样的代码来访问服务端的。
 
-![image-20210105113018390](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210105113018390.png)
+![image-20210105113018390](../images/playopenwrt_pic/image-20210105113018390.png)
 
 这个iconfont.css是从iconfont.cn网站，挑选图片生成的。具体方法我已经知道了。
 
 所以不要管里面的细节。
 
-![image-20210105145048681](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210105145048681.png)
+![image-20210105145048681](../images/playopenwrt_pic/image-20210105145048681.png)
 
 自己来写一遍。
 
@@ -498,17 +498,17 @@ Home的构成：
 
 给component还起了名字。
 
-![image-20210109161241812](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210109161241812.png)
+![image-20210109161241812](../images/playopenwrt_pic/image-20210109161241812.png)
 
 特别的地方就是，引入了vuex。
 
 而且这里，分了多个文件来做。
 
-![image-20210109161341190](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210109161341190.png)
+![image-20210109161341190](../images/playopenwrt_pic/image-20210109161341190.png)
 
 在index.js里
 
-![image-20210109161418896](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210109161418896.png)
+![image-20210109161418896](../images/playopenwrt_pic/image-20210109161418896.png)
 
 ## mpvue-cnode
 
@@ -528,7 +528,7 @@ https://hellouniapp.dcloud.net.cn/pages/extUI/drawer/drawer
 
 这种风格其实也可以。
 
-![image-20210111140349110](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210111140349110.png)
+![image-20210111140349110](../images/playopenwrt_pic/image-20210111140349110.png)
 
 先做抽屉的。
 
@@ -576,7 +576,7 @@ uni-nav-bar
 
 就是下面这样。
 
-![image-20210111160348118](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210111160348118.png)
+![image-20210111160348118](../images/playopenwrt_pic/image-20210111160348118.png)
 
 
 
@@ -584,11 +584,11 @@ uni-nav-bar
 
 可以到这个效果。是我想要的。
 
-![image-20210111161801882](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210111161801882.png)
+![image-20210111161801882](../images/playopenwrt_pic/image-20210111161801882.png)
 
 修改方法，方框内是我修改的。
 
-![image-20210111161845009](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210111161845009.png)
+![image-20210111161845009](../images/playopenwrt_pic/image-20210111161845009.png)
 
 但是，如果标题没有，那么右边的消息图标位置会移动。
 
@@ -651,7 +651,7 @@ https://ext.dcloud.net.cn/plugin?id=52
 
 x-www-form-urlencoded可以。
 
-![image-20210114114210277](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210114114210277.png)
+![image-20210114114210277](../images/playopenwrt_pic/image-20210114114210277.png)
 
 这篇文章提到了类似的问题。
 
@@ -939,7 +939,7 @@ store: new RedisStore({
 
 代码里倒是有这样的mock_user，但是怎么操作呢？
 
-![image-20210120115135185](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210120115135185.png)
+![image-20210120115135185](../images/playopenwrt_pic/image-20210120115135185.png)
 
 需要把测试代码看一下。
 

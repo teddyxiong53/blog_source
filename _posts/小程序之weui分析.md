@@ -107,7 +107,7 @@ npm start
 
 weui的代码是用less写的。然后编译成css发布。
 
-![image-20210104160315170](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210104160315170.png)
+![image-20210104160315170](../images/playopenwrt_pic/image-20210104160315170.png)
 
 读less代码才能理顺思路。
 

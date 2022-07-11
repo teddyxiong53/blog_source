@@ -102,7 +102,7 @@ $ ls
 
 是下载了720P的。音频格式是m4a的。
 
-![image-20201211140910642](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201211140910642.png)
+![image-20201211140910642](../images/playopenwrt_pic/image-20201211140910642.png)
 
 默认是匹配的best。就是这个。
 
@@ -207,7 +207,7 @@ vtt文件，可以用notepad++打开。
 
 
 
-![image-20201211143251336](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201211143251336.png)
+![image-20201211143251336](../images/playopenwrt_pic/image-20201211143251336.png)
 
 ## 字幕自动翻译工具
 
@@ -281,7 +281,7 @@ $ ./youtube-dl.exe --flat-playlist $list
 
 总体的原理是后台调用腾讯云等翻译服务。需自己填入appkey等信息。
 
-![image-20201211151339682](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201211151339682.png)
+![image-20201211151339682](../images/playopenwrt_pic/image-20201211151339682.png)
 
 ## 批量翻译字幕文件
 
@@ -305,9 +305,9 @@ $ ./youtube-dl.exe --flat-playlist $list
 
 看到的效果就是这样，这样就最好了。达到了中英文双语字幕的效果了。非常好。
 
-![image-20201211153526629](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201211153526629.png)
+![image-20201211153526629](../images/playopenwrt_pic/image-20201211153526629.png)
 
-![image-20201211154353403](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201211154353403.png)
+![image-20201211154353403](../images/playopenwrt_pic/image-20201211154353403.png)
 
 就是不知道上传到B站会是什么效果。
 
@@ -650,7 +650,7 @@ ffmpeg -i input.mp4 -vf "drawtext=fontfile=simhei.ttf: text='熊汉良翻译':x=
 
 可以看到在左上角。这个可以。就这样。
 
-![image-20201212174259469](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201212174259469.png)
+![image-20201212174259469](../images/playopenwrt_pic/image-20201212174259469.png)
 
 https://superuser.com/questions/612635/ffmpeg-watermark-logo-with-hardcode-subtitle
 
@@ -692,7 +692,7 @@ https://greasyfork.org/zh-CN/scripts/5368-youtube-subtitle-downloader-v28
 
 但是对于没有字幕文件的，还是不行。
 
-![image-20201214114540404](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201214114540404.png)
+![image-20201214114540404](../images/playopenwrt_pic/image-20201214114540404.png)
 
 
 
@@ -717,7 +717,7 @@ https://zhuanlan.zhihu.com/p/142234424
 
 上传了一个视频测试一下，效果还不错。
 
-![image-20201214171030667](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201214171030667.png)
+![image-20201214171030667](../images/playopenwrt_pic/image-20201214171030667.png)
 
 ## python加字幕
 
@@ -808,7 +808,7 @@ autosub -F vtt input.mp4
 
 只要可以识别，我可以自己手动翻译。
 
-![image-20201214174457857](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201214174457857.png)
+![image-20201214174457857](../images/playopenwrt_pic/image-20201214174457857.png)
 
 识别卡住。
 
@@ -840,7 +840,7 @@ GOOGLE_SPEECH_API_URL = "http://www.google.com/speech-api/v2/recognize?client=ch
 
 看到这个音频文件转写的demo。
 
-![image-20201214175325133](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201214175325133.png)
+![image-20201214175325133](../images/playopenwrt_pic/image-20201214175325133.png)
 
 ```
 DEFAULT_SUBTITLE_FORMAT = 'srt'

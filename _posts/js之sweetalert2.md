@@ -51,7 +51,7 @@ Swal.fire('Hello world!')
 
 直接浏览器打开本地网页，就可以看到效果如下。
 
-![image-20210122102040393](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210122102040393.png)
+![image-20210122102040393](../images/playopenwrt_pic/image-20210122102040393.png)
 
 多加几个参数
 
@@ -65,7 +65,7 @@ Swal.fire('Oops...', 'Something went wrong!', 'error')
 
 参数3：相当于类型。
 
-![image-20210122102337716](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210122102337716.png)
+![image-20210122102337716](../images/playopenwrt_pic/image-20210122102337716.png)
 
 
 

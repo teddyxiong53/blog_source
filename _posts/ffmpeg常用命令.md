@@ -344,13 +344,13 @@ ffmpeg有两种filtergraph。simple和complex。
 
 可以认为是解码和编码之间的一个多出来的步骤。
 
-![image-20201211171735029](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201211171735029.png)
+![image-20201211171735029](../images/playopenwrt_pic/image-20201211171735029.png)
 
 简单的 filtergraph，用-filter选项，-vf和-af是两个简写的alias。
 
 复杂的filtergraph，就不是线性的了。有多个input和多个output。
 
-![image-20201211171742043](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201211171742043.png)
+![image-20201211171742043](../images/playopenwrt_pic/image-20201211171742043.png)
 
 复杂filtergraph，用-filter_complex选项。
 

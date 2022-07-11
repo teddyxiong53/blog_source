@@ -88,7 +88,7 @@ RFID由于布置成本高,没有普及开来。
 
 
 
-![image-20211020132555554](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20211020132555554.png)
+![image-20211020132555554](../images/playopenwrt_pic/image-20211020132555554.png)
 
 
 

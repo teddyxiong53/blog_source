@@ -18,7 +18,7 @@ https://labs.play-with-docker.com/
 
 用你的docker账号登陆。
 
-![image-20210201164238611](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210201164238611.png)
+![image-20210201164238611](../images/playopenwrt_pic/image-20210201164238611.png)
 
 参考资料
 

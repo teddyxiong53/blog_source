@@ -20,7 +20,7 @@ Linux kernel为了方便串口驱动的开发，
 
 
 
-![serial_framework_arch](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/a1c90c3e81c89c1a391bf9124974146020161212140441.gif)
+![serial_framework_arch](../images/playopenwrt_pic/a1c90c3e81c89c1a391bf9124974146020161212140441.gif)
 
 
 

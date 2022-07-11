@@ -19,7 +19,7 @@ Android Studio打开工程。
 
 工程里有2个可以运行的东西。
 
-![image-20201221162557275](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201221162557275.png)
+![image-20201221162557275](../images/playopenwrt_pic/image-20201221162557275.png)
 
 选择Auto.js-app
 

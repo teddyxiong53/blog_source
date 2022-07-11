@@ -618,11 +618,11 @@ inject: ['getData']
 
 父组件uni-list，把自己暴露给子组件。
 
-![image-20210112173801752](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210112173801752.png)
+![image-20210112173801752](../images/playopenwrt_pic/image-20210112173801752.png)
 
 子组件，接收
 
-![image-20210112173833624](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210112173833624.png)
+![image-20210112173833624](../images/playopenwrt_pic/image-20210112173833624.png)
 
 https://www.cnblogs.com/zhangmingyan/articles/12669987.html
 

@@ -57,7 +57,7 @@ php --rf xx
 
 xx是函数名，
 
-![image-20201225111322916](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201225111322916.png)
+![image-20201225111322916](../images/playopenwrt_pic/image-20201225111322916.png)
 
 
 

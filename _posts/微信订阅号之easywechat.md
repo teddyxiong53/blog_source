@@ -33,17 +33,17 @@ php fileinfo扩展
 
 宝塔面板上最新的版本是8.0的。就用这个。
 
-![image-20201225105125588](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201225105125588.png)
+![image-20201225105125588](../images/playopenwrt_pic/image-20201225105125588.png)
 
 然后安装扩展，在后面的设置里，可以打开进行扩展安装。
 
 但是宝塔面板里只有不多的几个插件，上面需要的，只有fileinfo这个插件有。
 
-![image-20201225110405340](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201225110405340.png)
+![image-20201225110405340](../images/playopenwrt_pic/image-20201225110405340.png)
 
 查看phpinfo。实际上默认的php里就已经带了那几个插件了。
 
-![image-20201225112129744](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201225112129744.png)
+![image-20201225112129744](../images/playopenwrt_pic/image-20201225112129744.png)
 
 
 

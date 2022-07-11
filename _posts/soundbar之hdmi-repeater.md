@@ -52,7 +52,7 @@ CEC 总线相关协议由 CEC PHY 处理，从而消除了 MCU 的额外负载
 
 节省了板载面积、降低了固件复杂程度、缩减了物料成本，为家庭影院系统设计人员带来了极大方便。
 
-![ HDMI 收发器功能框图](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/hdmi-fig-01.jpg)
+![ HDMI 收发器功能框图](../images/playopenwrt_pic/hdmi-fig-01.jpg)
 
 
 
@@ -76,7 +76,7 @@ SOUNDBAR 音箱一般都拥有多个 HDMI输入端用于各种信号源，
 
 图 3 所示为典型的SOUNDBAR 音箱系统。
 
-![Figure 3](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/hdmi-fig-03.jpg)
+![Figure 3](../images/playopenwrt_pic/hdmi-fig-03.jpg)
 
 
 
@@ -142,7 +142,7 @@ HDMI 收发器在 HTiB 内的另一用途是提取 HDMI 音频，
 
 
 
-![Figure 4](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/hdmi-fig-04.jpg)
+![Figure 4](../images/playopenwrt_pic/hdmi-fig-04.jpg)
 
 
 

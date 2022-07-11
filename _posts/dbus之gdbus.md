@@ -329,7 +329,7 @@ SetSomData、GetSomeData、SendMessage。其注释都已详细附上。
 
 
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20180503111716599)
+![img](../images/playopenwrt_pic/20180503111716599)
 
 
 
@@ -381,7 +381,7 @@ gdbus-codegen --generate-c-code=libgdbusdemo_s interface-S.xml
 
 基于软件设计的原则——低耦合高内聚、可扩展性等，我们大致可画出server端和client端的通信框图如下：
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20180502174044257)
+![img](../images/playopenwrt_pic/20180502174044257)
 
 
 

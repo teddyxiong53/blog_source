@@ -62,7 +62,7 @@ A5：不一定。
 
 根据Data Block结构，首字节的bit7~5为**Speaker Allocation Data Block** = 4，bit4~0为**Speaker Allocation Data Block**长度(固定为3)，后面跟的3字节，结构如下：
 
- ![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/1288047-20180705102624339-1655499531.png)
+ ![img](../images/playopenwrt_pic/1288047-20180705102624339-1655499531.png)
 
 注：F为前置，L为左置，R为右置，C为中置，Fxx=0表示预留位
 
@@ -85,7 +85,7 @@ A5：不一定。
 
 bit4~0为Video Data Block长度，后面跟的字节为1个或多个CEA short Audio Descriptor,每个CEA short Audio Descripto由三个字节组级，分为LPCM，AC3，MPEG2等各种Audio Format Code,  Audio Format Code及CEA short Audio DZescriptor结构如下：
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/1288047-20180705102547547-2145846685.png)
+![img](../images/playopenwrt_pic/1288047-20180705102547547-2145846685.png)
 
 代码上这么写：
 

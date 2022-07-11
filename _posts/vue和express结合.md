@@ -260,7 +260,7 @@ node app.js
 
 其他机器访问会报这种错误。
 
-![image-20201224140417630](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201224140417630.png)
+![image-20201224140417630](../images/playopenwrt_pic/image-20201224140417630.png)
 
 可以正常进行操作。
 

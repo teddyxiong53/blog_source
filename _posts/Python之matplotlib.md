@@ -37,7 +37,7 @@ plt.show()
 
 fontproperties必须要，不然中文显示不出来。
 
-![image-20210107095050201](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210107095050201.png)
+![image-20210107095050201](../images/playopenwrt_pic/image-20210107095050201.png)
 
 可以看到，x轴是从0到3，而y轴是1到4 
 
@@ -94,7 +94,7 @@ plt.suptitle('all title')
 plt.show()
 ```
 
-![image-20210107100203797](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210107100203797.png)
+![image-20210107100203797](../images/playopenwrt_pic/image-20210107100203797.png)
 
 
 
@@ -161,7 +161,7 @@ plt.show()
 
 得到的图形这样：
 
-![image-20210107102029953](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210107102029953.png)
+![image-20210107102029953](../images/playopenwrt_pic/image-20210107102029953.png)
 
 基本符合我的要求了。
 
@@ -188,7 +188,7 @@ figsize:以英寸为单位的宽高，缺省值为 rc figure.figsize (1英寸等
 
 
 
-![image-20210107103300358](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210107103300358.png)
+![image-20210107103300358](../images/playopenwrt_pic/image-20210107103300358.png)
 
 
 

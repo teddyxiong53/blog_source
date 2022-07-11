@@ -17,7 +17,7 @@ tags:
 
 蜗蜗会在Linux电源管理系列文章中，对它们一一讲述。
 
-![](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/b27925dba594fa41703fe6a17124dc4c20140507085112.gif)
+![](../images/playopenwrt_pic/b27925dba594fa41703fe6a17124dc4c20140507085112.gif)
 
 
 

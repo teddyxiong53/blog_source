@@ -292,7 +292,7 @@ remote_port = 5000
 
 现在可以访问控制面板（在7500端口），也可以正常看到统计的数据。
 
-![image-20210113103547949](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210113103547949.png)
+![image-20210113103547949](../images/playopenwrt_pic/image-20210113103547949.png)
 
 
 
@@ -312,7 +312,7 @@ remote_port = 5000
 
 相当于在配置里加了这么一个条目。
 
-![image-20210113104915823](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210113104915823.png)
+![image-20210113104915823](../images/playopenwrt_pic/image-20210113104915823.png)
 
 现在可以正常在公网访问到树莓派的管理界面了。
 

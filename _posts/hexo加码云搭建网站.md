@@ -748,7 +748,7 @@ baidu_url_submit:
 
 token的获取方法：红色涂抹处就是。
 
-![image-20201222175121394](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201222175121394.png)
+![image-20201222175121394](../images/playopenwrt_pic/image-20201222175121394.png)
 
 
 
@@ -787,7 +787,7 @@ baidu_analytics:
 
 点击检查。可以看到正常了。
 
-![image-20201222171006078](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201222171006078.png)
+![image-20201222171006078](../images/playopenwrt_pic/image-20201222171006078.png)
 
 # 建多个网站
 

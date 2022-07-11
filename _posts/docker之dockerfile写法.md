@@ -133,7 +133,7 @@ build指令用于构建镜像。只在构建的时候起作用，在容器运行
 
 Dockerfile中包括FROM、MAINTAINER、RUN、CMD、EXPOSE、ENV、ADD、COPY、ENTRYPOINT、VOLUME、USER、WORKDIR、ONBUILD等13个指令
 
-![å¨è¿éæå¥å¾çæè¿°](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20200215111457987.png)
+![å¨è¿éæå¥å¾çæè¿°](../images/playopenwrt_pic/20200215111457987.png)
 
 # build类型指令
 
@@ -242,7 +242,7 @@ env PATH=/usr/local/bin SHELL=/bin/bash
 
 
 
-![å¨è¿éæå¥å¾çæè¿°](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20200215130213232.png)
+![å¨è¿éæå¥å¾çæè¿°](../images/playopenwrt_pic/20200215130213232.png)
 
 参考资料
 

@@ -62,7 +62,7 @@ https://trello.com/b/LtyXxrYO/%E8%A5%BF%E6%96%B9%E5%90%8D%E7%94%BB%E9%89%B4%E8%B
 
 也不错。
 
-![image-20210113154736416](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210113154736416.png)
+![image-20210113154736416](../images/playopenwrt_pic/image-20210113154736416.png)
 
 我个人确实比较有这需求。
 

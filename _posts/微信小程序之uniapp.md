@@ -690,7 +690,7 @@ uni-list不包括下拉刷新和上拉翻页功能。
 
 默认是给一个联系人的icon。要修改的话，自己指定extraIcon属性。
 
-![image-20210112171404121](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210112171404121.png)
+![image-20210112171404121](../images/playopenwrt_pic/image-20210112171404121.png)
 
 我就这样写：
 

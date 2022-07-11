@@ -14,7 +14,7 @@ tags:
 
 把这些都勾选上。
 
-![image-20201209144523427](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201209144523427.png)
+![image-20201209144523427](../images/playopenwrt_pic/image-20201209144523427.png)
 
 
 

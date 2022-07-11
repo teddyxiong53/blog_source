@@ -23,7 +23,7 @@ tags:
 
 4、工具本身功能强大，如劫包、篡改数据、限速等
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/v2-364ad009b52bba2aa90bcc2f63f1f805_720w.jpg)
+![img](../images/playopenwrt_pic/v2-364ad009b52bba2aa90bcc2f63f1f805_720w.jpg)
 
 打开不用设置，直接就可以抓包。
 
@@ -31,7 +31,7 @@ tags:
 
 添加filter就可以。如下。
 
-![image-20210114132110953](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210114132110953.png)
+![image-20210114132110953](../images/playopenwrt_pic/image-20210114132110953.png)
 
 # 抓浏览器https包
 

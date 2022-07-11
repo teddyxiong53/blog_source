@@ -216,7 +216,7 @@ CEC在HDMI 1.0协议中定义，并在其后的标准中更新（将定时器和
 
 
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20200215151753488.png)
+![img](../images/playopenwrt_pic/20200215151753488.png)
 
 
 

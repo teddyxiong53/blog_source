@@ -152,7 +152,7 @@ footer: MIT Licensed | Copyright © 2018-present Evan You
 
 现在就可以得到一个不错的页面了。
 
-![image-20201221143555332](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201221143555332.png)
+![image-20201221143555332](../images/playopenwrt_pic/image-20201221143555332.png)
 
 要实现顶部导航和侧板导航，我们可以修改config.js。
 
@@ -192,7 +192,7 @@ module.exports = {
 
 效果的这样
 
-![image-20201221144113633](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201221144113633.png)
+![image-20201221144113633](../images/playopenwrt_pic/image-20201221144113633.png)
 
 
 

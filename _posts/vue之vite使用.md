@@ -93,7 +93,7 @@ vite将index.html放到了文件的根目录，
 
 首先，我们要知道的是，vite整体的工作机制，可以简单地看一下下图
 
-![在这里插入图片描述](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20201031213532791.png)
+![在这里插入图片描述](../images/playopenwrt_pic/20201031213532791.png)
 
 由图我们也可以看到，vite实际上也是一个server，在启动vite构建web server（就是上面的localhost:3000）后，我们访问这个地址，该页面会向web server发送请求，请求对应的文件，我们可以从network中看到，如下
 

@@ -22,11 +22,11 @@ var myFilter = Vue.filter('my-filter')
 
 js代码里定义了这么2个filter函数。
 
-![image-20210105155446951](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210105155446951.png)
+![image-20210105155446951](../images/playopenwrt_pic/image-20210105155446951.png)
 
 在html代码里，这样使用。加个管道符号就可以了。
 
-![image-20210105155516564](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210105155516564.png)
+![image-20210105155516564](../images/playopenwrt_pic/image-20210105155516564.png)
 
 
 

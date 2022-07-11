@@ -95,7 +95,7 @@ I2S数据可以合并在一起传，比如我们用的AD芯片TW2867，输出就
 
 skew表示偏斜。
 
-![image-20220111103004982](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20220111103004982.png)
+![image-20220111103004982](../images/playopenwrt_pic/image-20220111103004982.png)
 
 
 

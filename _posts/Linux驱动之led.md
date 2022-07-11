@@ -84,7 +84,7 @@ def_trigger这个属性值得注意。
 
 最后总结一下led、led_classdev、led_trigger的关系：
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/0_1306112332Y4Xo.gif)
+![img](../images/playopenwrt_pic/0_1306112332Y4Xo.gif)
 
  也就是说trigger好比是控制LED类设备的算法，
 
@@ -243,7 +243,7 @@ LED设备驱动框架为驱动开发者提供在/sys/class/leds这个类下创�
 
 将被保存至该目录下供用户空间访问。
 
-![image-20210220113025886](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210220113025886.png)
+![image-20210220113025886](../images/playopenwrt_pic/image-20210220113025886.png)
 
 
 

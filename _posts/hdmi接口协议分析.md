@@ -16,7 +16,7 @@ hdmi一般的连接：
 
 传输基于的是TMDS(Transition Minimized Differential Signaling)协议。
 
-![hdmi_block](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20170612214716459)
+![hdmi_block](../images/playopenwrt_pic/20170612214716459)
 
 
 
@@ -26,7 +26,7 @@ HDMI cable由3组差分信号传输TMDS数据，1组差分信号传输clock。
 
 CEC和HEAC都是HDMI的可选协议。
 
-![hdmi_pin](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20170612215851100)
+![hdmi_pin](../images/playopenwrt_pic/20170612215851100)
 
 HDMI定义了五种类型的connector，上图是最常见的type A。
 

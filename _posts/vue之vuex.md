@@ -57,7 +57,7 @@ view：以声明的方式将state映射到视图。
 
 actions：用户在view上的操作导致的状态变化。
 
-![image-20210108144642101](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210108144642101.png)
+![image-20210108144642101](../images/playopenwrt_pic/image-20210108144642101.png)
 
 上面显示的是单向数据流。
 
@@ -89,7 +89,7 @@ actions：用户在view上的操作导致的状态变化。
 
 上面就是vuex背后的设计思想。
 
-![vuex](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/vuex.png)
+![vuex](../images/playopenwrt_pic/vuex.png)
 
 
 
@@ -503,7 +503,7 @@ new Vue({
 
 
 
-![image-20210111111716113](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210111111716113.png)
+![image-20210111111716113](../images/playopenwrt_pic/image-20210111111716113.png)
 
 # 核心概念
 
@@ -682,7 +682,7 @@ https://github.com/vuejs/vuex/blob/dev/examples/
 
 我在hbuilder里建一个uniapp的例子来测试。工作符合预期。
 
-![image-20210115104637691](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210115104637691.png)
+![image-20210115104637691](../images/playopenwrt_pic/image-20210115104637691.png)
 
 ## 购物车例子
 

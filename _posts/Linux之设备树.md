@@ -1388,7 +1388,7 @@ kernel根据Device Tree中所有的属性解析出数据填充struct property结
 
 3、扫描具有device_type =“memory”属性的/memory或者/memory@0节点下面的reg属性值，并把相关信息保存在meminfo中，全局变量meminfo保存了系统内存相关的信息。
 
-<img src="https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20170818221207453" alt="图7 函数调用过程" style="zoom:150%;" />
+<img src="../images/playopenwrt_pic/20170818221207453" alt="图7 函数调用过程" style="zoom:150%;" />
 
 Device Tree中的每一个node节点经过kernel处理都会生成一个struct device_node的结构体，
 

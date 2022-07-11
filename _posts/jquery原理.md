@@ -53,7 +53,7 @@ jQuery.fn.init.prototype = jQuery.fn;
 
 对于属性来说，我们最需要关注的只有一个属性，就是[0]属性，[0]其实就是原生的DOM对象。
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/10232250-76e5662e08f84b8d8d98f6b61ced7749.jpg)
+![img](../images/playopenwrt_pic/10232250-76e5662e08f84b8d8d98f6b61ced7749.jpg)
 
 
 

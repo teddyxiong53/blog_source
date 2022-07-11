@@ -1162,7 +1162,7 @@ TinyML 是一个出色的概念，它使机器智能紧邻物理世界；此外�
 
 ReSpeaker 2-Mics Pi HAT
 
-![image-20211029105323736](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20211029105323736.png)
+![image-20211029105323736](../images/playopenwrt_pic/image-20211029105323736.png)
 
 对应的驱动代码：
 

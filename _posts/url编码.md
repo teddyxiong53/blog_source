@@ -44,7 +44,7 @@ http://www.baidu.com/s?wd=春节
 
 在chrome里，还是utf-8编码。
 
-![image-20210112140550051](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210112140550051.png)
+![image-20210112140550051](../images/playopenwrt_pic/image-20210112140550051.png)
 
 
 

@@ -22,11 +22,11 @@ https://greasyfork.org/zh-CN/scripts
 
 效果是这样：
 
-![image-20201211114753818](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201211114753818.png)
+![image-20201211114753818](../images/playopenwrt_pic/image-20201211114753818.png)
 
 在百度页面的右上角，增加了一个自定义按钮，可以进行设置。
 
-![image-20201211114919680](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201211114919680.png)
+![image-20201211114919680](../images/playopenwrt_pic/image-20201211114919680.png)
 
 ## 百度文库破解加强、全网VIP视频破解，免费在线看、抖音去水印下载、知乎使用增强、CSDN使用增强，等多功能脚本
 

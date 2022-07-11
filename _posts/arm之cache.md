@@ -198,11 +198,11 @@ dram一个组内的块数跟cache的分组数相同。
 
 
 
-![å¾ç4.jpg](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/3d2f1556803040.jpg)
+![å¾ç4.jpg](../images/playopenwrt_pic/3d2f1556803040.jpg)
 
 cache的共享关系
 
-![å¾ç5.png](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/95101556803041.png)
+![å¾ç5.png](../images/playopenwrt_pic/95101556803041.png)
 
 
 

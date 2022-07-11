@@ -390,7 +390,7 @@ Soundbar 产品也出现了许多种类去迎合市场的需求。
 
 主流的 Soundbar 形态是一个长条的音箱，配合低音炮，有的甚至还搭配环绕音箱，形成环绕立体声效果，如下图所示，
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/4.png)
+![img](../images/playopenwrt_pic/4.png)
 
 
 
@@ -462,7 +462,7 @@ Soundbar 是从传统音响或者家庭影院音响中衍生出来的一个新�
 
 尽最大可能将更多的声道集成到了一条音箱中，**通过声波反射、音效算法等实现环绕声效果。**
 
-![image-20211109150253839](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20211109150253839.png)
+![image-20211109150253839](../images/playopenwrt_pic/image-20211109150253839.png)
 
 
 
@@ -510,7 +510,7 @@ Soundbar 从传统音响中衍生出来，
 
 
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/10.png)
+![img](../images/playopenwrt_pic/10.png)
 
 # i.mx8的soundbar方案
 
@@ -567,13 +567,13 @@ https://item.jd.com/4315971.html#product-detail
 
 https://item.jd.com/100014331646.html#product-detail
 
-![image-20211110155958128](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20211110155958128.png)
+![image-20211110155958128](../images/playopenwrt_pic/image-20211110155958128.png)
 
 
 
 通常，Soundbar包含3个主要部件，即条形音箱、超低音和遥控器。
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/1000)
+![img](../images/playopenwrt_pic/1000)
 
 试着将条形音箱的前方垫高，角度以声波直射到聆听者耳朵的高度为宜。
 
@@ -597,7 +597,7 @@ Soundbar与电视机的连接非常方便，通常由一条HDMI线来完成。
 
 
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/00df99feee.jpg)
+![img](../images/playopenwrt_pic/00df99feee.jpg)
 
 
 
@@ -712,7 +712,7 @@ Win7或Win8可以在系统自带的音频属性里看到几种常见的环绕声
 
 此外，还可以把普通两声道音频转为多声道，获得不错的效果。
 
-![多声道音频指南（二）：那些年，那些技术，那些名词](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/525a2e8c34300.png_e1080.jpg)
+![多声道音频指南（二）：那些年，那些技术，那些名词](../images/playopenwrt_pic/525a2e8c34300.png_e1080.jpg)
 
 
 

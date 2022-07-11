@@ -183,7 +183,7 @@ model_input = interpreter->input(0);
 
 主要的内容，如下图所示。
 
-![image-20211029145932210](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20211029145932210.png)
+![image-20211029145932210](../images/playopenwrt_pic/image-20211029145932210.png)
 
 这里获取到input，还进行了一下分析
 

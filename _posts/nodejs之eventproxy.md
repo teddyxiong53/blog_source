@@ -239,7 +239,7 @@ ep.tail和ep.all，看起来类似，都是注册事件组合。
 
 代码实现上的区别就是一个点：all在这里是push true。表示是否只执行一次。
 
-![image-20210103150502368](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210103150502368.png)
+![image-20210103150502368](../images/playopenwrt_pic/image-20210103150502368.png)
 
 # 自己实现
 

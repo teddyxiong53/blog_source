@@ -37,7 +37,7 @@ electron main.js
 
 就可以看到一个窗口。
 
-![image-20201222143748412](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201222143748412.png)
+![image-20201222143748412](../images/playopenwrt_pic/image-20201222143748412.png)
 
 
 

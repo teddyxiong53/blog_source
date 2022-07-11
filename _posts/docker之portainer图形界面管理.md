@@ -25,7 +25,7 @@ docker.io/portainer/portainer
 
 可以在portainer里进容器的shell。
 
-![image-20210123113441445](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210123113441445.png)
+![image-20210123113441445](../images/playopenwrt_pic/image-20210123113441445.png)
 
 参考资料
 

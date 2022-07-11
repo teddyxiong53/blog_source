@@ -213,7 +213,7 @@ file using your chosen key the next time you deploy a change.
 
 
 
-![](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20180619173259554)
+![](../images/playopenwrt_pic/20180619173259554)
 
 
 
@@ -287,7 +287,7 @@ Node-Red编辑完成的数据流默认保存在`flows_XX.json`，
 
 例如，我们上面放进来的是inject节点，默认是时间戳类型，我们可以修改为文字类型。
 
-![image-20210202131127815](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210202131127815.png)
+![image-20210202131127815](../images/playopenwrt_pic/image-20210202131127815.png)
 
 切换到调试窗口。点击inject控件的触发按钮，就可卡因看到这里打印了我们给控件填写的hello world被打印出来了。
 

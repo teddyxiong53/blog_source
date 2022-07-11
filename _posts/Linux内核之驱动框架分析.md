@@ -155,7 +155,7 @@ Linux提出了platform bus(平台总线)的概念，
 
 **这样就可以做到驱动和设备信息的分离。**
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/1022162-20170205104332511-1610594098.png)
+![img](../images/playopenwrt_pic/1022162-20170205104332511-1610594098.png)
 
 简而言之，平台驱动、设备树这些东西的引入，都是为了达到一个目的，可变数据和代码的分离，增强内聚性和可维护性。
 

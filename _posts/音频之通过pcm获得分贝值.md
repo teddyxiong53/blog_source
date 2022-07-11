@@ -222,7 +222,7 @@ https://rosettacode.org/wiki/Averages/Root_mean_square#Python
 
 但实际上这样的回答并不严谨，因为dB也用来表示电压和功率啊，甚至钱你也可以用dB来表示！
 
-![image-20210115111212141](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210115111212141.png)
+![image-20210115111212141](../images/playopenwrt_pic/image-20210115111212141.png)
 
 
 

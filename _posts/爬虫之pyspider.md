@@ -49,7 +49,7 @@ pyspider的更新没有跟上，werkzeug版本不能太新。默认安装的不�
 
 我就爬取它的前面3页的图片。
 
-![image-20210112095037986](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210112095037986.png)
+![image-20210112095037986](../images/playopenwrt_pic/image-20210112095037986.png)
 
 然后就到了代码界面，代码界面分为左右两个部分。
 
@@ -111,13 +111,13 @@ detail_page：
 
 
 
-![image-20210112100049314](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210112100049314.png)
+![image-20210112100049314](../images/playopenwrt_pic/image-20210112100049314.png)
 
 爬取的还是非常快的，内容也非常多。
 
 因为我们的过滤条件非常宽泛。只要是超链接就爬。
 
-![image-20210112100152134](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210112100152134.png)
+![image-20210112100152134](../images/playopenwrt_pic/image-20210112100152134.png)
 
 点击status下面的stop，停止。
 
@@ -137,13 +137,13 @@ ubuntu@VM-0-17-ubuntu:~/work/pyspider$ tree
 
 db文件是sqlite文件，可以用sqlite3打开查看。project.db里放的是脚本。
 
-![image-20210112155110194](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210112155110194.png)
+![image-20210112155110194](../images/playopenwrt_pic/image-20210112155110194.png)
 
 我们可以回到项目代码界面下，可以进行调试。
 
 点击run，是运行的index_page对应的方法，
 
-![image-20210112100915492](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210112100915492.png)
+![image-20210112100915492](../images/playopenwrt_pic/image-20210112100915492.png)
 
 得到96个detail_page。
 
@@ -151,7 +151,7 @@ db文件是sqlite文件，可以用sqlite3打开查看。project.db里放的是�
 
 结果的内容，可以选择进行保存。可以是json格式，或者csv。
 
-![image-20210112101145774](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210112101145774.png)
+![image-20210112101145774](../images/playopenwrt_pic/image-20210112101145774.png)
 
 格式是这样：
 
@@ -177,7 +177,7 @@ db文件是sqlite文件，可以用sqlite3打开查看。project.db里放的是�
 
 
 
-![image-20210112102015397](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210112102015397.png)
+![image-20210112102015397](../images/playopenwrt_pic/image-20210112102015397.png)
 
 其中 response 就是刚才爬取的列表页，
 
@@ -211,7 +211,7 @@ https://github.com/Germey/TaobaoMM/blob/master/spider/spider.py
 
 2、crawl函数，可以带一个字典参数，到callback里可以使用这个字典的内容，这样就可以传递参数。
 
-![image-20210112105325797](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210112105325797.png)
+![image-20210112105325797](../images/playopenwrt_pic/image-20210112105325797.png)
 
 3、这个例子，非常符合我的需求，因为我也是要爬取图片网站，而且只是把图片保存，不需要处理数据库。Deal这个类可以直接拿过来用。
 
@@ -221,7 +221,7 @@ https://github.com/Germey/TaobaoMM/blob/master/spider/spider.py
 
 浏览器的也可以右键进行选择元素操作，这样就省去了自己推算选择器的麻烦。
 
-![image-20210112112850486](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210112112850486.png)
+![image-20210112112850486](../images/playopenwrt_pic/image-20210112112850486.png)
 
 
 

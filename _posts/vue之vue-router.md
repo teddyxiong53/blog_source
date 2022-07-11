@@ -215,7 +215,7 @@ export default new Router({
 
 就可以访问到。
 
-![image-20210107152813298](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210107152813298.png)
+![image-20210107152813298](../images/playopenwrt_pic/image-20210107152813298.png)
 
 点击go to链接，就可以跳转到对应的界面。
 
@@ -247,7 +247,7 @@ const User = {template: '<div>User:{{$route.params.id}}</div>'}
 
 
 
-![image-20210107153718257](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210107153718257.png)
+![image-20210107153718257](../images/playopenwrt_pic/image-20210107153718257.png)
 
 ## 动态路由参数的变化
 
@@ -418,7 +418,7 @@ router.push(location, onComplete?, onAbort?)
 
 实际上，点击router-link的时候，内部就是调用的这个函数。
 
-![image-20210107165841606](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210107165841606.png)
+![image-20210107165841606](../images/playopenwrt_pic/image-20210107165841606.png)
 
 location这个参数，可以是字符串，也可以是一个描述地址的对象。
 
@@ -502,7 +502,7 @@ const router = new VueRouter({
 
 你点击emails和profile，则右边的页面进行变化。
 
-![image-20210107171842777](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210107171842777.png)
+![image-20210107171842777](../images/playopenwrt_pic/image-20210107171842777.png)
 
 
 

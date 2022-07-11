@@ -60,7 +60,7 @@ Palladium Z1可扩容，每个机架可支持4百万门到5.76亿万门的容量
 
 而且，Palladium Z1的扩展性可在服务中进行（in-service scalability），运行中的项目不会受到任何影响。
 
-![Z1.jpg](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/104146p7oblkcbol4lp5ld.jpg)
+![Z1.jpg](../images/playopenwrt_pic/104146p7oblkcbol4lp5ld.jpg)
 
 最后，Cadence的Palladium硬件仿真加速平台基于该公司自己的处理器建造。
 

@@ -223,7 +223,7 @@ fbtft_request_one_gpio(par, "dc-gpios", 0, &par->gpio.dc);
 
 应该是这样。
 
-![image-20211217160131603](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20211217160131603.png)
+![image-20211217160131603](../images/playopenwrt_pic/image-20211217160131603.png)
 
 引脚关系确定了。
 

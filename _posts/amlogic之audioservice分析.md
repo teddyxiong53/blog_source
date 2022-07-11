@@ -441,7 +441,7 @@ card 0: AMLAUGESOUND [AML-AUGESOUND], device 4: SPDIF-A-dummy dummy-4 []
 
 而在D621（hdmi repeater板）的硬件框图上，是这样：
 
-![image-20211111162324898](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20211111162324898.png)
+![image-20211111162324898](../images/playopenwrt_pic/image-20211111162324898.png)
 
 可以看到，hdmi in是连接到了tdmb这个口上。
 
@@ -1045,7 +1045,7 @@ asplay set-loglevel “all:LOG_ERR” or  asplay set-logpriority LOG_ERR
 
 尽管当前使用了dmix插件来避免冲突，但是dmix可能导致延迟，导致某些GVA/C4A认证测试通不过。
 
-![image-20211119141847864](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20211119141847864.png)
+![image-20211119141847864](../images/playopenwrt_pic/image-20211119141847864.png)
 
 
 
@@ -1187,7 +1187,7 @@ fi
 
 2.1和2的区别如下，左边是2.1的。
 
-![image-20211122135608997](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20211122135608997.png)
+![image-20211122135608997](../images/playopenwrt_pic/image-20211122135608997.png)
 
 这个内容，在audioservice的配置文件里也有。
 

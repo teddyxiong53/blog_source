@@ -34,7 +34,7 @@ Clock统是Linux内核中专门管理时钟的子系统.
 
 从这里，我们可以看到涉及到的相关器件有
 
-![image-20211104154339375](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20211104154339375.png)
+![image-20211104154339375](../images/playopenwrt_pic/image-20211104154339375.png)
 
 
 
@@ -116,7 +116,7 @@ Linux内核的clock子系统, 按照其职能, 可以大致分为3部分:
 
 
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/24fb1bea-2084-4ba2-9b3c-159feb136da4.002.png)
+![img](../images/playopenwrt_pic/24fb1bea-2084-4ba2-9b3c-159feb136da4.002.png)
 
 
 

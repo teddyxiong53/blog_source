@@ -14,4 +14,4 @@ tags:
 
 这个一个很常见的机场的管理面板，所以谷歌搜索 `Powered by SSPANEL` 就可以找到不少。
 
-![image-20210204145504746](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210204145504746.png)
+![image-20210204145504746](../images/playopenwrt_pic/image-20210204145504746.png)

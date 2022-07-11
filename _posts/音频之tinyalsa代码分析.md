@@ -573,7 +573,7 @@ snd_ctl_open(&handle, "hw:CARD=0", 0)
 
 # alsa和tinyalsa对比
 
-![image-20211102155354749](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20211102155354749.png)
+![image-20211102155354749](../images/playopenwrt_pic/image-20211102155354749.png)
 
 https://blog.csdn.net/myzhzygh/article/details/8468210
 

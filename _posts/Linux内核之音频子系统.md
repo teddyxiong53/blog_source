@@ -16,7 +16,7 @@ alsa在驱动层提供了alsa-driver，在应用层提供了alsa-lib。
 
 Android中使用tinyalsa控制管理所有模式的音频通路。
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/2018070400313735)
+![img](../images/playopenwrt_pic/2018070400313735)
 
 
 
@@ -108,7 +108,7 @@ DAIs之间的链结方式；
 
 
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20180708144223271)
+![img](../images/playopenwrt_pic/20180708144223271)
 
 
 
@@ -860,7 +860,7 @@ Control接口主要让用户空间的应用程序（alsa-lib）可以访问和�
 
 Mixer控件用于音频通道的路由控制，由多个输入和一个输出组成，多个输入可以自由地混合在一起，形成混合后的输出：
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20131018105201546)
+![img](../images/playopenwrt_pic/20131018105201546)
 
 对于Mixer控件，我们可以认为是多个简单控件的组合，
 
@@ -1281,7 +1281,7 @@ void *private_data            声卡的私有数据，可以在创建声卡时�
 
 ### 2. 声卡的建立流程
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/0_13014670816zCV.gif)
+![img](../images/playopenwrt_pic/0_13014670816zCV.gif)
 
 ### 3. snd_card_create()
 
@@ -1325,7 +1325,7 @@ pcm实例数量的这种限制源于linux设备号所占用的位大小，
 
 这两个stream又分别有一个或多个substreams组成。
 
-![image-20211224141548708](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20211224141548708.png)
+![image-20211224141548708](../images/playopenwrt_pic/image-20211224141548708.png)
 
 在嵌入式系统中，通常不会像图2.1中这么复杂，大多数情况下是一个声卡，一个pcm实例，pcm下面有一个playback和capture stream，playback和capture下面各自有一个substream。
 
@@ -1438,7 +1438,7 @@ ASoC正是为了解决上述种种问题而提出的，目前已经被整合至�
 
 下面这种图的画法值得学习
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/0_13294571789RUX.gif)
+![img](../images/playopenwrt_pic/0_13294571789RUX.gif)
 
 
 

@@ -34,7 +34,7 @@ lp4 app
 
 然后可以运行，
 
-![image-20210203151405718](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210203151405718.png)
+![image-20210203151405718](../images/playopenwrt_pic/image-20210203151405718.png)
 
 可以访问：http://localhost:3000/ping
 

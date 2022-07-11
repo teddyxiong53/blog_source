@@ -86,7 +86,7 @@ https://ask.dcloud.net.cn/docs/
 
 点击右下角的语法提示库，可以选择。
 
-![image-20210111095843115](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210111095843115.png)
+![image-20210111095843115](../images/playopenwrt_pic/image-20210111095843115.png)
 
 这个设置是针对项目的，勾选后，对整个项目起作用。
 

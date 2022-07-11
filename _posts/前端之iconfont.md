@@ -84,23 +84,23 @@ https://www.iconfont.cn
 
 点击上面的购物车样式的图标，则是表示添加到库。
 
-![image-20210105141227765](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210105141227765.png)
+![image-20210105141227765](../images/playopenwrt_pic/image-20210105141227765.png)
 
 现在可以看到我们添加了3个图标到库了。
 
-![image-20210105141338445](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210105141338445.png)
+![image-20210105141338445](../images/playopenwrt_pic/image-20210105141338445.png)
 
 
 
-![image-20210105141414180](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210105141414180.png)
+![image-20210105141414180](../images/playopenwrt_pic/image-20210105141414180.png)
 
 下载到本地，解压开是这样。
 
-![image-20210105141448074](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210105141448074.png)
+![image-20210105141448074](../images/playopenwrt_pic/image-20210105141448074.png)
 
 打开demo_index.html文件。
 
-![image-20210105141706590](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210105141706590.png)
+![image-20210105141706590](../images/playopenwrt_pic/image-20210105141706590.png)
 
 可以看到，是有3种方式来引用这些图标的。
 
@@ -125,7 +125,7 @@ https://www.iconfont.cn
 <span class="iconfont icon-xxx"></span>
 ```
 
-![image-20210105142541038](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210105142541038.png)
+![image-20210105142541038](../images/playopenwrt_pic/image-20210105142541038.png)
 
 方法3：使用symbol
 

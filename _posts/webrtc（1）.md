@@ -135,7 +135,7 @@ WebRTC易于使用，只需极少步骤便可建立媒体会话。有些消息�
 
 ### WebRTC组成
 
-![zucheng.webp.jpg](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/bVbzbZR)
+![zucheng.webp.jpg](../images/playopenwrt_pic/bVbzbZR)
 
 - getUserMedia负责获取用户本地的多媒体数据
 - RTCPeerConnection负责建立P2P连接以及传输多媒体数据。
@@ -240,7 +240,7 @@ TURN的全称为Traversal Using Relays around NAT，
 
 ## 建立连接的流程
 
-![peer2peertimeline.png](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/bVbzbZS)
+![peer2peertimeline.png](../images/playopenwrt_pic/bVbzbZS)
 
 ## 在云服务器上搭建
 

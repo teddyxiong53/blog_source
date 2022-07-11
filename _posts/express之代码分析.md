@@ -194,7 +194,7 @@ express所做的一切文章都是在这个回调函数上。
 
 例如：req、res处理，模板引擎，静态文件服务，router能力。
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/v2-df324fff2a6e6ae252bc89b40aa13b1d_720w.jpg)
+![img](../images/playopenwrt_pic/v2-df324fff2a6e6ae252bc89b40aa13b1d_720w.jpg)
 
 
 

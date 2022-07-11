@@ -91,7 +91,7 @@ https://gitee.com/teddyxiong53/playopenwrt_pic
 
 得到的链接是这样的，可以正常访问。速度还可以。
 
-https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20201127112513.png
+../images/playopenwrt_pic/20201127112513.png
 
 
 

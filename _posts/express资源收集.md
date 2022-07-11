@@ -244,7 +244,7 @@ https://github.com/junreycloudstrife/mqtt-express-node
 
 这个是浏览器里的mqtt客户端。
 
-![image-20210127173007199](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210127173007199.png)
+![image-20210127173007199](../images/playopenwrt_pic/image-20210127173007199.png)
 
 没有什么价值。直接本地网页就可以了吧。都没有必要使用express。
 
@@ -409,7 +409,7 @@ https://github.com/eidonlon/musicVisual
 
 效果挺好的。
 
-![image-20210127144144297](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210127144144297.png)
+![image-20210127144144297](../images/playopenwrt_pic/image-20210127144144297.png)
 
 就是用jquery操作dom来做的。
 

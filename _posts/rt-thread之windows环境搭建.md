@@ -179,13 +179,13 @@ console.log("hello rt-thread js");
 
 然后把文件拖放到ultraiso里。按ctrl+s保存到sd.bin里。
 
-![image-20201221100626243](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201221100626243.png)
+![image-20201221100626243](../images/playopenwrt_pic/image-20201221100626243.png)
 
 然后启动qemu.bat。
 
 执行jerry_main test.js，就可以看到效果了。
 
-![image-20201221100724637](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201221100724637.png)
+![image-20201221100724637](../images/playopenwrt_pic/image-20201221100724637.png)
 
 
 

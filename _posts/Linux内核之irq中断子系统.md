@@ -118,7 +118,7 @@ obj-$(CONFIG_ARM_GIC_V3_ITS)		+= irq-gic-v3-its.o irq-gic-v3-its-pci-msi.o irq-g
 
 （最重要的是驱动代码初始化函数和DT compatible string）。
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20190523233132450.PNG)
+![img](../images/playopenwrt_pic/20190523233132450.PNG)
 
 # gic的spi和ppi
 

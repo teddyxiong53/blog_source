@@ -57,7 +57,7 @@ docker run -d -v ~/gerrit_volume:/var/gerrit/review_site -p 8080:8080 -p 29418:2
 
 我输入teddyxiong53 这个name，点击sign in，提示不对。
 
-![image-20201214134110522](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201214134110522.png)
+![image-20201214134110522](../images/playopenwrt_pic/image-20201214134110522.png)
 
 是需要一个合法的openid。
 

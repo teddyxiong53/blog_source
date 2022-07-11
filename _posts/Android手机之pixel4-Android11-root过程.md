@@ -79,13 +79,13 @@ https://developers.google.com/android/ota
 
 我手机当前版本是RP1A.200720.009
 
-![image-20201228111042794](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201228111042794.png)
+![image-20201228111042794](../images/playopenwrt_pic/image-20201228111042794.png)
 
 下载这个ota包。1.6G。
 
 解压压缩包，从里面得到payload.bin文件。
 
-![image-20201228111935488](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201228111935488.png)
+![image-20201228111935488](../images/playopenwrt_pic/image-20201228111935488.png)
 
 我们需要从里面解压出boot.img文件。
 
@@ -121,11 +121,11 @@ pip install -r requirements.txt
 python payload_dumper.py payload.bin
 ```
 
-![image-20201228112531190](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201228112531190.png)
+![image-20201228112531190](../images/playopenwrt_pic/image-20201228112531190.png)
 
 在output目录下生成这些文件。
 
-![image-20201228112545934](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201228112545934.png)
+![image-20201228112545934](../images/playopenwrt_pic/image-20201228112545934.png)
 
 我们就得到了boot.img文件。
 

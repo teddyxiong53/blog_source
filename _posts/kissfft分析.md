@@ -28,7 +28,7 @@ Basic API还是kiss_fft.h里的，kiss_fftr.h是在kiss_fft.h的基础上封装�
 1. fftAPI和fftrAPI不要混用
 2. ifft后的实数结果只能使用nfft长度，而不能使用2*nfft长度。因为数据实际上是来自kiss_fft_cpx的，数据image部分占用了nfft长度，而且都为0.
 
-![image-20211029192302230](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20211029192302230.png)
+![image-20211029192302230](../images/playopenwrt_pic/image-20211029192302230.png)
 
 接口还是很简单的。
 

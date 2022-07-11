@@ -25,7 +25,7 @@ https://github.com/happy888888/BiliExp
 
 4、python3 BiliExp.py就可以了。这个脚本没有依赖太多东西，所以运行正常。不到一分钟运行完成。
 
-![image-20201215115002020](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20201215115002020.png)
+![image-20201215115002020](../images/playopenwrt_pic/image-20201215115002020.png)
 
 5、完成后，会推送一条消息到你的微信，这个是靠Server酱的服务来做的。我之前有一个key，所以可以用。
 

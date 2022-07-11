@@ -94,7 +94,7 @@ PDM在尺寸受限应用中优势明显，
 
 TDM相比I2S 可以传输多ch音频数据，分为2种模式:dsp_a 和dsp_b
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20210623154352113.png)
+![img](../images/playopenwrt_pic/20210623154352113.png)
 
 
 

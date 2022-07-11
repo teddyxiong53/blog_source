@@ -41,7 +41,7 @@ tags:
 
 就需要引入中介者模式了。
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20180902163810343)
+![img](../images/playopenwrt_pic/20180902163810343)
 
 这里的中介者，就相当于智能家居系统的中控。
 
@@ -58,7 +58,7 @@ tags:
 
 上面场景的类图。
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20180902163810341)
+![img](../images/playopenwrt_pic/20180902163810341)
 
 抽象同事
 
@@ -205,7 +205,7 @@ public class Client {
 
 运行效果，可以看到实现了联动效果。
 
-![img](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/20180902163810388)
+![img](../images/playopenwrt_pic/20180902163810388)
 
 参考资料
 

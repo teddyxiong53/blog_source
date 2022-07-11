@@ -92,7 +92,7 @@ export default {
 
 然后npm run dev，就可以看到效果。
 
-![image-20210108175624883](https://gitee.com/teddyxiong53/playopenwrt_pic/raw/master/image-20210108175624883.png)
+![image-20210108175624883](../images/playopenwrt_pic/image-20210108175624883.png)
 
 在上面的代码框架基础上，把所有的组件的都测试一遍。
 
