@@ -516,9 +516,98 @@ DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-UE021yKXGo,guid=caec9b667660f59
 DBUS_SESSION_BUS_PID=10467
 ```
 
+这个命令的作用是什么？
 
 
 
+D-Bus daemon是D-Bus的非常重要的一个服务，类似于IP网络中的[路由器](https://so.csdn.net/so/search?q=路由器&spm=1001.2101.3001.7020)。
+
+跟这个后台服务有关的应用程序包括：
+
+dbus-daemon: 
+
+D-Bus的后台进程，作为D-Bus的消息中转枢纽，可分成system和[session](https://so.csdn.net/so/search?q=session&spm=1001.2101.3001.7020)两种。
+
+dbus-launch: 
+
+启动一个dbus-daemon，后面有不同的参数。
+
+一般而言，dbus-daemon启动后需要将其地址告诉给所有需要使用该bus的applications。
+
+
+
+当系统启动时，需要使用dbus-launch来启动dbus-daemon，一般而言，
+
+一般采用下面的命令启动dbus daemon以及dbus application
+
+(1) eval `dbus-launch --auto-syntax`
+
+(2) ./yourapp
+
+第一行代码，采用eval来执行两次，第一次执行dbus-lauch --auto-syntax，除了启动dbus daemon之外，还输出了下面的内容：
+
+DBUS_SESSION_BUS_ADDRESS='unix:path=/tmp/dbus-6Z62FMmwf3,guid=5dbd92e4865a3f56880d2120000000d6';
+export DBUS_SESSION_BUS_ADDRESS;
+DBUS_SESSION_BUS_PID=998;
+
+第二次执行时就将环境变量DBUS_SESSION_BUS_ADDRESS暴露出去了。所有的dbus application在注册DBUS服务时，必须知道这个DBUS_SESSION_BUS_ADDRESS的数据。
+
+在第二行执行自己的dbus application的时候，根据DBUS_SESSION_BUS_ADDRESS环境变量，能够找到session bus进行注册和通讯。
+
+
+
+```
+sh-5.0# /usr/bin/dbus-launch | /bin/sed '/^#.*\|^$/d'
+DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-BdRxIZh1da,guid=18bed0c46c25ded3f95dda5f62da449a
+DBUS_SESSION_BUS_PID=1451
+```
+
+
+
+这里我们会有两个app: app1(client)，app2(server), 然后，再启动一个“dbus-daemon （session）”
+
+我们期望，app1 和 app2 之间的通信，可以使用 刚才启动的 “dbus-daemon”
+
+
+
+### 启动一个dbus-daemon (session)
+
+方式1： 使用dbus-launch 创建一个dbus-daemon:
+
+```ini
+#yum install -y dbus-x11-1:1.6.12-13.1.alios7.x86_64
+
+#dbus-launch
+DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-7Q7Spuq5IH,guid=079edc76e4c5c6433d3507855c5260ce
+DBUS_SESSION_BUS_PID=121376
+```
+
+方式2： 手动启动
+
+```typescript
+#DBUS_VERBOSE=1 dbus-daemon --session --print-address
+unix:abstract=/tmp/dbus-jXwkggHTo2,guid=dc666ee7ba7ddf788efd8c485c526564
+```
+
+两个方式的目的，**不仅仅是启动dbus-daemon, 更重要的是，获得address.**
+
+
+
+注意，这里会反馈一个地址， `unix:abstract=/tmp/dbus-7Q7Spuq5IH,guid=079edc76e4c5c6433d3507855c5260ce` ， 所以，你需要保证 你的环境变量 `DBUS_SESSION_BUS_ADDRESS`的值就是这个地址。
+
+其实dbus-daemon是有地址的，而且有一个环境变量来表示它`--DBUS_SESSION_BUS_ADDRESS`，可以用命令env查看到。我们的程序，也就就是依靠这个环境变量来确认使用哪一个dbus-daemon的。
+
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/whatday/article/details/114474167
+
+2、Getting start with dbus in systemd (02)
+
+https://www.cnblogs.com/muahao/p/10341178.html
 
 ## d-feet
 
@@ -901,6 +990,131 @@ Client与Server之间是直接的Peer2Peer的连接。
 
 
 
+# buildroot dbus启动流程
+
+amlogic的soundbar应用为例。
+
+在开机启动过程中，依次是：
+
+* /etc/init.d/rcS脚本的开头处，比任何S开头的脚本都优先的位置。
+
+```
+for i in `/usr/bin/dbus-launch | /bin/sed '/^#.*\|^$/d'`; do
+export $i
+done
+mkdir -p /tmp/dbus
+echo DBUS_SESSION_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS > /tmp/dbus/dbus-addr
+echo DBUS_SESSION_BUS_PID=$DBUS_SESSION_BUS_PID > /tmp/dbus/dbus-pid
+```
+
+* S30dbus脚本start函数
+
+```
+    dbus-uuidgen --ensure
+    dbus-daemon --system
+```
+
+dbus-uuidgen在这里是什么作用？
+
+`dbus-uuidgen --ensure`在var/lib/dbus/machine-id 里生成一串sha值字符串。如果已经有值，则不会进行覆盖。
+
+这个值的作用又是什么呢？可能是跨机器通信作为机器的id用的。对我来说，没有什么作用。
+
+* audioservice进程启动
+
+audioservice和homepapp应该是点对点的dbus通信。
+
+
+
+用git blame查看。`/tmp/dbus/dbus-addr`对应的行是谁添加的。
+
+```
+108e491586a package/initscripts/init.d/rcS                        (Yeping Miao              2018-10-29 11:01:56 +0800 22) mkdir -p /tmp/dbus
+108e491586a package/initscripts/init.d/rcS                        (Yeping Miao              2018-10-29 11:01:56 +0800 23) echo DBUS_SESSION_BUS_ADDRESS=$DBUS_SESSION_BUS_ADDRESS > /tmp/dbus/dbus-addr
+108e491586a package/initscripts/init.d/rcS                        (Yeping Miao              2018-10-29 11:01:56 +0800 24) echo DBUS_SESSION_BUS_PID=$DBUS_SESSION_BUS_PID > /tmp/dbus/dbus-pid
+```
+
+108e491586a 找到这个提交。
+
+写入文件，是因为环境变量有些地方传递不到。所以通过文件来传递。
+
+对我来说没啥用。先不管，有问题时再解决。
+
+
+
+https://dbus.freedesktop.org/doc/dbus-uuidgen.1.html
+
+# systemd启动dbus
+
+```
+sh-5.0# systemctl status dbus
+* dbus.service - D-Bus System Message Bus
+     Loaded: loaded (/lib/systemd/system/dbus.service; static; vendor preset: disabled)
+     Active: active (running) since Fri 2022-07-22 03:42:17 UTC; 3h 33min ago
+TriggeredBy: * dbus.socket
+       Docs: man:dbus-daemon(1)
+   Main PID: 866 (dbus-daemon)
+     Memory: 1.8M
+     CGroup: /system.slice/dbus.service
+             `-866 /usr/bin/dbus-daemon --system --address=systemd: --nofork ...
+
+Jul 22 03:42:17 mesona5-av400 systemd[1]: Started D-Bus System Message Bus.
+```
+
+service文件的内容是：
+
+```
+[Unit]
+Description=D-Bus System Message Bus
+Documentation=man:dbus-daemon(1)
+Requires=dbus.socket
+
+[Service]
+ExecStart=/usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+ExecReload=/usr/bin/dbus-send --print-reply --system --type=method_call --dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig
+OOMScoreAdjust=-900
+```
+
+
+
+# dbus-daemon
+
+dbus-deamon是一个D-Bus消息总线daemon,跑在后台，
+
+它支持两个应用进程间一对一的通信，
+
+dbus-deamon也是用上面的库实现的
+
+
+
+系统启动之后，有两个dbus daemon的实例，　
+
+一个称为system, 一个称为session(如果是多个用户，那么会每个用户启动一个)，
+
+这个实例配置不同，权限也不同
+
+system 实例使用的配置文件＝/etc/dbus-1/system.conf
+
+session实例使用的配置文件=/etc/dbus-1/session.conf
+
+
+
+一般来说system实例，被init script启动，所以具有root权根．大部分功能用于广播系统事件，比如插拨设备．
+
+session　daemon用于不同桌面的进程通信或不同进程间的通信．
+
+
+
+SIGHUP 信号导致dbus-daemon重新去加载配置，如果你改变配置之后，就需要发信号给dbus-daemon,让其去重新加载配置．
+
+
+
+
+
+参考资料
+
+https://blog.csdn.net/u012385733/article/details/80881343
+
 # 参考资料
 
 1、DBus 入门与应用 －－ DBus 的 C 编程接口
@@ -978,3 +1192,15 @@ https://www.cnblogs.com/klb561/p/9058282.html
 这个有完整例子，讲解详细。
 
 http://just4coding.com/2018/07/31/dbus/
+
+19、
+
+这个dbus系列文章不错。
+
+https://blog.csdn.net/u012385733/category_7764546.html
+
+20、
+
+这个教程写得比较规范。可以看看。
+
+https://thebigdoc.readthedocs.io/en/latest/dbus/dbus.html

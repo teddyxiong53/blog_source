@@ -233,6 +233,15 @@ systemctl list-unit-files
 
 
 
+有静态服务xxx.service: 
+( 没有Install项的service都是[static](https://so.csdn.net/so/search?q=static&spm=1001.2101.3001.7020)的, 所以你不可能enable/disable他了, 所以他的状态永远是static的了, 也就是说他的运行只能通过其他的服务单元触发 )
+
+```
+systemctl --reverse list-dependencies dbus.service
+```
+
+
+
 配置文件的语法有点像ini文件。
 
 区块

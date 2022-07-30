@@ -234,9 +234,55 @@ compatible = "rockchip,remotectl-pwm"
 
 那么可能就是要打补丁才能行了。
 
+# 调试
+
+现在有个红外遥控。需要看看每个按键对应的键值是多少。
+
+怎么在Linux下查看呢？
+
+打开debug
+
+```
+echo 1 > /sys/class/remote/amremote/debug_enable
+```
+
+查看按键值。
+
+直接看kernel打印就好了。
+
+```
+[  281.401204@1]  meson-ir:framecode=0xec13fe01
+[  281.401256@1]  meson-ir:receive scancode=0x13
+[  281.401621@1]  meson-ir fe084040.ir: scancode 19 undefined
+[  281.402287@1]  meson-ir:keypressed=0x0
+[  281.402757@1]  meson-ir fe084040.ir: no valid key to handle
+[  281.521741@1]  meson-ir:framecode=0x0
+[  281.521787@1]  meson-ir:receive repeat
+```
+
+framecode=0xec13fe01对应的就是map1的。
+
+```
+		map_1: map_1{
+			mapname = "amlogic-remote-2";
+			customcode = <0xfe01>;
+			release_delay = <80>;
+			size  = <45>;
+			keymap = <
+				REMOTE_KEY(0x10, 200) /* power */
+```
 
 
-参考资料
+
+
+
+
+
+https://docs.khadas.com/linux/vim3/CustomIRCode.html
+
+
+
+# 参考资料
 
 1、红外接收头在linux内核里的驱动
 

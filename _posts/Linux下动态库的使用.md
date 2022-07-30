@@ -202,3 +202,43 @@ _init
 # 链接和装载的原理
 
 
+
+# crash问题调试
+
+动态库则略微麻烦，动态库每次加载的内存地址都不一样，所以不能跟静态库一样，
+
+不过可以根据根据map文件找到对应实际地址，
+
+编译的时候加上-Wl,-Map,entry.map。
+
+即可生成map文件。需要带 -g
+
+但是生成的map文件，是文本的，内容不算太多。
+
+还需要配合addr2line来定位代码的行数。
+
+
+
+有时候可以打印出来。有时候打印不出调试信息。
+
+我感觉我手动push进去的 so文件，可以打印出来信息。
+
+难道是因为我手动push没有被strip过？
+
+
+
+# 参考资料
+
+1、How to write and debug Shared Library on a remote target
+
+这个用eclipse进行图形界面的调试。
+
+https://linuxlink.timesys.com/docs/wiki/engineering/HOWTO_Debug_Shared_Library_in_Timestorm
+
+2、
+
+https://www.nxp.com/docs/en/application-note/AN5128.pdf
+
+3、
+
+https://blog.csdn.net/weixin_43862847/article/details/117262254

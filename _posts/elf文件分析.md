@@ -51,7 +51,7 @@ typedef struct elf32_hdr{
 ```
 写一个helloword程序，编译了。
 
-##2.1 x86上
+## 2.1 x86上
 
 看elf header。
 
@@ -201,5 +201,146 @@ ELF Header:
   Section header string table index: 27
 ```
 
+# SimpleSection分析
+
+SimpleSection.c
+
+```
+int printf(const char* format,...);
+
+int global_init_var = 84;
+int global_uninit_var;
+
+void func1(int i)
+{
+	printf("%d\n",i);
+}
+
+int main(void)
+{
+	static int static_var = 85;
+	static int static_var2;
+
+	int a=1;
+	int b;
+
+	func1(static_var + static_var2 + a + b);
+
+	return a;
+}
+```
+
+编译
+
+```
+gcc SimpleSection.c -o SimpleSection.o
+```
+
+关于段的几个重要属性：
+
+Size 表示段的长度，
+
+File off 表示段的位置，
+
+每个段的第2行中的 “CONTENTS” 表示该段在文件中存在。
+
+在 bss 段中没有 “CONTENTS” ，表示该段在目标文件中不存在。
+
+.note.GNU-stack 堆栈段的长度为0，在这里忽略掉它，认为它也不存在。
 
 
+
+用 size 命令可以查看 ELF 文件的代码段、数据段和 bss 段的长度（dec 表示3个段长度的和的十进制，hex表示长度和的十六进制） 如下。
+
+```
+ size SimpleSection.o
+   text    data     bss     dec     hex filename
+   1663     608      16    2287     8ef SimpleSection.o
+```
+
+
+
+为什么 size 和 objdump 查看目标文件的 .text 段的大小不一样呢？
+
+因为size默认是运行在"Berkeley compatibility mode"下。
+
+在这种模式下，会将不可执行的拥有"ALLOC"属性的只读段归到.text段下，很典型的就是.rodata段。
+
+而在我们这个例子中，使用 size 命令得到的 text 段长度 = .text + .rodata + .note.gnu.property + .eh_frame 。
+
+如果你使用"size -A obj.o"，那么size会运行在"System V compatibility mode"，
+
+此时，用objdump -h和size显示的.text段大小就差不多了，如下图。
+
+## 代码段 .text
+
+ 程序源代码编译之后的机器指令经常被放在代码段中。
+
+通过使用 -s -d 参数的 objdump 命令将所有段以十六进制的形式打印出来（-s），并将所有包含指令的段反汇编（-d）。
+
+## 数据段 .data和只读数据段 .rodata
+
+.data 段保存的是那些已经初始化了的全局静态变量和局部静态变量。
+
+在我们这个例子 SimpleSection.c 中，
+
+global_init_var 和 static_var 是已经初始化过的，每个变量 4 个字节，一共 8 个字节被存储到 .data 段中。
+
+在这里采用小端法来存储，
+
+.data 段中前四个字节为 5400 0000 ，转换为十进制为 84；
+
+后四个字节为 5500 0000 ，转换为十进制为 85。
+
+分别与这两个变量的值一一对应。
+
+      .rodata 段中存放的是只读数据，一般是程序中的只读变量（如 const 修饰的变量）和字符串常量。在 SimpleSection.c 中调用 printf 时，用到了一个字符串常量 “%d\n”，它是一种只读数据，被存储到 .rodata 段中。.rodata 段中的四个字节 2564 0a00 分别对应的是字符 ‘%’、‘d’、’\n’ 和 ‘\0’ 。
+    
+      有时候编译器也会将字符串常量放在 .data 段中。
+## .bss段
+
+.bss 段中存放的是未初始化的全局变量和局部静态变量，
+
+在上述代码中，global_uninit_var 和 static_var2 是未被初始化过的，它们被存放在 .bss 段中，
+
+更准确的来讲，是在 .bss 段为它们预留空间。
+
+可以认为未初始化过的变量值为0，而存储 0 是没有必要的。
+
+.bss 段没有实际内容，所以它在可执行文件中也不占据空间。
+
+ 上面得到的 .bss 段大小为 4 个字节，与变量 global_uninit_var 和 static_var2 的大小之和 8 个字节不符。
+
+实际上通过符号表（Symbol Table）能够看到，
+
+只有 static_var2 被放在了 .bss 段中，
+
+而 global_uninit_var 未被放在任何段，
+
+只是一个未定义的 “COMMON 符号”。
+
+**这和不同的语言不同的编译器有关，**
+
+有的编译器会将 全局未初始化变量 存放在目标文件 .bss 段中，
+
+有些则不存放，只是预留一个 未定义的全局变量符号，
+
+等到最终链接为可执行文件时再在 .bss 段中分配空间。
+
+原则上来讲，可以简单的认为全局未初始化变量被存放在 .bss 段中。
+
+但是未初始化的静态变量（编译单元内部可见）的确是存放在 .bss 段中的。
+
+## 其他段
+
+   .comment 段中存放的是编译器版本信息。.其余两个段 .note.gnu.property 和 .eh_frame 在此不做说明。
+
+
+
+
+
+# 参考资料
+
+1、
+
+https://blog.csdn.net/Little_ant_/article/details/119214033

@@ -89,15 +89,45 @@ ELF 头：
 
 # objdump
 
+objdump是查看o文件或者exe文件的构成的工具。
+
+
+
 基本用法：
 
 ```
 用法：objdump <选项> <文件>
 ```
 
+我在我的c-test目录下进行验证命令。
+
+常用的命令有：
+
+查看文件头信息
+
+```
+hanliang.xiong@walle01-sz:~/work/test/c-test$ objdump -f a.out 
 
 
-参考资料
+a.out:     file format elf64-x86-64
+architecture: i386:x86-64, flags 0x00000150:
+HAS_SYMS, DYNAMIC, D_PAGED
+start address 0x00000000000010a0
+```
+
+查看section header信息
+
+```
+
+```
+
+
+
+https://www.cnblogs.com/arnoldlu/p/9649229.html#objdump
+
+
+
+# 参考资料
 
 1、readelf命令使用说明
 

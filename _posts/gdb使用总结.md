@@ -93,7 +93,7 @@ delete 断点编号。
 
 
 
-#十六进制打印
+# 十六进制打印
 
 p/x var 这样就可以了。
 
@@ -176,6 +176,12 @@ cgdb ./a.out
 
 至少SecureCRT不再跟我乱闪了，而且显示界面和独特的vi风格交互感也算是加分项了，唯一遗憾的是中文字符没法正常显示，但总体还是比较推荐的。cgdb通过Trivial GDB(libtgdb)的库和后端gdb通信，通过这个库做到前端和后端分离的效果。
 
-参考资料
+# 嵌入式使用
+
+https://blog.csdn.net/Bgm_Nilbb/article/details/124853547
+
+
+
+# 参考资料
 
 https://blog.taozj.org/201703/cgdb-cheatsheet.html

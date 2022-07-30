@@ -2281,6 +2281,12 @@ which make
 
 
 
+我现在就碰到一个情况，感觉需要借助devshell。
+
+alsa-lib的编译，为什么没有看到c文件？
+
+
+
 参考资料
 
 https://blog.csdn.net/weixin_44410537/article/details/90734459
@@ -4231,6 +4237,77 @@ Yocto 的应用开发有两种方式，一种是在 yocto 项目内新建 recipe
 
 默认安装在 /opt 目录下。也可以把这个脚本复制到其他主机中执行。
 
+我自己测试验证一遍。
+
+```
+bitbake amlogic-sbr-yocto -v -c populate_sdk
+```
+
+执行需要的时间很长，我之前做了一次，有一些错误。
+
+现在再做一次看看。
+
+现在生成比第一次快很多。也没有看到打印错误。
+
+执行这个脚本：
+
+```
+ ./poky-glibc-x86_64-amlogic-sbr-yocto-aarch64-mesona5-av400-toolchain-3.1.11.sh -d /mnt/fileroot/hanliang.xiong/work/test/yocto-sdk2
+```
+
+有打印下面的错误：
+
+```
+Extracting SDK............tar: ./sysroots/aarch64-poky-linux/dev/console: Cannot mknod: Operation not permitted
+...................................tar: Exiting with failure status due to previous errors
+```
+
+现在不管这错误，直接去看sdk是否正常。
+
+首先修改environment-setup-aarch64-poky-linux 里的目录位置。
+
+看连接的so的位置是这样的：
+
+```
+/mnt/fileroot/hanliang.xiong/work/test/yocto-sdk2/sysroots/x86_64-pokysdk-linux/usr/bin/aarch64-poky-linux/aarch64-poky-linux-gcc: ELF 64-bit LSB executable, x86-64, version 1 (GNU/Linux), dynamically linked, interpreter /usr/local/oe-sdk-hardcoded-buildpath/sysroots/x86_64-pokysdk-linux/lib/ld-linux-x86-64.so.2, BuildID[sha1]=dbbc07e0b294a97367096035feff9c2791c871a1, for GNU/Linux 3.2.0, stripped
+```
+
+运行source environment-setup-aarch64-poky-linux 的前提是，LD_LIBRARY_PATH是空的。
+
+```
+if [ ! -z "$LD_LIBRARY_PATH" ]; then
+    echo "Your environment is misconfigured, you probably need to 'unset LD_LIBRARY_PATH'"
+    echo "but please check why this was set in the first place and that it's safe to unset."
+    echo "The SDK will not operate correctly in most cases when LD_LIBRARY_PATH is set."
+    echo "For more references see:"
+    echo "  http://tldp.org/HOWTO/Program-Library-HOWTO/shared-libraries.html#AEN80"
+    echo "  http://xahlee.info/UnixResource_dir/_/ldpath.html"
+    return 1
+fi
+```
+
+现在怎么让aarch64-poky-linux-gcc可以使用呢？
+
+找到方法了。
+
+很简单，就是安装到默认目录就一切正常了。默认是到/opt/poky/3.1.11，不需要管理员权限的。
+
+
+
+
+
+怎样完全重新生成sdk？
+
+https://stackoverflow.com/questions/53377944/how-to-clean-populate-sdk-in-yocto
+
+说是可以把tmp/deploy/sdk目录删掉。
+
+然后用-f再populate_sdk一次。
+
+
+
+
+
 # d.getVar
 
 BB_DEFAULT_TASK ?= "build"
@@ -4443,6 +4520,128 @@ Yocto 的 ERROR_QA 或者 WARN_QA 就会报告它的版本比以前构建的包�
 ```
 ERROR_QA_remove = "version-going-backwards"
 ```
+
+# systemd跟sysvinit共存
+
+实际上是可以共存的。systemd本来就提供了对sysvinit的兼容。
+
+但是我尽量不用吧。
+
+# dropbear的bb文件分析
+
+这个是一个基础的包。
+
+各种特性比较全，
+
+例如跟openssh是冲突的。可以这样来指定：
+
+```
+RCONFLICTS_${PN} = "openssh-sshd openssh"
+```
+
+对外提供命令别名：
+
+```
+RPROVIDES_${PN} = "ssh sshd"
+```
+
+传递给dropbear的make参数是：
+
+```
+EXTRA_OEMAKE = 'MULTI=1 SCPPROGRESS=1 PROGRAMS="${SBINCOMMANDS} ${BINCOMMANDS}"'
+```
+
+PROGRAMS指定了要编译出来的二进制文件有哪些。
+
+
+
+
+
+## INITSCRIPT_PARAMS
+
+`update-rc.d.bbclass`这个文件控制了3个变量：
+
+```
+INITSCRIPT_PACKAGES
+INITSCRIPT_NAME  
+INITSCRIPT_PARAMS
+```
+
+```
+INITSCRIPT_PARAMS = "start 99 5 2 . stop 20 0 1 6 ."
+```
+
+这个表示的含义是：
+
+这个开机脚本的runlevel是99 ，在initlevel 2和initlevel 5里会调用start。
+
+在initlevel 0/1/6会调用stop。
+
+INITSCRIPT_PARAMS的内容会被传递给update-rc.d命令。
+
+```
+update-rc.d - install and remove System-V style init script links
+```
+
+```
+SYNOPSIS
+       update-rc.d [-f] name remove
+
+       update-rc.d name defaults
+
+       update-rc.d name defaults-disabled
+
+       update-rc.d name disable|enable [ S|2|3|4|5 ]
+```
+
+```
+update-rc.d  updates  the  System V style init script links /etc/rcrun-
+       level.d/NNname whose target  is  the  script  /etc/init.d/name. 
+```
+
+# virtual/crypt
+
+
+
+```
+hanliang.xiong@walle01-sz:~/work/a113x2/yocto-code/code/poky$ grep -nwr "virtual\/crypt" . |grep "PROVIDES" 
+./meta/recipes-core/musl/musl_git.bb:22:PROVIDES += "virtual/libc virtual/libiconv virtual/libintl virtual/crypt"
+./meta/recipes-core/libxcrypt/libxcrypt.inc:16:PROVIDES = "virtual/crypt"
+```
+
+
+
+As an example of adding an extra provider, suppose a recipe named foo_1.0.bb contained the following:
+
+```
+PROVIDES += "virtual/bar_1.0"
+```
+
+The recipe now provides both "foo_1.0" and "virtual/bar_1.0". 
+
+The "virtual/" namespace is often used to denote cases where multiple providers are expected with the user choosing between them.
+
+ Kernels and toolchain components are common cases of this in OpenEmbedded.
+
+
+
+参考资料
+
+https://stackoverflow.com/questions/37815066/where-do-the-virtual-terms-come-from
+
+# musl.bb
+
+## INHIBIT_DEFAULT_DEPS
+
+禁用默认的依赖。一般用来禁止对标准C库的依赖。
+
+
+
+在复杂的情况下，musl还是不推荐的。
+
+Using systemd with musl is not recommended
+
+
 
 # 参考资料
 

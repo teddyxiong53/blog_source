@@ -29,7 +29,7 @@ gcc version 4.8.4 (Raspbian 4.8.4-1)
 
 正常来说，gcc还管不到整个程序的优化，这个只有ld才能看到整个程序。
 
-lto选项，就是让gcc可以对整个程序进行优化的。
+**lto选项，就是让gcc可以对整个程序进行优化的。**
 
 2、gcc的目录在/usr/lib/gcc/arm-linux-gnueabihf/4.8。
 
@@ -98,7 +98,7 @@ pi@raspberrypi:/usr/lib/gcc/arm-linux-gnueabihf/4.8$ tree
 
 # 编译过程用到的工具和生成的文件
 
-test.c里面就是答应了一行“hello gcc“。
+test.c里面就是打印了一行“hello gcc“。
 
 1、`gcc -E test.c`。这一步用到的是gcc。输出的是宏展开之后的样子，直接打印出来。
 
@@ -159,7 +159,7 @@ main:
 
 # 链接
 
-o文件和a文件都是可重定位文件。链接过程就是给他们重新定位的过程。
+o文件和a文件都是可重定位文件。**链接过程就是给他们重新定位的过程**。
 
 ```
 pi@raspberrypi:~/work/test/gcc$ gcc -v test.o -o test

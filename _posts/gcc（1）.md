@@ -6,11 +6,120 @@ tags:
 
 ---
 
-1
+--
 
 -W{all,xxx}
 
 可以这样来加选项。
+
+# gcc命令help信息查看
+
+就把gcc当成一个普通的命令，从这个角度来学习它的用法。
+
+gcc --help
+
+```
+gcc -print-search-dirs 
+	这个是查看搜索了哪些路径。
+	输出：
+	hanliang.xiong@walle01-sz:~$ gcc -print-search-dirs 
+install: /usr/lib/gcc/x86_64-linux-gnu/9/
+programs: =/usr/lib/gcc/x86_64-linux-gnu/9/:
+
+ gcc -print-libgcc-file-name
+ 	输出：
+	/usr/lib/gcc/x86_64-linux-gnu/9/libgcc.a
+```
+
+
+
+有这3个选项：
+
+```
+  -Wa,<options>            Pass comma-separated <options> on to the assembler.
+  -Wp,<options>            Pass comma-separated <options> on to the preprocessor.
+  -Wl,<options>            Pass comma-separated <options> on to the linker.
+```
+
+还可以这样：
+
+```
+  -Xassembler <arg>        Pass <arg> on to the assembler.
+  -Xpreprocessor <arg>     Pass <arg> on to the preprocessor.
+  -Xlinker <arg>           Pass <arg> on to the linker.
+```
+
+这4个基本选项：
+
+```
+  -E                       Preprocess only; do not compile, assemble or link.
+  -S                       Compile only; do not assemble or link.
+  -c                       Compile and assemble, but do not link.
+  -o <file>                Place the output into <file>.
+```
+
+-pie作用是这个：
+
+```
+-pie                     Create a dynamically linked position independent
+                           executable.
+```
+
+创建动态库
+
+```
+-shared                  Create a shared library.
+```
+
+
+
+https://blog.csdn.net/Decisiveness/article/details/44303489
+
+## gcc --help=common
+
+help信息分为这些类：
+
+optimizers, target, warnings, undocumented, params.
+
+这个的选项非常多。
+
+选一些说明一下。
+
+| 选项                            | 说明                        |
+| ------------------------------- | --------------------------- |
+| -O                              | 后面跟数字，说明优化等级，  |
+| -Ofast                          | 为速度优化                  |
+| -Og                             | 为调试优化                  |
+| -Os                             | 为size优化                  |
+| -Waggregate-return              | 返回结构体，union时进行警告 |
+| -Waggressive-loop-optimizations |                             |
+| -Wdeprecated                    |                             |
+| -Werror                         |                             |
+| -Wfatal-errors                  |                             |
+| -Wextra                         |                             |
+| -Winline                        |                             |
+| -Wreturn-local-addr             |                             |
+| -Wstrict-aliasing               |                             |
+| -Wswitch-unreachable            |                             |
+| -Wuninitialized                 |                             |
+| -Wunused                        |                             |
+| -fPIC                           |                             |
+| -fPIE                           |                             |
+| -fabi-version=                  |                             |
+| -fpic                           |                             |
+| -fpie                           |                             |
+| -fplt                           |                             |
+| -fstack-check                   |                             |
+| -g                              |                             |
+|                                 |                             |
+|                                 |                             |
+|                                 |                             |
+
+
+
+```
+
+```
 
 
 
@@ -58,7 +167,11 @@ pic版本的，是通过PLT（Procedure Linkage Table）来调用函数。
 
 # 强符号和弱符号
 
-对于链接器来说，所有的全局符号可分为两种：强符号（Strong symbols），弱符号（Weak symbols）。**gcc**的attribute中有个`__attribute__((weak))`，就是用来声明这个符号是弱符号的。
+对于链接器来说，所有的全局符号可分为两种：
+
+强符号（Strong symbols），弱符号（Weak symbols）。
+
+**gcc**的attribute中有个`__attribute__((weak))`，就是用来声明这个符号是弱符号的。
 
 
 
@@ -102,17 +215,53 @@ p2() {}
 
 # -ffunction-sections -fdata-sections
 
-有时我们的程序会定义一些暂时使用不上的功能和函数，虽然我们不使用这些功能和函数，但它们往往会浪费我们的ROM和RAM的空间。这在使用静态库时，体现的更为严重。有时，我们只使用了静态库仅有的几个功能，但是系统默认会自动把整个静态库全部链接到可执行程序中，造成可执行程序的大小大大增加。
+有时我们的程序会定义一些暂时使用不上的功能和函数，
+
+虽然我们不使用这些功能和函数，
+
+但它们往往会浪费我们的ROM和RAM的空间。
+
+这在使用静态库时，体现的更为严重。
+
+有时，我们只使用了静态库仅有的几个功能，
+
+但是系统默认会自动把整个静态库全部链接到可执行程序中，
+
+造成可执行程序的大小大大增加。
 
 
 
-为了解决前面分析的问题，我们引入了标题中的几个参数。**GCC链接操作是以section作为最小的处理单元**，只要一个section中的某个符号被引用，该section就会被加入到可执行程序中去。因此，GCC在编译时可以使用 -ffunction-sections和 -fdata-sections 将每个函数或符号创建为一个sections，其中每个sections名与function或data名保持一致。**而在链接阶段， -Wl,–gc-sections 指示链接器去掉不用的section**（其中-wl, 表示后面的参数 -gc-sections 传递给链接器），这样就能减少最终的可执行程序的大小了。
+为了解决前面分析的问题，我们引入了标题中的几个参数。
+
+**GCC链接操作是以section作为最小的处理单元**，
+
+只要一个section中的某个符号被引用，该section就会被加入到可执行程序中去。
+
+因此，GCC在编译时可以使用 -ffunction-sections和 -fdata-sections 将每个函数或符号创建为一个sections，
+
+其中每个sections名与function或data名保持一致。
+
+**而在链接阶段， -Wl,–gc-sections 指示链接器去掉不用的section**
+
+（其中-wl, 表示后面的参数 -gc-sections 传递给链接器），
+
+这样就能减少最终的可执行程序的大小了。
 
 
 
 # -fomit-frame-pointer
 
-可以看到不加-fomit-frame-pointer选项编译出来的代码少了一些，最主要的区别是少了栈帧的切换和栈地址的保存，栈是从高地址向低地址扩展，而堆是从低地址向高地址扩展。在x86体系结构中，栈顶寄存器是esp，栈底寄存器位ebp，esp的值要小于ebp的值。函数调用时先将函数返回值、传入参数依次压入栈中，CPU访问时采用0x8(%esp)方式访问传入的参数，使用-fomit-frame-pointer会由于没有保存栈调用地址，而导致无法追踪函数调用顺序，我想gcc，vs等编译器记录函数调用顺序都是采用这种方式吧。
+可以看到不加-fomit-frame-pointer选项编译出来的代码少了一些，
+
+最主要的区别是少了栈帧的切换和栈地址的保存，
+
+栈是从高地址向低地址扩展，
+
+而堆是从低地址向高地址扩展。
+
+在x86体系结构中，栈顶寄存器是esp，栈底寄存器位ebp，esp的值要小于ebp的值。
+
+函数调用时先将函数返回值、传入参数依次压入栈中，CPU访问时采用0x8(%esp)方式访问传入的参数，使用-fomit-frame-pointer会由于没有保存栈调用地址，而导致无法追踪函数调用顺序，我想gcc，vs等编译器记录函数调用顺序都是采用这种方式吧。
 
 
 
