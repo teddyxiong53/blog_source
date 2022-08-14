@@ -8,7 +8,7 @@ typora-root-url: ..\
 
 
 
-#编译
+# 编译
 
 现在自己来编译openwrt。
 

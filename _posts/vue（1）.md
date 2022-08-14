@@ -638,7 +638,11 @@ ref是给你提供一个从js代码里操作一个dom控件的把手。
 
 # slot
 
-是在需要向组件传递内容的时候，在组件里放一个slot。这样传递尽量的内容，就会插入到slot的位置上。
+是在需要向组件传递内容的时候，在组件里放一个slot。这样传递进来的内容，就会插入到slot的位置上。
+
+这篇文章写得非常好。值得学习。
+
+https://blog.csdn.net/qq_41809113/article/details/121640035
 
 # 大小写
 
@@ -683,7 +687,23 @@ this.$emit('update:title', 'new title')
 </text-document>
 ```
 
+# data-v-xxx
 
+在Vue开发中，会遇到html被浏览器解析后，在标签中出现’data-v-xxxxx’标记，如下：
+
+```
+<div data-v-fcba8876 class="xxx"> aaa</div>
+```
+
+​    这是在标记vue文件中css时使用scoped标记产生的，因为要保证各文件中的css不相互影响，给每个component都做了唯一的标记，所以每引入一个component就会出现一个新的'data-v-xxx'标记
+
+
+
+由于样式中使用了scoped，所以编译后标签对中生成data-v-xxx属性。
+
+
+
+https://blog.csdn.net/fengjingyu168/article/details/79769608
 
 # 参考资料
 

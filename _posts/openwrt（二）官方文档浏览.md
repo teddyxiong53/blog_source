@@ -46,7 +46,7 @@ https://wiki.openwrt.org/zh-cn/doc/start
 
 还有一堆其他的。感觉没讲什么内容。
 
-#作为client
+# 作为client
 
 没说啥。
 

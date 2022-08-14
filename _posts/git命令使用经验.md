@@ -10,7 +10,7 @@ tags:
 
 没有系统学习git的使用，有时候会跟github打交道。把碰到的问题及解决记录下来。
 
-##取指定版本的代码
+# 取指定版本的代码
 
 先把代码clone下来。
 
@@ -64,7 +64,15 @@ https://zhuanlan.zhihu.com/p/59616525
 
 # 常用命令速查
 
+# 全局忽略.vscode目录
 
+因为使用vscode，经常会在目录下产生.vscode目录，在一个个仓库下去加.gitignore就太麻烦了。
+
+可以全局忽略这个目录。
+
+参考这个做就好了。
+
+https://blog.csdn.net/zhangchilei/article/details/105538854
 
 # 参考资料
 

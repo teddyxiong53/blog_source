@@ -303,6 +303,21 @@ libabc.dll:liba.c libb.a libc.a
 
 https://blog.csdn.net/weixin_30699235/article/details/97744931
 
+# ld的选项
+
+要查看ld的选项，要：
+
+```
+ld --help
+```
+
+```
+--as-needed 
+	Only set DT_NEEDED for following dynamic libs if used
+```
+
+
+
 # 参考资料
 
 1、编译GNU/Linux共享库, 为什么要用PIC编译?( 转)

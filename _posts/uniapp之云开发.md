@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 hbuilder默认有提供一个hello-cloud的例子项目。直接新建测试运行一下。
 
@@ -41,8 +41,29 @@ if (apiList.length === 0) {
 
 
 
+云函数或云对象，在开发期间，可以在HBuilderX提供的本地环境运行，也可以连接现网uniCloud云端运行。
+
+注意：本地运行环境只包括云函数和 `DB Schema`，数据内容必须在云端。因为本地运行环境没有MongoDB。
+
+所以总结一下，云函数有4种运行模式：
+
+1. 本地运行
+2. 上传云端并运行（云对象不支持此模式）
+3. 客户端连本地云函数运行
+4. 客户端连云端云函数运行
 
 
-参考资料
+
+在HBuilderX的uniCloud本地运行插件的node环境中直接运行云函数或云对象。
+
+
+
+# 参考资料
+
+1、
 
 https://uniapp.dcloud.io/uniCloud/cf-common
+
+2、
+
+https://zh.uniapp.dcloud.io/uniCloud/rundebug.html

@@ -434,7 +434,27 @@ alsa自带了一个很简单的混音器dmix
 
 
 
+# snd_interval理解
 
+```
+// openmin和openmax表示开集,如果2个全为1,那么就表示,range范围为(min,max)即2个开区间
+// openmin为1,openmax为0,range范围为(min,max] 即开区间和闭区间
+// integer等于1,表示it不是一个范围区间,而是一个固定的interger整型值
+// dir等于0,表示为interger设置,dir < 0表示(min-1,max),dir > 0表示(min, max-1)
+struct snd_interval {
+    unsigned int min, max;
+    unsigned int openmin:1,
+             openmax:1,
+             integer:1,
+             empty:1;
+};
+```
+
+
+
+
+
+https://blog.csdn.net/dengdun6257/article/details/102283475
 
 # 参考资料
 

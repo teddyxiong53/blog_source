@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 看snapcast里用了jsonrpc来做控制。
 
@@ -239,6 +239,213 @@ https://naotu.baidu.com/file/1ff3a94bb69723da429f7fa34eacab48
 
 连接的buffer，默认分配了1500字节，如果发现接近了这个数字，那么就自动分配多一倍的空间。
 
+# 使用jsonrpc作为主要通信手段的软件有哪些？
+
+想要找一个例子，大量使用jsonrpc作为通信手段的大型软件，看看jsonrpc可以应用到什么程度。
+
+好像没有找到太多。我之前了解这个就是snapcast，那么看起来snapcast反而是用得比较多的。
+
+https://json-rpc.info/ 
+
+这个官网倒是列举了使用json rpc的例子。
+
+
+
+https://blog.csdn.net/weixin_29662245/article/details/114959400
+
+
+
+# RPC机制
+
+参考资料
+
+https://blog.csdn.net/qq_36183935/article/details/80550457
+
+
+
+# 以太坊使用的jsonrpc
+
+https://blog.csdn.net/cljdsc/article/details/110468066
+
+# 自己用jsonrpc做本地进程通信的实践
+
+网上找不到太多的这种用法。
+
+我只是直观上觉得这种方式简单容易理解。
+
+比起dbus要轻量很多，看看能不能在嵌入式Linux里作为一个基础的进程通信机制来使用。
+
+会有哪些问题？
+
+性能可能是一个问题。但是我的只是需要传递一些简单的控制信息。
+
+dbus的二进制方式实在是太繁琐了。
+
+为了做最小的实现。
+
+这个是我之前把jsonrpcpp的自己写了一遍的。c++版本。
+
+https://github.com/teddyxiong53/myjsonrpcpp
+
+现在是打算弄一个C语言的版本。
+
+demo就弄server、client1、client2
+
+实现client到server的get/set。
+
+server的主动notify。
+
+这个就有个基本的雏形了。
+
+https://github.com/hmng/jsonrpc-c
+
+基于这个来改。
+
+我fork一个过来。
+
+configure不过。
+
+```
+--with-libev[=PATH]     Search for libev in PATH/include and PATH/lib
+```
+
+因为我当前使用的服务器，我没有root权限。不能自由安装软件。
+
+所以自己编译一个libev的库。
+
+libev和libevent不是一个东西。
+
+代码在这里：
+
+https://github.com/enki/libev
+
+编译安装libev
+
+```
+./configure --prefix=$HOME
+make && make install
+```
+
+这样是安装到了我的home目录。
+
+lib目录：
+
+```
+.
+├── libev.a
+├── libev.la
+├── libev.so -> libev.so.4.0.0
+├── libev.so.4 -> libev.so.4.0.0
+└── libev.so.4.0.0
+
+```
+
+include目录
+
+```
+.
+├── event.h
+├── ev++.h
+└── ev.h
+```
+
+share目录
+
+```
+.
+└── man
+    └── man3
+        └── ev.3
+```
+
+现在再编译jsonrpc-c的。
+
+```
+./configure --with-libev=$HOME
+```
+
+编译还是报错。需要加上：
+
+```
+./configure --with-libev=$HOME LDFLAGS="-lm"
+```
+
+client到server的好理解。
+
+server到client的通路有吗？
+
+是不是一切通信都要由client端发起？
+
+server能不能进行广播？
+
+还是仔细看看snapcast的这个协议设计。
+
+https://github.com/badaix/snapcast/blob/master/doc/json_rpc_api/control.md
+
+理解了一下，server还是不会主动产生状态变化的。
+
+有notify，也是其中一个client变化了。
+
+然后server再主动给所有的client发送这个信息。
+
+snapcast的server端会收到这么三种消息：
+
+```
+1、以Client.开头的。
+2、以Group.开头的。
+3、以Server.开头的。
+4、以Stream.开头的。
+
+```
+
+现在最关键的一点就是，server怎么给所有的client发广播。
+
+这里有个讨论。
+
+https://groups.google.com/g/json-rpc/c/2WyxWKSiz8o
+
+那么是不是在snapcast里，snapserver同时作为了jsonrpc的server和client。
+
+同理，snapclient也是同时作为了jsonrpc的server和client。
+
+取决于你如何实现server和client。
+
+或者是说，我需要的，是我的服务器和客户端，其实本质上都是json rpc 的server。
+
+不带id的，就是通知。
+
+那么port是怎么定义呢？
+
+我想清楚了。
+
+就是当前的server实现需要修改一下，在收到没有id的消息时，把所有的client遍历发送一遍数据，就相当于通知了。
+
+当前是没有实现这个的。
+
+可以加上这个特性。
+
+
+
+想到这里，我觉得jsonrpc的自由度还是不够高。
+
+是不是可以在嵌入式Linux里，用mqtt broker来做mqtt的系统消息总线呢？
+
+而mqtt消息体内部，使用json格式来组织。
+
+另外开一篇文章《mqtt作为系统消息总线的思考》来梳理这个想法。
+
+
+
+## 如果处理需要很长时间
+
+如果rpc函数处理需要很长的时间。
+
+会影响其他的client的处理？
+
+卡多次时间会被判断为通信失败呢？（这个应该没事）
+
+
+
 
 
 # 参考资料
@@ -259,3 +466,6 @@ https://www.cnblogs.com/liangzp/p/9088792.html
 
 https://www.zhihu.com/question/28570307
 
+5、中文文档
+
+http://static.kancloud.cn/thinkphp/json-rpc-2/43545

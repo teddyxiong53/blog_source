@@ -401,6 +401,258 @@ https://openwrt.org/start?id=zh/toh/views/toh_fwdownload
 
 有的老旧设备，能用的版本就比较老。
 
+# 新增一个package
+
+
+
+https://blog.csdn.net/jf_xu/article/details/53486177
+
+增加一个内核驱动。
+
+https://blog.csdn.net/qq_41453285/article/details/102760270
+
+
+
+“Build/Prepare”定义了如何准备编译本软件包，
+
+
+
+这篇非常详细了。
+
+https://blog.csdn.net/iampisfan/article/details/78128688
+
+一些主要的变量：
+
+```
+BUILD_DIR
+build_dir/target-arm_cortex-a9+vfpv3_musl-1.1.16_eabi
+
+STAGING_DIR
+staging_dir/target-arm_cortex-a9+vfpv3_musl-1.1.16_eabi
+
+BIN_DIR
+bin/mvebu
+
+BUILD_LOG_DIR
+logs
+
+STAGING_DIR_HOST
+staging_dir/host
+
+TOOLCHAIN_DIR
+staging_dir/toolchain-arm_cortex-a9+vfpv3_gcc-5.3.0_musl-1.1.16_eabi
+
+BUILD_DIR_HOST
+build_dir/host
+
+BUILD_DIR_TOOLCHAIN
+build_dir/toolchain-arm_cortex-a9+vfpv3_gcc-5.3.0_musl-1.1.16_eabi
+
+PACKAGE_DIR
+bin/mvebu/packages
+
+TARGET_ROOTFS_DIR
+build_dir/target-arm_cortex-a9+vfpv3_musl-1.1.16_eabi
+
+TARGET_DIR
+build_dir/target-arm_cortex-a9+vfpv3_musl-1.1.16_eabi/root-mvebu
+
+STAGING_DIR_ROOT
+staging_dir/target-arm_cortex-a9+vfpv3_musl-1.1.16_eabi/root-mvebu
+```
+
+
+
+```
+$(INCLUDE_DIR)/subdir.mk定义了两个非常重要的函数：subdir和stampfile，
+subdir会生成一些规则，
+例如package/Makefile调用了(eval $(call subdir,$(curdir)))，则会递归到各个子目录下，生成package/$(bd)/$(target)和package/$(lastdir)/$(target)，$(target)取值为clean download prepare compile install update refresh prereq dist distcheck configure。
+以iperf为例，subdir会为其生成下面规则：
+```
+
+
+
+```
+Makefile中首先定义了一些变量，包括：
+- PKG_NAME
+package的名字，用于显示在menuconfig和生成ipkg，例中该值等于iperf
+- PKG_VERSION
+package的版本号，例中该值等于2.0.5
+- PKG_RELEASE
+package的Makefile的版本，例中该值等于1
+- PKG_SOURCE
+package的sourcecode包的名称，例中该值等于iperf-2.0.5.tar.gz
+- PKG_SOURCE_URL
+package sourcecode包的下载链接，可以添加多个链接，以分号隔开，例中该值等于@SF/iperf，其中@SF表示从sourceforge
+- PKG_MD5SUM
+tar包的MD5校验码，由于核对tar包下载是否正确
+- PKG_CAT
+tar包的解压方式，包括zcat, bzcat, unzip等
+- PKG_BUILD_DIR
+tar包解压以及编译的路径，如果Makefile中不指定，则默认为$(BUILD_DIR)/$(PKG_NAME)$(PKG_VERSION)，例子中将PKG_BUILD_DIR指定成了$(BUILD)/iperf-single/iperf-2.0.5
+
+PKG_*这些变量主要描述了package的从什么连接下载，下载什么版本的tar包，以及如何解压tar包。
+```
+
+**Build/Prepare (可选):**
+定义一些列解压缩tar包，打patch，拷贝sourcecode到build dir等操作的命令
+
+**Build/Compile (可选):**
+定义编译的命令
+
+
+
+# Build/InstallDev
+
+处理一些OpenWrt编译包时可以依赖的文件（如静态库，头文件等），
+
+但是这些在目标设备上用不到。
+
+举例来说，假设你的OpenWrt项目上有一个基本的包，
+
+这个包中的一些头文件在编译其他包时会用到，
+
+但是最终生成的固件镜像烧入目标设备后却用不到这些头文件，
+
+就可以在这个section中定义要将这些头文件拷贝到哪里去（一般是toolchain使用的头文件路径）。
+
+当然如果其他包编译时需要用到这个包的头文件，那么其他包也应该定义为依赖这个包，这样在其他包编译之前会先编译这个包，并执行这些install动作以免其他包编译时找不到头文件。
+
+# Package/xxx/install
+
+
+
+# rc.common用法
+
+由于openwrt使用自己的初始script系统，所有的initscript必须使用/etc/rc.common作为wrapper安装
+
+如/etc/init.d/httpd：
+
+```
+
+#!/bin/sh/etc/rc.common
+# Copyright (C)2006 OpenWrt.org
+START=50
+start() {
+    [ -d /www ] && httpd -p 80 -h /www-r OpenWrt
+}
+stop() {
+    killall httpd
+}
+
+```
+
+从上可以看出 ，script本身并不解析命令行参数，而是由/etc/rc.common来完成。
+
+Start和stop是最基本的功能，几乎所有init script都要提供。Start是在运行/etc/init.d/httpd start时来调用，可以是系统启动时，或用户手动运行此脚本时。
+
+通过/etc/init.d/<name> enable/disable
+
+可以启用或禁止模块的初始化脚本，
+
+他是通过创建或删除/etc/rc.d中的符号连接来完成，
+
+**而这些符号连接是/etc/init.d/rcS在启动阶段处理。**
+
+脚本运行的顺序是在初始脚本中通过变量START来定义，改变后需要再次运行/etc/init.d/<name>enable。
+
+
+
+# USE_PROCD
+
+在openwrt系统内init进程被procd取代，
+
+procd作为父进程可以监控子进程的状态。
+
+一旦子进程退出后即可在某一个时刻尝试进行重启进程。
+
+在op系统内使用procd监控的有uhttpd,netifd等。
+
+在/etc/init.d/文件夹内带有USE_PROCD=1标志，
+
+下面就介绍如何让procd启动某一个应用程序 
+
+我的应用程序名是binloader, 直接上脚本代码
+
+```
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2008 OpenWrt.org    
+
+START=98
+#执行的顺序，按照字符串顺序排序并不是数字排序
+
+USE_PROCD=1
+#使用procd启动
+
+BINLOADER_BIN="/usr/bin/binloader"
+
+start_service() {
+	procd_open_instance
+	#创建一个实例， 在procd看来一个应用程序可以多个实例
+	#ubus call service list 可以查看实例
+	procd_set_param respawn
+	#定义respawn参数，告知procd当binloader程序退出后尝试进行重启
+	procd_set_param command "$BINLOADER_BIN"
+	# binloader执行的命令是"/usr/bin/binloader"， 若后面有参数可以直接在后面加上
+
+	procd_close_instance
+	#关闭实例
+}
+#start_service 函数必须要重新定义
+
+stop_service() {
+	rm -f /var/run/binloader.pid
+}
+#stop_service重新定义，退出服务器后需要做的操作
+
+restart() {
+	stop
+	start
+}
+```
+
+必须指出来的是，被procd执行的程序不能是daemon后台程序，因为后台程序的主进程退出后在procd看来就是程序退出了，然后会进入respawn流程，之后重复启动和退出。
+
+最后失效了
+
+
+
+procd 的进程管理功能主要包含 3 个部分。
+
+- reload_config，检查配置文件是否发生变化，如果有变化则通知 procd 进程。
+
+- procd，守护进程，接收使用者的请求，增加或删除所管理的进程，并监控进程的状态，如果发现进程退出，则再次启动进程。
+
+- procd.sh，提供函数封装procd提供系统总线方法，调用者可以非常便利的使用procd 提供的方法。
+
+  
+
+参考资料
+
+  1、
+
+  https://blog.csdn.net/liangdsing/article/details/53906445/2。
+
+  2、10-Openwrt procd守护进程
+
+  https://www.jianshu.com/p/acd2ccb5ea8d
+
+# openwrt启动流程
+
+总结一下OpenWrt的启动流程：
+
+1.CFE->2.linux->3./etc/preinit->4./sbin/init ->5./etc/inittab ->6./etc/init.d/rcS->7./etc/rc.d/S* ->8.
+
+CFE是一个bootloader。
+
+
+
+参考资料
+
+1、
+
+https://developer.aliyun.com/article/375992
+
 
 
 # 参考资料
@@ -434,3 +686,7 @@ https://www.cnblogs.com/rohens-hbg/articles/4969222.html
 7、OpenWRT实践5：Feeds安装本地源
 
 https://zhuanlan.zhihu.com/p/114424172
+
+8、
+
+http://iceway.github.io/2017/03/24/openwrt-study-notes-04-packages-upper-section.html

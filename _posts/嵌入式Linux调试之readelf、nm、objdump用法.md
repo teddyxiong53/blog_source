@@ -85,7 +85,21 @@ ELF 头：
 -C 这个列出来的符号可读性很好，尤其是C++代码。
 ```
 
+## 查看符合在哪个文件里定义
 
+现在有个问题，
+
+```
+
+```
+
+
+
+https://blog.csdn.net/lgfun/article/details/103600880
+
+
+
+https://www.huoban.com/news/post/19230.html
 
 # objdump
 

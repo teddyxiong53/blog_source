@@ -10,7 +10,7 @@ tags:
 
 现在看看openwrt里的文件。
 
-#/bin
+# /bin
 
 ```
 root@LEDE:~# cpu_temp 

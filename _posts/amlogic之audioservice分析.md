@@ -1912,3 +1912,86 @@ mcuinfochange_int_thread
 	}
 ```
 
+# asplay各种设置参数的区别
+
+```
+有这么些set，区别是什么？
+asplay set setting_name value 
+	{"set", func_set, 2, true},
+	调用AS_Client_SetSetting
+	把输入拼成这样："{\"settings\": {\"%s\":%f}}", setting_name, value);
+	后面跟的数值。用atof来转的。
+	AS_Client_SetSetting只有这里调用了。
+	最终调用的 audioservice_call_set_input_settings_sync，这个被多个setting函数调用了。
+	到audioservice里的AS_SetInputSettings
+	这个可以设置哪些值呢？
+	
+asplay sset dap [mode=2|mode=3|mode=4] //set DAP 
+	这个多的s表示字符串。和set的区别就在于此。set是设置数值。
+	
+	{"sset", func_setting_set, 2, true},
+	把输入内容拼成这样：
+	"{\"settings\": {\"%s\":\"%s\"}}", setting_name, pstr
+	
+asplay halaudioset [capture_samplerate=48000]
+	{"halaudioset", func_halaudio_Setsetting, 1, true},
+	后面跟的是一个=连接的字符串。
+	调用AS_Client_SetHalSetting
+	内容拼接："{\"halcmd\": \"%s\"}", pstr);
+	最后还是调用audioservice_call_set_input_settings_sync
+	
+asplay soundeffect-set [dap|bm|drc|post|upmix|virt|hfilt|loudness|vlamp|vmcal]
+	对应{"soundeffect-set", AS_Client_soundeffect_setting, 1, true},
+	这个的特点是先get，再set。因为他们的值是需要轮转的。
+	
+asplay sys-command [0|1 => source|exit] 
+	只有exit，suspend等几个值，直接给数值的。
+asplay sset setting_name valuestring 
+	
+
+```
+
+我要加的，就模仿set的方式。
+
+```
+asplay set mute 1
+```
+
+加好了。工作正常。
+
+看看get的如何添加。
+
+```
+asplay sget dap
+这个可以，得到
+[@dap:profile=1@]
+```
+
+```
+asplay get dap
+这个不行，得到空的{}
+```
+
+二者没有什么本质区别吧。
+
+当前给空的，相当于走到这个分支。
+
+```
+if (NULL == input || cJSON_IsNull(input)) {
+    // printf_cJSON("audioservice_root:", audioservice_root);
+    setting_json = cJSON_GetObjectItem(audioservice_root, CJSON_ITEM_SETTINGS);
+    // printf_cJSON("system setting_json: ", setting_json);
+    setting_str = cJSON_Print(setting_json);
+  }
+```
+
+要实现功能，就需要在config里的settings里加这些字段。
+
+加上测试可以。
+
+还差一个点，就是初始化的时候，从配置文件读取出来初始化。
+
+放in_AS_set_Settings这个函数里调用。
+
+不用专门去调用，默认就处理到这个初始化了。
+
