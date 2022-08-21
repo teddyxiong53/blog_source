@@ -434,6 +434,10 @@ https://groups.google.com/g/json-rpc/c/2WyxWKSiz8o
 
 另外开一篇文章《mqtt作为系统消息总线的思考》来梳理这个想法。
 
+## server主动Notification的思考
+
+这个确实是没有。因为是基于请求应答的模型。
+
 
 
 ## 如果处理需要很长时间

@@ -755,6 +755,12 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
 cmake -DCMAKE_TOOLCHAIN_FILE=./toolchain.cmake
 
+# 中文手册
+
+这个的对cmake官方教程的翻译。写得不错。可以跟着做一遍。
+
+https://www.zybuluo.com/khan-lau/note/254724
+
 
 
 

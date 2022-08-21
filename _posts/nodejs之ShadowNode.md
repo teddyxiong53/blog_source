@@ -211,6 +211,32 @@ IoT.js module configuration:
 
 
 
+```
+对比一下shadownode和iotjs，看看改了什么。
+
+default.config里增加了这些模块
+ENABLE_MODULE_SAX
+ENABLE_MODULE_DBUS
+ENABLE_MODULE_MQTT
+ENABLE_MODULE_WEBSOCKET
+ENABLE_MODULE_ZLIB
+
+增加了samples目录
+js目录下：
+	assert.js，增加了几种判断。
+	所有文件都加了use strict。
+	增加了child_process.js。
+	增加了dbus.js、debug.js。
+	events.js 修改了实现。
+	module.js做了较大改动。
+	增加了os.js、path.js、promise.js等。
+	
+直接看shadownode的提交记录。
+
+```
+
+
+
 # 参考资料
 
 1、ShadowNode: 以更轻量级的方式使用 Node.js

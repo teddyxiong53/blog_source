@@ -60,6 +60,12 @@ https://github.com/zlgopen/awtk-iotjs
 
 
 
+# 资源收集
+
+这个法国老哥有不少模块是基于iotjs的。
+
+https://github.com/rzr/webthing-iotjs
+
 
 
 # iotjs内部
@@ -306,6 +312,191 @@ HarmonyOS是一款面向万物互联时代的、全新的分布式操作系统�
 JerryScript 是用于物联网的超轻量 JavaScript 引擎。
 
 Jerryscript是由三星开发的一款JavaScript引擎，是为了让JavaScript开发者能够构建物联网应用。物联网设备在CPU性能和内存空间上都有着严重的制约。因此，三星设计了JerryScript引擎，它能够运行在小于64KB内存上，且全部代码能够存储在不足200KB的只读存储（ROM）上。说到这里，我想身为前端的我们是不是该搞点事情，比如给自己的华为手表上写一个APP应用，让他定时叫你敷面膜；或者写一个新闻APP，类似今日头条，数据么，可以造假；
+
+# iotjs-express
+
+iotjs和express都是我要深入研究进行掌握的。
+
+https://github.com/rzr/iotjs-express
+
+我的iotjs已经编译好，加入到PATH里了。
+
+下载iot-express的代码。
+
+运行：
+
+```
+make start
+```
+
+然后访问地址即可。
+
+代码分析
+
+对外暴露的，就相当于一个Express类。
+
+这个类主要使用的方法：
+
+```
+listen
+	内部是http.createServer，server处理消息的回调是Express的request方法。
+	
+```
+
+所以，重点就是看request的实现。
+
+```
+request函数有2个参数，一个req，一个res。
+1、首先给res写上一些可以确定的header信息。
+2、给req加上req.params = {}这个属性。
+3、解析req的类型，是get还是put。用的express.parse函数。
+	返回ture或者false。
+4、拿到应用层app.set('/', function(req, res){})这样注册进来的回调函数。
+把callback传递给handleRequest函数处理。
+5、如果是get，那么直接调用注册的应用层回调。
+6、如果是post，调用Express.receive函数。
+receive函数就是在把数据收完之后，进行json解析，再调用应用层注册的回调。
+```
+
+## mqtt example分析
+
+在iotjs-express目录下面，还有server-mqtt.js和client-mqtt.js。
+
+express跟mqtt又怎么结合使用的呢？
+
+就是相当于client自己不直接进行mqtt操作，发给server来做这个操作。
+
+我没有看明白这个的应用场景。
+
+先不看了。
+
+
+
+# 代码下markdown文档阅读
+
+net的例子
+
+写一个test.js，内容如下：
+
+```
+var net = require('net')
+var port = 1234
+var server = net.createServer()
+server.listen(port)
+server.on('connection',  function(socket) {
+    socket.on('data', function(data) {
+        socket.write("echo: " + data)
+    })
+})
+```
+
+执行：
+
+```
+iotjs ./test.js
+```
+
+用nc连接测试：
+
+```
+nc localhost 1234
+xx
+echo: xx
+```
+
+# js代码分析
+
+看src/js目录下的代码。
+
+我主要关注net、http、events这个系列的。因为我用node，主要也是做webserver来用的。
+
+## net
+
+net.js里的类：我分析代码看到的。
+
+```
+
+SocketState
+Socket
+	继承了stream.Duplex
+	有方法：
+		connect：参数options和callback。
+			callback是给connect事件用的。
+			最后返回this。
+		write：
+			参数是：data和callback。
+			直接转给了Duplex去做。
+		end：
+			参数是：data和callback。
+			转给stream的end方法。
+			最后返回this。
+		destroy：
+			销毁socket。
+		destroySoon：
+			快速销毁。
+		setKeepAlive：
+			保持连接。
+		address
+			返回socket name
+		setTimeout：
+			设置超时，单位ms。
+	属性：
+		remoteAddress
+		remoteFamily
+		remotePort
+		localAddress
+		localPort
+Server类
+	继承了EventEmitter。
+	方法：
+		listen
+		address
+		close
+		
+对外暴露的模块方法：
+exports.createServer
+exports.connect = exports.createConnection
+对外暴露的类：
+exports.Socket  = Socket
+exports.Server = Server 
+```
+
+总的来说，就2个东西：创建socket和创建server。
+
+## http
+
+```
+对外暴露的类：
+exports.ClientRequest
+exports.ServerResponse 继承了OutgoingMessage
+exports.IncomingMessage
+exports.OutgoingMessage
+exports.Agent
+exports.Server
+
+对外暴露的方法：
+exports.request
+exports.createServer
+exports.get //是request方法的一个特例。
+```
+
+总的来说，就是2类。
+
+服务端和客户端。各有3个类，
+
+服务端一个方法：createServer
+
+客户端一个方法：request。
+
+## iotjs.js
+
+这个相当于node的核心js文件。所有的全局变量和函数都在这里。
+
+值得分析一下。
+
+## module.js
+
+这个说明了iotjs是如何进行模块的查找的。
 
 
 

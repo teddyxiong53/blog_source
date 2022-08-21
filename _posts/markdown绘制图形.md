@@ -122,6 +122,81 @@ Note right of C: 没人陪我玩
 
 语法解释：`->>` 代表实线箭头，`-->>` 则代表虚线。
 
+
+
+# flow的语法
+
+定义元素的语法是
+
+```dart
+元素ID=>元素类型: 展示文字
+```
+
+- 注意`元素类型`和`展示文字`中间有一个空格，这个空格是必须有的，否则会出错。
+
+1.元素ID在连接各个元素时会用到。
+
+2.元素类型包括以下几种：
+
+
+
+```
+startID=>start: 开始框
+inputoutputID=>inputoutput: 输入输出框
+operationID=>operation: 操作框
+conditionID=>condition: 条件框
+subroutineID=>subroutine: 子流程
+endID=>end: 结束框
+
+startID->inputoutputID->operationID->conditionID
+conditionID(no)->subroutineID
+conditionID(yes)->endID
+```
+
+
+
+连接元素
+
+1.通过ID引用元素，再用`->`连接各个元素，可以不断连缀，也可以分开连接，如上例中的：
+
+```php
+startID->inputoutputID->operationID->conditionID(yes)->endID
+```
+
+也可以写成：
+
+```
+startID->inputoutputID
+inputoutputID->operationID
+operationID->conditionID
+conditionID(yes)->endID
+```
+
+
+
+2.条件框的连接有些特殊，需要添加`(yes)`或者`(no)`，表示`是`和`否`的分支。例如
+
+3.连接线有上下左右四个方向，如果需要指定连接线连接到某一特定方向，在连接线开始的元素后面添加方向即可，方向包括：
+
+```swift
+(top)
+(bottom)
+(left)
+(right)
+```
+
+每条连接线方向默认为(bottom)。
+
+例如：设置连接线方向为向左：
+
+```php
+start=>start: 开始
+operation1=>operation: 操作框1
+operation2=>operation: 操作框2
+end=>end: 结束
+start->operation1(left)->operation2->end
+```
+
 # 参考资料
 
 1、
@@ -137,3 +212,11 @@ https://zhuanlan.zhihu.com/p/172635547
 这个对mermaid的语法进行了比较好的讲解，不错。
 
 https://snowdreams1006.github.io/write/mermaid-flow-chart.html
+
+4、
+
+https://code.z01.com/doc/mdflow.html
+
+5、
+
+https://www.jianshu.com/p/f28c94cf1204

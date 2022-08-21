@@ -877,7 +877,7 @@ BR2_GLOBAL_PATCH_DIR="board/company/common/patches board/company/fooboard/patche
 
 后面的会覆盖前面的。
 
-## 详细讨论br2 external用法
+## br2 external用法
 
 br2-external机制，就是把你的定制的东西，放在buildroot外面。
 
@@ -911,6 +911,56 @@ make BR2_EXTERNAL=/path1:/path2 menuconfig
 ```
 make BR2_EXTERNAL= menuconfig
 ```
+
+现在要正式在项目里使用external机制。
+
+有这些需求：
+
+1、对于Makefile、linux、fs等处有一些修改，还有一些patch文件。
+
+2、希望可以把这些都放在external目录，保证可以较好地进行融合。
+
+```
+BR2_GLOBAL_PATCH_DIR=$(BR2_EXTERNAL_BAR_42_PATH)/patches/
+BR2_ROOTFS_OVERLAY=$(BR2_EXTERNAL_BAR_42_PATH)/board/<boardname>/overlay/
+BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE=$(BR2_EXTERNAL_BAR_42_PATH)/board/<boardname>/kernel.config
+```
+
+buildroot/linux目录的调整。
+
+```
+  |- linux/Config.ext.in
+  |     |config BR2_LINUX_KERNEL_EXT_EXAMPLE_DRIVER
+  |     |    bool "example-external-driver"
+  |     |    help
+  |     |      Example external driver
+  |     |---
+  |- linux/linux-ext-example-driver.mk
+```
+
+patches目录
+
+```
+  |- linux/Config.ext.in
+  |     |config BR2_LINUX_KERNEL_EXT_EXAMPLE_DRIVER
+  |     |    bool "example-external-driver"
+  |     |    help
+  |     |      Example external driver
+  |     |---
+  |- linux/linux-ext-example-driver.mk
+```
+
+对Config.in的修改，增加的部分用Config.ext.in来扩展。
+
+改动的部分呢？
+
+
+
+参考资料
+
+1、
+
+https://buildroot.org/downloads/manual/customize-outside-br.txt
 
 ## 定制rootfs
 
@@ -1839,6 +1889,34 @@ TDK_DEPENDENCIES = linux host-python-pycrypto tdk-driver
 不能直接make gdb-rebuild。
 
 需要在配置里打开BR2_PACKAGE_GDB=y，然后用make编译才行。
+
+# BR2_GLOBAL_PATCH_DIR使用
+
+这个变量一般是这样赋值的：
+
+```
+BR2_GLOBAL_PATCH_DIR="board/common-fooarch/patches board/fooarch-board/patches"
+```
+
+例如这样：
+
+```
+./configs/freescale_imx7dsabresd_defconfig:6:BR2_GLOBAL_PATCH_DIR="board/freescale/imx7dsdb/patches"
+```
+
+现在这个目录下就这一个patch。
+
+```
+.
+└── uboot
+    └── 0001-imx-Create-distinct-pre-processed-mkimage-config-fil.patch
+```
+
+存放的方式就是package名字下面放patch。
+
+
+
+BR2_LINUX_KERNEL_PATCH 不受BR2_GLOBAL_PATCH_DIR节制。
 
 
 

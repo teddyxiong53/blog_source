@@ -60,6 +60,74 @@ Mosquitto broker 可以被配置为一个 MQTT bridge 桥，连接着两个 MQTT
 
 
 
+我把mqtt_msg_bus写完了。
+
+但是想了一下，mqtt方式对于方法调用，然后返回调用的结果支持不是太好。
+
+应该在收到sub消息，处理后，给出pub。
+
+payload里，我就用jsonrpc的格式来做。
+
+那怎么样让调用后阻塞等待执行结果呢？
+
+dbus也并不都是阻塞，也有两套接口，一套sync的，一套异步的。
+
+搜索“mqtt rpc”。
+
+https://blog.csdn.net/yaojiawan/article/details/101282825
+
+这篇文章跟我的想法一样，也是把payload用jsonrpc的格式化。
+
+这个作者是写了这个modular-2 edge的软件。
+
+https://blog.csdn.net/yaojiawan/article/details/100141479
+
+
+
+maxim labs 是一个研发iot 技术的公司，过去的两年中，我们开发了基于Arm 公司Mbed OS 的模块化物联网设备modular-2。
+
+modular-2是一台基于cortex-M 系列微处理器为主的模块化微服务器它采用Arm 公司物联网操作系统Mbed OS ， Mbed 的C++ 设备驱动API使程序员基本摆脱了硬件的细节，使应用软件更加模块化，更加清晰和高效率开发。
+
+目前，modular-2 技术包括了三项技术
+
+1. modular-2 micro server 模块化微服务器
+2. modular-2 Edge server 模块化边缘服务器
+3. modular-2 Cloud server 模块化云服务器
+
+MQTT同步通信（RPC）
+
+https://developer.qiniu.com/linking/6309/mqtt-synchronous-communication
+
+这个是七牛云的产品。直接就有这种应用场景。
+
+mqtt做为⼀个异步PUB/SUB协议在嵌⼊式设备中使⽤很⼴泛，主要⽤户数据上报和从服务端指令下发。这种模式⽆法满⾜IoT中的设备控制功能(需要同步返回设备数据)，Linking平台开发了⼀套**基于mqtt的同步返回机制**，对外提供http的API，⼿机端/应⽤服务端通过API即可同步返回设备端结果。
+
+
+
+这个是nodejs版本的实现。
+
+https://github.com/rse/mqtt-json-rpc
+
+这个是mongooseos上的实现。
+
+https://mongoose-os.com/docs/mongoose-os/api/rpc/rpc-mqtt.md
+
+这个是讨论mqtt是否适合做rpc通信。
+
+https://www.quora.com/Is-MQTT-suitable-for-interprocess-communication
+
+
+
+ipc和rpc
+
+我现在是需要rpc多过ipc。
+
+rpc还是比较强调要消息的返回结果的。
+
+mqtt做RPC还是不太合适。
+
+
+
 # 参考资料
 
 1、
@@ -91,3 +159,11 @@ https://www.wandouip.com/t5i76527/
 5、
 
 https://www.cnblogs.com/zhenqichai/p/mosquitto-bridge-configuration.html
+
+6、
+
+https://blog.csdn.net/yaojiawan/article/details/101282825
+
+7、一种基于MQTT的请求/响应模型
+
+https://blog.csdn.net/happen23/article/details/107413922

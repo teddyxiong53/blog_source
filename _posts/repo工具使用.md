@@ -721,7 +721,11 @@ repo详解与如何更改manifest快速获取和复用AOSP代码
 
 https://blog.csdn.net/sy373466062/article/details/55190634
 
+# 自己创建仓库并进行管理
 
+https://github.com/ZengjfOS/manifest
+
+https://git-repo.info/zh_cn/docs/multi-repos/manifest-format/
 
 # 参考资料
 
