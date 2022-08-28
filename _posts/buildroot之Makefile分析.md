@@ -138,7 +138,59 @@ Buildroot 支持多种处理器及其变体；它还带有几个现成可用的�
 
 
 
-参考资料
+
+
+```
+ifeq ($(BR2_AML_SHOW_BACKTRACE),y)
+TARGET_CFLAGS += -rdynamic -funwind-tables -ffunction-sections
+TARGET_CXXFLAGS += -rdynamic -funwind-tables -ffunction-sections
+endif
+```
+
+
+
+这个是做什么的？
+
+这个文件当前实际上不存在。
+
+可以对package进行一些修改。但是也挺麻烦的。不适合我们的需求。
+
+```
+# Include the package override file if one has been provided in the
+# configuration.
+PACKAGE_OVERRIDE_FILE = $(call qstrip,$(BR2_PACKAGE_OVERRIDE_FILE))
+ifneq ($(PACKAGE_OVERRIDE_FILE),)
+-include $(PACKAGE_OVERRIDE_FILE)
+endif
+```
+
+
+
+http://lists.busybox.net/pipermail/buildroot/2014-January/087887.html
+
+In this *override* file, Buildroot expects to find lines of the form:
+
+```
+<pkg1>_OVERRIDE_SRCDIR = /path/to/pkg1/sources
+<pkg2>_OVERRIDE_SRCDIR = /path/to/pkg2/sources
+```
+
+For example:
+
+```
+LINUX_OVERRIDE_SRCDIR = /home/bob/linux/
+BUSYBOX_OVERRIDE_SRCDIR = /home/bob/busybox/
+```
+
+
+
+
+
+http://underpop.online.fr/b/buildroot/en/_using_buildroot_during_development.htm.gz
+
+https://www.vocal.com/resources/development/using-a-custom-linux-kernel-in-buildroot/
+
+# 参考资料
 
 1、
 

@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 backtrace是用来在程序崩溃的时候，把栈信息打印出来。
 
@@ -23,9 +23,9 @@ void backtrace_symbos_fd(void *const *array, int size, int fd);
 
 使用上有这么几点需要注意的：
 
-1、backtrace的实现依赖于栈指针（fp寄存器），在gcc编译器过程中，加入任何非-O0的优化，或者加入了栈指针优化参数（-fomit-frame-poiner）后，都不能得到正确的栈信息。
+1、backtrace的实现依赖于栈指针（fp寄存器），在gcc编译器过程中，**加入任何非-O0的优化**，或者加入了栈指针优化参数（-fomit-frame-poiner）后，都不能得到正确的栈信息。
 
-2、backtrace_symbols的实现需要符号名称的支持，在gcc编译过程中要加入-rdynamic参数。
+2、backtrace_symbols的实现需要符号名称的支持，在gcc编译过程中要加入**-rdynamic参数。**
 
 3、inline函数没有栈帧。
 
@@ -41,8 +41,31 @@ void backtrace_symbos_fd(void *const *array, int size, int fd);
 
 
 
-参考资料
+```
+=========>>>catch signal 11 (Segmentation fault) <<<=========
+Dump stack start...
+backtrace() returned 0 addresses
+Dump stack end...
+```
+
+为什么返回0个地址呢？
+
+The application must be compiled with `-funwind-tables` to make backtrace() work on ARM.
+
+那就再加上这个选项。
+
+现在
+
+# 参考资料
 
 1、在Linux中如何利用backtrace信息解决问题
 
 https://blog.csdn.net/jxgz_leo/article/details/53458366
+
+2、
+
+https://www.cnblogs.com/muahao/p/7610645.html
+
+3、
+
+https://stackoverflow.com/questions/24700150/on-raspberry-pi-backtrace-returns-0-frames

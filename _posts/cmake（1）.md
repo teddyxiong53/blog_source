@@ -763,6 +763,16 @@ https://www.zybuluo.com/khan-lau/note/254724
 
 
 
+# 选项分析
+
+```
+ -S <path-to-source>       
+ -B <path-to-build>             
+ -D <var>[:<type>]=<value> 
+       
+ -A <platform-name>        
+```
+
 
 
 # 参考资料

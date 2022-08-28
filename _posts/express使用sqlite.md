@@ -317,6 +317,26 @@ var db = new sqlite3.Database(path.join(__dirname,'/db.sqlite'),
 
 
 
+# 探索sqlite
+
+我就用nodejs的方式来探索sqlite的各种用法。
+
+这里有一些示例数据库。可以看看能够做哪些较为复杂的设计。
+
+https://www.sqlitetutorial.net/sqlite-sample-database/
+
+是一个音乐销售系统的数据库。里面数据很多。
+
+后面的教程内容都是围绕这个真实数据库展开的。
+
+# 有没有sqlite的orm
+
+当前操作sqlite，都是用拼接sql语句的方式，这个很容易有sql注入风险。
+
+有，sequelize就是。可以支持多种数据库，就包括sqlite。
+
+sequelize用一篇文章来做笔记吧。
+
 
 
 # 参考资料

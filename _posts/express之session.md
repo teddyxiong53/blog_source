@@ -87,6 +87,10 @@ app.use(cookieSession({
 
 
 
+https://www.cnblogs.com/chyingp/p/nodejs-learning-express-session.html
+
+
+
 参考资料
 
 1、Express.js(Node.js) 配置Redis持久化存储Session会话

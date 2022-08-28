@@ -502,6 +502,220 @@ PKG_*这些变量主要描述了package的从什么连接下载，下载什么�
 
 
 
+## package里的相关变量
+
+把这些`/`理解成`-`，看起来就就好理解多了。不然就看出目录层次。
+
+```
+make package/rokid/property/compile
+就相当于
+make package-rokid-property-compile
+```
+
+另外一个不爽的点是有大写字母，目前没有发现什么规律。
+
+下面的变量分为两个大类：
+
+1、Package开头的。表示ipk打包相关的。
+
+2、Build开头的。编译代码目录编译相关的。
+
+
+
+```
+define Package/property
+	SECTION:=libs
+	CATEGORY:=custom
+	TITLE:=property
+	DEPENDS:=+libstdcpp
+endef
+```
+
+```
+# 表示这个package对所有架构都适用。
+PKGARCH:=all
+```
+
+```
+# 本package需要安装的config文件。一行一个文件。
+define Package/base-files/conffiles
+/etc/config/network
+endef
+```
+
+```
+# 描述
+define Package/property/description
+	property
+endef
+```
+
+```
+# 一般是下面这样，把代码拷贝到build目录。
+define Build/Prepare
+	$(CP) $(PKG_SOURCE_DIR)/* $(PKG_BUILD_DIR)
+	$(call Build/Prepare/Default,)
+endef
+```
+
+```
+# configure 定义
+define Build/Configure/Default
+(cd $(PKG_BUILD_DIR); \
+        CFLAGS="$(TARGET_CFLAGS) $(EXTRA_CFLAGS)" \
+        CXXFLAGS="$(TARGET_CFLAGS) $(EXTRA_CFLAGS)" \
+        LDFLAGS="$(TARGET_LDFLAGS) $(EXTRA_LDFLAGS)" \
+        cmake $(CMAKE_SOURCE_DIR) 
+endef
+```
+
+```
+# compile编译
+define Build/Compile/Default
+
+endef
+Build/Compile = $(Build/Compile/Default)
+
+define Build/RunMake
+        CFLAGS="$(TARGET_CPPFLAGS) $(TARGET_CFLAGS)" \
+        $(MAKE) $(PKG_JOBS) -C $(PKG_BUILD_DIR)/$(1) \
+                $(TARGET_CONFIGURE_OPTS) \
+                $(DRIVER_MAKEOPTS) \
+                LIBS="$(TARGET_LDFLAGS)" \
+                LIBS_c="$(TARGET_LDFLAGS_C)" \
+                BCHECK= \
+                $(2)
+endef
+
+define Build/Compile/hostapd
+        $(call Build/RunMake,hostapd, \
+                hostapd hostapd_cli \
+        )
+endef
+```
+
+```
+# Build/Install
+# 这个默认是执行make install
+“$(call Build/Install/Default,install install-foo)”
+
+```
+
+```
+# Build/InstallDev
+# 这个是安装到staging目录
+```
+
+```
+# Build/Clean
+
+```
+
+
+
+```
+Package/install
+
+A set of commands to copy files into the ipkg which is represented by the $(1) directory. 
+```
+
+```
+Package/preinst
+Package/postinst
+Package/prerm
+Package/postrm
+
+```
+
+
+
+这个Makefile比较全面，值得分析一下。
+
+openwrt/package/network/services/hostapd/Makefile
+
+在menuconfig里可以看到4个hostapd。
+
+```
+< > hostapd................................. IEEE 802.1x Authenticator (full)
+-*- hostapd-common............... hostapd/wpa_supplicant common support files
+< > hostapd-common-old                                                       
+< > hostapd-mini.................... IEEE 802.1x Authenticator (WPA-PSK only)
+```
+
+是因为在一个Makefile里定义了多个Package。
+
+```
+define Package/hostapd-common-old
+  TITLE:=hostapd/wpa_supplicant common support files (legacy drivers)
+  SECTION:=net
+  CATEGORY:=Network
+endef
+```
+
+构建了多个package。
+
+```
+$(eval $(call BuildPackage,hostapd))
+$(eval $(call BuildPackage,hostapd-mini))
+$(eval $(call BuildPackage,wpad))
+$(eval $(call BuildPackage,wpad-mesh))
+$(eval $(call BuildPackage,wpad-mini))
+$(eval $(call BuildPackage,wpa-supplicant))
+$(eval $(call BuildPackage,wpa-supplicant-mesh))
+$(eval $(call BuildPackage,wpa-supplicant-mini))
+$(eval $(call BuildPackage,wpa-supplicant-p2p))
+$(eval $(call BuildPackage,wpa-cli))
+$(eval $(call BuildPackage,hostapd-utils))
+$(eval $(call BuildPackage,hostapd-common))
+$(eval $(call BuildPackage,hostapd-common-old))
+$(eval $(call BuildPackage,eapol-test))
+```
+
+## 依赖类型
+
+```
++xx
+	依赖于xx，当自己被select的时候，xx也会被select。
+xx
+	只有在xx被选中的时候，自己才能被看到。
+@XX
+	依赖于CONFIG_XX配置项。
++XX:yy 
+	如果CONFIG_XX配置项打开，那么依赖yy。
+
+```
+
+## 单独编译
+
+```
+四，单独编译
+
+1，包清理编译方式：
+
+清理包：make package/xxx/clean V=s -j1
+准备包：make package/xxx/prepare V=s -j1
+编译包：make package/xxx/compile V=s -j1
+安装包：make package/xxx/install V=s -j1
+
+
+
+2，单独清理编译kernel，kernel在target内
+make target/linux/clean V=s -j1
+make target/linux/prepare V=s -j1
+make target/linux/compile V=s -j1
+make target/linux/install V=s -j1
+
+
+
+3，单独清理编译uboot
+make package/boot/uboot-meson/clean V=s -j1
+make package/boot/uboot-meson/prepare V=s -j1
+make package/boot/uboot-meson/compile V=s -j1
+make package/boot/uboot-meson/install V=s -j1
+```
+
+
+
 # Build/InstallDev
 
 处理一些OpenWrt编译包时可以依赖的文件（如静态库，头文件等），
@@ -518,7 +732,11 @@ PKG_*这些变量主要描述了package的从什么连接下载，下载什么�
 
 当然如果其他包编译时需要用到这个包的头文件，那么其他包也应该定义为依赖这个包，这样在其他包编译之前会先编译这个包，并执行这些install动作以免其他包编译时找不到头文件。
 
-# Package/xxx/install
+
+
+# rules.mk
+
+大部分重要变量，都是在这里定义的。
 
 
 
@@ -652,6 +870,8 @@ CFE是一个bootloader。
 1、
 
 https://developer.aliyun.com/article/375992
+
+
 
 
 

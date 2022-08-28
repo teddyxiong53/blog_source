@@ -271,9 +271,181 @@ function checkAuth() {
 console.log("end of code")
 ```
 
+# promisify
+
+
+
+https://juejin.cn/post/7000026472832319495
+
+对于有返回值的函数，用promisify还比较好理解。
+
+但是对于setTimeout，promisify之后，是个什么情况呢？
+
+setTimeout的直接就是延时的效果。我把本来应该放到回调里的函数，直接放在延时的后面手动调用就好了。
+
+就等价于delay ms一样。
+
+```
+setTimeoutAsync = promisify(setTimeout)
+
+// var delay1 = function (ms) {
+//     return new Promise(resolve => setTimeout(resolve, ms))
+// }
+async function test () {
+    console.log('before')
+    // await delay1(1000)
+    var res = await setTimeoutAsync(1000)
+    //本来的回调放这里。
+    myfunc()
+    console.log(`after, res:${res}`)
+}
+```
+
+那对setInterval又是什么情况呢？
+
+这个需要多加一下封装代码才能达到效果。
+
+# 回调的promise化
+
+我看yodajs里，基本所有的接口都是返回promise，这就是所谓的promise化，那么这样带来的好处是什么？
+
+又有什么需要注意的地方呢？
+
+不得不面对的现实是仍然有大量的老旧的采用回调的方式的函数，
+
+如果你在业务开发中受不了了，
+
+那么就可以考虑一下 Promise 化你的 callback 调用
+
+其实我们仔细想想，最简陋的方式就是用一个 Promise 包装一下，
+
+自己实现的promisify函数如下：
+
+```js
+const promisify = (fn) => (...args) => new Promise((resolve, reject) => {
+        args.push(resolve)
+        fn.apply(this, args)
+    })
+```
+
+**将 resolve 替换为 callback 传给原函数就可以了**，
+
+如下：
+
+```
+var testCb = function (a, b, callback) {
+	setTimeout(()=> {
+		callback(a,b)
+	}, 1000)
+}
+
+promisify(testCb)(10,20).then(data=> {
+	console.log(data)
+})
+```
+
+
+
+或许你的函数设计者受 Node.js api 的影响，
+
+会将 `error` 对象作为 `callback` 的第一个参数，
+
+那么我们只需要将 `error` `reject` 就可以了
+
+```
+const promisify = (fn) => (...args) => new Promise((resolve, reject) => {
+    args.push((err, ...result) => {
+        if (err) reject(err)
+        else resolve.apply(this, result)
+    })
+    fn.apply(this, args)
+})
+```
+
+
+
+现在的JS异步编程，通常都会使用async/await模式，但要支持这个模式,await后面必须是一个Promise对象。
+因而对于现存的很多基于回调模式的API，我们需要将其Promise化来实现“类同步”调用。
+
+
+
+异步调用的问题：我不知道什么时候调用完成
+解决方案：
+
+1. 你调用完成后帮我执行剩下的逻辑
+2. 你调用完成后告诉我，我自己执行剩下的逻辑
+
+
+
+第二种方式更有利于将异步过程同步化，
+
+毕竟对我来说要做的就是等待然后执行下面的逻辑
+
+要实现“你调用完成告诉我”，
+
+我们需要一个中间容器**接收这个“信号”和返回值，**
+
+Promise就是这个容器
+
+要实现将回调**Promise化**，
+
+**本质**就是在回调函数中将“调用方”传入的参数(返回值)和调用完成的**“信号”存入Promise容器**
+
+**在JS中由于闭包的存在**，任何地方执行回调函数都能够影响外部变量，
+
+因而可以方便的更改Promise的状态，实现Promise化
+
+
+
+实现对setTimeout的promise化
+
+```
+function PromiseSetTimeout(handler, timeout) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            handler()
+            resolve()  // 核心就是这一步
+        }, timeout)
+    })
+}
+```
+
+调用这样：
+
+```
+PromiseSetTimeout(() => {
+    console.log("time out");
+}, 2000).then(data => {
+    console.log("then function after 2000ms");
+})
+```
+
+用async的方式调用
+
+```
+async function test() {
+    const ret = await PromiseSetTimeout(() => {
+        console.log("time out");
+    }, 2000)
+    console.log("then function after 2000ms")
+}
+ 
+test()
+```
+
 
 
 参考资料
+
+1、
+
+https://cloud.tencent.com/developer/article/1470718
+
+2、
+
+https://www.cnblogs.com/Peter2014/p/13023368.html
+
+# 参考资料
 
 1、理解 Promise 的工作原理
 
@@ -290,3 +462,7 @@ https://blog.csdn.net/Wbiokr/article/details/79490390
 4、Promise.resolve()
 
 https://www.jianshu.com/p/3bd1c6865bba
+
+5、
+
+https://juejin.cn/post/7042190759730085918

@@ -814,6 +814,12 @@ https://www.kancloud.cn/kangdandan/sqlite/64351
 
 https://blog.csdn.net/weixin_39465823/article/details/106348850
 
+# sqlite_master表
+
+这个表是sqlite数据库内置的。可以用来查询数据库里是否存在某个表格。
+
+SELECT * from sqlite_master where name = 'posts'
+
 # 参考资料
 
 1、sqlite教程

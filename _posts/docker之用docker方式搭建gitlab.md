@@ -159,6 +159,10 @@ https://blog.csdn.net/lss6378/article/details/86774492
 
 http://www.ruanyifeng.com/blog/2015/12/git-workflow.html
 
+# 允许用户自由注册
+
+
+
 # 参考资料
 
 1、

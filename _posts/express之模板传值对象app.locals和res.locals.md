@@ -29,6 +29,22 @@ app.use(function (req, res, next) {
 这个相当于不管什么情况下都传递的。
 ```
 
+`locals`可能存在于`app`对象中即：[`app.locals`](http://itbilu.com/nodejs/npm/VJ5TlyRnl.html#app-properties-locals)；
+
+也可能存在于`res`对象中，即：[`res.locals`](http://itbilu.com/nodejs/npm/Vkp32gJpg.html#res-prop-locals)。
+
+两者都会将该对象传递至所渲染的页面中。
+
+不同的是，`app.locals`会在整个生命周期中起作用；
+
+而`res.locals`只会有**当前请求中起作用。**
+
+由于`app.locals`在当前应用所有的渲染模中访问，
+
+这样我们就可以在该对象中定义一些顶级/全局的数据，
+
+并在渲染模板中使用。
+
 
 
 参考资料

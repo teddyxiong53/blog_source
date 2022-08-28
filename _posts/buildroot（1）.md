@@ -1020,6 +1020,60 @@ make sdk，就是得到一个压缩包，输出在output/images目录下，把�
 
 
 
+## 使用x86_64 qemu编译的工具链
+
+我使用这个qemu来模拟，想要单独把工具链编译出来。怎么执行命令？
+
+这个的依赖链条是这样的：
+
+![img](../images/random_name/toolChain003.PNG)
+
+编译过程是这样的：
+
+1、编译gcc需要的host工具：host-m4、host-mpc、host-mpfr、host-gmp。
+
+2、把第一步编译的工具安装到host/bin等目录下。
+
+3、编译host-binutils并安装到host目录下。
+
+4、编译第一阶段的compiler，host-gcc-initial。
+
+5、把linux-kernel-headers安装到staging目录下。依赖的这个linux-headers package。直接从网上下载对应版本的linux头文件。
+
+6、编译安装glibc等仓库并安装到staging目录。
+
+7、编译最终的host-gcc-final并安装到host/usr/bin目录下。
+
+
+
+要编译得到工具链，直接make toolchain就可以得到。
+
+安装在这个目录下：
+
+```
+buildroot/output/host/usr/bin
+```
+
+通过这个目录来引用就好了。
+
+
+
+参考资料
+
+https://hugh712.gitbooks.io/buildroot/content/tool_chains.html
+
+## 关于linux header头文件的版本
+
+在编译toolchain的时候，最重要的一个参数就是linux的头文件版本。
+
+这些头文件是用户程序跟kernel沟通的基准。
+
+如果头文件版本错了，那么就会有问题。
+
+因为kernel头文件是向下兼容的。所以头文件版本可以比实际的kernel旧，但是不能比实际的kernel的新。否则就可能出问题。
+
+
+
 # 替换boost库
 
 编译snapcast的时候，提示boost版本太低，提示当前还是1.66的，但是我明明已经替换为1.72的，而已经make boost-dirclean和make boost-rebuild了。
@@ -1219,6 +1273,26 @@ mkdir -p /home/hlxiong/work2/buildroot/buildroot-2020.02/output/host/lib
 mkdir -p /home/hlxiong/work2/buildroot/buildroot-2020.02/output/host/include
 case x86_64 in (*64) ln -snf lib /home/hlxiong/work2/buildroot/buildroot-2020.02/output/host/lib64;; (*)   ln -snf lib /home/hlxiong/work2/buildroot/buildroot-2020.02/output/host/lib32;; esac
 touch /home/hlxiong/work2/buildroot/buildroot-2020.02/output/build/host-skeleton/.stamp_host_installed
+```
+
+.config里相关的变量有：
+
+```
+BR2_ROOTFS_SKELETON_DEFAULT=y
+# BR2_ROOTFS_SKELETON_CUSTOM is not set
+BR2_PACKAGE_SKELETON=y
+BR2_PACKAGE_HAS_SKELETON=y
+BR2_PACKAGE_PROVIDES_SKELETON="skeleton-init-sysv"
+BR2_PACKAGE_SKELETON_INIT_COMMON=y
+BR2_PACKAGE_SKELETON_INIT_SYSV=y
+```
+
+最终系统的rootfs的骨架，就是：
+
+```
+skeleton
++ skeleton-init-common
++ skeleton-init-sysv
 ```
 
 
@@ -1917,6 +1991,178 @@ BR2_GLOBAL_PATCH_DIR="board/common-fooarch/patches board/fooarch-board/patches"
 
 
 BR2_LINUX_KERNEL_PATCH 不受BR2_GLOBAL_PATCH_DIR节制。
+
+# buildroot重要目录及变量名梳理
+
+```
+TOPDIR 
+	buildroot根目录。
+BASEDIR 
+	output目录
+HOST_DIR
+	host目录。
+TARGET_DIR
+	target目录。
+BUILD_DIR
+	build目录。
+$(@D)
+	这个是代码在build目录下的位置。
+	这个是Makefile的定义。
+STAGING_DIR
+	staging目录的位置。
+BR2_STATIC_LIBS
+	是否编译静态库。一般不编译的。
+	
+TARGET_MAKE_ENV
+TARGET_CFLAGS
+TARGET_LDFLAGS
+TARGET_CROSS
+TARGET_CC
+TARGET_LD
+TARGET_STRIP
+
+XX_CONF_ENV
+	这个是传递给autoconf的环境变量。
+	例如这样：
+	ALSA_LIB_CFLAGS = $(TARGET_CFLAGS)
+	ALSA_LIB_CFLAGS += xx
+	ALSA_LIB_CONF_ENV = \
+	CFLAGS="$(ALSA_LIB_CFLAGS)" \
+	LDFLAGS="$(TARGET_LDFLAGS) -lm"
+	
+```
+
+这些变量，很多是在package\Makefile.in文件里定义的。
+
+```
+TARGET_AR       = $(TARGET_CROSS)ar
+TARGET_AS       = $(TARGET_CROSS)as
+TARGET_CC       = $(TARGET_CROSS)gcc
+TARGET_CPP      = $(TARGET_CROSS)cpp
+TARGET_CXX      = $(TARGET_CROSS)g++
+TARGET_FC       = $(TARGET_CROSS)gfortran
+TARGET_LD       = $(TARGET_CROSS)ld
+TARGET_NM       = $(TARGET_CROSS)nm
+TARGET_RANLIB   = $(TARGET_CROSS)ranlib
+TARGET_READELF  = $(TARGET_CROSS)readelf
+TARGET_OBJCOPY  = $(TARGET_CROSS)objcopy
+TARGET_OBJDUMP  = $(TARGET_CROSS)objdump
+
+HOST_CPPFLAGS  = -I$(HOST_DIR)/include
+HOST_CFLAGS   ?= -O2
+HOST_CFLAGS   += $(HOST_CPPFLAGS)
+HOST_CXXFLAGS += $(HOST_CFLAGS)
+HOST_LDFLAGS  += -L$(HOST_DIR)/lib -Wl,-rpath,$(HOST_DIR)/lib
+
+```
+
+```
+TARGET_MAKE_ENV = PATH=$(BR_PATH)
+```
+
+```
+TARGET_CONFIGURE_OPTS = \
+	$(TARGET_MAKE_ENV) \
+	AR="$(TARGET_AR)" \
+	
+HOST_MAKE_ENV = \
+	PATH=$(BR_PATH) \
+	PKG_CONFIG="$(PKG_CONFIG_HOST_BINARY)" \
+	
+HOST_CONFIGURE_OPTS = \
+	$(HOST_MAKE_ENV) \
+	AR="$(HOSTAR)" \
+```
+
+
+
+目录名大多就是在Makefile里定义的。
+
+
+
+参考资料
+
+http://www.4k8k.xyz/article/haimo_free/107803544
+
+https://boozlachu.medium.com/buildroot-part-1-general-information-minimum-system-build-setup-via-menu-32fdb389eebc
+
+# buildroot的PROVIDES机制
+
+最近研究使用了yocto。对里面的PROVIDES机制有一些认识。
+
+现在看buildroot里，其实也是有PROVDES机制的。
+
+例如在skeleton-custom.mk里有：
+
+```
+SKELETON_CUSTOM_PROVIDES = skeleton
+```
+
+这个是说，skeleton-custom这个package对外呈现也是作为skeleton存在吗？
+
+# 什么时候需要完全重新编译
+
+
+
+# mkmakefile的使用
+
+文件在这里：
+
+buildroot\support\scripts\mkmakefile
+
+看注释里写的：
+
+```
+生成一个小的Makefile，在output目录下使用。
+允许在output目录下进行make。
+这个Makefile对于external module的编译更加方便。
+```
+
+mkmakefile是在Makefile里调用的。
+
+```
+.PHONY: outputmakefile
+outputmakefile:
+ifeq ($(NEED_WRAPPER),y)
+	$(Q)$(TOPDIR)/support/scripts/mkmakefile $(TOPDIR) $(O)
+endif
+```
+
+注释里写的是：
+
+```
+在指定-O使用不同的output目录时，方便在output目录下进行make。
+```
+
+所以就是-O会导致这个output/Makefile的生成。
+
+```
+ifeq ($(O),$(CURDIR)/output)
+CONFIG_DIR := $(CURDIR)
+NEED_WRAPPER =
+else
+CONFIG_DIR := $(O)
+NEED_WRAPPER = y
+endif
+```
+
+
+
+mkmakefile的参数有2个：
+
+```
+$(TOPDIR) $(O)
+```
+
+参数1是buildroot根目录。参数2是output目录。
+
+然后我们看看生成的output下面的Makefile是什么工作逻辑。
+
+没有什么特别的，相当于这样：
+
+```
+make -C /path/buildroot O=/path/output/xx/
+```
 
 
 
