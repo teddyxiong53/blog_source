@@ -1720,6 +1720,8 @@ DataPlayerRingbufHead_t
 
 没有什么特别的。
 
+
+
 ## halaudio.h
 
 ```
@@ -1994,4 +1996,18 @@ if (NULL == input || cJSON_IsNull(input)) {
 放in_AS_set_Settings这个函数里调用。
 
 不用专门去调用，默认就处理到这个初始化了。
+
+# 经过hdmi和不经过hdmi的信号分开初始化
+
+现在需要加快开机出声音的速度。
+
+等待mcu ready耗时比较长。
+
+有些信号根本不依赖mcu ready状态。所以可以不用等。
+
+加一个函数进行判断，判断当前的input 信号是否依赖mcu ready。
+
+然后分开处理。
+
+
 
