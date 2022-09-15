@@ -218,7 +218,7 @@ hlxiong@hlxiong-VirtualBox:~/work/test/patch/v1$ ls
 
 
 
-参考资料
+# 参考资料
 
 1、补丁(patch)的制作与应用
 

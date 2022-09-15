@@ -2009,5 +2009,81 @@ if (NULL == input || cJSON_IsNull(input)) {
 
 然后分开处理。
 
+# 再梳理一遍audioservice
+
+```
+现在要把audioservice的代码再理解一次。
+其实代码也并不多。完全在可控范围内。
+
+libasclient.so包括的文件有：
+	audioservice_gdbus.c 
+	aml_syslog.c 
+	as_client.c 
+	as_client_shm.c 
+	aml_event.c
+audioservice、homeapp、asplay都链接到了这个库。
+
+audio_hw_device_set_config_jason
+	把json字符串传递给halaudio。存到全局变量里。然后adev_open的时候会用到。
+	
+	
+	
+HalAudio_Init
+	1、audio_hw_device_set_config_jason
+	2、halaudio_spdif_init
+		2.1、audio_hw_device_get_module
+		2.2、audio_hw_device_open
+	3、in_HalAudio_EventInit
+		halaudio.c里的event线程创建。
+	4、AS_External_InputInit
+		对hdmi repeater进行初始化。
+		放在这里有必要吗？
+		repeater跟halaudio并没有关联吧。
+		我觉得可以把external的提取到halaudio之外。
+		直接放在input_mgr.c里。
+		还是有些external接口需要在这halaudio里调用。例如open的。
+		in_HalAudio_HandleInputOpen调用了AS_External_InputOpen
+		
+要明确每个文件的作用以及函数命名。
+要像拆解机器零件的方式，
+as_alsa.c
+	amixer调节音量。
+	这个功能独立，没有疑问。
+as_client_shm.c
+	只有100多行代码。
+	client_shm_init
+	就是对一个buffer进行写入操作。
+	没有提供头文件。只被as_client.c使用了。在这个文件里都使用extern声明了对应的几个函数。
+	
+as_client.c
+	接口都是这种格式
+	AS_Client_XX
+	文件较长，有2600行。
+	主要的作用是：
+	代表了一个dbus client。
+	所以homeapp和asplay主要基于这个进行通信。
+	除了各种set接口，还有一个重要的东西，就是通知。接收audioservice发出来的signal。
+	收到signal时，调用这个：
+	if (asclient_notify_handle)
+		AmlEvent_AddEvent(asclient_notify_handle, 0, (void*)arg_json);
+	收到的signal内容是json字符串。
+	
+	AS_Client_Play：可以被usb_player.c调用。这个应该就是走halaudio方式的usb播放。
+		调用audioservice_call_decoder_open_sync
+		最后是调用AS_dataplayer_open
+		是操作shmem。这个跟halaudio进行通信了吗？
+		data_player.c里，有ffmpeg和dolby这2套解码方式。
+		那就还是要用这里的ffmpeg的方式？
+		因为我们只播放普通的。
+		这一层封装，主要是为了兼容ffmpeg和dolby。如果只用ffmpeg方式，那么是没有必要的。
+asplay.c xx.wav
+	可以直接播放文件的。
+	
+
+homeapp不直接操作config文件。都通过dbus让audioservice去操作。
+虽然麻烦了一点，但是这样是对的。应该这样。
+
+```
+
 
 

@@ -81,12 +81,12 @@ func main是入口函数。
 
 标识符如果首字母是大写的，那么就外部可见。如果是小写字母开头的，那么外部不可见。
 
-这个处理率有点类似python的下划线。
+这个处理有点类似python的下划线。
 
 如果命令行方式来编译：
 
 ```
-go build test.py
+go build test.go
 然后运行
 ./test
 ```
@@ -94,7 +94,7 @@ go build test.py
 也可以直接运行：
 
 ```
-go run test.py
+go run test.go
 ```
 
 对左大括号也有了强制要求。
@@ -521,7 +521,7 @@ https://gitee.com/longfei6671/gocaptcha
 
 另外，在命令行go run main.go可以。在goland里右键运行，目录有点对不上。
 
-
+# beego
 
 beego是一个go语言的web框架。
 
@@ -1612,7 +1612,7 @@ func main() {
 
 
 
-参考资料
+# 参考资料
 
 1、
 

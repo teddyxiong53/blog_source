@@ -1992,6 +1992,44 @@ BR2_GLOBAL_PATCH_DIR="board/common-fooarch/patches board/fooarch-board/patches"
 
 BR2_LINUX_KERNEL_PATCH 不受BR2_GLOBAL_PATCH_DIR节制。
 
+
+
+ I generated the patch by going to `buildroot` repo, 
+
+applying the changes to package, 
+
+committing them with git and creating a patch from the last commit: `git format-patch HEAD~1` 
+
+So the patch looks like this:
+
+现在我要打的patch，跟buildroot本身的那个patch，还不是一回事。
+
+buildroot本身的package下面的patch，是打到output下面去的。
+
+
+
+以hifiberry-os的为例
+
+configs\config3里
+
+```
+BR2_GLOBAL_PATCH_DIR="../hifiberry-os/buildroot/patches"
+```
+
+
+
+buildroot\buildroot-dev.patch
+
+这样的patch。好像就是对buildroot进行全局打补丁的操作。修改了各个package的内容。
+
+
+
+BR2_GLOBAL_PATCH_DIR 这个变量里，用空格分开的多个目录。
+
+还是手动来，不要借助buildroot自带的机制了。
+
+
+
 # buildroot重要目录及变量名梳理
 
 ```
@@ -2164,7 +2202,15 @@ $(TOPDIR) $(O)
 make -C /path/buildroot O=/path/output/xx/
 ```
 
+# 添加一个kernel module的编译
 
+
+
+
+
+参考资料
+
+https://stackoverflow.com/questions/40307328/how-to-add-a-linux-kernel-driver-module-as-a-buildroot-package
 
 # 参考资料
 

@@ -455,6 +455,20 @@ Jul 08 02:41:58 mesona5-av400 audioservice_ctl.sh[886]: OK
 
 https://blog.csdn.net/Peter_JJH/article/details/108446380
 
+# ExecStart可以阻塞吗
+
+导致此问题的原因是：hello.service类型选择有问题, 不应该选forking类型；类型改为Type=simple（或删除Type=forking这句），问题便得到解决。
+
+这样：
+
+```
+python3 -m http.server  --directory /home/teddy/.config/clash/clash-dashboard/dist 3000
+```
+
+
+
+https://www.csdn.net/tags/MtTaMg1sNTczNjk0LWJsb2cO0O0O.html
+
 
 
 # 参考资料

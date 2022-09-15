@@ -34,14 +34,14 @@ HDMI定义了五种类型的connector，上图是最常见的type A。
 10-12是TMDS clock传输用到的引脚，共有一组，TMDS clock就是pixel clock；
 13是CEC引脚，一种消费电子兼容的传输协议；
 14是保留引脚；
-15,16是DDC的引脚，DDC是基于I2C协议传输，故引脚为SCL和SDA；
+15,16是DDC的引脚，**DDC是基于I2C协议传输，故引脚为SCL和SDA；**
 17是接地；
 18是+5V power；
 19是HPD引脚，用于建立连接。
 
 
 
-HDMI传输由三组TMDS通道和一组TMDS clock通道组成，TMDS clock的运行频率是video信号的pixel频率，在每个cycle，每个TMDS data通道发送10bit数据。
+HDMI传输由三组TMDS通道和一组TMDS clock通道组成，**TMDS clock的运行频率是video信号的pixel频率**，在每个cycle，每个TMDS data通道发送10bit数据。
 
 
 
@@ -64,7 +64,7 @@ CEA extension verison3如下图所示。
 
 二、HDMI有什么特性？
 
-1、可以传送无压缩的音频信号及高分辨率视频信号，数字信号，质量高。
+1、可以传送**无压缩的音频信号**及高分辨率视频信号，数字信号，质量高。
 
 2、提高高达5Gbps的数据传输带宽。
 
@@ -78,7 +78,29 @@ CEA extension verison3如下图所示。
 
 7、HDMI兼容性不好。
 
-参考资料
+# hdmi转vga
+
+
+
+## 参考资料
+
+https://ee.ofweek.com/2020-04/ART-8100-2800-30434699.html
+
+# ADV7627
+
+这个中文手册可以用来了解一些概念。
+
+https://www.analog.com/media/cn/technical-documentation/data-sheets/ADV7627_cn.pdf
+
+
+
+# hdmi文档
+
+http://www.cesi.cn/images/editor/20181031/20181031090234756.pdf
+
+
+
+# 参考资料
 
 1、
 
