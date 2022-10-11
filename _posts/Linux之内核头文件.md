@@ -37,3 +37,38 @@ tags:
 
 2、定义内核与用户空间的接口。
 
+# asm和asm-generic目录的关系
+
+asm的路径是 arch/xxx/include/asm/
+
+asm-generic 的路径是 include/asm-generic/
+
+
+
+代码中包含asm/中的头文件，**如果某一个架构没有自己特殊代码的话，其中会使用通用版本的头文件**，即包含 asm-generic/里的对应.h文件。
+
+代码中不会直接包含 asm-generic/ 里的.h文件
+
+
+
+
+
+拿arm来举例
+
+\#include <asm/gpio.h> 引用的头文件是 arch/arm/include/asm/gpio.h 
+
+\#include <asm-generic/gpio.h> 引用的是头文件是 include/asm-generic/gpio.h
+
+
+
+asm目录从名字看，就知道是汇编相关的，是为了针对各个arch提高一些底层操作的效率。
+
+asm-generic有不少是提供的空文件。
+
+有些里面就是一个空函数。
+
+
+
+参考资料
+
+https://www.cnblogs.com/sammei/archive/2013/03/14/3295598.html

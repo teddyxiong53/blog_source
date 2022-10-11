@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 ![img](../images/random_name/v2-323ca01cf89d720b04b7df3d1f3026e3_720w.jpg)
 
@@ -452,9 +452,142 @@ struct snd_interval {
 
 
 
+```
+struct snd_interval {
+		unsigned int min, max;
+		//openmin和openmax代表开集：
+		//openmin和openmax都为1时，代表开区间，range范围为(min,max)
+		//openmin=1,openmax=0时，range范围为(min,max] 即开区间和闭区间
+		unsigned int openmin:1,
+					 openmax:1,
+					 //integer等于1,表示it不是一个范围区间,而是一个固定的interger整型值
+					 integer:1,
+					 empty:1;
+}
+```
+
 
 
 https://blog.csdn.net/dengdun6257/article/details/102283475
+
+# near接口问题
+
+
+
+`__old_snd_pcm_hw_params_get_rate` 只能接收2个参数，val是一个内部变量，从而导致返回值错误，但是为什么动态链接和静态链接调用堆栈不同还不清楚
+
+解决办法
+目前想到的就是不用这些接口，即`__OLD_GET，__OLD_GET1，__OLD_NEAR，__OLD_NEAR1`修饰的接口都不用，包括官网的例子也没用这样的接口，如下：
+
+
+
+https://blog.csdn.net/u010687717/article/details/103704419
+
+
+
+# snd_pcm_hw_refine
+
+```
+changed = snd_mask_refine(m, constrs_mask(constrs, k));
+                //changed masks，如果成功重定义了参数，cmask记录下是哪个参数被改变
+                if (changed)
+                        params->cmask |= 1 << k;
+                if (changed < 0)
+                        return changed;
+```
+
+
+
+```
+snd_pcm_hw_refine函数里面有个很重要的参数：constrs = &substream->runtime->hw_constraints
+hw_constraints即硬件约束条件，这里是在哪里赋值的呢？
+其实是在snd_pcm_hw_constraints_complete函数里面：
+```
+
+
+
+https://blog.csdn.net/Guet_Kite/article/details/114314003
+
+
+
+# 调试方法
+
+```
+export LIBASOUND_DEBUG=1
+	这个环境变量控制了这些打印：
+	hw_params配置有问题时的打印，靠这个来控制。
+	--with-debug=no 会关闭这个特性。
+	只在dump_hw_params函数里使用了这个环境变量。
+	
+REFINE_DEBUG
+	这个是在refine函数调整参数把调整的细节打印出来。
+	
+```
+
+
+
+```
+#define ALSA_PCM_OLD_HW_PARAMS_API
+#define ALSA_PCM_OLD_SW_PARAMS_API
+#include <alsa/asoundlib.h>
+```
+
+# --with-versioned   
+
+```
+--with-versioned        shared library will be compiled with versioned
+                          symbols (default = yes)
+```
+
+我在yocto下编译得到的alsa-lib总是有问题。
+
+而buildroot的没有问题。
+
+经过对比发现是这个选项不一样。
+
+buildroot默认带上了这个选项：
+
+```
+--without-versioned
+```
+
+这个选项对代码的实际影响是什么？
+
+```
+VERSIONED_SYMBOLS 
+```
+
+
+
+```
+#if defined(PIC) && defined(VERSIONED_SYMBOLS) /* might be also configurable */
+#define USE_VERSIONED_SYMBOLS
+#endif
+```
+
+
+
+```
+#ifdef USE_VERSIONED_SYMBOLS
+#define use_symbol_version(real, name, version) \
+		symbol_version(real, name, version)
+#define use_default_symbol_version(real, name, version) \
+		default_symbol_version(real, name, version)
+#else
+#define use_symbol_version(real, name, version) /* nothing */
+```
+
+
+
+参考资料
+
+https://blog.csdn.net/njuitjf/article/details/40544659
+
+
+
+https://www.cnblogs.com/arnoldlu/p/13552504.html
+
+
 
 # 参考资料
 

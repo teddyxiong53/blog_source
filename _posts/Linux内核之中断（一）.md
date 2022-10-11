@@ -3,7 +3,7 @@ title: Linux内核之中断（一）
 date: 2018-03-24 10:13:24
 tags:
 	- Linux内核
-typora-root-url: ..\
+typora-root-url: ../
 ---
 
 
@@ -146,7 +146,19 @@ asm_do_IRQ 这个就是在中断向量那里。
 
 
 
-中断子系统内部定义了几个重要的数据结构，这些数据结构的各个字段控制或影响着中断子系统和各个irq的行为和实现方式。例如：irq_desc，irq_chip，irq_data，irqaction，等等。其中 irq_desc[NR_IRQS]数组是linux内核中用于维护IRQ资源的管理单元，它记录了某IRQ号对应的流控处理函数，中断控制器、中断服务程序、IRQ自身的属性、资源等，是内核中断子系统的一个核心数组，中断驱动接口“request_irq()”就是通过修改该数组以实现中断的注册。
+中断子系统内部定义了几个重要的数据结构，
+
+这些数据结构的各个字段控制或影响着中断子系统和各个irq的行为和实现方式。
+
+例如：irq_desc，irq_chip，irq_data，irqaction，等等。
+
+其中 irq_desc[NR_IRQS]数组是linux内核中用于维护IRQ资源的管理单元，
+
+它记录了某IRQ号对应的流控处理函数，中断控制器、中断服务程序、IRQ自身的属性、资源等，
+
+是内核中断子系统的一个核心数组，
+
+中断驱动接口“request_irq()”就是通过修改该数组以实现中断的注册。
 
 ## 硬件封装层
 
@@ -528,7 +540,49 @@ static DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
 
 
 
+# request_threaded_irq
 
+跟request_irq参数区别基本一致，多了一个irq_handler_t（request_irq函数只有一个，而本函数有2个）。
+
+2个irq_handler_t函数指针，一个是上半部，一个是下半部。
+
+上半部是在中断上下文。
+
+下半部是在进程上下文。
+
+2个函数指针，可以只有其中一个，看你的实际需求了。
+
+如果只有上半部，不需要下半部，那么上半部的处理函数返回值就是IRQ_HANDLED，否则返回IRQ_WAKE_THREAD。
+
+上半部举例：
+
+```
+static irqreturn_t xx_top_half(int irq, void *p) {
+	return IRQ_WAKE_THREAD;
+}
+```
+
+下半部举例：
+
+```
+static irqreturn_t xx_bottom_half(int irq, void *p) {
+	return IRQ_HANDLED;
+}
+```
+
+
+
+# kernel中断通知应用
+
+
+
+
+
+参考资料
+
+Linux驱动实践：中断处理函数如何【发送信号】给应用层？
+
+https://cloud.tencent.com/developer/article/1922135
 
 # 参考资料
 

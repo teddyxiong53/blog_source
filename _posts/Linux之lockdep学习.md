@@ -62,7 +62,11 @@ thread1是先用A再用B，thread2刚好相反。
 
 
 
+# 参考资料
 
+1、
+
+https://blog.csdn.net/lqxandroid2012/article/details/53784323
 
 
 

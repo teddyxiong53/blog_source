@@ -297,6 +297,10 @@ gpio-nand
 						dev->driver->name);
 ```
 
+GPIO_ACTIVE_HIGH
+
+这个是对于输出有用吧。对于输入，应该就是忽略了。
+
 
 
 # 参考资料

@@ -12,7 +12,7 @@ tags:
 
 udev使用inotify机制来监测udev的规则文件是否发生变化。udev和驱动模块之间的uevent使用socket。
 
-#编写驱动文件
+# 编写驱动文件
 
 写一个demo_device.c和demo_driver.c。
 

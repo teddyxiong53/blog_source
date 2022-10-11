@@ -30,3 +30,7 @@ jiffies，我们只能进行读。靠定时器的中断来进行jiffies值的累
 1、linux 使用 jiffies 计数器
 
 https://www.cnblogs.com/fanweisheng/p/11141978.html
+
+2、jiffies溢出与时间先后比较-time_after,time_before
+
+https://blog.csdn.net/jk110333/article/details/8177285

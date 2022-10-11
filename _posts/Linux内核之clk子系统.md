@@ -38,9 +38,9 @@ Clock统是Linux内核中专门管理时钟的子系统.
 
 
 
-在上图的时钟树中, 有些是clock的提供者, 我们可以称之为provider, 例如oscillator, PLLs;
+在上图的时钟树中, 有些是clock的提供者, 我们可以称之为**provider**, 例如oscillator, PLLs;
 
- 有些是clock的使用者, 我们可以称之为consumer, 例如HW1, HW2, HW3.
+ 有些是clock的使用者, 我们可以称之为**consumer**, 例如HW1, HW2, HW3.
 
 
 
@@ -354,3 +354,6 @@ http://www.mysixue.com/?p=129
 
 https://blog.csdn.net/cc289123557/article/details/80098586
 
+3、
+
+https://blog.csdn.net/weixin_43644245/article/details/122223192

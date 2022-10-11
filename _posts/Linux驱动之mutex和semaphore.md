@@ -8,7 +8,7 @@ tags:
 
 
 
-#mutex
+# mutex
 
 mutex中文叫互斥锁。mutex是一个缩写，是Mutual Exclusion。相互排斥的意思。
 

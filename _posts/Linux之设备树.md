@@ -1593,7 +1593,7 @@ https://www.cnblogs.com/pengdonglin137/p/7401049.html
 spk_mute-gpios = <&gpio GPIOD_2 GPIO_ACTIVE_LOW>;
 ```
 
-不配置复用，那么默认就都是gpio。
+**不配置复用，那么默认就都是gpio。**
 
 以i2c芯片的复位引脚为例。也都是在设备驱动里加的。
 
@@ -1610,6 +1610,16 @@ tas5707_36: tas5707_36@1b {
 # flattened device tree
 
 缩写为fdt。具体是指什么？
+
+# 操作接口api
+
+一般使用哪些接口进行设备树的解析呢？
+
+在linux/of.h里。
+
+一般用of_property_read_xx这些接口来读取。
+
+驱动代码里，device内部有of_node指针，用这个指针来作为解析的起点。
 
 
 

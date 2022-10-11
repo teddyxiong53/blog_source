@@ -29,7 +29,7 @@ tags:
 struct subsys_private - structure to hold the private to the driver core portions of the bus_type/class structure.
 ```
 
-是给bus_type和class用的。所以曲面是subsys这样一个抽象的名字。
+是给bus_type和class用的。所以取名是subsys这样一个抽象的名字。
 
 结构体的成员
 

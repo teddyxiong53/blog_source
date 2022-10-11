@@ -4641,6 +4641,23 @@ https://stackoverflow.com/questions/37815066/where-do-the-virtual-terms-come-fro
 
 Using systemd with musl is not recommended
 
+# ERROR: No recipes available for
+
+编译出现了这个错误。
+
+```
+ERROR: No recipes available for:
+  /mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/code2/meta-meson/recipes-support/cryptsetup/cryptsetup_2.3.2.bbappend
+```
+
+我觉得直接的原因是，cryptsetup的bb文件，没有2.3.2的。
+
+之前为什么没有碰到这个问题？
+
+难道是没有使能？
+
+之前有2.3.2的文件。现在只有2.3.7的，把2.3.2的文件放进来就好了。
+
 
 
 # 参考资料

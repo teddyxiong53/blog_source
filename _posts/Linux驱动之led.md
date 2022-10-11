@@ -503,6 +503,16 @@ static struct led_trigger heartbeat_led_trigger = {
 
 
 
+在设备树文件中，d2内容“linux,default-trigger = “heartbeat””，
+
+所以当前触发器为heartbeat，
+
+此时可以观察d2对应的LED灯，正常会每1秒间隔闪烁2次，也就是heartbeat效果。
+
+想要重新设置触发器很简单，使用echo将需要的触发器名称写入trigger文件即可。
+
+> echo timer > /sys/bus/platform/devices/leds/leds/d2/trigger
+
 
 
 # 参考资料
@@ -518,3 +528,7 @@ https://blog.csdn.net/Tommy_wxie/article/details/7622498
 3、Linux内核的LED设备驱动框架
 
 https://cloud.tencent.com/developer/article/1600462
+
+4、
+
+https://blog.csdn.net/fengweibo112/article/details/102744366
