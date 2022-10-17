@@ -80,7 +80,109 @@ i2cget  -f -y 2 0x40 0xc3
 
 
 
-参考资料
+# 16bit寄存器地址操作
+
+如果寄存器的地址是16bit的，那么应该怎么操作呢？
+
+SOLVED! I found the solution for this and it requires using the `i2cset` block write option (`i`) as follows:
+
+```
+i2cset -y -f 2 0x3c 0x30 0x30 0x40 i
+```
+
+This command writes the value 0x40 to register address 0x3030 at device address 0x3c.
+
+
+
+根据数据手册可知：
+
+#define CHIP_ID                0x007750
+#define OV7251_REG_CHIP_ID        0x300a
+
+首先 设置要读取的地址 0x300a
+
+[root@YoudaoDictionaryPen-997:/]# i2cset -y -f 2 0x60 0x30 0x0a
+然后读取两个字节的数据：
+
+[root@Pen-997:/]# i2cget -y -f 2 0x60
+0x77
+[root@Pen-997:/]# i2cget -y -f 2 0x60
+0x50
+
+
+
+
+
+https://blog.csdn.net/nicholas_duan/article/details/115169924
+
+# 用户态i2c读写代码
+
+先open /dev/i2c-0这样的设备，然后用ioctl进行读写操作。
+
+借助的消息结构体是：
+
+```
+struct i2c_rdwr_ioctl_data {
+	struct i2c_msg __user *msgs;	/* pointers to i2c_msgs */
+	__u32 nmsgs;			/* number of i2c_msgs */
+};
+```
+
+执行操作
+
+```
+ioctl(handle->fd, I2C_RDWR, (unsigned long)&work_queue);
+```
+
+读操作：
+
+```
+int i2c_read_data(unsigned int slave_addr, unsigned char reg_addr)
+{
+    unsigned char data;
+    int ret;
+
+    struct i2c_rdwr_ioctl_data i2c_read_lcd;
+
+    struct i2c_msg msg[2] = { 
+        [0] = {                                                         //第一个数据包
+            .addr   = slave_addr,                                       //从机地址
+            .flags  = 0,                                                //flags=1表示写操作,这里写的就是从机的寄存器地址
+            .buf    = &reg_addr,                                        //要发送的数据
+            .len    = sizeof(reg_addr),
+        },
+        [1] = {                                                         //第二个数据包
+            .addr   = slave_addr,  
+            .flags  = 1,                                                //进行读的操作
+            .buf    = &data, 
+            .len    = sizeof(reg_addr),
+        },
+    };
+
+    i2c_read_lcd.msgs = msg;
+    i2c_read_lcd.nmsgs = 2;
+
+    ret = ioctl(fd, I2C_RDWR, &i2c_read_lcd);
+
+    if(ret < 0){
+        perror("ioctl error/n");
+        return ret;
+    }
+
+    return data;
+
+}
+```
+
+
+
+
+
+https://blog.csdn.net/szm1234/article/details/114231261
+
+
+
+# 参考资料
 
 1、i2c-tools使用及调试
 

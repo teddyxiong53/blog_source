@@ -773,6 +773,20 @@ https://www.zybuluo.com/khan-lau/note/254724
  -A <platform-name>        
 ```
 
+# cmake配置交叉编译工具链
+
+https://www.cnblogs.com/god-of-death/p/14616156.html
+
+
+
+The C compiler identification is unknown
+
+
+
+Could not find toolchain file: cmake/toolchain.cmake
+
+
+
 
 
 # 参考资料

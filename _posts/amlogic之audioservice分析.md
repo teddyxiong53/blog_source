@@ -2087,3 +2087,28 @@ homeapp不直接操作config文件。都通过dbus让audioservice去操作。
 
 
 
+# ite相关的内容
+
+```
+typedef enum {
+  EM_AUDIO_TYPE_PCM = 0,
+  EM_AUDIO_TYPE_NLPCM = 1,
+  EM_AUDIO_TYPE_HBR = 2,
+  EM_AUDIO_TYPE_DSD = 3
+} MCU_AUDIO_TYPE;
+```
+
+这个枚举就是跟ite的寄存器定义内容相关的。
+
+不过我们这样转换了一下再用的。
+
+```
+  if (EM_AUDIO_TYPE_NLPCM == audio_type || EM_AUDIO_TYPE_HBR == audio_type) {
+    pHandle->is_bitstream = 1;
+  } else {
+    pHandle->is_bitstream = 0;
+  }
+```
+
+is_bitstream没有传递给halaudio使用。主要用来判断音频格式是否变化了。
+

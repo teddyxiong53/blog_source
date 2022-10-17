@@ -247,3 +247,36 @@ halaudio相当于把tinyalsa和alsa的揉在了一起。
 
 优先使用tinyalsa，搞不定部分用alsa来做。
 
+# 对alsa和tinyalsa的使用
+
+input是用tinyalsa接口。
+output是用alsa接口。
+
+这个可以从代码中看出来：
+
+```
+size_t aml_alsa_input_read(void *handle, void *buffer, size_t bytes)
+这个函数里使用的是：
+pcm_read 这种tinyalsa接口。
+open里也是pcm = pcm_open
+
+```
+
+```
+size_t standard_alsa_output_write(void *handle, const void *buffer, size_t bytes)
+这个用的snd_pcm_writei这种alsa接口。
+其实也可以用aml_alsa_output_open，但是没有用。
+```
+
+主要是output的场景更复杂一些。
+
+
+
+patch可以理解为pipeline。
+
+create_patch的时候，创建了2个线程，要给input，一个output。
+
+
+
+input的数据，写入到patch->aml_ringbuffer这个ringbuffer里。
+

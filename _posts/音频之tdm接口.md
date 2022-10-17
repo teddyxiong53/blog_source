@@ -154,6 +154,20 @@ tinymix "MultiMedia1 Mixer SEN_TDM_TX_0" "1"
 
 
 
+# tdm和i2s区别
+
+```
+I need to receive 8 channels of 24 bits at 48KHz. So I have two possibilities to accomplish that: either using 4 I2S or TDM.
+
+I would like to understand the difference in clock rates between I2S and TDM. For example: in TDM mode the bit rate is 24 x 48KHz x 8 = 9.216 Mbps. In I2S mode the bit rate is slower once it transmits just two channels : 24 x 48KHz x 2 = 2.304 Mbps.
+```
+
+
+
+https://electronics.stackexchange.com/questions/601569/multi-channel-i2s-vs-tdm
+
+
+
 # 参考资料
 
 1、TDM格式介绍 - 音频数据传输的常见IC间数字接口介绍
