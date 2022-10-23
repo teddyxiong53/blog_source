@@ -30,7 +30,7 @@ MicroPython可以被简写为uPy。
 
 打印：是python3的语法。print("hello")，要带括号的。
 
-#2.脚本执行 
+# 2.脚本执行 
 
 我是挂载SD卡到根目录的。
 

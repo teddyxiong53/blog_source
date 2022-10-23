@@ -14,9 +14,19 @@ plughw：会自己根据需要自行使用rate等插件。
 
 而且plughw不会增加latency。不同于dmix。
 
+看/usr/share/alsa/alsa.conf里的hint内容：
+
+```
+plughw的是这样：
+Hardware device with all software conversions
+
+hw的是这样：
+Direct hardware device without any conversions
+```
 
 
-参考资料
+
+# 参考资料
 
 1、
 

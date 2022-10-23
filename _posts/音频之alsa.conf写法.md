@@ -393,9 +393,9 @@ alsa.conf最终被解释为一棵树，它的节点是struct _snd_config结构�
 
 # defaults
 
-一般alsa设置了一个defaults设备，音频播放软件默认使用defaults设备输出声音。defaults设备定义在alsa.conf中。
+一般alsa设置了**一个defaults设备，**音频播放软件默认使用defaults设备输出声音。defaults设备定义在alsa.conf中。
 
-defaults会默认匹配card number和device number比较小的声卡。
+**defaults会默认匹配card number和device number比较小的声卡。**
 
 alsa的配置文件是alsa.conf位于/usr/share/alsa目录下，通常还有/usr/share/alsa/card和/usr/share/alsa/pcm两个子目录用来设置card相关的参数，别名以及一些PCM默认设置。以上配置文件，我等凡夫从不用修改，修改它们是大神的工作。
 
@@ -462,7 +462,7 @@ asym是一个插件，作用是把半双工的插件（比如dsnoop、dmix）转
 
 dsnoop是d + snoop（探听）。
 
-跟dmix类似，只不过dmix用在播放上，而dsnoop用在录音上。
+**跟dmix类似，只不过dmix用在播放上，而dsnoop用在录音上。**
 
 d表示：direct。
 
@@ -676,6 +676,26 @@ aplay -Dplug:\'dmix:SLAVE=\"hw:1,0\",RATE=44100\' <filename>
 
 aplay -D"plug:'dmix:FORMAT=S32_LE'" <filename>
 ```
+
+# 一个比较复杂的例子
+
+https://unix.stackexchange.com/questions/511175/using-and-configuring-alsa-plugins-dmix-and-dsnoop-for-stereo-play-and-capture
+
+这个例子是要实现一个比较复杂的输入输出。
+
+```
+I installed a new PCI based soundcard in my PC. It has 8 S/PDIF based I/O pairs with each line numbered 1 to 8 for input as well as output. And I'm trying to use lines 3-8 for input (mics) and 3-8 for output (play) in stereo with :
+
+line 3 + line 4 = channel 1 (both input and output),
+line 5 + line 6 = channel 2 (both input and output),
+line 7 + line 8 = channel 3 (both input and output).
+```
+
+但是没有看到最终解决的。
+
+# 一份比较好的文档
+
+https://vovkos.github.io/doxyrest/samples/alsa/page_pcm_plugins.html
 
 
 

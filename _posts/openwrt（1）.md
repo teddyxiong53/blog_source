@@ -87,8 +87,8 @@ feed.conf.default：这个是fee的时候，从哪里取数据，原版是从ope
 
 ```
 ./scripts/feeds update -a 
-   ./scripts/feeds install -a
-   make menuconfig 
+./scripts/feeds install -a
+make menuconfig 
 ```
 
 默认就是x86的的配置。我就要这个。
@@ -514,11 +514,11 @@ make package-rokid-property-compile
 
 另外一个不爽的点是有大写字母，目前没有发现什么规律。
 
-下面的变量分为两个大类：
+**下面的变量分为两个大类：**
 
-1、Package开头的。表示ipk打包相关的。
+**1、Package开头的。表示ipk打包相关的。**
 
-2、Build开头的。编译代码目录编译相关的。
+**2、Build开头的。编译代码目录编译相关的。**
 
 
 
@@ -712,6 +712,12 @@ make package/boot/uboot-meson/clean V=s -j1
 make package/boot/uboot-meson/prepare V=s -j1
 make package/boot/uboot-meson/compile V=s -j1
 make package/boot/uboot-meson/install V=s -j1
+```
+
+
+
+```
+WARNING: your configuration is out of sync. Please run make menuconfig, oldconfig or defconfig!
 ```
 
 

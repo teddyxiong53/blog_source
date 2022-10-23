@@ -2212,6 +2212,209 @@ make -C /path/buildroot O=/path/output/xx/
 
 https://stackoverflow.com/questions/40307328/how-to-add-a-linux-kernel-driver-module-as-a-buildroot-package
 
+
+
+# amlogic buildroot分析
+
+source setenv.sh的最后执行了这个。生成了.config文件和output/xxx目录。
+
+```
+make O="$TARGET_OUTPUT_DIR" "$TARGET_BUILD_CONFIG"_defconfig
+```
+
+顶层Makefile，就是include了output/xx下面的Makefile。
+
+里面有这样：
+
+```
+MAKEARGS := -C /mnt/fileroot/hanliang.xiong/work/a113x2/code14/buildroot
+MAKEARGS += O=$(if $(patsubst /%,,$(makedir)),$(CURDIR)/)$(patsubst %/,%,$(makedir))
+```
+
+关键就是这个MAKEARGS参数加的内容了。
+
+一个-C。一个O。
+
+# Makefile.legacy
+
+这个文件的作用是把那些过时的变量放到这里来。
+
+例如这个：
+
+```
+ifneq ($(BUILDROOT_DL_DIR),)
+ifneq ($(BUILDROOT_DL_DIR),$(DL_DIR))
+$(error "The BUILDROOT_DL_DIR environment variable was renamed to BR2_DL_DIR.")
+endif
+endif
+```
+
+不过内容不多。没有多少过时的变量。
+
+Makefile.legacy被Makefile include了。
+
+还是放在include文件的最前面
+
+```
+all: world
+
+# Include legacy before the other things, because package .mk files
+# may rely on it.
+include Makefile.legacy
+
+include system/system.mk
+```
+
+# system.mk
+
+从上面看system.mk在Makefile里include的位置也是最靠前的。
+
+system.mk里有注释这样写着：
+
+```
+# Some variables may be used as conditions in Makefile code, so they must be
+# defined properly before they are used; this file is included early, before
+# any package is.
+```
+
+# package/Makefile.in
+
+这个定义了基本的编译选项。
+
+```
+TARGET_CPPFLAGS += -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
+TARGET_CFLAGS = $(TARGET_CPPFLAGS) $(TARGET_ABI) $(TARGET_OPTIMIZATION) $(TARGET_DEBUGGING) $(TARGET_HARDENED)
+TARGET_CXXFLAGS = $(TARGET_CFLAGS)
+TARGET_FCFLAGS = $(TARGET_ABI) $(TARGET_OPTIMIZATION) $(TARGET_DEBUGGING)
+```
+
+定义了交叉工具链的位置和名字
+
+```
+TARGET_CROSS = $(HOST_DIR)/bin/$(TOOLCHAIN_EXTERNAL_PREFIX)-
+TARGET_KERNEL_CROSS = $(KERNEL_TOOLCHAIN_DIR)/bin/$(call qstrip,$(BR2_KERNEL_TOOLCHAIN_PREFIX))-
+endif
+
+# Define TARGET_xx variables for all common binutils/gcc
+TARGET_AR       = $(TARGET_CROSS)ar
+TARGET_AS       = $(TARGET_CROSS)as
+TARGET_CC       = $(TARGET_CROSS)gcc
+```
+
+编译静态库还是动态库，还是2个一起编译
+
+```
+ifeq ($(BR2_STATIC_LIBS),y)
+SHARED_STATIC_LIBS_OPTS = --enable-static --disable-shared
+TARGET_CFLAGS += -static
+TARGET_CXXFLAGS += -static
+TARGET_FCFLAGS += -static
+TARGET_LDFLAGS += -static
+else ifeq ($(BR2_SHARED_LIBS),y)
+SHARED_STATIC_LIBS_OPTS = --disable-static --enable-shared
+else ifeq ($(BR2_SHARED_STATIC_LIBS),y)
+SHARED_STATIC_LIBS_OPTS = --enable-static --enable-shared
+endif
+```
+
+
+
+```
+github = https://github.com/$(1)/$(2)/archive/$(3)
+```
+
+
+
+arm64的uboot还是用的arm
+
+```
+ifeq ($(KERNEL_ARCH),arm64)
+UBOOT_ARCH = arm
+```
+
+# PACKAGES变量怎么添加内容的
+
+在根Makefile里
+
+```
+ifeq ($(MAKECMDGOALS),)
+BR_FORCE_CHECK_DEPENDENCIES = YES
+endif
+```
+
+如果make后面不跟内容，那么会强制进行依赖检查。
+
+```
+$(foreach pkg,$(call UPPERCASE,$(PACKAGES)),\
+	$(foreach dep,$(call UPPERCASE,$($(pkg)_FINAL_ALL_DEPENDENCIES)),\
+		$(eval $(call CHECK_ONE_DEPENDENCY,$(pkg),$(dep))$(sep))))
+
+```
+
+对PACKAGES这个变量进行展开。
+
+靠这个来添加package到变量的
+
+```
+./package/pkg-generic.mk:1076:PACKAGES += $(1)
+./fs/common.mk:228:PACKAGES += $$(filter-out rootfs-%,$$(ROOTFS_$(2)_FINAL_RECURSIVE_DEPENDENCIES))
+```
+
+# host-finalize、target-finalize、staging-finalize
+
+```
+host-finalize: $(PACKAGES) $(HOST_DIR) $(HOST_DIR_SYMLINK)
+
+staging-finalize: $(STAGING_DIR_SYMLINK)
+
+target-finalize: $(PACKAGES) $(TARGET_DIR) host-finalize
+
+target-post-image: $(TARGETS_ROOTFS) target-finalize staging-finalize
+
+
+```
+
+make source的实现
+
+```
+.PHONY: source
+source: $(foreach p,$(PACKAGES),$(p)-all-source)
+```
+
+# 编译顺序
+
+是以依赖关系决定的。
+
+```
+host-skeleton
+	这个最先被编译，被所有的依赖。
+	就是在host目录下生成一个目录结构。
+host-tar
+	这个是第二个。
+host-uboot-tools
+	这个生成mkimage等工具。
+然后是host-attr、host-acl、host-m4、host-libtool、
+	host-autoconf、host-automake
+	host-fakeroot、hsot-makedevs
+	host-mkpasswd、
+然后是skeleton-init-common
+	skeleton-init-sysv
+	skeleton
+然后是工具链相关
+	 toolchain-external-custom
+	 toolchain-external
+	 toolchain
+然后是alsa-lib
+中间就是host和target的包进行编译。
+uboot和linux在靠后的位置。
+linux编译后，就aml-wifi等驱动的编译。
+
+```
+
+
+
+
+
 # 参考资料
 
 1、HOWTO: Use BuildRoot to create a Linux image for QEMU

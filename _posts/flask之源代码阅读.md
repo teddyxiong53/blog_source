@@ -46,7 +46,7 @@ app.view_functions['index'] = index
 
 
 
-#import_name的用途
+# import_name的用途
 
 是为了定位到app的根目录。
 
@@ -78,7 +78,7 @@ view_functions: 一个字典, 以endpoint为key, view_func 为value
 
 
 
-参考资料
+# 参考资料
 
 1、flask 源码解析：应用启动流程
 

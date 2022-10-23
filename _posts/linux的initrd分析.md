@@ -5,7 +5,7 @@ tags:
 	- linux
 	- initrd
 ---
-1
+--
 
 为什么需要initrd？
 
@@ -524,6 +524,126 @@ Entry Point:  00000000
 1、
 
 https://blog.csdn.net/androidstar_cn/article/details/53165941
+
+# buildroot cpio目录分析
+
+使用initramfs的时候，会使用这个目录下的init脚本。
+
+buildroot默认的fs/cpio/init非常简单：
+
+```
+#!/bin/sh
+# devtmpfs does not get automounted for initramfs
+/bin/mount -t devtmpfs devtmpfs /dev
+exec 0</dev/console
+exec 1>/dev/console
+exec 2>/dev/console
+exec /sbin/init "$@"
+```
+
+做的事情很简单：
+
+1、挂载devtmpfs。
+
+2、把/dev/console设置为stdin/stdout/stderr。
+
+3、执行/sbin/init，这个就是软链接指向busybox。
+
+
+
+cpio目录的配置项很简单，就本质上就是BR2_TARGET_ROOTFS_CPIO（bool类型，选配）和对应的压缩方式。
+
+例如gzip方式：BR2_TARGET_ROOTFS_CPIO_GZIP
+
+生成的命令是：
+
+```
+define ROOTFS_CPIO_CMD
+	cd $(TARGET_DIR) && find . | cpio $(ROOTFS_CPIO_OPTS) --quiet -o -H newc > $@
+endef
+```
+
+这个是把target目录都打包成initramfs了。太多了。
+
+看看amlogic对这一块的改进。
+
+增加了recovery的cpio。
+
+用这个变量BR2_TARGET_ROOTFS_INITRAMFS_LIST，控制了cpio打包的文件有哪些，这就避免了打包所有文件的问题。
+
+拷贝生成recovery和ota用途的target目录。
+
+```
+cp $(TARGET_DIR) $(TARGET_DIR)_recovery -fr
+	cp $(TARGET_DIR) $(TARGET_DIR)_ota -fr
+```
+
+把buildroot\board\amlogic\common\ota\ota-a5\ramdisk\这个目录下的文件拷贝到`$(TARGET_DIR)_recovery `
+
+这个ramdisk目录下，没有几个文件。
+
+![image-20221020173949672](../images/random_name/image-20221020173949672.png)
+
+```
+cp $(TOPDIR)/$(BR2_TARGET_ROOTFS_INITRAMFS_LIST) $(HOST_DIR)/bin/ramfslist-recovery
+```
+
+这个是把"board/amlogic/mesona5_av400/initramfs/ramfslist-32-ext2"文件拷贝到host目录下。
+
+把buildroot\board\amlogic\common\ota\ota-a5\ramfslist-recovery-need 这个列表文件拷贝到host目录下。
+
+然后打包一次recovery.cpio
+
+```
+cd $(TARGET_DIR)_recovery && cat $(HOST_DIR)/bin/ramfslist-recovery | grep -v "^#" | cpio --quiet -o -H newc > $(BINARIES_DIR)/recovery.cpio
+```
+
+
+
+init里最后这样进行switch_root。
+
+```
+#Check if $init exists and is executable
+if [[ -x "/mnt/${init}" ]] ; then
+    #Unmount all other mounts so that the ram used by
+    #the initramfs can be cleared after switch_root
+    umount /sys /proc /dev
+
+    #Switch to the new root and execute init
+    /bin/mount -t devtmpfs devtmpfs /mnt/dev
+    exec 0</mnt/dev/console
+    exec 1>/mnt/dev/console
+    exec 2>/mnt/dev/console
+    exec switch_root -c /dev/console /mnt "${init}"
+fi
+```
+
+# buildroot/fs/tar
+
+这个目录怎么理解呢？
+
+```
+>>>   Generating filesystem image rootfs.cpio
+>>>   Generating filesystem image rootfs.ext2
+>>>   Generating filesystem image rootfs.tar
+```
+
+当前也是有生成的。
+
+mk文件里很简单
+
+```
+define ROOTFS_TAR_CMD
+	(cd $(TARGET_DIR); find -print0 | LC_ALL=C sort -z | \
+		tar $(TAR_OPTS) -cf $@ --null --xattrs-include='*' --no-recursion -T - --numeric-owner)
+endef
+```
+
+就是打包得到一个tar文件。
+
+当前我们实际上没有使用。
+
+
 
 # 参考资料
 

@@ -33,9 +33,41 @@ https://python3webspider.cuiqingcai.com/
 
 
 
-awesome列表
+# awesome python 应用列表
 
 https://github.com/mahmoud/awesome-python-applications
+
+这个挺好的，都是python写的具有实用价值的应用，分为：
+
+## internet
+
+
+
+## audio
+
+video
+
+graphic
+
+game
+
+生产力
+
+组织
+
+社交
+
+教育
+
+科学
+
+cms
+
+erp
+
+静态网站
+
+## 开发相关
 
 
 
@@ -134,5 +166,11 @@ shadowsocks
 lightsocks
 	跟shadowsocks类似，但是更加简单，而且使用了异步机制。
 	不过shadowsocks相当于是自己实现的异步（自己写事件循环的）。
+flasky
+	这个基于flask开发的简单博客程序，代码写得很规范。直接深入学习掌握。
+	作者是这位老哥，写了不少高质量的博客。
+	https://blog.miguelgrinberg.com/post/my-courses-and-books
+	还写了不少的flask插件和自己写了一个可以在单片机上跑的webserver。值得学习。
+	https://github.com/miguelgrinberg/microdot
 ```
 

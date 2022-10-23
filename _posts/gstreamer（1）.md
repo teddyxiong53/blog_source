@@ -6,7 +6,7 @@ tags:
 typora-root-url: ..\
 ---
 
-1
+--
 
 gstreamer是gnome桌面环境推荐的流媒体应用框架。
 
@@ -16,7 +16,7 @@ gstreamer是gnome桌面环境推荐的流媒体应用框架。
 
 gstreamer是一个创建流媒体应用程序的框架。
 
-其基本设计思想来自于俄勒冈研究生学院有关视频管道的创意。
+其基本设计思想来自于**俄勒冈研究生学院有关视频管道的创意**。
 
 同时也借鉴了DirectShow的设计思想。
 
@@ -66,7 +66,7 @@ bus包含了一个队列。每次往队列里放消息，都会导致main contex
 
 
 
-#元件GstElement
+# 元件GstElement
 
 GstElement是最基础的元素，翻译为“元件”。
 
@@ -170,7 +170,7 @@ https://wenku.baidu.com/view/464fc6728e9951e79b892745.html?sxts=1576827823935
 
 
 
-#衬垫pad
+# 衬垫pad
 
 对应的英文是pad。
 
@@ -273,7 +273,7 @@ bin作为一个整体，它没有属于自己的sink pad和source pad。
 
 
 
-#自动pipeline
+# 自动pipeline
 
 ```
 #include <gst/gst.h>
@@ -306,7 +306,7 @@ int main(int argc, char **argv)
 
 上面的代码，就是自动搭建了一个pipeline，那么如何手动用element来搭建pipeline呢？
 
-#手动创建pipeline
+# 手动创建pipeline
 
 下面我们将要学习：
 
@@ -874,7 +874,7 @@ static constexpr uint8_t DEFAULT_VOLUME = 100;
 
 https://gstreamer.freedesktop.org/documentation/app/appsrc.html?gi-language=c#appsrc-page
 
-#实现视频直播
+# 实现视频直播
 
 腾讯的视频基础业务
 

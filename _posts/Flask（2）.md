@@ -10,7 +10,7 @@ tags:
 
 现在看一个实例的教程。
 
-#环境准备
+# 环境准备
 
 我基于python2.7的来做。因为这个版本稳定很久了。
 
@@ -64,7 +64,7 @@ pip install flask flask-login flask-openid flask-mail flask-sqlalchemy sqlalchem
 
 安装很顺利。
 
-#helloworld
+# helloworld
 
 创建目录。
 

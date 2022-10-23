@@ -82,7 +82,7 @@ SWUpdate的工作流程是事务性的。
 
 
 
-### 意外掉电
+# 意外掉电
 
 如果发生掉电，必须保证系统能够再次工作 —— 重新 启动SWUpdate或恢复软件的旧副本。
 
@@ -397,7 +397,7 @@ BR2_TARGET_RECOVERY_INITRAMFS_LIST
 
 ```
 BR2_TARGET_ROOTFS_INITRAMFS_LIST="board/amlogic/mesona5_av400/initramfs/ramfslist-32-ext2"
- BR2_TARGET_RECOVERY_INITRAMFS_LIST=""
+BR2_TARGET_RECOVERY_INITRAMFS_LIST=""
 ```
 
 所以，recovery没有initramfs。
@@ -815,6 +815,35 @@ https://blog.csdn.net/weixin_30312563/article/details/99878653
 # 增量升级
 
 目前增量升级依赖于system挂载为ro只读模式，否则差分升级具有局限性，且具有不安全性，待系统分区修改挂载为ro之后，再提交相关差分升级功能。
+
+
+
+# AB升级
+
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/qq_31986405/article/details/125970349
+
+2、全志的升级文档
+
+https://whycan.com/files/202108/d1/D1_Tina_Linux_OTA_%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97.pdf
+
+
+
+# .config文件分析
+
+```
+CONFIG_SCRIPTS=y
+CONFIG_HW_COMPATIBILITY=y
+CONFIG_HW_COMPATIBILITY_FILE="/etc/hwrevision"
+CONFIG_SW_VERSIONS_FILE="/etc/sw-versions"
+```
+
+
 
 
 

@@ -28,7 +28,7 @@ print(app.config['DEBUG'])
 
 
 
-#instance目录的作用
+# instance目录的作用
 
 为什么需要instance目录？
 

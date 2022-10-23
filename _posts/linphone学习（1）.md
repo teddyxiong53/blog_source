@@ -34,7 +34,7 @@ linphone在开源世界里，是一个常用的通信工具。
 
 # 搭建sip服务器
 
-在基于sip协议进行voip通话时，手续需要搭建sip服务器。
+在基于sip协议进行voip通话时，需要搭建sip服务器。
 
 opensips
 

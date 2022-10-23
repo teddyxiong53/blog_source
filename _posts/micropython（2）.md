@@ -50,7 +50,7 @@ objtype.c是一切的基础。
 
 
 
-#基础头文件内容分析
+# 基础头文件内容分析
 
 ## misc.h
 
@@ -58,7 +58,7 @@ objtype.c是一切的基础。
 
 定义vstr_t类型。声明相关函数。
 
-##qstr.h
+## qstr.h
 
 定义qstr和qstr_pool_t类型。
 

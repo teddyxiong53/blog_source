@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 # 代码经验
 
@@ -367,7 +367,7 @@ AVCodecContext选项
 
 
 
-AVPacket的大小是public ABI的一部分。这样的结构体在ffmpeg里很少。
+**AVPacket的大小是public ABI的一部分。这样的结构体在ffmpeg里很少。**
 
 这也侧面说明了这个结构体的重要性。
 
@@ -414,7 +414,7 @@ AVBufferRef *buf;//用来管理data指针引用的数据缓存。
 
 ```
 1、P1和P2的data指针是指向同一块内存。
-2、P1和P2的data指针指向不通的内存。
+2、P1和P2的data指针指向不同的内存。
 ```
 
 情况2是简单的。但是这样无疑是有空间浪费的。拷贝也有性能开销。
@@ -460,6 +460,32 @@ av_dict_set(&options, "listen", 2, 0);//最后一个参数是flags。
 # AVClass
 
 这个结构体的作用是什么？
+
+用vscode在ffmpeg的代码里搜索`static const AVClass`。
+
+可以找到所有定义选项的地方。
+
+例如mp3的：
+
+```
+static const AVClass libmp3lame_class = {
+    .class_name = "libmp3lame encoder",
+    .item_name  = av_default_item_name,
+    .option     = options,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
+```
+
+它的options有这些：
+
+```
+static const AVOption options[] = {
+    { "reservoir",    "use bit reservoir", OFFSET(reservoir),    AV_OPT_TYPE_BOOL, { .i64 = 1 }, 0, 1, AE },
+    { "joint_stereo", "use joint stereo",  OFFSET(joint_stereo), AV_OPT_TYPE_BOOL, { .i64 = 1 }, 0, 1, AE },
+    { "abr",          "use ABR",           OFFSET(abr),          AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, AE },
+    { NULL },
+};
+```
 
 
 
@@ -804,6 +830,10 @@ avformat_open_input
 这个例子用的函数，是比较老的。
 
 
+
+# ff_libmp3lame_encoder
+
+一个codec的分析
 
 
 
