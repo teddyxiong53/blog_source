@@ -121,9 +121,27 @@ def load_logged_in_user():
 
 
 
+# flaskr是怎么运行起来的
+
+因为看下面的代码，没有app.py。入口代码是在`__init__.py`里。
+
+flask run怎么就能把它运行起来呢？
+
+这个要看flask的源代码：
+
+```
+app = DispatchingApp(info.load_app, use_eager_loading=eager_loading)
+
+    from werkzeug.serving import run_simple
+    run_simple(host, port, app, use_reloader=reload, use_debugger=debugger,
+               threaded=with_threads, ssl_context=cert)
+```
 
 
-参考资料
+
+
+
+# 参考资料
 
 1、flaskr例子的运行
 

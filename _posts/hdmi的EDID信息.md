@@ -177,6 +177,108 @@ DVI-I（A+D，兼容模拟和数字信号）。
 
 EDID[基础版](https://www.baidu.com/s?wd=基础版&tn=24004469_oem_dg&rsv_dl=gh_pl_sl_csd)一共包含128字节有效信息。需要多字节表示一个信息项的，高地址处存储高字节，低地址处存储低字节。256字节的扩展版不是强制必须的
 
+
+
+# 一篇文章分析
+
+https://www.graniteriverlabs.com/zh-tw/technical-blog/edid-overview
+
+
+
+edid的交互过程是：
+
+1、显示器连接电脑后，显示器确认连接成功后，会把HPD电压拉高。
+
+2、电脑确认HPD拉高后，会通过i2c向显示屏发起请求，读取edid信息。
+
+3、电脑收到edid信息后，会选择对应的规格进行输出。
+
+
+
+edid的发展，就是随着越来越大的显示格式、声音格式的出现。需要更大的空间来存放这些格式信息。
+
+也需要新的格式来描述新的技术。
+
+所以，最开始的edid的128字节的block，很快就不够用了。
+
+现在的edid block数目可以到256个block，每个block 128字节。
+
+
+
+我们需要先看block0的。
+
+这个是最开始的edid block。最典型也最常用。
+
+这128个字节里：
+
+```
+最前面20个字节：0x00-0x13
+	叫做header。
+    前面8个字节：固定格式。00 FF ... FF 00。
+    接下来10个字节：厂家信息。
+    最后2个字节：edid版本号。例如1.3版本。就是01 03
+0x14-0x18
+	5个字节。
+	14：video input 定义。
+	15/16：屏幕宽高。
+	17：display传输格式。
+	18：feature support。
+0x19-0x22
+	显示屏的色域范围。
+0x23-0x25：
+	各种分辨率信息。
+0x26-0x35：
+	还是分辨率。
+0x36-0x7D：
+	这72个字节。
+	分为4组。每组18个字节。每组是一个descriptor。
+	作用是最显示器的概念进一步补充。
+	第一组descriptor：还是写分辨率。跟前面的分辨率的不同在于，它使用的更偏向于影视参数。而不是timing。
+	第二组：monitor range descriptor。
+	第三组：monitor name descriptor。
+0x7E-0X7F：
+	最后2个字节。
+	0X7E表示后面还跟着的block的数量。
+	0x7F则表示校验码。
+	
+```
+
+block0已经对显示器的功能进行了基本的描述。
+
+但是如果显示器还需要支持一些额外的参数，就需要extension block来支持。
+
+block1的格式：
+
+```
+前面2个字节：
+	00：表示这个是CEA-EXT
+	01：CEA版本。
+第3个字节：
+	DTD offset，表示block1从哪个位置开始是DTD数据。
+第4个字节：
+	描述显示器是否支持音频输出，ycbcr色彩。
+	
+```
+
+data block的分类：
+
+```
+0：保留。
+1：audio data block。缩写ADB
+2：video data block。缩写VDB
+3：vendor specific data block。
+4：speaker allocation data。缩写SAB。
+5：VESA dtc data block。
+6：保留。
+7：use extended tag。
+```
+
+一个audio格式，用3个字节描述。
+
+一个speaker allocation，也是3个字节描述。
+
+
+
 # 参考资料
 
 1、

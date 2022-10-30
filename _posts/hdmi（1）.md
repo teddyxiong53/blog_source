@@ -28,6 +28,22 @@ SCDC：State and Control Data Channel；
 
 https://blog.csdn.net/lxm920714/article/details/114119926
 
+# RSEN
+
+The [HDCP specification](https://www.digital-cp.com/sites/default/files/HDCP_Specification Rev1_3.pdf) explained the use of HPD (hot-plug detection) and RSEN (receiver sense): 
+
+When HPD is high, the source reads EDID through I2C from the sink. 
+
+Then when the RSEN goes high, the source turns on the TMDS signal in an appropriate format.
+
+
+
+参考资料
+
+1、
+
+https://electronics.stackexchange.com/questions/375077/hdmi-receiver-sense-logic-and-tmds-capacitor-coupling
+
 # 参考资料
 
 1、HDMI设计3--HDMI 1.4/2.0 Transmitter Subsystem IP

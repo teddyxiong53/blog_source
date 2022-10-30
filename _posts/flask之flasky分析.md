@@ -77,7 +77,7 @@ SMTPServerDisconnected: Connection unexpectedly closed
 
 ```
 sqlite3 ./data-dev.sqlite
-> update users confirmed=1 where `name`='teddyxiong53'
+> update users set confirmed=1 where name='teddyxiong53';
 > .exit
 ```
 
@@ -151,9 +151,13 @@ gunicorn -b :5000 flasky:app --access-logfile - --error-logfile -
 
 
 
+flasky比较完善了。但是还有不少可以改进的空间。
+
+例如私信功能。评论追加。
 
 
-参考资料
+
+# 参考资料
 
 1、
 

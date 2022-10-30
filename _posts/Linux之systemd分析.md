@@ -70,7 +70,28 @@ systemd提供了对应sysvint的兼容性。
 
 # 日志服务
 
-systemd自带了日志服务journald。这个journald的设计初衷是为了克服syslog的缺点的。
+
+
+systemd 自带日志服务 journald，该日志服务的设计初衷是克服现有的 syslog 服务的缺点。比如：
+
+- syslog 不安全，消息的内容无法验证。每一个本地进程都可以声称自己是 Apache PID 4711，而 syslog 也就相信并保存到磁盘上。
+- 数据没有严格的格式，非常随意。自动化的日志分析器需要分析人类语言字符串来识别消息。一方面此类分析困难低效；此外日志格式的变化会导致分析代码需要更新甚至重写。
+
+systemd journal 用二进制格式保存所有日志信息，用户使用 journalctl 命令来查看日志信息。无需自己编写复杂脆弱的字符串分析处理程序。
+
+
+
+**systemd journal 的优点如下**：
+  **简单性**：代码少，依赖少，抽象开销最小。
+  **零维护**：日志是除错和监控系统的核心功能，因此它自己不能再产生问题。举例说，自动管理磁盘空间，避免由于日志的不断产生而将磁盘空间耗尽。
+  **移植性**：日志文件应该在所有类型的 Linux 系统上可用，无论它使用的何种 CPU 或者字节序。
+  **性能**：添加和浏览日志非常快。
+  **最小资源占用**：日志数据文件需要较小。
+  **统一化**：各种不同的日志存储技术应该统一起来，将所有的可记录事件保存在同一个数据存储中。所以日志内容的全局上下文都会被保存并且可供日后查询。例如一条固件记录后通常会跟随一条内核记录，最终还会有一条用户态记录。重要的是当保存到硬盘上时这三者之间的关系不会丢失。syslog 将不同的信息保存到不同的文件中，分析的时候很难确定哪些条目是相关的。
+  **扩展性**：日志的适用范围很广，从嵌入式设备到超级计算机集群都可以满足需求。
+  **安全性**：日志文件是可以验证的，让无法检测的修改不再可能。
+
+
 
 
 
@@ -424,6 +445,38 @@ System clock synchronized: yes
 systemctl list-unit-files | grep enable
 ```
 
+## systemd-analyze
+
+systemd-analyze 是 Linux 自带的分析系统启动性能的工具。
+
+有这些子命令：
+
+```
+Commands:
+  time                     Print time spent in the kernel
+  blame                    Print list of running units ordered by time to init
+  critical-chain [UNIT...] Print a tree of the time critical chain of units
+  plot                     Output SVG graphic showing service initialization
+  dot [UNIT...]            Output dependency graph in man:dot(1) format
+  log-level [LEVEL]        Get/set logging threshold for manager
+  log-target [TARGET]      Get/set logging target for manager
+  dump                     Output state serialization of service manager
+  syscall-filter [NAME...] Print list of syscalls in seccomp filter
+  verify FILE...           Check unit files for correctness
+  calendar SPEC...         Validate repetitive calendar time events
+  service-watchdogs [BOOL] Get/set service watchdog state
+```
+
+
+
+```
+$ systemd-analyze time
+Startup finished in 7.899s (kernel) + 12min 17.518s (userspace) = 12min 25.417s
+graphical.target reached after 39.359s in userspace
+```
+
+
+
 # 问题解决
 
 ## systemctl start audioservice会先start再stop
@@ -468,6 +521,184 @@ python3 -m http.server  --directory /home/teddy/.config/clash/clash-dashboard/di
 
 
 https://www.csdn.net/tags/MtTaMg1sNTczNjk0LWJsb2cO0O0O.html
+
+# sysvinit回顾
+
+sysvinit 就是 System V 风格的 init 系统，
+
+顾名思义，它源于 System V 系列的 UNIX。
+
+最初的 linux 发行版几乎都是采用 sysvinit 作为 init 系统。
+
+sysvinit 用术语 runlevel 来定义 "预订的运行模式"。
+
+比如 
+
+runlevel 3 是命令行模式，
+
+runlevel 5 是图形界面模式，
+
+runlevel 0 是关机，
+
+runlevel 6 是重启。
+
+sysvinit 会按照下面的顺序按部就班的初始化系统：
+
+sysvinit 会按照下面的顺序按部就班的初始化系统：
+
+- 激活 udev 和 selinux
+- 设置定义在 /etc/sysctl.conf 中的内核参数
+- 设置系统时钟
+- 加载 keymaps
+- 启用交换分区
+- 设置主机名(hostname)
+- 根分区检查和 remount
+- 激活 RAID 和 LVM 设备
+- 开启磁盘配额
+- 检查并挂载所有文件系统
+- 清除过期的 locks 和 PID 文件
+- 最后找到指定 runlevel 下的脚本并执行，其实就是启动服务。
+
+
+
+除了负责初始化系统，sysvinit 还要负责关闭系统，
+
+主要是在系统关闭是为了保证数据的一致性，
+
+需要小心地按照顺序进行任务的结束和清理工作。
+
+另外，sysvinit 还提供了很多管理和控制系统的命令，比如 halt、init、mesg、shutdown、reboot 等等。
+
+sysvinit 的优点是概念简单。
+
+特别是服务(service)的配置，只需要把启动/停止服务的脚本链接接到合适的目录就可以了。
+
+sysvinit 的另一个重要优点是确定的执行顺序，
+
+脚本严格按照顺序执行(sysvinit 靠脚本来初始化系统)，一个执行完毕再执行下一个，这非常有益于错误排查。
+
+
+
+同时，完全顺序执行任务也是 sysvinit 最致命的缺陷。
+
+如果 linux 系统只用于服务器系统，
+
+那么漫长的启动过程可能并不是什么问题，毕竟我们是不会经常重启服务器的。
+
+但是现在 linux 被越来越多的用在了桌面系统中，漫长的启动过程对桌面用户来说是不能接受的。
+
+除了启动慢，sysvinit 还有一些其它的缺陷，
+
+比如不能很好的处理即插即用的设备，对网络共享磁盘的挂载也存在一定的问题，
+
+于是 init 系统开始了它的进化之旅。
+
+# upstart
+
+由于 sysvinit 系统的种种弊端，[Ubuntu](https://www.linuxidc.com/topicnews.aspx?tid=2) 的开发人员决定重新设计和开发一个全新的 init 系统，即 upstart 。upstart 是第一个被广泛应用的新一代 init 系统。
+
+upstart 基于事件机制，
+
+比如 U 盘插入 USB 接口后，udev 得到内核通知，发现该设备，这就是一个新的事件。
+
+upstart 在感知到该事件之后触发相应的等待任务，比如处理 /etc/fstab 中存在的挂载点。
+
+采用这种事件驱动的模式，upstart 完美地解决了即插即用设备带来的新问题。
+
+采用事件驱动机制也带来了一些其它有益的变化，比如加快了系统启动时间。
+
+sysvinit 运行时是同步阻塞的。一个脚本运行的时候，后续脚本必须等待。
+
+这意味着所有的初始化步骤都是串行执行的，而实际上很多服务彼此并不相关，完全可以并行启动，从而减小系统的启动时间。
+
+
+
+upstart 的特点
+
+upstart 解决了之前提到的 sysvinit 的缺点。采用事件驱动模型的 upstart 可以：
+
+- 更快地启动系统
+- 当新硬件被发现时动态启动服务
+- 硬件被拔除时动态停止服务
+
+这些特点使得 upstart 可以**很好地应用在桌面或者便携式系统**中，处理这些系统中的动态硬件插拔特性。
+
+# systemd
+
+systemd 是 linux 系统中最新的初始化系统(init)，它主要的设计目标是克服 sysvinit 固有的缺点，提高系统的启动速度。
+
+systemd 和 ubuntu 的 upstart 是竞争对手，
+
+但是时至今日 ubuntu 也采用了 systemd，所以 systemd 在竞争中胜出，大有一统天下的趋势。
+
+其实，systemd 的很多概念都**来源于苹果 Mac OS 操作系统上的 launchd**。
+
+systemd 的优点是功能强大，使用方便，
+
+缺点是体系庞大，非常复杂，
+
+下图展示了 systemd 的架构(此图来自互联网)：
+
+
+
+systemd 能够在与 upstart 的竞争中胜出自然有很多过人之处，接下来让我们介绍一些 systemd 的主要优点。
+
+**兼容性**
+
+systemd 提供了和 sysvinit 兼容的特性。系统中已经存在的服务和进程无需修改。这降低了系统向 systemd 迁移的成本，使得 systemd 替换现有初始化系统成为可能。
+
+**启动速度**
+
+systemd 提供了比 upstart **更激进的并行启动能力**，采用了 socket / D-Bus activation 等技术启动服务。一个显而易见的结果就是：更快的启动速度。为了减少系统启动时间，systemd 的目标是：
+
+- 尽可能启动更少的进程
+- 尽可能将更多进程并行启动
+
+同样地，upstart 也试图实现这两个目标。下图展示了 upstart 相对于 sysvinit 在并发启动这个方面的改进(此图来自互联网)：
+
+
+
+upstart 增加了系统启动的并行性，从而提高了系统启动速度。但是在 upstart 中，有依赖关系的服务还是必须先后启动。比如任务 A,B,(C,D)因为存在依赖关系，所以在这个局部，还是串行执行。
+
+systemd 能够更进一步提高并发性，即便对于那些 upstart 认为存在相互依赖而必须串行的服务，比如 Avahi 和 D-Bus 也可以并发启动。从而实现如下图所示的并发启动过程(此图来自互联网)：
+
+
+
+在 systemd 中，所有的任务都同时并发执行，总的启动时间被进一步降低为 T1。可见 systemd 比 upstart 更进一步提高了并行启动能力，极大地加速了系统启动时间。
+
+# system V
+
+**UNIX System V**是[Unix](https://zh.wikipedia.org/wiki/Unix)[操作系统](https://zh.wikipedia.org/wiki/操作系统)众多版本中的一支。
+
+它最初由[AT&T](https://zh.wikipedia.org/wiki/AT%26T)开发，在1983年第一次发布，因此也被称为**AT&T System V**。
+
+一共发行了4个System V的主要版本：版本1、2、3和4。
+
+System V Release 4，或者称为SVR4，是最成功的版本，
+
+成为一些UNIX共同特性的源头，
+
+例如“SysV [初始化](https://zh.wikipedia.org/wiki/初始化)脚本”（`/etc/init.d`），用来控制系统启动和关闭，
+
+*System V Interface Definition*（SVID）是一个System V如何工作的标准定义。
+
+AT&T出售运行System V的专有硬件，
+
+但许多（或许是大多数）客户在其上运行一个转售的版本，这个版本基于AT&T的[实现说明](https://zh.wikipedia.org/w/index.php?title=实现说明&action=edit&redlink=1)。
+
+流行的SysV派生版本包括Dell SVR4和Bull SVR4。
+
+当今广泛使用的System V版本是[SCO](https://zh.wikipedia.org/wiki/SCO) [OpenServer](https://zh.wikipedia.org/wiki/OpenServer)，基于System V Release 3，以及[SUN](https://zh.wikipedia.org/wiki/昇陽電腦) [Solaris](https://zh.wikipedia.org/wiki/Solaris)和SCO [UnixWare](https://zh.wikipedia.org/w/index.php?title=UnixWare&action=edit&redlink=1)，都基于System V Release 4。
+
+
+
+System V是AT&T的第一个商业UNIX版本（[UNIX System III](https://zh.wikipedia.org/wiki/UNIX_System_III)）的加强。
+
+传统上，System V被看作是两种UNIX“风味”之一（另一个是[BSD](https://zh.wikipedia.org/wiki/BSD)）。
+
+然而，随着一些并不基于这两者代码的类UNIX实现的出现，
+
+例如[Linux](https://zh.wikipedia.org/wiki/Linux)和[QNX](https://zh.wikipedia.org/wiki/QNX)，这一归纳不再准确，但不论如何，像[POSIX](https://zh.wikipedia.org/wiki/POSIX)这样的标准化努力一直在试图减少各种实现之间的不同。
 
 
 

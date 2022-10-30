@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 # linphone基本情况
 
@@ -613,6 +613,35 @@ sudo apt-get install antlr3
 试一下x-lite的。
 
 
+
+linphone是gplv3协议开源的。
+还是双license。
+
+server和client的通信协议，是sip吗？
+只要协议一致，可以任意组合？
+
+server端
+opensips
+
+client端
+linphone。
+Yate。
+
+sip协议栈实现：
+osip。gnu的。
+exosip。基于osip的包装实现。
+sipXtackLib。
+
+RTP协议栈
+jrtplib：c++实现的。
+
+# 在buildroot里编译linphone
+
+在编译时，可以看到编译了一路的libosips等包。
+
+
+
+# 参考资料
 
 1、【SIP】opensips 服务器搭建测试 2016-02-25 09:09:38
 

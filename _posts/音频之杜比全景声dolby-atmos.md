@@ -221,6 +221,7 @@ Dolby Digital+(DDP/DD5.1/AC3/EAC3) 音轨多见于Amazon、Netflix等在线流�
 
 
 7.1与7.1.2区别
+
 7.1 LPCM是转码后的音频文件，丢失了7.1.2所带有的全景声元数据，所以最终你可能无法清楚感知“发声物体的方位变化”，比如说你无法体验到直升机经过头顶时的临场感了。 
 
 
@@ -256,3 +257,9 @@ https://www.zhihu.com/question/327755951
 7、
 
 https://ipce.pixnet.net/blog/post/1968151-%E5%85%A5%E9%96%80%E5%AE%B6%E5%BA%AD%E5%8A%87%E9%99%A2%E8%A6%8F%E5%8A%83%E5%82%99%E7%BD%AE%E5%B0%8F%E7%9F%A5%E8%AD%98%E5%88%86%E4%BA%AB%EF%BC%8C5.1%E3%80%815.1.2
+
+8、走进音视频的世界——杜比音效之AC3与AC4
+
+https://blog.csdn.net/u011686167/article/details/113576628
+
+https://en.wikipedia.org/wiki/Dolby

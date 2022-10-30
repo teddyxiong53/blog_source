@@ -6,6 +6,25 @@ tags:
 
 ---
 
+--
+
+# 资源
+
+novaspirit的视频，用micropython在树莓派pico上运行ssd1306的显示。
+
+IDE的方式进行编程和下载代码。
+
+https://www.youtube.com/watch?v=YR9v04qzJ5E
+
+## IDE使用
+
+- [Mu Editor](https://randomnerdtutorials.com/micropython-ides-esp32-esp8266/#mu-editor)
+- [uPyCraft IDE](https://randomnerdtutorials.com/micropython-ides-esp32-esp8266/#upycraft-ide)
+- [Thonny IDE](https://randomnerdtutorials.com/micropython-ides-esp32-esp8266/#thonny-ide)
+- [VS Code + Pymakr extension](https://randomnerdtutorials.com/micropython-ides-esp32-esp8266/#VS-Code)
+- [PyCharm](https://randomnerdtutorials.com/micropython-ides-esp32-esp8266/#pycharm)
+- [microIDE](https://randomnerdtutorials.com/micropython-ides-esp32-esp8266/#microide)
+
 
 
 现在从头开始学习micropython，看看是如何实现的。

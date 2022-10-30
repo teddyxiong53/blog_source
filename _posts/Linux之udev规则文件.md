@@ -93,7 +93,7 @@ SYMLINK+="S420_powerRelay" 这个不要写成SYMLINK+="/dev/S420_powerRelay"
 
 
 
-参考资料
+# 参考资料
 
 1、udev规则
 

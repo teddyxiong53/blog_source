@@ -40,7 +40,7 @@ def application(environ, start_response):
 	return 'hello web' #body
 ```
 
-上面这个application函数，就是一个服务号wsgi标准的http处理函数。
+上面这个application函数，就是一个符合wsgi标准的http处理函数。
 
 它接收2个参数：
 

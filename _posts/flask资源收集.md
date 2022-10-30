@@ -84,13 +84,65 @@ def view_origin():
 
 
 
-
-
-
-
-
-
 这篇文章不错
 
 https://www.cnblogs.com/huchong/p/8227606.html
+
+
+
+# apiflask
+
+
+
+# flask-examples
+
+https://github.com/helloflask/flask-examples
+
+
+
+# flasky
+
+
+
+# full stack python
+
+https://www.fullstackpython.com/table-of-contents.html
+
+
+
+# flask-boilerplate
+
+https://github.com/realpython/flask-boilerplate
+
+
+
+# 后台amdin
+
+这个我跑了。可以跑起来，按照readme可以。但是需要自己改运行中的错误。主要就是初始化数据库的时候碰到问题。
+
+这个比较务实。界面比较实用。可以复用到我的项目里。
+
+https://github.com/xieyuanzheng/flask-saas-platform
+
+# generator工具
+
+不知道为什么，flask没有像express-generator这样的标准项目目录生成工具。
+
+# project template
+
+这个还挺有趣的，可以直接在github页面上增加了一个按钮，fork后直接所有的文档里的描述都改了。
+
+挺神奇的。
+
+基于makefile来做相关命令，让我感觉非常熟悉亲切。
+
+写这个项目的哥们挺厉害的。follow了。在redhat工作的。
+
+之前是webpy的开发者之一。
+
+是个挺厉害的开发者。值得学习。
+
+试了一下这个，做得很强大。要慢慢研究一下。
+
+https://github.com/rochacbruno/flask-project-template
 

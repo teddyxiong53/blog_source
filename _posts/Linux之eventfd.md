@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 eventfd函数，用来创建一个用于做事件通知的文件描述符。
 
@@ -74,9 +74,30 @@ timerfd_create跟他们的不同，在于可以跟select结合起来使用。
 
 
 
+# 用pipe来模拟eventfd
+
+我看bluealsa里，有个这样的用法：
+
+创建一个pipe：
+
+```
+	if (pipe(config.ctl.evt) == -1)
+		goto fail;
+	config.ctl.pfds[CTL_IDX_EVT].fd = config.ctl.evt[0];
+```
+
+这样写内容来触发事件：
+
+```
+int bluealsa_ctl_event(enum event event) {
+	return write(config.ctl.evt[1], &event, sizeof(event));
+}
+
+```
 
 
-参考资料
+
+# 参考资料
 
 1、让事件飞 ——Linux eventfd 原理与实践
 

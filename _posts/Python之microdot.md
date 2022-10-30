@@ -123,6 +123,66 @@ https://microdot.readthedocs.io/en/latest/
 
 
 
+# 实现httpbin
+
+新建一个microdot-httpbin的仓库。
+
+microdot全局安装就好。
+
+先实现这个
+
+```
+@app.route("/get", methods=("GET",))
+def view_get():
+    return jsonify(get_dict("url", "args", "headers", "origin"))
+```
+
+jsonify需要自己实现一下。
+
+看看flask jsonify的实现。
+
+https://blog.csdn.net/Duke_Huan_of_Qi/article/details/76064225
+
+```
+def jsonify(*args, **kwargs):
+    if __debug__:
+        _assert_have_json()
+    return current_app.response_class(json.dumps(dict(*args, **kwargs),
+        indent=None if request.is_xhr else 2), mimetype='application/json')
+```
+
+本质上还是json.dumps。
+
+可以看出jsonify实际上也是使用了json.dumps来序列化json形式的数据，作为响应正文返回。
+
+indent表示json格式化的缩进，
+
+若是Ajax请求则不缩进（因为一般Ajax数据没必要直接展示），否则缩进2格。
+
+但想必从第一部分的实验结果我们已经看出来了，
+
+使用jsonify时响应的Content-Type字段值为application/json，
+
+而使用json.dumps时该字段值为text/html。
+
+Content-Type决定了接收数据的一方如何看待数据，如何处理数据，
+
+如果是application/json，则可以直接当做json对象处理，
+
+若是text/html，则还要将文本对象转化为json对象再做处理（个人理解，有误请指正）。
+
+
+
+最后，我们可以使用flask中的make_response方法或者直接通过Response类，
+
+通过设置mimetype参数来达到和使用jsonify差不多的效果，
+
+但少写点代码何乐而不为呢？
+
+况且简洁一点更不容易出错，参数越多调试和维护就越麻烦。
+
+当然，使用哪个并不是绝对的，必要时要根据前端的数据处理方式来决定。
+
 
 
 
