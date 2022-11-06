@@ -8,6 +8,18 @@ tags:
 
 --
 
+# 基本使用
+
+
+
+## 参考资料
+
+1、
+
+https://blog.csdn.net/cjqh_hao/article/details/100050798
+
+# 代码分析
+
 使用关系型数据库，关系是重要的一个组成部分。
 
 sqlalchemy是一套综合性的工具，用来在python里处理数据库。

@@ -180,7 +180,28 @@ int i2c_read_data(unsigned int slave_addr, unsigned char reg_addr)
 
 https://blog.csdn.net/szm1234/article/details/114231261
 
+# 16bit reg addr时的写法
 
+```
+#define I2CDUMP_NUM_REGS		256
+dump只能读256个字节的。地址范围超过这个的怎么办呢？
+
+看了busybox里的i2c get/set代码，都是限制在256字节范围内的。
+```
+
+https://stackoverflow.com/questions/9871289/passing-32-bit-register-address-to-i2c-rdwr
+
+这篇文档在回答写得很清楚。
+
+就前面2个字节都作为地址写下去。先写地址高字节。再写地址低字节。
+
+解释的权力是交给slave来解释的。
+
+
+
+
+
+https://wiki.stmicroelectronics.cn/stm32mpu/wiki/I2C_i2c-tools
 
 # 参考资料
 

@@ -146,3 +146,104 @@ https://github.com/xieyuanzheng/flask-saas-platform
 
 https://github.com/rochacbruno/flask-project-template
 
+仔细 看了一下。主要是外围脚本比较完善。flask部分的代码，并没有很多。
+
+
+
+# sqlite-web
+
+https://github.com/coleifer/sqlite-web
+
+这个首先是一个比较有用的工具。
+
+可以这样来操作sqlite数据库文件。
+
+```
+pip instal sqlite-web
+sqlite_web ./test.db
+```
+
+内部是基于flask和peewee。
+
+可以通过浏览器对数据库进行增删改查。
+
+什么时候比较需要这种工具形态呢？
+
+# flask+vue
+
+https://github.com/testdrivenio/flask-vue-crud
+
+# lin-cms
+
+这个是比较实用的一个cms软件。很完善。可以
+
+https://github.com/TaleLin/lin-cms-flask
+
+# flask movie
+
+基于flask搭建的一个电影网站。
+
+https://github.com/istarmeow/FlaskMovie
+
+配套的系列文章。
+
+值得深入学习掌握。
+
+# maple-bbs
+
+一个论坛程序。看起来还不错。
+
+https://github.com/honmaple/maple-bbs
+
+# flask-vue-cms
+
+这个的界面做得不错。
+
+https://github.com/hjlarry/flask-vue-cms
+
+
+
+# flask-file-server
+
+https://github.com/Wildog/flask-file-server/
+
+这个不错。可以做日常的工具来使用。
+
+# flask-common
+
+https://github.com/schedutron/flask-common
+
+A Flask extension with lots of common time-savers (file-serving, favicons, etc).
+
+就一个文件。
+
+我不太用得上。
+
+# 宝塔面板
+
+是的，宝塔面板是基于flask的。
+
+aaPanel是宝塔(bt.cn)的国际版本
+
+# flask-dashboard
+
+https://github.com/app-generator/boilerplate-code-flask-dashboard
+
+https://appseed.us/admin-dashboards/flask/
+
+
+
+# browserpy
+
+https://github.com/ergoithz/browsepy
+
+这个很好。可以实用。
+
+# youtube-dl-webui
+
+https://github.com/d0u9/youtube-dl-webui
+
+这种工具形态还是非常常用的。
+
+一个命令行工具，提供一个比较好的界面。
+

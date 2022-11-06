@@ -21,7 +21,7 @@ tags:
 
 Python提供了thread local对象用来存储thread safe的数据。在多线程环境下，用线程id来区分不同的线程。
 
-thread local对象在有些情况下，还是不能保证安全，而且在python web开发中，很多使用了协程。
+thread local对象在有些情况下，还是不能保证安全，**而且在python web开发中，很多使用了协程。**
 
 **所以flask开发了自己的Local。优先使用greenlet的线程，如果没有，则使用线程id。**
 
@@ -81,11 +81,11 @@ LocalStack的本质是stack，特点是Local。
 
 flask是一个web app，它必须放到一个web server里才能运行。
 
-flask是不会进行开启线程的操作的，这个操作是靠web server来做的。
+**flask是不会进行开启线程的操作的，这个操作是靠web server来做的。**
 
 flask的app.run，就是使用了flask内置的web server，正式使用的时候，不能用这个。
 
-默认情况下，flask自带的webserver是用单进程单线程的模式来运行的。
+**默认情况下，flask自带的webserver是用单进程单线程的模式来运行的。**
 
 但是你可以通过参数来修改运行模式。
 

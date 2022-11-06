@@ -277,7 +277,109 @@ data block的分类：
 
 一个speaker allocation，也是3个字节描述。
 
+# adv7674 的edid设置
 
+这个的edid有4个block。
+
+看看怎么进行设置。
+
+
+
+要给firmware bin文件，被导入到adv7674 api gui tool后。
+
+可以看到下面解析处理的信息显示有：
+
+```
+General
+	firmware tag：x.y.z格式的。
+	event mask flag：屏蔽哪些事件。
+	rx port选择：默认是0
+	freeze：false。freeze代表了什么？
+	hdcp ksv 大端：true。
+	debug1:0x00，表示什么？
+	rx_fast_switch：true。
+	license cert：这个需要手动输入。
+EARC
+	earc cfg：有3个选项：none、tx、rx。
+	earc tx src：表示earc发送音频的来源。可以是：none、earc、rx、ap0。我觉得我应该用earc的。因为这个音频输入的来源就是从earc口进来的。
+	earc tx latency：默认是0
+	earc rx latency：默认是0
+	earc rx cap struct：256个字节。这个表示了什么？
+	earc tx audio mute：false。
+	earc mode：arc或者earc。
+	earc tx port select：Rx0到Rx3。这个怎么理解？难道是在earc tx src选择为Rx的时候有作用？
+			但是这个通路我不理解。
+Audio
+	这个就是配置AP0和AP1的。
+	有7个参数可以设置：
+	ap0 tx src：可以选择Rx、earc等。这个完全理解。ap0就是跟我们芯片连接的音频口。
+	ap0 rx fmt：音频格式。这几个格式都看起来不太熟悉。好像有dolby的。
+	ap0 rx info cs：9个字节。全是0.
+	ap0 rx info map：10个字节。全是0 。
+	ap0 cfg：是说这个port选择为Tx口还是Rx口的意思吧。
+	ap0 mclk：有none、fs128、fs256、fs512这4个选项。
+	ap0 ap mode：就是spdif、i2s模式选择。
+HDMI RX
+	rx0 edid：512字节。属于4个block。
+	rx0 hpd enable：插入检测。使能的。
+	rx0 rsen enable：默认true。
+	rx0 rsen value：数值，默认0x32 。
+	rx0 edid enable：edid还有enable的概念？如果不enable，会是什么效果？
+	rx0 packet evt mask：0xffff ffff
+	rx0 hdcp mode：默认有srsk（表示src->sink），rptr（repeater模式）默认是srsk。
+	rx0 edid auto adb：这个表示什么？自动audioblock的意思？具体有表示什么样的行为？默认是false的。
+	rx0 hdcp cap：none/1/2这3个选项。
+	rx0 hdp low time：0x0096 。对应150.应该是150ms。
+	rx0 hdp replicate：有边缘和电平方式。
+	rx0 edid replicate：有none或者tx 这2种方式。
+	rx0 packet vs user ieee：值是0，不知道具体含义。
+	rx0 eq tmds1 eq：这个是指EQ配置吗？
+	rx0 eq tmds1 ctl：一个字节，值是0xa3
+	rx0 eq tmds2 eq：
+	后面还有10来个类似的东西。
+	然后就没有了。
+	然后是rx1、rx2、rx3的。具体项目跟上面tx0的一样。
+	
+HDMI TX
+	tx pin swap：有4个选项：none、lane、pol、full。交换的是什么？
+	tx av link：有多个选项。默认是pass through。
+	tx tmds2 scramble340：默认false。不知道是什么。
+	tx hdcp mode：上面rx也有类似的，srsk、rptr。默认是none。
+	tx audio mute：默认是false。
+	tx avmute：默认false。
+	tx ddc freq：默认0x32。数字下变频。
+	tx edid read on hpd：在插入检测到时，读取edid（谁的？电视的？）
+	tx gated by hpd：默认true。gate这里怎么理解？
+	中间几个hdcp的，不管。
+	tx packet type：有多个选项。默认是null。
+	tx packet src：none、insert、rx、auto。
+	tx packet data：这个就是31个自己的数据。怎么理解呢？
+	
+```
+
+数字下变频：DDC(Digital Downconverter)
+
+https://blog.csdn.net/m0_61298445/article/details/123009131
+
+# CEA-861-D
+
+
+
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/xiaozhi_botton/article/details/113859334
+
+
+
+# edid manager
+
+https://www.extron.com/article/uedid
+
+https://www.extron.com/product/software/edidmanager21
 
 # 参考资料
 

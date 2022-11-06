@@ -5,7 +5,7 @@ tags:
 	- Linux
 ---
 
-1
+--
 
 什么是avahi？有什么用？
 
@@ -370,7 +370,7 @@ AvahiSimplePoll
 
 
 
-参考资料
+# 参考资料
 
 1、linux服务——Avahi
 
