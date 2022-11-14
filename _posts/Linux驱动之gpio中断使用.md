@@ -287,7 +287,87 @@ interrupt-parent = <&gpio_intc>;
 
 https://blog.csdn.net/qq_41076734/article/details/124669908
 
+# 用户态检测gpio脉冲的宽度
 
+现在我是用epoll来监听gpio的电平变化。
+
+但是目前的问题是，脉冲宽度只有15ms左右。看起来不能正确读取到gpio的value。
+
+所以要考虑一种更敏感的方式。
+
+但是又不想在kernel里做。
+
+找找在用户态实现这种精细操作的方式。
+
+要借助一个库：libgpiod。
+
+这个库在buildroot里已经集成了。
+
+license里写的是LGPL2.1。所以我可以用。
+
+先试一下。
+
+官方仓库在这里：
+
+https://github.com/brgl/libgpiod
+
+但是仓库不再维护了。
+
+## 配套tools
+
+配套带了几个tools。可以直接试一下，看看效果。
+
+```
+BR2_PACKAGE_LIBGPIOD=y
+BR2_PACKAGE_LIBGPIOD_TOOLS=y
+```
+
+### gpioinfo
+
+```
+gpioinfo查看到的信息：
+line  35:    "GPIOD_3"      "sysfs"   input  active-high [used]
+line  40:    "GPIOD_8"      "sysfs"   input  active-high [used]
+```
+
+### gpiodetect
+
+这个是列出所有的gpiochip，并打印它的label和gpio的个数。
+
+```
+/ # gpiodetect
+gpiochip0 [periphs-banks] (99 lines)
+```
+
+### gpiomon
+
+这个可以检测gpio的上升沿和下降沿。我测试一下，非常敏感。
+
+```
+/ # gpiomon 0 40
+event: FALLING EDGE offset: 40 timestamp: [  173549.742904572]
+event:  RISING EDGE offset: 40 timestamp: [  173551.065371405]
+event:  RISING EDGE offset: 40 timestamp: [  173551.065458030]
+event: FALLING EDGE offset: 40 timestamp: [  173557.460672325]
+```
+
+似乎可以用这个机制来替代我之前的epoll机制了。
+
+
+
+参考资料
+
+https://embeddedbits.org/new-linux-kernel-gpio-user-space-interface/
+
+## epoll方式
+
+```
+The preferred way is usually to configure the interrupt with /sys/class/gpio/gpioN/edge and poll(2) for POLLPRI | POLLERR (important it's not POLLIN!) on /sys/class/gpio/gpioN/value. If your process is some "real-time" process that needs to handle the events in real time, consider decreasing it's niceness.
+```
+
+
+
+https://stackoverflow.com/questions/56166622/how-to-handle-gpio-interrupt-like-handling-in-linux-userspace
 
 # 参考资料
 

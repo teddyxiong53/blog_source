@@ -12,7 +12,11 @@ tags:
 
 有的，就是tinydb。
 
+# 资源收集
 
+这些一些对tinydb进行的改写和扩展。
+
+https://tinydb.readthedocs.io/en/latest/extensions.html
 
 # 基本介绍
 
@@ -129,7 +133,26 @@ db.search(User.name == 'allen')
 
 如果属性名字不是合法的python符号的话，例如含有`-`。那么就要用``User['country-code']`这种dict的方式来做了。
 
+上面这种方式是ORM方式。
+
+还可以用传统的方式。
+
+```
+from tinydb import where
+db.search(where('username') == 'allen')
+```
+
+传统方式，反而是通过ORM实现的。
+
+
+
 ## advance query
+
+
+
+# table
+
+如果没有指定table，那么默认是插入到一个叫`_default`的table里。
 
 
 

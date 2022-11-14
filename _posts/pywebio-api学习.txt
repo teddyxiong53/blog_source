@@ -1,0 +1,189 @@
+输入的函数有：
+input
+select
+checkbox
+radio
+textarea
+file_upload
+这么基础的6个。
+然后input_group。可以把input组成一个group。一次性提交。
+否则每个input都会阻塞一次。
+体验不连贯。
+actions
+在form上表现为一组按钮，不同按钮有不同的行为。
+参数：
+	label
+	buttons
+		是一个list，里面的元素可以是dict，也可以是tuple。
+		还可以就是一个字符串。此时label跟value是一样的值。
+		如果是dict，构成是这样：
+		{
+			"label": "按钮1",
+			"value": ?,
+			"type": str类型，取值：reset、cancel、submit、
+			"disabled": False,
+			"color": str类型颜色，可以是primary、danger、warning这些。
+		}
+	name
+	help_text
+	
+		
+
+
+输出的函数有：
+put开头的：
+基础的
+put_text
+put_table
+put_image
+put_markdown
+put_file
+html元素相关的：
+put_tabs
+put_html
+put_code
+put_button
+put_buttons
+put_widget
+put_collapse
+put_link
+put_scrollable
+put_column
+put_row
+put_grid
+put_processbar
+put_loading
+put_info/error/warning/success 这个是flash显示。
+
+弹出类的：
+popup
+toast
+
+output函数都是返回Output对象的。
+所以可以用
+with output_xx:
+	# ...
+这样的方式来使用。
+就像打开一个文件的处理一样。
+
+
+input函数接受的参数
+	13个。
+	都有默认值。所以，你可以不给任何参数。
+	label: 输入框上面显示的文件。
+	type：默认是TEXT。可以是NUMBER/FLOAT/PASSWORD/URL/DATE/TIME/DATETIME_LOCAL
+	validate:
+		输入校验。给一个函数。合法的话，返回None（也就是不用return）。
+		不合法，一般就是返回一个字符串，提示给用户。
+	name：
+		给input起个名字。只有使用input_group的时候，才能给这个赋值。
+		不然会有问题。
+	value：
+		就是input默认初始值。
+		例如:input('yourname', value='Allen')
+		
+	action:
+		action的构成是一个tuple。元素是(str, process_func)
+		具体用途还没搞清楚。不管。
+	onchange
+		一个回调函数，用户改动input的时候，会被回调。
+	placeholder
+		这个就是提示。
+	readonly
+		input是只读的。
+	datalist
+		只有type是TEXT时有用作用。
+	help_text
+		在输入框下面，有一行小字提示。跟placeholder其实差不多的作用。就是提示用户。
+	**other_html_attrs
+		一个字典。其他的html属性。
+	input最后实际是调用了single_input函数。
+	
+single_input
+	这个函数来自于io_ctrl.py。
+	
+select函数的参数
+	有10个参数。
+	label：
+	options：默认是None。就是可选性。一个list。例如：['aa', 'bb']
+	multiple：默认也None。表示是否可以多选。True or False
+	validate：
+	name：
+	value：
+	onchange：
+	required：默认是None。
+	help_text：
+	**other_html_attrs：
+	最后还是调用single_input。
+	
+	
+checkbox函数的参数
+	9个参数。一般给前面2个。
+	label
+	options：也是list。给可选性。给一个也可以。例如同意协议。
+	inline
+	validate
+	name：
+	value
+	onchange
+	help_text
+	**other_html_attrs
+	
+radio
+	单选按钮。
+	比checkbox多了一个required参数。10个参数。
+	
+textarea
+	14个参数。
+	label
+	rows：几行。
+	code：这个是配置给CodeMirror的对象。
+		例如这样： code = {
+			'mode': 'python',
+			'theme': 'darcula'
+		}
+	maxlength
+	minlength
+	validate
+	name：
+	value
+	onchange
+	placeholder
+	required
+	readonly
+	help_text
+	**other_html_attrs
+	
+file_upload
+	文件上传。
+	10个参数。
+	label
+	accept: 接受什么类型的文件。使用的mime的描述。
+		例如image/*, application/pdf
+	name
+	placeholder: 这个默认给了"Choose file"
+	multiple: 是否可以一次上传多个文件。
+	max_size ：允许上传的最大文件。
+	max_total_size ：多个文件的总的大小。
+	required
+	help_text
+	**other_html_attrs
+	
+input_group
+	4个参数：
+	label
+	inputs：一个list。
+	validate：一般是check_form这样来检查。
+	cancelable：
+	取里面的各个input。是data['name']、data['age']这样的方式来取到。
+	
+	
+输出
+put_info 这一类的flash显示
+	参数有4个。
+	*contents
+	closable:默认是False
+	scope：None
+	position：默认是OutputPosition.BOTTOM
+	返回的是Output类型。
+	

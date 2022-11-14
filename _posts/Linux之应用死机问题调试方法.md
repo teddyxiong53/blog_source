@@ -6,13 +6,15 @@ tags:
 
 ---
 
-
+--
 
 1、如果复现时间较短，而且现象确定的，直接在板端运行gdb无疑是最简单直接的。
 
 2、现在复现时间长，而且usb的adb不稳定。不能挂着adb跑。
 
 板端的空间也不是很多。这样应该如何进行调试呢？
+
+# segment fault的死机
 
 现在可以看到死机的堆栈信息。
 
@@ -113,7 +115,62 @@ arm上，不行。
  arm-linux-gnueabihf-gcc -g -rdynamic test.c -rdynamic -funwind-tables -ffunction-sections 
 ```
 
+# 非segment fault的死机
 
+这种要算偏移量，然后addr2line来看。
+
+```
+虚拟地址出错的位置是5263e3，对应的开始地址是00517000，那么对应的offset地址就是5263e3 - 00517000 = f3e3，这样就可以拿这个偏移地址在代码环境里面使用.debug路径下面的bin来定位了。
+```
+
+```
+addr2line -e xx offset
+```
+
+这个-e是表示后面的跟的是exe文件。
+
+如果是so文件呢？
+
+这样可以来定位：
+
+```
+arm-linux-gnueabihf-objdump -x --disassemble -l ./hardware/aml-4.9/npu/nanoq/nnsdk/lib/lib32/libnnsdk.so
+
+```
+
+## level 3 translation fault in
+
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/zhenglie110/article/details/89372378
+
+
+
+## 参考资料
+
+1、
+
+https://blog.csdn.net/xlnaan/article/details/121429894
+
+2、
+
+https://stackoverflow.com/questions/7556045/how-to-map-function-address-to-function-in-so-files
+
+3、so 动态库崩溃问题定位（addr2line与objdump）
+
+https://blog.csdn.net/afei__/article/details/81181827
+
+# SegmentFault处理流程
+
+
+
+参考资料
+
+https://www.jianshu.com/p/6573801b6213
 
 # 参考资料
 
@@ -146,3 +203,6 @@ https://blog.csdn.net/geniuszm2/article/details/52016102
 Linux 段错误详解
 
 https://tinylab.org/explore-linux-segmentation-fault/
+
+
+
