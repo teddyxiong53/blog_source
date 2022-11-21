@@ -52,7 +52,35 @@ https://github.com/wang0618/pywebio-dashboard
 
 https://blog.csdn.net/qq_42766267/article/details/121178510
 
+这个todolist不错。
 
+https://github.com/ngshiheng/pywebio-todolist/blob/master/src/todolist.py
+
+作者自己的一个小应用。
+
+https://github.com/wang0618/mtag_tool
+
+github topic
+
+https://github.com/topics/pywebio
+
+这个人也对pywebio提交了不少代码。
+
+https://github.com/FHU-yezi/JianshuMicroFeatures
+
+这个是对pywebio的扩展，虽然看起来没有使用价值，但是可以关注一下。
+
+https://github.com/luxuncang/TypeWebIo
+
+这个代码写到比较多。还进行了数据库操作。
+
+是一个简单的搜索引擎。可以看看。
+
+https://github.com/ngshiheng/burplist-frontend/
+
+可以通过这个页面查看哪些项目用到了pywebio。
+
+https://github.com/pywebio/PyWebIO/network/dependents
 
 # 竞品
 
@@ -114,6 +142,130 @@ https://github.com/streamlit/streamlit ：可以称得上神器，功能上和 P
 
 
 ## 什么要写这个库
+
+在日常开发中，经常会遇到这样的一个问题：
+
+一个功能可以快速通过控制台脚本来实现，但是又希望把这个脚本通过web的方式来对外提供服务。
+
+在讲脚本转成web服务的过程中，会有这些问题：
+
+1、需要编写额外的前端代码来实现界面。
+
+只是要2个前端页面，一个输入表单，一个是提交表单后的结果页。
+
+2、由于http的无状态性，需要在各个后端接口之间传递状态，不需要额外的代码来检查状态的合法性。
+
+比如，当整个业务流程需要提交多个表单的时候，在传统的web开发里，需要通过后端的session机制或者前端的hidden input机制来保存用户之前输入的数据。并且在每个接口都需要对传递过来的状态进行额外的校验。
+
+3、web框架的使用逻辑和脚本代码的不一致性，也加大了将脚本转成web代码的难度。
+
+例如控制台程序如果要进行一些耗时的操作，可以直接阻塞在主线程中。
+
+而web应用，很多web框架对一个http的保持时间有限制，耗时的操作需要异步完成，前端需要定期轮询来实现进度的实时展示。
+
+
+
+下面以一个答题闯关的例子来做演示。
+
+游戏的规则是：
+
+每次随机出题，答对当前题目才能进行下一题。
+
+答错则游戏结束。
+
+题目的数据以这种形式提供：
+
+```
+questions = [
+	{
+		'question': 'what is your name?',
+		'options': ['aa', 'bb', 'cc'],
+		'answer': 1
+	},
+	# ...
+]
+```
+
+下面看看控制台、web应用、pywebio应用分别如何实现这个逻辑。
+
+### 控制台
+
+```
+from random import shuffle
+
+questions = []
+shuffle(questions)
+
+for cnt, q in enumarate(questions)
+	print(f'问题{cnt}: {q}')
+	print('选项:')
+	answer = input('输入你的答案')
+	if answer != q['answer']:
+		print(f'游戏结束，你答对了{cnt}道题目')
+		break
+else:
+	print('你通关了')
+```
+
+### flask web应用
+
+需要2个前端页面：
+
+一个question.html，展示问题和选项。
+
+一个游戏结束时的显示。
+
+```python
+from flask import Flask, session, request, render_template
+from random import shuffle
+
+app = Flask(__name__)
+questions = []
+
+@app.route('/')
+def index():
+    questions_idxs = list(range(len(questions)))
+    shuffle(question_idxs)
+    session['question_idxs'] = questions_idxs
+    session['question_cnt'] = 0
+    
+    current = questions[question_idxs[0]]
+    return render_template(
+    	'question.html',
+        question = current['question'],
+        options = current['options'],
+        cnt = 0
+    )
+@app.route('/submit_answer', methods=['POST'])
+def submit_answer():
+    cnt = session['question_cnt']
+    question_idxs = session['question_idxs']
+    current_question = questions[question_idxs[cnt]]
+    answer = request.form['answer']
+    
+    if answer != current_question['answer']:
+        return f'游戏结束'
+    next_question = ..
+    return render_template(..)
+
+app.run()
+```
+
+question.html内容省略。
+
+在上面的flask app里，我们小心地使用session来维护状态。
+
+否则应用很容易出现漏洞。
+
+经过这么些操作，终于有一个可以呈现给用户的界面了。
+
+但是很丑。要美化，就得写不少的css代码。
+
+### pywebio方式
+
+整体逻辑跟控制台很类似。
+
+
 
 https://github.com/pywebio/PyWebIO/wiki/Why-PyWebIO%3F
 
@@ -225,6 +377,10 @@ scope是输出内容的容器。（应该等价于html里的div标签）
 每个输出函数（名字为put_xx格式的）都会把内容输出到一个scope。
 
 默认为当前scope。
+
+scope就是对应一个div。默认的div是pywebio-scope-ROOT。前缀是自动加的，你只要用最后的ROOT这个部分的就可以。
+
+![image-20221119160123570](../images/random_name/image-20221119160123570.png)
 
 当前scope由use_scope函数来设置。
 
@@ -488,6 +644,68 @@ app.run(host='0.0.0.0', port=9090)
 然后执行：python in_flask.py
 
 访问ip/tool链接就可以了。
+
+# 应用部署的方式
+
+## path deploy
+
+把整个目录进行部署。
+
+使用函数：
+
+```
+path_deploy
+path_deploy_http
+```
+
+server端会根据用户访问的url来确定要加载哪个文件来进行处理。
+
+每个py文件，都要定义一个名字为main的函数作为处理函数。
+
+```
+def main():
+	pass
+	
+```
+
+无法访问以下划线开头的文件和目录。
+
+如果文件在运行path_deploy后有改动，可以加上reload url参数来强制重新载入。
+
+```
+http://localhost:8080/xxx?reload
+```
+
+还提供了一个pywebio-path-deploy的命令。
+
+这样用：
+
+```
+ ~/.local/bin/pywebio-path-deploy -h 0.0.0.0 -p 1535 ./
+```
+
+默认会把index.py作为首页来解析。
+
+这个方式很好用。对我来说，足够了。
+
+# 全局config
+
+可以配置全局的风格。
+
+```
+from pywebio import config
+
+config(title='hanliang soft', description='this is hanliang website', theme='yeti')
+
+```
+
+还可以单独给每个app加说明。
+
+```
+@config(title='this app one')
+def main():
+	pass
+```
 
 
 

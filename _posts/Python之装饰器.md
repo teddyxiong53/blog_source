@@ -6,19 +6,19 @@ tags:
 
 ---
 
-1
+--
 
 这个视频讲得很清楚了：
 
-https://www.bilibili.com/video/BV11s411V7Dt?from=search&seid=8994910588243535073
+https://www.bilibili.com/video/BV11s411V7Dt
 
 这个总结一些口诀，也不错。
 
-https://www.bilibili.com/video/BV1ZJ411y7Te/?spm_id_from=333.788.videocard.0
+https://www.bilibili.com/video/BV1ZJ411y7Te
 
 这个讲了多种装饰器，也讲得好。讲到了functools.wraps出现的原因。
 
-https://www.bilibili.com/video/BV1Wa4y1x7Kk?from=search&seid=8994910588243535073
+https://www.bilibili.com/video/BV1Wa4y1x7Kk
 
 # 1. 什么是装饰器
 
@@ -243,7 +243,7 @@ f = Foo('xhl')
 f.func()
 ```
 
-## 类装饰函数。
+## 类装饰函数
 
 ```
 class ShowFuncName():

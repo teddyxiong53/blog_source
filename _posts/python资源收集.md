@@ -178,5 +178,17 @@ flasky
 	https://blog.miguelgrinberg.com/post/my-courses-and-books
 	还写了不少的flask插件和自己写了一个可以在单片机上跑的webserver。值得学习。
 	https://github.com/miguelgrinberg/microdot
+	
+peewee
+huey
+simpledb
+sqlite-web
+	这些项目都是coleifer这个作者的作品。他擅长于写一个常用库的精简版本。
+	代码质量很好。又比较简单实用。非常值得深入学习掌握。
+	
+tinydb
+	这个是一个简单的保存数据到json文件的数据库。
+	简单易用。代码也不复杂。
+	
 ```
 

@@ -519,9 +519,31 @@ HA的运行基础是一个个相对独立的组件component。
 
 我们先随便接入一个设备作为示例。
 
+# os编译
+
+2022年11月15日15:16:52
+
+现在心态和个人技术相较于之前发生了一些变化：
+
+1、我对buildroot了解比较深入了。
+
+2、我打算以python作为个人业余项目的主要语言。
+
+3、打算深入研究homeassistant。
+
+基于这些，我决定从homeassistant的os编译入手来进行研究，顺便看看在buildroot里使用docker。
 
 
-#参考资料
+
+```
+git clone https://github.com/home-assistant/operating-system/
+cd operating-system/
+git submodule update --init
+```
+
+
+
+# 参考资料
 
 1、Home Assistant + 树莓派：强大的智能家居系统 · 安装篇
 

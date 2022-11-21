@@ -8,6 +8,13 @@ tags:
 
 --
 
+# 资源收集
+
+这个alsalib的文档，比官方的可读性要好。
+https://vovkos.github.io/doxyrest/samples/alsa/group_PCM_Dump.html
+
+# 框架
+
 ![img](../images/random_name/v2-323ca01cf89d720b04b7df3d1f3026e3_720w.jpg)
 
 

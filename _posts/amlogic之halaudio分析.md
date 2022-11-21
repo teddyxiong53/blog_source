@@ -177,6 +177,57 @@ struct aml_stream_out
 struct aml_stream_in
 ```
 
+
+
+```
+audio_hw.h 头文件分析
+
+aml_audio_device
+	audio_hw_device
+		hw_device_t 这个是主要的内容。
+			set_parameters
+			open_output_stream
+			open_input_stream
+			create_audio_patch
+			set_audio_port_config
+			install_callback_audio_patch
+			add_stream_effect
+	audio_devices_t in_device; //就是一个id。int32类型
+	audio_devices_t out_device;
+	aml_stream_in *active_input;
+	aml_stream_out *active_output[] 可以多个输出。
+	aml_stream_out *hwsync_output; 这个是什么输出？
+	aml_hal_mixer hal_mixer  还有mixer。
+	pcm *pcm;  一个pcm结构体。
+	audio_config output_config; 输出音频的配置。
+	aml_stream_out *active_outputs[] 又是stream输出。
+	aml_audio_patch *audio_patch; 这里的patch，就相当于pipeline，我理解为胶布，一级一级粘贴起来。
+	aml_hw_mixer hw_mixer; 又是一个mixer。
+	
+aml_stream_out 结构体的构成
+	audio_stream_out stream 相当于audio_stream_out的子类。
+		这个类的主要构成也是函数指针。
+		write
+		pause
+		resume
+		drain
+		flush
+		start
+	write：这一层也有一个write函数，参数跟audio_stream_out的write函数完全一样。
+	
+另外还定义了一个全局的write_func指针类型。
+
+aml_stream_in 结构体构成
+	audio_stream_in stream 
+		也是相当于这个的子类。
+		read
+		start 
+		stop
+		
+```
+
+
+
 # 提交日志分析
 
 现在通过git提交日志来看代码的演进过程。

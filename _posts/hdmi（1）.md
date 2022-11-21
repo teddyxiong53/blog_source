@@ -447,6 +447,96 @@ bitstream的
 	mat、truehd都属于这种情况。
 ```
 
+# hdmi packet分类
+
+
+
+# HDMI2.1
+
+这个是官方介绍ppt。
+
+https://hdmiforum.org/wp-content/uploads/2017/11/HDMI-Forum-2.1-November-Release-Presentation-EN.pdf
+
+# one bit audio
+
+
+
+https://www.sonicstudio.com/pdf/papers/1bitOverview.pdf
+
+https://www.techbang.com/posts/22079-unlocking-the-mystery-of-dsd-the-dsd-digital-audio-coding-vs-pcm
+
+# earc rx cap（也就是earc这个port的EDID）
+
+```
+earc rx cap数据结构
+earc rx应该包括一个能力数据。
+描述了earc rx接口的audio能力。
+应该在进入到earc rx功能前，保证把这个能力已经设置好了。
+
+earc能力描述结构
+字节0：
+	版本，固定为01
+从字节1开始，是一个个data block。
+如果字节内容是0了。表示后面没有内容了。
+就是不用的部分，补零就好了。
+反正要填满256个字节的空间。
+
+block data的结构。
+第一个字节：高3bit保留，低5个bit，从0到31，表示各个block的id。
+	而id里面，0和4-31这些都是保留的。
+	0之所以保留，是因为id=0时，这个字节整个就等于0x00。
+	而0x00是作为无效数据的检测字符的。
+	只有1/2/3这3个使用了。
+	id=1：表示使用CTA-861-A描述符。
+	id=2：表示CTA-861-A speaker allocation 描述符。
+	id=3：表示audio stream layout。
+第二个字节：
+	表示后面的内容的字节数。
+第二个字节到本block的结束：
+	有效的数据。
+	
+id=1，表示这个数据库后面是跟这audio data block的。
+	也可以是vendor specific audio data block。
+	也可以同时包含了这2个内容。
+
+id=3的时候，len固定为1，后面只跟一个字节。
+这个字节的含义：
+	bit7：如果是1，表示支持AI。
+	bit6：保留。
+	bit5到bit3：
+		表示one bit audio layout。
+		取值0到7.
+		0：不支持one bit audio，或者是只支持6ch的one bit audio。
+		1：6ch和12ch的one bit audio都支持。
+		2到7：保留。
+	bit2到bit0：
+		这个部分是表示multiple channel lpcm的layout。
+		取值0到7。
+		0：2ch和8ch支持。
+		1：2ch、8ch、16ch都支持。
+		2：2ch、8ch、16ch、32ch都支持。
+		3到7：保留。
+	这个字节，我就给0x80就好了。
+	
+先看一下当前默认的数值吧。
+（前面有2个0x00，我认为是故意写的非法值，去掉，然后后面就是可以解释的合法值。）
+0x01 版本
+0x01 0x1d id=1,0x1d表示后面有29个字节。25个字节的adb。加4个字节的speaker allocation。
+0x38 
+0x09 0x7f 0x07 
+0x0f 0x7f 0x07 
+0x15 0x07 0x50 
+0x3d 0x07 0xc0 
+0x4d 0x02 0x00 
+0x57 0x06 0x00 
+0x5f 0x7e 0x01 
+0x67 0x7e 0x00 
+
+0x83 0x4f 0x00 0x00 
+
+0x03 0x01 0x80 这个部分就是id=3的情况，只有一个。
+```
+
 
 
 # 参考资料

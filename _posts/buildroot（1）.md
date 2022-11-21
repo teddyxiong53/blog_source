@@ -2024,7 +2024,7 @@ buildroot\buildroot-dev.patch
 
 
 
-BR2_GLOBAL_PATCH_DIR 这个变量里，用空格分开的多个目录。
+BR2_GLOBAL_PATCH_DIR 这个变量里，**用空格分开的多个目录**。
 
 还是手动来，不要借助buildroot自带的机制了。
 

@@ -85,7 +85,7 @@ C:\Users\Administrator\AppData\Roaming\Code\User\settings.json
 
 
 
-#配置调试html
+# 配置调试html
 
 搜索安装debugger for chrome
 
