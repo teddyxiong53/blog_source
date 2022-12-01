@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 头部一共44个字节：
 
@@ -99,7 +99,103 @@ int main()
 
 
 
-参考资料
+
+
+我有个wav文件解析出来是这个样子。
+
+```
+RIFFNAME:RIFF
+RIFFSize:49606
+WAVNAME:WAVE
+FMTNAME:fmt 
+FMTSize:16
+AudioFormat:1
+Channels:1
+SampleRate:16000
+BytesPerSecond:32000
+BlockAlign:2
+BitsPerSample:16
+DATANAME:LIST
+DataSize:26
+```
+
+问题在于我的这个wav不标准。
+
+数据的长度是在“data”后面这里。也就是0xc180才是后面data的长度。
+
+![image-20221201133235495](../images/random_name/image-20221201133235495.png)
+
+所以我的解析不够健壮。
+
+所以这个解析没有我想象的简单。
+
+所以还是使用dr_wav的接口来做。这样才足够健壮。
+
+
+
+```
+drwav
+	结构体
+	这个结构体是全局性的。比较复杂。
+drwav_init_file
+drwav_read_pcm_frames_s32
+drwav_open_file_and_read_pcm_frames_f32
+
+drwav_fmt
+drwav_fmt_get_format
+
+drwav_init
+drwav_uninit
+
+drwav_read_raw
+drwav_read_pcm_frames
+drwav_get_length_in_pcm_frames
+
+drwav_read_pcm_frames_s16le
+
+drwav_init_file
+
+drwav_open_and_read_pcm_frames_s16
+drwav_open_file_and_read_pcm_frames_s16
+```
+
+看这个注释：
+
+```
+The examples above use versions of the API that convert the audio data to a consistent format (32-bit signed PCM, in this case), but you can still output the
+audio data in its internal format (see notes below for supported formats):
+```
+
+那就是说，可以把任意格式转成指定的格式？那就正是我需要的。
+
+编译选项
+
+```
+#define these options before including this file.
+
+#define DR_WAV_NO_CONVERSION_API
+  Disables conversion APIs such as `drwav_read_pcm_frames_f32()` and `drwav_s16_to_f32()`.
+
+#define DR_WAV_NO_STDIO
+  Disables APIs that initialize a decoder from a file such as `drwav_init_file()`, `drwav_init_file_write()`, etc.
+
+#define DR_WAV_NO_WCHAR
+  Disables all functions ending with `_w`. Use this if your compiler does not provide wchar.h. Not required if DR_WAV_NO_STDIO is also defined.
+
+```
+
+
+
+定义了这个宏，才会打开函数实现的部分。
+
+```
+#define DR_WAV_IMPLEMENTATION
+    #include "dr_wav.h"
+```
+
+
+
+# 参考资料
 
 1、wav文件头分析
 
@@ -110,3 +206,8 @@ https://blog.csdn.net/xieyanyi1/article/details/48207663
 这个的图片画得好。
 
 https://blog.csdn.net/Guet_Kite/article/details/114625653
+
+3、
+
+https://blog.csdn.net/u013286409/article/details/47414273
+

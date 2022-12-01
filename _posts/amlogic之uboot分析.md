@@ -7,6 +7,16 @@ tags:
 
 --
 
+之前我用uboot的时候，都还是很简单的，直接从指定地址读取内容放到指定的ddr位置上。然后直接bootm启动kernel就好了。
+
+但是看amlogic的uboot，现在方案已经比较复杂了。
+
+尤其是启动命令这里，引入了script机制。
+
+让启动过程变得复杂了。所以有必要梳理一下。
+
+# printenv
+
 printenv得到的输出
 
 ```
@@ -91,9 +101,102 @@ wipe_data=successful
 
 ```
 
+# uboot script
+
+
+
+https://blog.csdn.net/p1279030826/article/details/114135757
+
+https://ece453.engr.wisc.edu/u-boot-script/
+
+# BCB	
+
+bcb是bootloader control block的缩写。
+
+受到CONFIG_BOOTLOADER_CONTROL_BLOCK这个宏的控制。默认是使能的。
+
+cmd\amlogic\cmd_bcb.c
+
+处理这个结构体的：bootloader_message
+
+就是从misc分区里读取这个数据。
+
+当前读取这个是失败的。
+
+```
+Command: bcb uboot-command 
+Start read misc partition datas!
+aml_nand_read_page_hwecc 1271 read ecc failed here at at page:13312, blk:208 chip[0]
+mtd_store_read_skip_bad 237 read from offset 3400000 failed -74
+mtd_store_read 577 mtd read err, ret -74
+failed to store read misc.
+bcb - bcb
+```
+
+
+
 
 
 参考资料
 
-1、
+1、Android BCB的作用
 
+https://blog.csdn.net/Android_2016/article/details/98959849
+
+
+
+# CONFIG_EXTRA_ENV_SETTINGS
+
+
+
+# reboot_mode获取
+
+AO_SEC_SD_CFG15
+
+是这个寄存器里存储了值。
+
+取值的说明是这样：
+
+```
+/*
+Reboot reason AND corresponding env setting:
+0:  Cold boot                 cold_boot
+1:  Normal boot               normal
+2:  Factory reset             factory_reset
+3:  Upgrade system            update
+4:  Fastboot                  fastboot
+5:  Suspend                   suspend_off
+6:  Hibernate                 hibernate
+7:  Fastboot Bootloader       bootloader
+8:  Shutdown reboot           shutdown_reboot
+9:  RPMBP reboot              rpmbp
+10: quiescent reboot          quiescent reboot
+11 : rescueparty               rollback in AB mode
+12:  Kernel panic             kernel_panic
+13:  Watchdog reboot          watchdog_reboot
+14: quiescent recovery reboot   quiescent recovery
+15: reserved
+*/
+```
+
+# get_avb_mode
+
+
+
+# 参考资料
+
+1、uboot脚本
+https://www.cnblogs.com/zengjfgit/p/9316290.html
+
+2、uboot bcb命令是什么Bootloader Control Block (BCB)
+https://www.cnblogs.com/Xuxiangquan/articles/11168078.html
+
+3、
+
+https://u-boot.readthedocs.io/en/latest/android/bcb.html
+
+
+
+https://blog.csdn.net/weixin_49713302/article/details/122565296
+
+https://wlybsy.blog.csdn.net/article/details/108211268

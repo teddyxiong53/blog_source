@@ -872,6 +872,31 @@ start() {
 asplay set-logpriority LOG_DEBUG
 ```
 
+## log level和trace level区别是什么
+
+```
+struct AmlLogCat {
+    const char *name;
+    int log_level;
+    int trace_level;
+    struct AmlLogCat *next;
+};
+```
+
+不是这个。我们实际上没有使用aml_log.c这个动态库的东西。
+
+而是自己实现的：src\aml_syslog.c
+
+AML_LOG_ENABLE 这个宏没有使能。
+
+我们的日志打印级别，借用了syslog的级别。
+
+实际上不只是借用了级别，而是直接调用了syslog。我们做的只是拼接一个字符串。然后传递给syslog函数。
+
+```
+
+```
+
 
 
 参考资料
@@ -1842,6 +1867,94 @@ g_signal_connect(as_proxy, "notify::g-name-owner",
 client主要需要一个回调来处理signal。
 其余的主动调用，都是用audioservice_call_get_input_list_sync这样的函数。
 ```
+
+## 传递的json数据的释放是什么时候
+
+这个很有必要搞清楚。
+
+1、可以搞清楚是否有内存泄漏。
+
+2、避免出现使用的时候指针已经被free的问题。
+
+as_client的使用者发送一个json数据，通过dbus传递给audioservice这边处理。
+
+json数据是分配的一段内存，audioservice这边会使用json数据。有些操作是异步的。
+
+看看这个时候，能否正常工作。
+
+看这里的时候，还有必要把cjson的内存使用梳理一下。
+
+```
+cJSON_Parse
+	这个里面有malloc。
+	parse_value是递归的。
+		parse_string 有malloc。
+		number类型是不需要malloc的。
+		parse_array 有malloc。
+		parse_object 有malloc。
+	所以，这个返回的指针，最后需要自己进行free操作。
+	cJSON_Delete 用这个接口来释放，会递归释放里面的。
+	cJSON_IsReference和cJSON_StringIsConst在这里就有用了。
+	
+cJSON_Print
+	这个malloc 了char*类型的数据。
+	需要用free进行释放。
+	
+```
+
+
+
+AS_Client_SetSettingStr 搜索这个的调用。
+
+```
+用得还比较多。
+arg_cmd[256]把数据拼接到这个buf里。
+进行同步调用。
+audioservice_call_set_input_settings_sync
+没有需要free的内存。
+```
+
+但是有些是使用了event的异步机制。看看这些数据是否有失效的可能。
+
+以halaudio_open为例进行分析。
+
+AS_Client_OpenInput
+
+这个没有传递字符串，只是传递一个int数字。
+
+但是传递消息，还是拼接了一个json字符串。
+
+```
+test = cJSON_Print(arg_input);
+```
+
+
+
+```
+AS_EnableInput((char *)arg_input)
+	解析成cjson后arg_json = cJSON_Parse(arg_input);
+	arg_input就可以释放了。所以没有关系。
+	
+HalAudio_InputOpen(input)
+	这个input cjson内容是从大的里面get的item。
+	然后把int类型的id取出来后，就可以不管了。所以整个逻辑上是正常的。
+	pParam->input_id_param.input_id = input_id;
+```
+
+
+
+```
+现在分析一下我的提示音播放的传递流程。
+
+param = cJSON_Parse(arg_input);
+	从字符串解析出cjson结构体。
+	
+结论：AmlEvent_AddEvent的时候，需要自己分配内存，来存放要传递的参数。
+	然后在处理函数里把这个参数的内存进行释放。
+	这个就是关键。
+```
+
+
 
 # notify机制分析
 

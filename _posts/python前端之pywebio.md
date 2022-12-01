@@ -935,6 +935,70 @@ event的格式：
 
 https://zhuanlan.zhihu.com/p/383232382
 
+# 代码分析
+
+```
+class Session:
+	会话对象，由backend创建。
+	Session是不同的后端Backend与协程交互的桥梁：
+	
+	
+WebSocketConnection
+	一个抽象类。继承了abc.ABC
+	有这些方法：
+		get_query_argument
+		make_session_info
+		write_message
+		closed
+		close
+	那么谁对这个抽象类进行了实现呢？
+	tornado.py、fastapi.py、aiohttp.py都进行了实现。
+	
+WebSocketHandler
+	对应一个WebSocketConnection
+	class属性有：
+		session_id
+		session 当前连接关联的session
+		connection 一个WebSocketConnection
+		reconnectable
+	构造方法
+		
+	实例方法：
+		_send_msg_to_client
+		send_client_data
+		notify_connection_lost
+		
+		
+start_server
+	这个重要入口函数分析。
+	来自于tornado.py。
+	第一个参数是一个函数。表示app。也可以是函数list。还可以是dict。
+		还可以是async函数。这个时候，使用的是coroutine based 的session。否则是threaded based session。
+		
+	tornado默认是跟浏览器用websocket通信的。
+	tornado_http.py这个才是http方式通信的。
+	tornado的pywebio的默认后端。
+	
+webio_handler
+
+
+
+浏览器这边，是这个作为通信的主体。
+WebIO.startWebIOClient
+网页的模板是这个。
+pywebio\platform\tpl\index.html
+
+前端的处理代码，都要到ts里去看。
+才能看到清晰的处理逻辑。
+例如download的处理，是在download.ts里处理的。
+class DownloadHandler implements CommandHandler
+
+前端的入口是main.ts文件。
+startWebIOClient
+```
+
+
+
 # 参考资料
 
 1、中文文档

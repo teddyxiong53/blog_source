@@ -845,7 +845,93 @@ CONFIG_SW_VERSIONS_FILE="/etc/sw-versions"
 
 
 
+# libconfig
 
+Libconfig是一个结构化的配置文件库，
+
+它可以定义一些配置文件，
+
+例如[test.cfg](http://www.hyperrealm.com/libconfig/test.cfg.txt) . 它比[xml](https://so.csdn.net/so/search?q=xml&spm=1001.2101.3001.7020)可读性更好，而且更简洁。
+
+而且不像xml，它是 **type-aware**类型自我感知的，
+
+因此不需要做string parsing ([分词](https://so.csdn.net/so/search?q=分词&spm=1001.2101.3001.7020)？). 而ini太弱。
+
+
+
+libconfig支持结构化、层次化的配置。
+
+这些配置可以从文件中读取或写入文件，也可以在内存中操作。
+
+
+
+一个配置由一组setting构成，setting由名字（name）关联，并有相应的值（value）。一个值（value）可以是以下任意一种类型：
+
+标量值（scalarvalue）：整型、64位整型、浮点数、布尔值或者字符串
+
+数组（array）：一组标量值的序列，所有的标量值必须为同一类型
+
+群组（group）：多个setting的集合
+
+列表（list）：一组值（value）的序列，各个值可（value）以分别为不同的类型，其他的列表也可以包含其中。
+
+
+
+观察下面这一个层次化GUI应用程序的配置文件，它阐明了一个配置文件语法所有的元素。
+
+```
+#Exampleapplicationconfigurationfile
+version = "1.0";
+application:
+{
+    window:
+    {
+        title = "MyApplication";
+        size = {
+            w = 640;h = 480;
+        };
+        pos = {
+            x = 350;y = 250;
+        };
+    };
+    list = (("abc", 123, true), 1.234, ( /*anemptylist*/ ));
+    books = (
+        {
+            title = "TreasureIsland";
+            author = "RobertLouisStevenson";
+            price = 29.95;
+            qty = 5;
+        },
+        {
+            title = "SnowCrash";
+            author = "NealStephenson";
+            price = 9.99;
+            qty = 8;
+        }
+    );
+    misc:
+    {
+        pi = 3.141592654;
+        bigint = 9223372036854775807 L;
+        columns = ["LastName", "FirstName", "MI"];
+        bitmask = 0x1FC3;
+    };
+};
+```
+
+（我觉得没有必要深入看了，因为我觉得json够用了）
+
+
+
+参考资料
+
+1、官方手册
+
+http://www.hyperrealm.com/libconfig/libconfig_manual.html
+
+2、libconfig第一篇———使用指南
+
+https://blog.csdn.net/weixin_30546933/article/details/95318709
 
 # 参考资料
 

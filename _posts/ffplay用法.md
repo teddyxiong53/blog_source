@@ -22,3 +22,9 @@ ffplay -stats -f h264 test.264
 ffplay rtsp://192.168.190.137/1.h264
 ```
 
+在嵌入式设备上播放，没有sdl。加-nodisp参数。
+
+```
+ffplay -nodisp /data/1.wav
+```
+

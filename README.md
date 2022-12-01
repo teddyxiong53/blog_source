@@ -22,3 +22,17 @@ markdown编写：typora
 
 画图工具：ddd后缀的是Diagram Designer画的。uml后缀的是用staruml画的。
 
+## 画图工具更新
+
+2022年11月30日 
+
+现在开始，画图工具全部切换成vscode的drawio插件，方法是：
+
+1、vscode搜索drawio，安装对应的插件。
+
+2、新建xx.drawio文件。用vscode打开，就可以激活插件并进行绘制。
+
+3、保存的文件是未压缩的xml格式。非常便于版本管理。
+
+
+

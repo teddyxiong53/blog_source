@@ -245,7 +245,16 @@ do_overlay_mount() { #<overlay dir>
 }
 ```
 
+# ubi和ubifs关系
 
+UBIFS涉及三个子系统：
+\>MTD系统，提供对各种flash芯片的访问接口；drivers/mtd
+\>UBI系统，工作在MTD上，提供UBI volume；drivers/mtd/ubi
+\>UBIFS文件系统，工作在UBI之上；fs/ubifs
+
+UBI指的是UBI subsystem，其工作在MTD设备上，是MTD设备的高层次表示，对上屏蔽了一些MTD需要处理的问题，如wearing和坏块处理；
+
+而UBIFS指的是UBIFS file system，工作在UBI卷层之上。
 
 # 参考资料
 
