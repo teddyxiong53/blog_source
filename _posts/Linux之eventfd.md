@@ -74,6 +74,10 @@ timerfd_create跟他们的不同，在于可以跟select结合起来使用。
 
 
 
+可以看到，eventfd实现的资源是一次性消耗品，只允许一次read。
+
+
+
 # 用pipe来模拟eventfd
 
 我看bluealsa里，有个这样的用法：
@@ -105,3 +109,6 @@ https://cloud.tencent.com/developer/article/1171508
 
 2、man手册。
 
+3、
+
+https://blog.csdn.net/shuxiaogd/article/details/45914615

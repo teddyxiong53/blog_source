@@ -38,6 +38,20 @@ jsonrpc
 	无状态，轻量级。
 ```
 
+# 官方文档
+
+规范文档是这个：
+
+https://wiki.geekdream.com/Specification/json-rpc_2.0.html
+
+总结一下：
+
+如果不包含该id成员则被认定为是一个通知。
+
+服务端必须不回复一个通知，包含那些批量请求中的。
+
+回复中必须包含id，且跟请求的id值要一样。
+
 
 
 # 一个rpc框架需要实现的功能
@@ -90,13 +104,13 @@ jsonrpc有1.0和2.0 这2个版本。二者有差别。我们只看2.0的。
 1、jsonrpc：指定jsonrpc版本。值固定为2.0
 2、id。
 3、method。要调用的函数
-4、params。函数的参数。没有则为[]
+4、params。函数的参数。没有则为[]。可以是object或者array。
 ```
 
 一个rpc响应，要有下面的字段。
 
 ```
-1、jsonprc。版本号，固定为2.0
+1、jsonrpc。版本号，固定为2.0
 2、id。
 3、result。成功时。
 4、error。失败时。
@@ -238,6 +252,12 @@ https://naotu.baidu.com/file/1ff3a94bb69723da429f7fa34eacab48
 做的都是最基础的处理。够用。健壮性肯定还是不太够的。
 
 连接的buffer，默认分配了1500字节，如果发现接近了这个数字，那么就自动分配多一倍的空间。
+
+## 另一个C语言
+
+https://gitee.com/hy0kl/event-json-rpc/tree/master
+
+
 
 # 使用jsonrpc作为主要通信手段的软件有哪些？
 
@@ -434,11 +454,25 @@ https://groups.google.com/g/json-rpc/c/2WyxWKSiz8o
 
 另外开一篇文章《mqtt作为系统消息总线的思考》来梳理这个想法。
 
+
+
 ## server主动Notification的思考
 
 这个确实是没有。因为是基于请求应答的模型。
 
+2022年12月3日09:02:50
 
+想明白了jsonrpc的通知怎么做了，
+
+进程A作为server，内部同时运行jsonrpc server1和连接自己的client代码，
+
+进程B作为纯的client。
+
+当进程A有状态需要通知时，A内部的client向自己的server发通知，这个信息就会被server转给所有的client.
+
+这样就实现了进程A主动给进程B发送通知的机制。
+
+有了这个，jsonrpc就可以替代dbus的功能来实现进程通信了。
 
 ## 如果处理需要很长时间
 
@@ -448,9 +482,47 @@ https://groups.google.com/g/json-rpc/c/2WyxWKSiz8o
 
 卡多次时间会被判断为通信失败呢？（这个应该没事）
 
+2022年12月3日09:04:27
 
+这个我也已经找到解决方法了。有些耗时的操作，靠server这个用一个event_handler的机制去处理实际操作。
 
+先直接返回成功的。
 
+# opensips里的jsonrpc
+
+2022年12月3日09:06:05
+
+今天在搜索我电脑上的jsonrpc相关文件的时候，看到我之前下载的opensips代码目录里也有jsonrpc的代码。
+
+看看实现了什么。
+
+看代码目录，opensips的代码还真是非常规范。值得一读。
+
+每个代码目录的README就是很规范的代码文档。看起来很清晰严谨。
+
+```
+输出参数：
+	connection_timeout
+	write_timeout
+	read_timeout
+输出函数
+	jsonrpc_request
+	jsonrpc_notification
+	
+
+```
+
+这个实现的是jsonrpc client的功能。
+
+通过tcp发送请求给server。
+
+# notification怎么发
+
+没有id的就是notification。
+
+server对notification的处理就是，不进行回复。
+
+https://docs.actian.com/openroad/6.2/index.html#page/ServerRef/JSON-RPC_Notifications.htm
 
 # 参考资料
 

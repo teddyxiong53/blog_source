@@ -6,6 +6,14 @@ tags:
 
 ---
 
+--
+
+# 替代方案
+
+谷歌搜索dbus alternatives
+
+常用的就是ubus。
+
 
 
 dbus能不能移植到嵌入式系统里？如何移植？
