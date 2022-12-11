@@ -129,7 +129,7 @@ pi@raspberrypi:~/tmp/xx/libevent-2.1.8-stable$ tree
 
 
 
-#例子代码深入
+# 例子代码深入
 
 还是从libevent（一）那篇文章里的第一个例子开始看。
 

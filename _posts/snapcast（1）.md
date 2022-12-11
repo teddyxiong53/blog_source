@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 要在板端运行snapcast。所以想要集成到buildroot里编译。
 

@@ -110,6 +110,8 @@ make
 
 扫描源代码以搜寻普通的可移植性问题，比如检查编译器，库，头文件等，生成文件configure.scan,它是configure.ac的一个雏形。
 
+（xhl：这一步可以不这么做。找一个configure.ac的模板手动修改就行了）
+
 ## aclocal:
 
 根据已经安装的宏，用户定义宏和acinclude.m4文件中的宏
@@ -797,7 +799,7 @@ client_SOURCES：
 
 client_CPPFLAGS：
 
-这和Makefile文件中一样，表示C语言**预处理器参数**，这里指定了DCONFIG_DIR，
+这和Makefile文件中一样，表示C语言**预处理器参数**，这里指定了CONFIG_DIR，
 
 以后在程序中，就可以直接使用CONFIG_DIR,
 
@@ -1013,6 +1015,35 @@ EXTRA_DIST指定的文件。
 
 采用dist及nodist指定的文件，如可以将某一源文件指定为不打包：
 nodist_client_SOURCES = client.c
+
+
+
+# AUTOMAKE_OPTIONS=subdir-objects
+
+这个选项的作用是什么？
+
+所有的automake的options在这里：
+
+https://www.gnu.org/software/automake/manual/automake.html#List-of-Automake-options
+
+这个选项，从名字上看，是subdir（子目录），object（指生成的o文件）。
+
+整体理解就是生成的o文件在各个子目录下。
+
+表示生成的build目录下生成跟代码目录一样对应的目录层次。
+
+这个一般加上就好了。
+
+# 自定义数据的安装
+
+```
+voicepromptdir = $(bindir)/../../usr/audio
+voiceprompt_DATA = display_module/speak/audio/*
+```
+
+这样就会自动把提示音文件安装到目标目录下。
+
+
 
 # 参考资料
 

@@ -196,6 +196,29 @@ cjson里，把int类型，只是32位的。
 
 
 
+# cJSON_IsReference
+
+这个怎么使用的？
+
+只在内部的create_reference函数里有置位这个flag。
+
+对外的接口是：
+
+```
+cJSON_AddItemReferenceToArray
+cJSON_AddItemReferenceToObject
+```
+
+我都没有使用过。
+
+那么就是说，这个点我当前可以忽略。
+
+那cjson对于字符串常量是怎么处理的？
+
+例如cJSON_CreateString是怎么处理字符串常量的？是进行了一次strdup。
+
+所以我上层调用就直接传递字符串常量就好了。
+
 
 
 # 参考资料

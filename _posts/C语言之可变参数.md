@@ -88,11 +88,34 @@ va_arg这个宏，用来获取下一个参数的值。
 
 
 
+# 发现我不能理解这个
+
+```
+#define QUOTE(...) #__VA_ARGS__
+static const char *lua_code = QUOTE(
+print("Hello, Lua C API")\n
+print("Hello, Lua C API")\n
+print("Hello, Lua C API")\n
+);
+
+int main(int argc, char const *argv[])
+{
+    printf("%s", lua_code);
+    return 0;
+}
+```
+
+`#define QUOTE(...) #__VA_ARGS__`这个用法挺神奇的。
+
+发现可变参数这个，我还根本没有搞懂。
+
+需要专门抽时间再研究一下。
 
 
 
 
-参考资料
+
+# 参考资料
 
 1、揭密X86架构C可变参数函数实现原理
 

@@ -396,6 +396,72 @@ https://blog.csdn.net/weixin_39449570/article/details/78445199
 
 https://blog.csdn.net/qq_39549803/article/details/111877597
 
+# windows下占用空间大
+
+可以参考这个调整缓存数据的位置。
+
+https://blog.csdn.net/weixin_42880082/article/details/121242368
+
+
+
+# 头文件ifndef snippet
+
+```
+{
+	"#ifndef … #define … #endif":{
+		"prefix": "def",
+		"body": "#ifndef ${1:${TM_FILENAME_BASE/(.*)/_${1:/upcase}_H/i}} \n#define $1 \n#ifdef __cplusplus\nextern \"C\" {\n#endif\n${2:}\n\n\n#ifdef __cplusplus\n}\n#endif\n#endif\t// $1"
+				
+}
+
+```
+
+上面的内容配置到c.json里。
+
+然后在头文件里输入def可以快速生成保护宏。
+
+但是我的用了不生效。
+
+看了下面这个文章，说是把h文件当成c++了。所以c.json的配置不能覆盖到。
+
+那我直接改cpp.json不就好了。
+
+而且内容换成下面的：效果非常好。输入guard就可以触发。
+
+```
+{
+	"Add include guard": {
+		"prefix": "guard",
+		"description": "Adds an ifndef include guard to a C header",
+		"body": [
+			"#ifndef __${TM_FILENAME/^([^\\.]*)\\..*$/${1:/upcase}/}_${TM_FILENAME/^.*\\.([^\\.]*)$/${1:/upcase}/}__",
+			"#define __${TM_FILENAME/^([^\\.]*)\\..*$/${1:/upcase}/}_${TM_FILENAME/^.*\\.([^\\.]*)$/${1:/upcase}/}__",
+			"",
+			"$0",
+			"",
+			"#endif // __${TM_FILENAME/^([^\\.]*)\\..*$/${1:/upcase}/}_${TM_FILENAME/^.*\\.([^\\.]*)$/${1:/upcase}/}__",
+			""
+		]
+	}
+}
+```
+
+
+
+https://blog.csdn.net/booksyhay/article/details/119572280
+
+
+
+vscode用户用好user snippets能极大提高开发效率，这是我的配置文件。选择：File->Perferences->User Snippets->targert.json
+
+
+
+参考资料
+
+1、
+
+https://zhuanlan.zhihu.com/p/171797717
+
 
 
 

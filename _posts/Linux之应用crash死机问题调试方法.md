@@ -135,8 +135,11 @@ addr2line -e xx offset
 
 ```
 arm-linux-gnueabihf-objdump -x --disassemble -l ./hardware/aml-4.9/npu/nanoq/nnsdk/lib/lib32/libnnsdk.so
-
 ```
+
+这样会把反汇编直接输出到stdout。你也可以重定向到一个文件里来查看。
+
+
 
 ## level 3 translation fault in
 
