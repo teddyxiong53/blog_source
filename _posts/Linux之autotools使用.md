@@ -33,7 +33,11 @@ autoconf这个工具就是用来帮我们生成configure文件的。
 2. 接着运行./configure进行配置生成makefile文件，譬如enbale/disbale一些特性，设置交叉编译平台（例如--host=linux-mips），设置编译安装目录（例如--prefix=path_to_your_build_directory）具体可以查看help信息；
 3. 执行make && make install。
 
+# 资料
 
+这个有个简单手册。
+
+https://apps.dtic.mil/sti/pdfs/ADA553215.pdf
 
 # autoconf
 
@@ -1042,6 +1046,54 @@ voiceprompt_DATA = display_module/speak/audio/*
 ```
 
 这样就会自动把提示音文件安装到目标目录下。
+
+# 一个目录编译多个so文件
+
+这个看起来简单的需求，但是却有点麻烦。
+
+我是参考这个
+
+https://github.com/VigilantBag/bluealsa/blob/master/src/asound/Makefile.am
+
+我写了一个这样的：
+
+```
+libsys_LTLIBRARIES = libsys.la
+libtimer_LTLIBRARIES = libtimer.la
+
+AM_CFLAGS = \
+	-I$(top_srcdir)/lua/lua5.3 \
+	-I$(top_srcdir)/include
+
+AM_CFLAGS += -g -O0 -rdynamic -funwind-tables
+
+libsys_la_SOURCES = \
+	lsys.c
+
+libtimer_la_SOURCES = \
+	ltimer.c
+
+libsysdir = $(top_srcdir)/luaclib
+libtimerdir = $(top_srcdir)/luaclib
+
+AM_LDFLAGS = -module -avoid-version
+```
+
+这个make的时候，会报错：
+
+```
+libtool:   error: only absolute run-paths are allowed
+```
+
+这个就是要绝对路径。我这样做就好了。
+
+```
+real_top = $(abspath $(top_srcdir)/luaclib)
+
+libsysdir := $(real_top)
+libtimerdir := $(real_top)
+
+```
 
 
 

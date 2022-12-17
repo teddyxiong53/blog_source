@@ -102,14 +102,14 @@ gcc test.c -lev
 
 我一般把会把源码进行分类：
 
-一类是产品类的，就比如Redis、Ngnix这一类本身是一个完整的可以运维的成熟产品；
+**一类是产品类的，就比如Redis、Ngnix这一类本身是一个完整的可以运维的成熟产品；**
 
-另一类就是Libev这样的组件类的。
+**另一类就是Libev这样的组件类的。**
 
 对于组件类的项目，我一般就是分成这样几步：
 
 1. 有文档看文档，没有文档问相关人员（包括Google），这个组件主要提供什么服务
-2. 结合上述信息使用组件的AIP写个示例程序，跑起来
+2. 结合上述信息使用组件的API写个示例程序，跑起来
 3. 大致浏览下源码，分析一下代码的组织结构
 4. 根据使用的API，进到源码中看看主干是怎么样实现的，从而了解整体思路
 5. 再搜刮源码，把一些辅助的功能看下，并在例子中尝试
@@ -425,6 +425,18 @@ https://github.com/aceld/libevent
 这个算是libev的ipc例子。但是好像不是很好。
 
 https://github.com/coolaj86/libev-examples/blob/master/ipc/unix-socket-ipc-remote-control.c
+
+# ev_loop_fork
+
+这个函数的用途是什么？
+
+The libev manual does not say that after a fork an event loop will be stopped. All it says is that to be sure that the event loop will **properly** work in the child, you need to call ev_loop_fork(). What's actually happening depends on the backend.
+
+就是fork之后，在子进程里，需要调用一下ev_loop_fork，子进程里才能正常使用ev_loop。
+
+这个是epoll等底层决定的。
+
+https://stackoverflow.com/questions/35604292/what-happend-if-i-didnt-call-ev-loop-fork-in-the-child
 
 # 参考资料
 

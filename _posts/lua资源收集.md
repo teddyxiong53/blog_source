@@ -8,6 +8,26 @@ tags:
 
 --
 
+# 最好的内容
+
+## 构建Lua解释器系列文章
+
+这个系列写得很有深度很有价值，值得花上几个月的时候仔细研读。
+
+https://manistein.github.io/blog/post/program/build-a-lua-interpreter/%E6%9E%84%E5%BB%BAlua%E8%A7%A3%E9%87%8A%E5%99%A8part1/
+
+## lua细节
+
+https://www.zhyingkun.com/markdown/luadetail/
+
+这个作者的网站的文章可以都看看。
+
+这个作者画图水平也是很高的。
+
+lua知识点整理
+
+https://www.drflower.top/posts/43f53d35/
+
 # 对我比较有价值的学习代码
 
 lite，一个lua写的编辑器。C负责渲染的性能部分，其余部分由lua实现。架构很好值得学习。实现了一套面向对象的写法。主要代码在lua。
@@ -17,6 +37,10 @@ https://github.com/rxi/lite/
 distri.lua，一个网络通信框架。国人写的。我觉得不错。C代码和lua都一样多。是混合编程的学习材料。
 
 https://github.com/sniperHW/distri.lua
+
+这个也是极好的。一个国人写的web框架，资料齐全。重点学习这个。
+
+https://github.com/cfadmin-cn/cfadmin
 
 # 书籍
 
@@ -50,6 +74,10 @@ https://www.runoob.com/manual/lua53doc/
 
 
 
+这个手册更好一些，更加详细。
+
+https://wizardforcel.gitbooks.io/lua-doc/content/6.html
+
 # 网站
 
 ## lua-users
@@ -57,6 +85,34 @@ https://www.runoob.com/manual/lua53doc/
 http://lua-users.org/wiki/
 
 # 代码
+
+## core_framework
+
+这个是国人写的一个基于lua的web开发框架。
+
+文档很齐全。作者的兴趣点跟我的很接近。很多东西值得学习。值得作为我学习lua的重点。
+
+基于libev的。
+
+而且项目具有实用性。
+
+作者：
+
+https://github.com/candymi
+
+项目文档：
+
+https://doc.cfadmin.cn/library/process.html
+
+项目代码：
+
+https://github.com/cfadmin-cn/cfadmin
+
+作者qq群：
+
+727531854
+
+
 
 ## lua本身的源代码
 
@@ -158,6 +214,12 @@ skynet讲解
 
 https://www.bilibili.com/video/BV1C3411T7Qt
 
+## 这个不错，不是照本宣科
+
+https://www.kancloud.cn/thinkphp/lua-guide/43811
+
+
+
 # 思考文章
 
 ## Lua 为什么在游戏编程领域被广泛运用？
@@ -226,6 +288,10 @@ https://blog.iany.me/zh/2017/02/lua-c-api-intro/
 
 https://doitian.coding.net/public/lua-c-api-intro/lua-c-api-intro/git/files
 
+## 热更新
+
+https://blog.gotocoding.com/archives/tag/lua-2
+
 # 使用场景
 
 ## 作配置文件，取代xml、ini
@@ -243,3 +309,10 @@ https://doitian.coding.net/public/lua-c-api-intro/lua-c-api-intro/git/files
 
 https://blog.csdn.net/losophy/article/details/9003473
 
+# 大型项目
+
+这个网关项目
+
+https://github.com/Kong/kong
+
+Love2D

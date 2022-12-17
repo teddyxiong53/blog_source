@@ -637,10 +637,195 @@ luaL_Reg lib[] = {
     {"GetSystTick", lua_getsystick},
     {"GetPid", lua_GetPid}
 };
-luaL_newLib(L, l);
+luaL_newlib(L, l);
+```
+
+有两种级别，一种是只是导出一个全局变量。一种是导出成模块。
+
+导出成全局变量的方式简单一些
+
+## 导出成全局变量
+
+```c
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+#include "mylualib.h"
+#include "mylog.h"
+#include <time.h>
+char *os()
+{
+    return "Linux";
+}
+
+static int los(lua_State *L)
+{
+    lua_pushstring(L, os());
+    return 1;
+}
+double now()
+{
+    struct timespec now = {};
+    clock_gettime(CLOCK_REALTIME, &now);
+    return now.tv_sec + now.tv_nsec * 1e-9;
+}
+
+static int lnow(lua_State *L)
+{
+    lua_pushnumber(L, now());
+    return 1;
+}
+int main(void)
+{
+    lua_State *L = luaL_newstate();
+    // 打开标准库
+    luaL_openlibs(L);
+    // 打开我的自定义库
+    // luaopen_sys(L);
+    luaL_Reg sys_libs[] = {
+        {"os", los},
+        {"now", lnow},
+        {NULL, NULL}
+    };
+    luaL_newlib(L, sys_libs);
+    lua_setglobal(L,"sys");//这句就是把sys导出成全局变量
+    int ret = 0;
+    ret = luaL_dofile(L, "./test-mylib.lua");
+    if (ret) {
+        myloge("execute lua file fail, %d", ret);
+    }
+    lua_close(L);
+    return 0;
+}
+```
+
+## 导出成模块
+
+这样就可以的。
+
+```
+int luaopen_mycomplib(lua_State* L)
+{
+	const char *libName = "mycomplib";
+	luaL_register(L, libName, mylibs);
+	return 1;
+}
+```
+
+不对，luaL_register这个是老版本的函数，
+
+```
+/* compatibility with old module system */
+#if defined(LUA_COMPAT_MODULE)
+
+LUALIB_API void (luaL_pushmodule) (lua_State *L, const char *modname,
+                                   int sizehint);
+LUALIB_API void (luaL_openlib) (lua_State *L, const char *libname,
+                                const luaL_Reg *l, int nup);
+
+#define luaL_register(L,n,l)	(luaL_openlib(L,(n),(l),0))
+
+#endif
+```
+
+https://zilongshanren.com/post/lua-call-cpp-functions/
+
+这篇文章有讲到方法。但是没有没有讲模块的。
+
+注意：这里C函数参数里的Lua栈是私有的，每一个函数都有自己的栈。当一个c/c++函数把返回值压入Lua栈以后，该栈会自动被清空。
+
+这个好像有讲模块的。
+
+https://www.cnblogs.com/ring1992/p/6002890.html
+
+但是还是luaL_register。
+
+这个在新版本的替代函数是什么？
+
+这里有提到一些。
+
+https://wiki.gentoo.org/wiki/Lua/Porting_notes#luaL_openlib
+
+Calls such as `luaL_openlib(L, name, lreg, x)` and `luaL_register(L, name, lreg)` should be carefully rewritten because a global table with the given name will be searched and possibly created. When possible, it should be rewritten to `luaL_setfuncs(L, lreg, 0)`.
+
+
+
+Lua5.2 以后取消了这个接口，不过可以通过luaL_setfunc方法看来实现
+
+```cpp
+#undef luaL_register
+#define luaL_register(L,n,f) \
+	{ if ((n) == NULL) luaL_setfuncs(L,f,0); else luaL_newlib(L,f); }
+#endif
+```
+
+luaL_newlib可以实现？
+
+luaopen_sys，名字的前缀是固定的吗？
+
+https://stackoverflow.com/questions/46517127/lua-c-api-add-number-to-new-lib
+
+
+
+这里有一些例子。
+
+https://cpp.hotexamples.com/examples/-/-/luaL_newlib/cpp-lual_newlib-function-examples.html
+
+这里有一些库。
+
+http://webserver2.tecgraf.puc-rio.br/~lhf/ftp/lua/
+
+这个是5.3下面写C module的文章。这个应该可以。
+
+http://m.blog.chinaunix.net/uid-21706718-id-5787226.html
+
+### 规则
+
+*luaopen_clibs* 函数必须满足命名规则，即固定前缀 *luaopen_ +*动态库名（不包含后缀*.so*）
+
+
+
+这篇文章有说得有操作性。我最终参考这个实现了。
+
+http://lua-users.org/lists/lua-l/2013-08/msg00123.html
+
+代码是这样：
+
+```
+void init_lua_libs(lua_State* L)
+{
+    // 打开标准库
+    luaL_openlibs(L);
+    /* 注入lua搜索域 */
+    lua_getglobal(L,"package");
+	lua_getfield(L,-1,"preload");
+	lua_pushcfunction(L,luaopen_sys);
+	lua_setfield(L,-2,"sys");
+    lua_pushcfunction(L,luaopen_timer);
+	lua_setfield(L,-2,"timer");
+}
+```
+
+这样就把自定义的sys和timer这2个C语言写的模块注册进去了。
+
+可以这样正常require并使用。
+
+```
+local sys = require "sys"
+print(sys.os())
+local timer = require "timer"
+print(timer.timer())
 ```
 
 
+
+## 注入lua搜索域
+
+
+
+## 参考资料
+
+https://blog.csdn.net/Andy_93/article/details/79404515
 
 # luaL_newmetatable
 
@@ -769,6 +954,556 @@ function table.length(t)
     return i
 end
 ```
+
+# 为什么lua函数有的可以省略括号
+
+
+
+https://blog.csdn.net/Dionysos_lai/article/details/47974747
+
+# lua_rawset作用
+
+早在之前我们就讲述过，如果对一个表进行查找的时候，若表中不存在该值，则会查找该表的元表访问其原表`__index`字段来解决。
+
+    而若对表输入一个不存在的值，则会查找该表的原表访问其原表`__newindex`字段来解决。
+    
+    而rawset & rawget则是绕过原表这一过程，直接把操作这个表相应的结论直接输出
+
+
+```
+lua_newtable(L);            //创建一个表格，放在栈顶
+lua_pushstring(L,"mydata"); //压入key
+lua_pushnumber(L,66);        //压入value
+lua_settable(L,-3);         //弹出key,value，并设置到table里面去
+			//原来这个是通过直接操作栈的位置来实现弹出的目的。弹出来，就相当于设置到lua里去了。
+			//就像填入子弹，扣动扳机一样。
+lua_pushstring(L,"subdata");//压入key
+lua_newtable(L);            //压入value,也是一个table
+lua_pushstring(L,"mydata"); //压入subtable的key
+lua_pushnumber(L,53);
+valuelua_settable(L,-3);    //弹出key,value,并设置到subtable
+lua_settable(L,-3);         //这时候父table的位置还是-3,弹出key,value(subtable),
+                            //并设置到table里去
+lua_pushstring(L,"mydata2");//同上
+lua_pushnumber(L,77);
+lua_settable(L,-3);
+return1;
+//栈里就一个table其他都被弹掉了。如果要返回一个数组，
+//用如下代码：(注意那个关于trick的注释，我在等官方的解释。
+//经过验证，这个问题只在windows版本调用dll中方法的时候出现。WinCE正常)
+lua_pushstring(L,"arri");
+lua_newtable(L);
+{
+    //atrick:otherwisetheluaenginewillcrash.ThiselementisinvisibleinLuascript
+    lua_pushnumber(L,-1);
+    lua_rawseti(L,-2,0);
+    for(int i=0; i<arri.size(); i++)
+    {
+        lua_pushnumber(L, arri);
+        lua_rawseti(L, -2, i+1);
+    }
+}
+lua_settable(L,-3);
+```
+
+
+
+https://blog.csdn.net/cooclc/article/details/115346937
+
+# userdata的元表
+
+
+
+https://blog.csdn.net/Kiritow/article/details/85012879
+
+# 函数api对栈的影响
+
+这里按字母次序列出了所有 C API 中的函数和类型。 每个函数都有一个这样的提示： [-o, +p, *x*]
+
+对于第一个域，`o`， 指的是该函数会从栈上弹出多少个元素。
+
+ 第二个域，`p`， 指该函数会将多少个元素压栈。 
+
+（**所有函数都会在弹出参数后再把结果压栈。**）
+
+ `x|y` 这种形式的域表示该函数根据具体情况可能压入（或弹出） `x` 或 `y` 个元素；
+
+ 问号 '`?`' 表示 我们无法仅通过参数来了解该函数会弹出/压入多少元素 （比如，数量取决于栈上有些什么）。
+
+ 第三个域，`x`， 解释了该函数是否会抛出错误： '`-`' 表示该函数绝对不会抛出错误； '`e`' 表示该函数可能抛出错误； '`v`' 表示该函数可能抛出有意义的错误。
+
+# lua c api接口的返回值的含义
+
+表示返回的结果的个数。
+
+返回0表示没有参数返回，返回1表示返回一个结果。
+
+# local type = type写法的好处
+
+可以减少一次到_G查表的过程。
+
+# lua的注释规范
+
+```lua
+--- 测试用表
+-- @class table
+-- @name testTable
+-- @field testA 测试字段A
+-- @field testB 测试字段B
+testTable =
+{
+    testA = nil,
+    testB = nil,
+}
+--- 测试函数
+-- @param a 参数a
+-- @param b 参数b
+-- @return 返回1
+-- @usage testFun(1, 2)
+-- @see testTable
+function testFun(a, b)
+    return 1
+
+end
+```
+
+
+
+https://blog.csdn.net/caomx0125/article/details/79424608
+
+# c和lua的性能差距
+
+是30倍。
+
+```
+--[[
+经过测试: 100万此编码/解码两者性能相差30倍, 正好是lua与C的性能差距.
+]]
+```
+
+而python的典型值是100倍。
+
+# 以C为主还是以lua为主
+
+lua与c是很方便的交互的，
+
+但是在实际的游戏项目中，我们首先必须确定的一个问题就是，
+
+代码逻辑是以lua为主还是以c为主。
+
+lua为主的游戏就是逻辑主要由lua负责，核心的对性能要求较高的逻辑则由c负责，游戏中的数据大多由lua负责。
+
+c为主的游戏则是逻辑主要由c负责，lua只是负责简单的配置。
+
+
+
+这两种方式都有优劣，对于实际游戏项目来说，个人认为，应该采用lua为主，c作为高性能核心的方式。
+
+之所以这样选择，是因为游戏的逻辑变动很大，
+
+我们需要快速的进行代码迭代，这个对于lua来说非常方便。
+
+而对于核心引擎，因为变化不大，同时对性能要求较高，所以采用c是一个很好的选择。
+
+
+
+在实际的游戏项目中，我们会遇到这样一个问题，
+
+假设c提供的函数为 int func(int a, int b)，
+
+如果这个函数要提供给lua使用，我们需要写一个对应的注册函数，如下:
+
+```
+int func_wrapper(lua_State* pState)
+{
+    int a = int(lua_tonumber(pState, 1));
+    int b = int(lua_tonumber(pState, 2));
+    int ret = func(a, b);
+    lua_pushnumber(pState, ret);
+    return 1;
+}
+
+lua_register(pState, func_wrapper, "func");
+
+```
+
+对于任意的c函数，我们需要写一个对应的wrapper用来注册给lua。
+
+如果项目中只有几个c函数，那么无所谓，
+
+但是如果需要注册给lua的c函数很多，
+
+那么对于每一个c函数写一个wrapper，是一件很不现实的事情。
+
+并且如果c函数的参数或者返回值有变化，我们同时需要修改对应的wrapper函数。
+
+**基于上述原因，我们需要一套自动机制，能够将任意的c函数注册给lua使用。**
+
+实际来说，我们需要提供一个函数，对于任意的c函数func，
+
+我们只需要调用register(func, "func")，那么就能直接注册给lua使用。
+
+
+
+https://blog.51cto.com/u_15469043/4893891
+
+# 注册一个C函数到lua
+
+用`lua_register`这个函数就可以了。
+
+实际上是一个宏定义。
+
+```
+     #define lua_register(L,n,f) \
+            (lua_pushcfunction(L, f), lua_setglobal(L, n))
+```
+
+# 5.1升级到5.3
+
+
+
+https://www.cnblogs.com/zsb517/p/6822870.html
+
+# LUA_PATH和LUA_CPATH
+
+可以直接设置环境变量，例如在bashrc里设置：
+
+```
+## final ;; ensure that default path will be appended by Lua
+export LUA_PATH="<path-to-add>;;"
+export LUA_CPATH="./?.so;/usr/local/lib/lua/5.3/?.so;
+                /usr/local/share/lua/5.3/?.so;<path-to-add>"
+```
+
+
+
+
+
+https://stackoverflow.com/questions/26446333/how-to-set-the-lua-path-and-lua-cpath-for-the-zerobrane-studio-in-linux
+
+
+
+#  lua_pushliteral和lua_pushstring有何区别？
+
+通常在push字符串字面值时使用lua_pushliteral,
+
+在push字符串指针是使用lua_pushstring。  
+
+
+
+原因是前者通过sizeof(字符串字面值)/sizeof(char)计算长度，而后者通过strlen计算长度。
+
+ 
+
+因此前者只能push字符串字面值，但速度比后者快。
+
+而后者既可push字符串字面值，也可push字符串指针。
+
+```
+const char *lua_pushliteral (lua_State *L, const char *s);
+```
+
+这个宏等价于 [`lua_pushstring`](https://www.jishuchi.com/read/lua-5.3/1981#lua_pushstring)，区别仅在于只能在 `s` 是一个字面量时才能用它。它会自动给出字符串的长度。
+
+
+
+# lua的调试方法
+
+官方提供的就是debug这个标准库。
+
+这个是给lua增加gdb这样的支持，看起来不错。但是不是我现在需要的。
+
+https://catbro666.github.io/posts/f9a188a7/
+
+
+
+参考资料
+
+1、
+
+https://www.runoob.com/lua/lua-debug.html
+
+# lua代码加载和热更新的方式
+
+由于在游戏服务器的架构中，大部分的进程都是有状态的，
+
+所以就非常依赖热更新。
+
+Lua 方便的热更新是其得以在手游后端开发中大量使用的重要原因，
+
+本篇来讲一下我了解过的 Lua 的一些代码加载和热更新方式。
+
+## dofile
+
+使用 dofile 进行代码加载是最简单粗暴的，
+
+在进程启动的时候，直接将本进程所有要用到的脚本文件使用 dofile 加载进来。
+
+如果需要重新加载，那么就对修改过的文件再次执行 dofile 重新加载一次。
+
+但是这样加载有一个不好的地方，
+
+就是每个文件都要对应的使用一个全局变量 Table 来进行保存，
+
+而且如果这个 Table 被别的文件里使用 local 引用了，那么即使重新 dofile 加载一次，原来的引用还是保存了原先那个 Table 的地址。
+
+## loadfile
+
+使用 loadfile 加载文件，会得到一个中间函数，
+
+**这个中间函数执行完**就跟直接调用 dofile 加载效果是一样的了。
+
+**但是因为有了一个中间函数，就有一些操作的机会。**
+
+可以使用 setfenv 将加载结果的函数放在一个新创建的 Table 中执行，
+
+这样既解决了需要全局变量的问题，也解决了别的地方引用的问题。给出一个简单的实现方法。
+
+## require
+
+require 是 Lua 官方提供的加载模块的接口，
+
+不仅可以加载 Lua 模块，也可以加载 C 模块。
+
+**它加载过的模块会被放在 package.loaded 中**，对同一个模块第二次加载，不会重复加载，会直接返回旧的模块给调用者。
+
+
+
+需要重新加载的时候需要首先将 package.loaded 中对应模块设为 nil，然后再次执行 require。
+
+但是这样也有一个问题，那就是如果在某个地方使用 local 变量引用了 require 的结果，那么更新以后它引用的还是旧的模块。
+
+
+
+
+
+参考资料
+
+1、
+
+https://wmf.im/p/lua-%E7%9A%84%E4%BB%A3%E7%A0%81%E5%8A%A0%E8%BD%BD%E5%92%8C%E7%83%AD%E6%9B%B4%E6%96%B0%E6%96%B9%E5%BC%8F/
+
+# C语言调用lua文件并打印详细出错信息
+
+```
+lua_State *L = luaL_newstate();
+luaL_openlibs(L);
+
+lua_pushcfunction(L,traceback);
+int r = luaL_loadfile(L,"test.lua");
+//第四个参数表示将错误信息msg传入栈1所在的函数(错误处理函数)
+r = lua_pcall(L,0,0,1);
+if (r != LUA_OK)
+	printf("call err\n%s\n", lua_tostring(L,-1));    
+else
+	printf("call succ\n");
+```
+
+traceback函数这么写：
+
+```
+static int traceback( lua_State *L)
+{
+    const char *msg = lua_tostring(L,-1);
+    if (msg)
+    {
+        /*打印发生错误时的堆栈信息,msg是错误信息,附加到打印的堆栈最前端
+        1是指从第一层开始回溯
+        这个函数之后,lua_tostring(L,-1)即可获取完整的堆栈和错误信息.
+        */
+        luaL_traceback(L,L,msg,1);
+    }
+    else
+    {
+        lua_pushliteral(L,"no message");
+    }
+}
+```
+
+
+
+https://blog.csdn.net/GetterChange/article/details/52629471
+
+# 对三元运算符的模拟
+
+```
+total>=128 and 128 or total
+```
+
+这个跟C语言里的：
+
+```
+total >=128 ? 128 : total
+```
+
+是等价的。
+
+# lua延时
+
+居然没有sleep这样的标准函数提供。
+
+虽然我可以通过C来扩展。
+
+# 协程用法
+
+把协程就当成用户态线程来理解就好了。
+
+相关概念进行一一对等。
+
+## coroutine.create(f)
+
+create只有一个参数，就是一个function。这个相当于pthread_create函数。
+
+返回的是一个协程对象。
+
+```
+local co = coroutine.create(function ()
+    print('in coroutine')
+    return 'coroutine return'
+end)
+print(co)
+print(coroutine.resume(co))
+```
+
+输出是这样：
+
+```
+thread: 0x55b5fb1ec6c8
+in coroutine
+true    coroutine return
+```
+
+通过resume运行，返回2个值，
+
+## coroutine.resume(co, [, val1, ...])
+
+开始或者继续运行协程。
+
+当第一次运行一个协程对象时，
+
+他会从主函数出开始运行。
+
+val1这些值会以参数的形式传入到处理函数里。
+
+当一个协程被yield后，
+
+```
+local co = coroutine.create(function (input)
+    print("input:"..input)
+    local param1, param2 = coroutine.yield("yield")
+    print("param1 is :"..param1)
+    print("param2 is :"..param2)
+    return "return"
+end)
+--第一次执行
+print(coroutine.resume(co, "function input"))
+print("this is main chunk")
+--第二次执行
+print(coroutine.resume(co, "aa", "bb"))
+```
+
+
+
+输出：
+
+```
+input:function input
+true    yield     这个是coroutine.yield("yield")返回过来的。被第一个print打印出来。
+this is main chunk
+param1 is :aa
+param2 is :bb
+true    return
+```
+
+resume是在保护模式下运行，如果有任何错误发生。
+
+lua是不会显示任何错误的。
+
+而是返回false加错误msg。
+
+同时这个协程的状态变成dead。
+
+下面通过yield一个不存在的值来模拟一个错误。
+
+```
+local co = coroutine.create(function ()
+    print('error test')
+    coroutine.yield(aa.a)
+end)
+print(coroutine.resume(co))
+print(coroutine.status(co))
+
+```
+
+
+
+```
+error test
+false   test/test.lua:3: attempt to index a nil value (global 'aa')
+dead
+```
+
+# lua_tothread作用
+
+在学习lua虚拟机与C交互过程中, 看到一个很令人奇怪的API,
+
+ lua_tothread.
+
+[lua官方手册](http://cloudwu.github.io/lua53doc/manual.html#lua_tothread)上只是说明lua_tothread的作用是将一个thread(coroutine)以lua_State的形式表示出来, 
+
+但是总是搞不清这个API应该在什么情况下使用.
+
+
+
+在调用luaL_newstate函数去创建一个lua虚拟机时, 
+
+lua就会自动在这个状态中创建一个新thread(coroutine), 
+
+这个线程被称为主线程. 
+
+除了调用lua_close之外, 
+
+这个主线程永远不会被回收.
+
+
+
+在lua中每个coroutine都有一个lua_State与之关联, 
+
+甚至于coroutine.create的返回值其实就是一个lua_State的指针, 
+
+这一点可以从[实验](https://gist.github.com/findstr/c38da28d3a247448fb43)得到证实, 
+
+所以lua_tothread的作用也就是与coroutine相关联的lua_State的指针返回.
+
+
+
+参考资料
+
+1、
+
+https://blog.gotocoding.com/archives/345
+
+# package.searchers[2]
+
+在Lua内部，是通过searchers来区分不同的加载方式。
+
+Lua一共有4种searchers，
+
+**用来加载lua模块的和加载C模块的分别是第2个和第3个。**
+
+第1个searcher叫做preload，
+
+它使用`package.preload`这个内部table，根据加载模块的名称，去找到对应的加载函数来加载模块，例如：
+
+
+
+参考资料
+
+1、
+
+https://zhuanlan.zhihu.com/p/346355282
+
+# lua实现枚举类型
 
 
 

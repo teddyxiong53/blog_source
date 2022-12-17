@@ -52,7 +52,61 @@ https://pan.baidu.com/s/1i3qp7b3
 
 https://github.com/forthxu/talkbox
 
-参考资料
+# 系列文章
+
+先照着这个系列文章学习一下。
+
+https://blog.csdn.net/qq769651718/category_7480207.html
+
+## 编译代码
+
+先下载代码搭建环境。
+
+git clone了代码。
+
+```
+git clone https://github.com/cloudwu/skynet.git
+cd skynet
+make linux
+```
+
+需要clone的方式，因为依赖了一个git submodule，jemalloc。
+
+make的时候，会先去把jemalloc的代码下载。
+
+看了一下Makefile的写法，很简单实用的做法。
+
+用的是gnu99的标准。
+
+## 运行测试
+
+启动example服务端：
+
+```
+./skynet ./examples/config
+```
+
+然后运行一个测试服务端。
+
+client是lua脚本。我的系统已经安装了lua程序的。
+
+但是当前skynet要求的是lua5.4的。
+
+所以还是用skynet里自带的吧。
+
+```
+3rd/lua/lua ./examples/client.lua
+```
+
+可以正常连接通信。
+
+## 写一个test.lua
+
+就在examples目录下，新建一个test.lua。
+
+
+
+# 参考资料
 
 1、
 

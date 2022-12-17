@@ -6,11 +6,23 @@ tags:
 	- c语言
 ---
 
+--
+
+# 最简单的理解
+
+setjmp+longjmp = 函数间的goto。
+
+jmp_buf里存放的cpu的运行信息。
+
 
 
 # 为什么会有setjmp的存在？
 
-C语言的前辈是汇编，在汇编里，程序员是想怎么跳转就怎么跳转。但是到了C语言里，goto只能在函数内部打转。如果我就是想从一个函数跳到另外一个函数，怎么办？setjmp就是干这个的。
+C语言的前辈是汇编，在汇编里，程序员是想怎么跳转就怎么跳转。
+
+但是到了C语言里，goto只能在函数内部打转。
+
+如果我就是想从一个函数跳到另外一个函数，怎么办？setjmp就是干这个的。
 
 
 
@@ -30,6 +42,16 @@ setjmp和longjmp是互补的两个函数。
 
 **这种进程突然改变上下文的情况，就是使用setjmp和longjmp**
 
+
+
+C语言没有C++或Java的异常机制，但可以通过setjmp/longjmp实现类似的效果：
+
+- 使用setjmp保存`当前执行环境`到jmp_buf，**然后默认返回0。**
+- 程序继续执行，到某个地方**调用longjmp，传入上面保存的jmp_buf，以及另一个值。**
+- 此时执行点又回到调用setjmp的返回处，**且返回值变成longjmp设置的值**。
+
+
+
 C++里的异常处理就是通过封装了setjmp和longjmp来实现的。
 
 一个简单的演示程序如下。
@@ -43,12 +65,12 @@ jmp_buf buf;
 void test()
 {
 	printf("begin test function \n");
-	longjmp(buf, 1);
-	printf("end test function \n");
+	longjmp(buf, 1);//这样会让setjmp返回1，所以有进到main里面的if分支了。
+	printf("end test function \n");//这里不会执行到。
 }
 int main()
 {
-	if(setjmp(buf))
+	if(setjmp(buf))//默认返回0，所以走到else分支了
 	{
 		printf("main setjmp return by longjump \n");
 	}

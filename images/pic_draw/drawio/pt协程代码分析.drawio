@@ -1,0 +1,25 @@
+<mxfile host="65bd71144e">
+    <diagram id="Ys7xWyeD0TM5fMYBEDlc" name="Page-1">
+        <mxGraphModel dx="1124" dy="667" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="6" value="" style="swimlane;startSize=0;" vertex="1" parent="1">
+                    <mxGeometry x="20" y="30" width="440" height="270" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="yielded" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="6">
+                    <mxGeometry x="244" y="80" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" value="blocked" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="6">
+                    <mxGeometry x="30" y="120" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="finished" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="6">
+                    <mxGeometry x="240" y="170" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="协程的状态" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="6">
+                    <mxGeometry x="164" y="30" width="80" height="20" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
