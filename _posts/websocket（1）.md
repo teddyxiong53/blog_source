@@ -152,7 +152,91 @@ nopoll_log_enable (ctx, debug);
 
 
 
+# python下的server和client
+
+Python里的websocket的package是
+
+```
+pip install websockets
+```
+
+新建server.py，写入下面的内容：
+
+```
+import asyncio
+import websockets
+
+async def handler(websocket, path):
+    data = await websocket.recv()
+    reply = f'recv data: {data}'
+    await websocket.send(reply)
+
+start_server = websockets.serve(handler, "0.0.0.0", 8000)
+
+asyncio.get_event_loop().run_until_complete(start_server)
+asyncio.get_event_loop().run_forever()
+```
+
+然后写一个client.html，内容如下：（html代码是vscode里输入html自动生成的，忽略。只看script部分的）
+
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <button onclick="contactServer">connect server</button>
+
+</body>
+<script>
+    let socket = new WebSocket('ws://192.168.56.101:8000')
+    socket.addEventListener('open', function(event) {
+        socket.send('conn setup')
+    })
+    socket.addEventListener('message', function (event) {
+        console.log(event.data)
+    })
+    let contactServer = ()=> {
+        socket.send('init')
+    }
+</script>
+</html>
+```
+
+然后直接打开client.html文件就可以测试。
+
+我们也可以写一个python版本的client。
+
+client.py
+
+```
+import asyncio
+import websockets
+
+async def test():
+    async with websockets.connect('ws://localhost:8000') as websocket:
+        await websocket.send("hello")
+        response = await websocket.recv()
+        print(response)
+
+asyncio.get_event_loop().run_until_complete(test())
+```
+
+
+
+
+
 参考资料
+
+1、How To Build WebSocket Server And Client in Python
+
+https://www.piesocket.com/blog/python-websocket
+
+# 参考资料
 
 1、WebSocket
 

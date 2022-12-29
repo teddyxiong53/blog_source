@@ -28,6 +28,10 @@ lua知识点整理
 
 https://www.drflower.top/posts/43f53d35/
 
+
+
+
+
 # 对我比较有价值的学习代码
 
 lite，一个lua写的编辑器。C负责渲染的性能部分，其余部分由lua实现。架构很好值得学习。实现了一套面向对象的写法。主要代码在lua。
@@ -203,6 +207,8 @@ https://github.com/harningt/luaevent/
 http://lua-users.org/wiki/LuaAddonsArchive
 
 
+
+https://github.com/orangeduck/LuaAutoC
 
 # 教程
 

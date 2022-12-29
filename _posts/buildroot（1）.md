@@ -2413,6 +2413,43 @@ linux编译后，就aml-wifi等驱动的编译。
 
 
 
+# rootfs.mk文件分析
+
+现在要增加erofs的支持，因为我们对ext的已经做了一些修改，这些修改，有些需要平行改动到erofs上来。
+
+所以需要研究一下rootfs.mk里做了些什么。
+
+不存在rootfs.mk，实际上是fs\common.mk
+
+```
+ROOTFS_EXT2_CMD
+```
+
+`$(eval $(rootfs))`这句具体做了什么？
+
+相当于调用：
+
+```
+inner-rootfs cpio CPIO
+```
+
+有这些变量
+
+```
+ROOTFS_CPIO_NAME = rootfs-cpio
+ROOTFS_CPIO_TYPE = rootfs
+ROOTFS_CPIO_IMAGE_NAME = rootfs.cpio
+ROOTFS_CPIO_FINAL_IMAGE_NAME = rootfs.cpio
+ROOTFS_CPIO_DIR = buildroot-fs/cpio
+ROOTFS_CPIO_TARGET_DIR = buildroot-fs/cpio/target
+
+ROOTFS_CPIO_COMPRESS_EXT = .gz
+ROOTFS_CPIO_COMPRESS_CMD = gzip -9 -c -n
+
+images/rootfs.cpio: ROOTFS=CPIO
+
+```
+
 
 
 # 参考资料

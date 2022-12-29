@@ -9,7 +9,7 @@ tags:
 
 ---
 
-Python线程的event主要用于main现场控制其他线程的执行，event主要提供了3个方法：wait、set、clear。实现线程间通信。
+Python线程的event主要用于main线程控制其他线程的执行，event主要提供了3个方法：wait、set、clear。实现线程间通信。
 
 简单描述，机制是这样的：有一个全局的flag，如果flag是true，那么wait会阻塞，如果flag是false，则wait不会导致阻塞。
 
@@ -61,3 +61,12 @@ teddy@teddy-ubuntu:~/work/test/py-test/
 
 
 
+Event其实就是一个简化版的 Condition。Event没有锁，无法使线程进入同步阻塞状态。
+
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/brucewong0516/article/details/84588804

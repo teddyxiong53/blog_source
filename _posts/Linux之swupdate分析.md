@@ -36,9 +36,7 @@ recovery系统
 
  不过，至少它可以保证，当主应用不存在或损坏时， 以及当升级过程由于某种原因而中断时，系统自动进入升级模式。
 
-![_images/single_copy_layout.png](https://zqb-all.github.io/swupdate/_images/single_copy_layout.png)
-
-
+![image-20221229152535938](../images/random_name/image-20221229152535938.png)
 
 事实上，可以**将升级过程视为事务，**
 
@@ -52,9 +50,9 @@ recovery系统
 
 使用U-Boot作为引导加载程序， 
 
-SWUpdate能够管理U-Boot的环境设置变量， 
+**SWUpdate能够管理U-Boot的环境设置变量，** 
 
-以指示事务的开始和结束，
+**以指示事务的开始和结束，**
 
 以及包含有效的软件的存储区域。 
 
@@ -66,7 +64,7 @@ Yocto生成包含SWUpdate应用程序的initrd映像， 该映像在挂载根文
 
 
 
-SWUpdate与引导加载程序一起工作，以识别失败的可能原因。 目前支持U-Boot、GRUB和EFI Boot Guard。
+SWUpdate与bootloader一起工作，以识别失败的可能原因。 目前支持U-Boot、GRUB和EFI Boot Guard。
 
 
 
@@ -798,6 +796,10 @@ https://confluence.amlogic.com/display/SW/SWUpdate
 
 https://wiki-china.amlogic.com/index.php?title=%e5%86%85%e9%83%a8%e4%ba%ba%e5%91%98%e5%8f%82%e8%80%83%e8%b5%84%e6%96%99/AE_internal-Q%26A/Common/Buildroot_recovery_%e5%8d%87%e7%ba%a7
 
+# swu文件格式
+
+镜像以指定的格式(cpio)构建，它必须包含一个描述文件， 以描述必须更新的软件。
+
 
 
 # sw-description
@@ -845,7 +847,7 @@ CONFIG_SW_VERSIONS_FILE="/etc/sw-versions"
 
 
 
-# libconfig
+# libconfig配置语法
 
 Libconfig是一个结构化的配置文件库，
 
@@ -933,12 +935,127 @@ http://www.hyperrealm.com/libconfig/libconfig_manual.html
 
 https://blog.csdn.net/weixin_30546933/article/details/95318709
 
+# 更新服务器
+
+OTA / 远程
+
+- 集成的网络服务器
+- 从远程服务器拉取(HTTP, HTTPS， ..)
+- 使用后端。SWUpdate是开放的，可以与后端服务器进行通信， 以推出软件更新。当前版本支持Hawkbit服务器， 但可以添加其他后端。
+
+hawkbit服务器的代码在这里：
+
+https://github.com/eclipse/hawkbit
+
+swupdate本地也集成了一个webserver，是基于mongoose的。
+
+可以通过8080端口给它上传镜像文件。
+
+
+
+# 代码分析
+
+现在我已经对swupdate有一定的经验，也有了自己写开源代码的经验。
+
+对于menuconfig和lua也有一定的掌握了。
+
+现在回过头来看看swupdate的代码。
+
+从代码的配置和编译开始看。
+
+先看buildroot里，如何对swupdate进行编译的。
+
+先看buildroot\package\swupdate\Config.in
+
+依赖了
+
+```
+BR2_PACKAGE_AML_UBOOTENV
+BR2_PACKAGE_LIBCONFIG
+
+默认的配置文件是：
+package/swupdate/swupdate.config
+
+BR2_PACKAGE_SWUPDATE_DOWNLOAD
+	这个默认是false。
+	不会下载镜像。
+	
+BR2_PACKAGE_SWUPDATE_INSTALL_WEBSITE
+	这个是把升级服务器放在了/var/www/swupdate路径下。
+	
+```
+
+buildroot\package\swupdate\swupdate.config 
+
+这个文件默认的配置是这样：
+
+```
+软件版本号从哪个文件里获取。
+CONFIG_SW_VERSIONS_FILE="/etc/sw-versions"
+
+
+链接哪些额外的库
+CONFIG_EXTRA_LDLIBS="ubootenv bootloader_message z"
+
+内置的server
+CONFIG_WEBSERVER=y
+CONFIG_MONGOOSE=y
+CONFIG_MONGOOSEIPV6=y
+
+使用libconfig的配置语法
+CONFIG_LIBCONFIG=y
+
+处理这种镜像格式
+CONFIG_RAW=y
+CONFIG_EXT4=y
+CONFIG_UBIVOL=y
+CONFIG_CFI=y
+CONFIG_SHELLSCRIPTHANDLER=y
+CONFIG_BOOTLOADERHANDLER=y
+```
+
+版本号是2019.11
+
+aml-ubootenv
+
+这个仓库代码做了什么？代码在vendor\amlogic\aml_commonlib\ubootenv\ubootenv.c
+
+编译得到一个库文件。
+
+对外提供的接口：
+
+```
+int bootenv_update(const char* name, const char* value);
+const char * bootenv_get(const char * key);
+```
+
+是靠读写这个分区BootenvPartitionName来进行操作的。
+
+/dev/env实际是这个分区名字。 /dev/nand_env这个也可能。会逐个遍历。
+
+
+
+swupdate的编译是：
+
+```
+$(eval $(kconfig-package))
+```
+
+amlogic做的修改也是不少的。有5个patch。
+
+
+
 # 参考资料
 
 1、
+
+这个文档非常系统，很好。值得反复看。
 
 https://zqb-all.github.io/swupdate/overview.html
 
 2、
 
 https://blog.csdn.net/luzhenrong45/article/details/62042400
+
+3、
+
