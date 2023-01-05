@@ -5,7 +5,7 @@ tags:
 	- python
 ---
 
-1
+--
 
 python2.1之前，不支持future的使用。
 

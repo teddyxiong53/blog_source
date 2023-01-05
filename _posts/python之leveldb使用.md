@@ -15,9 +15,9 @@ sudo pip install leveldb
 
 
 
-#基本使用
+# 基本使用
 
-##读写
+## 读写
 
 ```
 #!/usr/bin/python
@@ -47,7 +47,7 @@ Traceback (most recent call last):
 KeyError
 ```
 
-##遍历
+## 遍历
 
 ```
 def test_iter():

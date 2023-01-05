@@ -83,7 +83,23 @@ a:T = 'aa'
 a:T = [] # 这个就会报错。
 ```
 
+# 相关的PEP
 
+## 484
+
+为了提供标准定义和工具，
+
+本PEP引入了一个临时模块。
+
+并且列出了一些不适用注解的情形的约定。
+
+本PEP受到mypy的启发。
+
+
+
+https://peps.python.org/pep-0484/
+
+https://www.cnblogs.com/popapa/p/PEP484.html
 
 # 参考资料
 

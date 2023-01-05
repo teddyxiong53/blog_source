@@ -5,7 +5,7 @@ tags:
 	- python
 ---
 
-1
+--
 
 看easyhid里，用了cffi。是用来在python里调用C函数的。看起来比ctypes简单易用。
 

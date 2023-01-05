@@ -5,7 +5,7 @@ tags:
 	- python
 ---
 
-1
+--
 
 看python代码里，有identify这个函数，定义是这样：
 
