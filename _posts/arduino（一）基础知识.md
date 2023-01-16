@@ -18,7 +18,7 @@ typora-root-url: ..\
 
 
 
-#如何购买
+# 如何购买
 
 既然要入手，那么第一个问题就是，到哪里买。
 
@@ -98,7 +98,7 @@ uno这个名字是个拉丁文，表示第一的意思。最适合初学者上�
 
 跟Leonardo差不多。就是尺寸更小。
 
-##Esplora
+## Esplora
 
 这个是意大利语。表示探索。
 
@@ -258,7 +258,7 @@ Uploading 230896 bytes from C:\Users\Administrator\AppData\Local\Temp\arduino_bu
 
 到这里了，一个基础示例就跑起来了。
 
-#arduino程序的构成
+# arduino程序的构成
 
 我们看看WiFiScan这个程序的代码。
 

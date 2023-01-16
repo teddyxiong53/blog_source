@@ -86,7 +86,7 @@ gpio.write(0, gpio.HIGH)
 print(gpio.read(0),"\n")
 ```
 
-然后保存为test.lua文件。它默认的保存行为就是保存，并且允许，所以你在串口上可以看到打印：
+然后保存为test.lua文件。它默认的保存行为就是保存，并且运行，所以你在串口上可以看到打印：
 
 ```
 
@@ -129,7 +129,7 @@ NodeMCU firmware detected.
 
 
 
-#定制
+# 定制
 
 这个网站，可以让你自己定制自己的firmware。
 

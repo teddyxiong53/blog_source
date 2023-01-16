@@ -1608,9 +1608,37 @@ func main() {
 
 
 
+# 大小写问题
+
+首字母是大写的，则是public的。
+
+首字母是小写的，则是private的。
+
+这就是为了我们看到标准库的函数都是大写字母开头的。
 
 
 
+# 构建webapp
+
+这个教程比较简单，可以看看。
+
+https://github.com/astaxie/build-web-application-with-golang/blob/master/zh/preface.md
+
+相当于实现了一个web框架，类似于tornado的。
+
+https://github.com/astaxie/build-web-application-with-golang/blob/master/zh/03.4.md
+
+是beego的作者写的，是个中国人。
+
+这里搜集了一些不错的教程代码
+
+https://www.cnblogs.com/xueweihan/p/13997806.html
+
+# 7天学golang
+
+一些项目都是几天可以做完的，非常适合学习。
+
+https://github.com/geektutu/7days-golang
 
 # 参考资料
 

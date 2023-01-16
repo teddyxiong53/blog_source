@@ -69,7 +69,27 @@ CFW 启动流程如下：
 2. 根据用户上次使用的配置文件（Profiles/xxxxx.yml）进行恢复
 3. 恢复用户上次操作的策略情况
 
+# 在腾讯服务器上配置翻墙
 
+因为要使用一些github的东西。
+
+
+
+```
+wget -O ~/.config/clash/config.yaml  <你的订阅地址>
+```
+
+但是这样下载下来的是一个base64编码后的内容。
+
+我直接从我的pc上把config.yml文件的内容拷贝过去粘贴进去就好了。
+
+
+
+参考资料
+
+1、
+
+https://maintao.com/2021/use-clash-as-a-proxy/
 
 # 参考资料
 

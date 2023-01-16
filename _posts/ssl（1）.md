@@ -34,6 +34,20 @@ tags:
 
 https://www.wbolt.com/tls-vs-ssl.html
 
+# Python的ssl模块
+
+先以python的ssl作为研究入口。
+
+这个测试验证比较方便。
+
+使用的前提是安装了openssl。
+
+提供了一个类：ssl.SSLSocket。是socket.socket的子类。
+
+对于更加复杂的应用，ssl.SSLContext类可以用于管理证书。
+
+
+
 # 参考资料
 
 1、官网
