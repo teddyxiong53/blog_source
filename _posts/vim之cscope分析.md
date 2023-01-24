@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 有了ctags，为什么还需要cscope？
 
@@ -44,11 +44,12 @@ cscope.po.out
 
 
 
-我现在总算无法跳转。
+# 搜索函数的所有调用位置并输出到quickfix窗口里，方便一条条查看
 
 
 
-参考资料
+# 参考资料
 
-1、
+1、这个视频教程不错。
 
+https://www.bilibili.com/video/BV1q64y1M7sW/

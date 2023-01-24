@@ -121,6 +121,16 @@ https://microdot.readthedocs.io/en/latest/
 
 最新版本是v1.2.0的。
 
+# 代码阅读和测试
+
+## websocket
+
+这个提供了一个websocket的index.html前端和一个简单的测试后端。
+
+websocket没有单独的一个class，而是使用with_websocket这个装饰器来修饰函数就可以。
+
+给处理函数加上了一个ws的参数。
+
 
 
 # 实现httpbin
@@ -187,7 +197,7 @@ Content-Type决定了接收数据的一方如何看待数据，如何处理数�
 
 
 
-参考资料
+# 参考资料
 
 1、
 

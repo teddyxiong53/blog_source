@@ -5,7 +5,7 @@ tags:
 	- django
 ---
 
-1
+
 
 ```
 pip install djangorestframework

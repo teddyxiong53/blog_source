@@ -14,7 +14,23 @@ tags:
 
 # termux
 
+把Android变成Linux。
+
 # F-Droid
 
+一个应用商店。上面的软件全部是开源软件。
+
 # syncthing
+
+文件自动同步。
+
+我用来把相册自动同步到nas上。
+
+# cx文件管理器
+
+干净简洁实用。对于我访问nas上的文件，完全够用了。
+
+# qpython
+
+在Android上运行python脚本的解释权。
 

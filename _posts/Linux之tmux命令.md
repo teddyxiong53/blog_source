@@ -86,7 +86,93 @@ Tmux 窗口有大量的快捷键。所有快捷键都要通过前缀键唤起。
 
 然后，按下 ESC 键或`q`键，就可以退出帮助。
 
+# 实际操作
 
+按照这个来做。
+
+https://www.bilibili.com/video/BV1ab411J7xT/
+
+## 先看window的。
+
+```
+在按了前缀键后，
+输入：
+c 表示create window
+& 表示close window
+l 切换到last window
+n 下一个window
+p 上一个window
+w 查看window list
+```
+
+## 再看pane窗格
+
+```
+按了前缀键后
+按
+% 左右划分（记忆就是5是在键盘中间的位置）
+" 上下划分
+
+x 关闭当前窗格。
+; 切换到last pane
+o 逆时针切换所有的pane
+C-o 顺时针切换所有的pane。
+
+pane最大化和还原，
+都是z键，z表示zoom。
+```
+
+有了window和pane的就够用。
+
+然后conf和session的保存，看后面的。配置后一次就不用管了。
+
+## 一个我的典型工作流演示
+
+以flask-vue-crud为例
+
+```
+2个window。
+先tmux启动。
+这个时候还是最简单的初始情况。
+然后在window1开始，
+在server目录下，新建一个pane。
+然后左右切换，把右边的再上下切分。
+上面是client的npm run serve
+下面是client的npm run lint。
+
+window1的就配置完了。
+然后是window2的。
+这个window用来做vim编辑。
+
+window都配置好了。然后要保存。
+保存就是先ctrl+b，然后按ctrl+s就保存了。
+可以看到状态栏有提示。
+
+把直接把shell窗口关闭。
+在tmux启动。
+然后按ctrl+b，再按ctrl+r，就恢复了现场。
+连vim的编辑状态都是保存好的。
+所有vim的保存是可以不做的了。
+
+```
+
+保存的信息是在.tmux/resurrect/last里。是这样的一些文本内容。
+
+```
+pane    0       0       1       :*      0       :/mnt/fileroot/hanliang.xiong/work/test/flask-vue-crud  1     vi       :vi .
+pane    0       1       0       :-      0       :/mnt/fileroot/hanliang.xiong/work/test/flask-vue-crud/server python   :python app.py
+pane    0       1       0       :-      1       :/mnt/fileroot/hanliang.xiong/work/test/flask-vue-crud/client npm      :npm run serve
+pane    0       1       0       :-      2       :/mnt/fileroot/hanliang.xiong/work/test/flask-vue-crud/client bash     :
+window  0       0       :vi     1       :*      b33d,111x23,0,0,0       :
+window  0       1       :npm    0       :-      8fed,111x23,0,0{55x23,0,0,1,55x23,56,0[55x11,56,0,5,55x11,56,12,6]}    :
+state   0
+```
+
+
+
+# .tmux.conf配置
+
+可以在这里面配置按键mapping的。
 
 # 会话管理
 

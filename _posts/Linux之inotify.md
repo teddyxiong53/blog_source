@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+# 基本信息
 
 Linux的桌面体验，比不上macos和windows。
 

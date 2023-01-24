@@ -259,9 +259,89 @@ class MyClass2(__builtin__.object)
  |      list of weak references to the object (if defined)
 ```
 
+# 重新整理
+
+主要参考这个
+
+https://www.cnblogs.com/nmb-musen/p/10861536.html
+
+照着这个实现一个测试例子。
+
+```
+class Test:
+  def __new__(cls, *args, **kwargs):
+    print('call __new__')
+    if not hasattr(cls, 'instacne'):
+      cls.instance = super(Test, cls).__new__(cls)
+    return cls.instance
+  def __init__(self, v):
+    print('call __init__')
+    self.v = v
+  def __del__(self):
+    print('call __del__')
+  def __call__(self, *args, **kwargs):
+    print('call __call__', *args, **kwargs)
+  def __len__(self):
+    print('call __len__')
+    return 0 # 必须返回数字，不然有error
+  def __repr__(self):
+    print('call __repr__')
+    return f'Test {self.v}'
+  def __str__(self):
+    print('call __str__')
+    return f'str Test {self.v}'
+  def __bytes__(self):
+    print('call __bytes__')
+    return bytes('Test'.encode('utf-8'))
+  def __hash__(self):
+    print('call __hash__')
+    return 1
+  def __bool__(self):
+    print('call __bool__')
+    return self.v >= 0
+  def __format__(self, format_spec):
+    print('call __format__')
+    return 'format 123'
+  def __getattr__(self, key): # 这个是专门给访问不存在的属性时使用的
+    print('call __getattr__')
+    print(key)
+    return 'has no such a attr'
+  '''
+  # 下面这个加上后，会导致其他的方法出错。
+  def __getattribute__(self, name):
+    # print('call __getattribute__')
+    # 默认是返回getattr(self, name)
+    # return getattr(self, name)
+    # return self.name
+    pass
+  '''
+  def __lt__(self, other):
+    return self.v < other.v
+  def __add__(self, other):
+    return self.v + other.v
+t1 = Test(1.0)# 这个都会依次调用__new__ __init__ __del__
+t2 = Test(2.0)
+t1(1) # 这个会调用__call__
+len(t1)
+print(repr(t1))
+print(str(t1))
+print(bytes(t1))
+print(hash(t1))
+print(bool(t1))
+print('test format {}'.format(t1))
+print(f'use f to format :{t1}')
+# print('use % to format %s' % t1) # 这个不行的
+print(t1.abc)
+print(t1.v)
+print('t1 < t2 :{}'.format(t1<t2))
+print('t1+t2 {}'.format(t1+t2))
+```
 
 
-参考资料
+
+
+
+# 参考资料
 
 1、
 

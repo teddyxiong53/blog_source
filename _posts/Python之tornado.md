@@ -184,6 +184,244 @@ if __name__ == "__main__":
 
 
 
+# 重新系统学习
+
+就参考这个来学习。官网英文文档
+
+https://www.tornadoweb.org/en/stable/
+
+基于6.2版本。
+
+## HelloWorld
+
+先看HelloWorld
+
+```
+import tornado.ioloop
+import tornado.web
+import asyncio
+
+class MainHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.write('hello world')
+
+def make_app():
+    return tornado.web.Application(
+        [
+            (r'/', MainHandler),
+        ]
+    )
+async def main():
+    app = make_app()
+    app.listen(1408)
+    await asyncio.Event().wait()
+
+asyncio.run(main())
+```
+
+tornado跟flask等常见的python web框架不一样。
+
+它不是基于wsgi的。
+
+通常每个进程只运行一个线程。
+
+当然，也提供了tornado.wsgi模块，但是一般不用。
+
+写App的时候，应该使用tornado.web的接口。
+
+而不是使用wsgi的接口。
+
+
+
+通常情况下，tornado的代码不是线程安全的。
+
+tornado里唯一可以安全地从其他线程里调用的函数是IOLoop.add_callback函数。
+
+## 跟Python的asyncio整合
+
+从5.0版本开始，tornado就跟python共用相同的eventloop。
+
+tornado6.0需要Python3.7及以上的版本支持。
+
+
+
+realtime的web App，需要每个user保持一个长连接，这个连接的绝大部分时间是idle状态的。
+
+在一个传统的sync模式的web server，一般是给每个user分配一个thread，这个消耗太大了。
+
+为了减小每个user的连接的cost，tornado使用了单线程加协程的方式。
+
+这个意味着所有的代码都是异步和非阻塞的。
+
+看看什么是同步的代码：
+
+```
+from tornado.httpclient import HTTPClient
+def sync_fetch(url):
+    http_client = HTTPClient()
+    resp = http_client.fetch(url)
+    return resp.body
+```
+
+异步的代码：
+
+```
+from tornado.httpclient import AsyncHTTPClient
+async def sync_fetch(url):
+    http_client = AsyncHTTPClient()
+    resp = await http_client.fetch(url)
+    return resp.body
+```
+
+# 代码层次
+
+从tornado的源代码，梳理出所有的模块和class的类型层次关系。
+
+代码量并不大。
+
+所有的模块都是从`tornado/__init__.py`里进行导出的。
+
+```
+auth
+	这个模块实现了第三方的授权模块。
+	都是一些Mixin类，用来跟tornado.web.RequestHandler结合使用的。
+	有两种使用方式：
+	1、在login handler里，使用authenticate_redirect、authorize_redirect这些方法。
+	2、再非login handler里，使用facebook_request、twitter_request这样的使用token去make request。
+	有6个class。
+	OpenIDMixin
+	OAuthMixin
+		TwitterMixin
+	OAuth2Mixin
+		GoogleOAuth2Mixin
+		FacebookOAuth2Mixin
+		
+autoreload
+	这个是用在debug的时候，在文件修改的时候，自动reload。
+	使用是这样：
+	python -m tornado.autoreload path/to/script.py [args...]
+	代码不看了 。
+	
+concurrent
+	提供Future这个class。
+	之前是自己定义的，现在是使用asyncio.Future。
+	提供一些工具函数，提供对之前方式的兼容。
+	在代码上的体现是这样：
+	Future = asyncio.Future
+	FUTURES = (futures.Future, Future)
+	函数里都带有future的字样。
+	大部分都是future开头的。
+	
+curl_httpclient
+	既有pycurl实现的非阻塞的http client。
+	主要就是这个类。有500行。
+	class CurlAsyncHTTPClient(AsyncHTTPClient):
+escape
+	对文本进行处理。
+gen
+	实现基于generator的协程。
+	对于现在不需要了。老代码才需要。
+	
+http1connection
+	http/1.X的 server和client实现。
+	最复杂的是这个类。
+	class HTTP1Connection(httputil.HTTPConnection)
+	有600行。
+httpclient
+	提供阻塞和非阻塞2种http client。
+	实现了二者共用的一些接口。
+	simple_httpclient
+	curl_httpclient
+	默认使用的是simple_httpclient的方案。
+	有这些需求，可以切换为使用curl_httpclient。
+	1、复杂的。
+	2、更快的。
+	class HTTPClient
+	class AsyncHTTPClient(Configurable)
+	class HTTPRequest(object)
+	class HTTPResponse(object)
+	class HTTPClientError(Exception)
+httpserver
+	对外主要是这个类：
+	class HTTPServer(TCPServer, Configurable, httputil.HTTPServerConnectionDelegate)
+httputil
+	被server和client共用的一些代码。
+	代码比较多，有1200行。
+	
+ioloop
+	从6.0开始，IOLoop是对asyncio的eventloop的包装。
+	提供对之前方案的兼容。
+	class IOLoop(Configurable)
+	这个类有700行。
+	
+iostream
+	提供工具类用来非阻塞读写socket。
+	class BaseIOStream(object)
+	这个类有800行。
+	
+locale
+	进行本地化。
+	这样使用：
+	user_locale = tornado.locale.get("es_LA")
+    print(user_locale.translate("Sign out"))
+locks
+	提供一些同步机制。
+log
+	提供一下log函数，还是基于logging的。
+	
+netutil
+	提供一些网络工具函数。
+options
+	对参数进行解析的。
+platform
+	这个是一个目录。
+	有几种选择，有asyncio和twisted。就看asyncio的就好了。
+	asyncio的不用了。
+process
+	多进程管理。
+queues
+	一些队列相关的类。不知道为什么要这个。都是非线程安全的。
+routing
+	路由相关。
+simple_httpclient
+	
+tcpclient
+tcpserver
+template
+testing
+util
+web
+	这个文件很重要。
+	对外提供Application
+	RequestHandler 这个有1600行。
+```
+
+# 官方example
+
+就在代码的demos目录下。
+
+## HelloWorld
+
+```
+from tornado.options import define, options
+
+define("port", default=8888, help="run on the given port", type=int)
+```
+
+define 这个函数定义了一个选项。
+
+使用上看起来比较直观。
+
+```
+http_server.listen(options.port)
+```
+
+## TCP echo
+
+官方的是用了gen的，只要去掉gen改成async的，然后yield的地方，改成await，也是可以的。
+
+
+
 # 参考资料
 
 1、Tornado基本使用

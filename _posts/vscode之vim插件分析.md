@@ -446,6 +446,264 @@ int main()
 
 https://coolshell.cn/articles/11312.html
 
+
+
+# 在terminal和编辑器之间用快捷键切换
+
+当前是可以切换，但是逻辑上不太顺。
+
+编辑器切换到terminal，是先按ctrl+w，进入到window切换逻辑里。
+
+然后按j，就是切换到terminal对应的window。
+
+但是从terminal回到window是不行的，
+
+因为ctrl+w对于shell是有特殊意义的快捷键。
+
+我当前是按一下ctrl+tab这样会产生一次编辑器的tab切换。
+
+虽然焦点回到了编辑器，但是文件也切换了。我还要再按一次ctrl+tab切换回需要的tab里。
+
+
+
+参考资料
+
+1、
+
+https://stackoverflow.com/questions/68807956/use-vim-keybindings-in-visual-studio-code-terminal
+
+# g0和0的区别
+
+一般是一样的。
+
+在有line wrap的时候不一样。
+
+# cc和dd的区别
+
+cc在删除后进入到insert mode。
+
+而dd仍然保持在normal mode。
+
+# 把esc映射到capslock键
+
+esc键还是需要手离开主键盘区。所以还是改到caplocks上比较好。
+
+需要修改keybindings.json文件。（在ctrl+shift+p里搜索就可以找到。当前因为没有设置过，所以这个文件是没有的）
+
+可能连续按两下caplocks才是更加合适的。
+
+jj是不太合适的，会导致一下输入行为。
+
+```
+// Place your key bindings in this file to override the defaults
+[
+    {
+      "key": "capslock capslock",
+      "command": "extension.vim_escape",
+      "when": "editorTextFocus && vim.active && vim.mode == 'Insert'"
+    }
+]
+```
+
+现在反正esc也还可以用的。
+
+先使用一段时间，看看双击caplocks是否可以提高效率。
+
+这个还是导致了一些问题。导致vscode里输入有些异常。
+
+算了。还是老老实实只用esc键吧。
+
+为了所有键盘上的体验是一样的。
+
+## 配置为ctrl+i
+
+我 觉得ctrl+i似乎是不错的。
+
+这个按键组合在vscode里也没有特别用途，按起来也很顺手。
+
+不像ctrl+o，ctrl+p都有其他用途了。
+
+ 在json文件里的写法是：
+
+```
+    "vim.insertModeKeyBindings": [
+        {
+            "before": ["<C-i>"],
+            "after": ["<Esc>"]
+        }
+    ]
+```
+
+
+
+参考资料
+
+参考资料
+
+1、
+
+https://blog.csdn.net/baidu_28630119/article/details/105769578
+
+2、
+
+https://blog.csdn.net/xuchaoxin1375/article/details/115695786
+
+
+
+# vim-easymotion插件用法
+
+另外还有easy motion，easy sneak等功能都整合在这个插件里
+
+我当前已经把leader键映射为空格了。
+
+然后在json里把vim-easymotion设置为true，就打开了。不需要其他的配置，就一行配置就打开了。
+
+然后使用：
+
+```
+<leader> <leader> j  j是表示向下找。以行尾单位标记
+按两下空格键，再按一下j键。
+就把会把附近的一些地方用字母高亮处理，然后你按一下对应的字母就可以快速跳转过去。
+```
+
+类似的还有：
+
+```
+<leader> <leader> k 这个是向上找。
+<leader> <leader> w 这个是以单词为单位标记。
+
+```
+
+
+
+# vscodevim整合的其他插件
+
+关于 Vim 的插件，目前不能使用真正的 Vim 插件，官方提供几款模拟插件：
+
+- vim-airline
+- vim-easymotion
+- vim-surround
+- vim-commentary
+- vim-indent-object
+- vim-sneak
+- CamelCaseMotion
+
+## vim-surround
+
+这个是围绕sursound这种输入场景的。
+
+典型的就是 各种html标签的情况。
+
+一些典型用法：
+
+```
+增加
+	在单词两边加上双引号  ysiw"  
+		拆开理解是：ys 是surround的按键，i表示in，w表示单词。最后的双引号就是要插入的符号。
+	类似的有：
+		ysiw'
+		ysiw(  和ysiw)的区别是，后者得到的结果，括号和内容之间是不带空格的。
+		ysiw[  
+
+删除
+	ds"  删除当前行内的双引号。
+修改
+	cs"' 把当前行的双引号改成单引号。
+```
+
+参考资料
+
+1、
+
+https://zhuanlan.zhihu.com/p/158604935
+
+2、
+
+https://www.jianshu.com/p/cbfa86c8d8a5
+
+# 复制替换的场景
+
+有个很简单而又常用的场景，需要注意一下。
+
+有下面的文件：
+
+```
+aa
+bb
+```
+
+现在我们有个需求，就是先复制aa，然后把bb的内容粘贴为aa。（这个在写代码时经常会用到。
+
+按照我们掌握的vim的知识，一个符合正常想法的操作是这样：
+
+```
+在把光标定位到aa上。
+然后yiw  复制aa这个单词。
+然后光标移动到bb，按diw 删除bb
+然后按p粘贴aa到bb的位置上。
+```
+
+但是，实际操作后，我们会发现，这样并不能得到预期的结果。
+
+我们粘贴出来的还是bb这个单词。
+
+这是因为vim的d操作，删除内容的同时，把内容也拷贝到了寄存器里。
+
+d是相当于windows下面用的剪切这个操作的。
+
+所以，应该这样操作：
+
+```
+复制aa的过程没有问题。一样。
+光标定位到bb上之后，
+按viw，表示选中整个bb这个单词。
+然后按p。就可以把aa粘贴到bb的位置了。
+关键就是用选中，而不是删除。
+```
+
+
+
+
+
+# 最佳实践
+
+```
+    "vim.useSystemClipboard": true,
+    "files.autoSave": "onFocusChange",
+    "vim.leader": "<Space>",
+    "vim.easymotion": true,
+    "vim.searchHighlightColor": "#5f00af",
+    "vim.hlsearch": true,
+    "vim.normalModeKeyBindingsNonRecursive": [
+        {
+            "before": ["J"], 
+            "after": ["g", "T"]
+        },
+        {
+            "before": ["K"], 
+            "after": ["g", "t"]
+        }
+    ],
+    "vim.insertModeKeyBindings": [
+        {
+            "before": ["<C-i>"],
+            "after": ["<Esc>"]
+        }
+    ]
+```
+
+切换标签的，我是仿照了vimium的逻辑。因为就统一了习惯了。
+
+不过ctrl+tab其实也还比较顺手。
+
+
+
+参考资料
+
+1、
+
+https://zhouyanlt.github.io/vim/2019/09/20/vscode-vim-best-practices.html
+
 # 参考资料
 
 1、
@@ -475,3 +733,7 @@ https://www.yuexun.me/blog/the-vim-guide-for-vs-code-users
 这个不错。
 
 https://coolshell.cn/articles/5426.html
+
+7、如何用好vscode vim模式？
+
+https://cnodejs.org/topic/5b9e696037a6965f59051a09

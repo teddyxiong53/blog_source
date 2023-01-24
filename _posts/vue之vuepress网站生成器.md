@@ -5,7 +5,7 @@ tags:
 - vue
 ---
 
-1
+
 
 在github上搜索魔趣的时候，发现它的官网是用vuepress生成的。
 
@@ -193,6 +193,38 @@ module.exports = {
 效果的这样
 
 ![image-20201221144113633](../images/playopenwrt_pic/image-20201221144113633.png)
+
+# 用vuepress搭建企业官网
+
+这个就是一个工业企业的官网，用vuepress搭建的，看起来还不错。
+
+http://lylmhbkj.yaya12.com/
+
+这个作者对vuepress研究倒是挺多的。
+
+https://github.com/Heyff12/vuepress-theme-yaya
+
+参考资料
+
+1、
+
+https://www.yaya12.com/works/company-website.html
+
+# 用vuepress搭建项目文档展示网站
+
+这个是文字版本。
+
+https://www.jianshu.com/p/93c532cdf951
+
+这个是视频说明
+
+https://www.bilibili.com/video/BV1mo4y1S7AH
+
+# VitePress
+
+vuepress自己开发的新版本。
+
+# 一些用vuepress开发的网站
 
 
 

@@ -5,7 +5,7 @@ tags:
 	- django
 ---
 
-1
+
 
 这个前端只用了jquery。没有使用bootstrap。算是比较传统的方案。
 

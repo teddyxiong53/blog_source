@@ -156,6 +156,66 @@ db.search(where('username') == 'allen')
 
 
 
+# 把代码手敲一遍
+
+现在是把代码手敲了一遍。感觉很多概念都清楚了。
+
+# LRUCache测试
+
+我写了这样的测试代码
+
+```
+def test_lru_cache():
+    cache = LRUCache(capacity=3)
+    cache['a'] = 1
+    cache['b'] = 2
+    cache['c'] = 3
+    _ = cache['a']
+    cache['d'] = 4
+    for k,v in cache.items():
+        print(k,v)
+```
+
+这个函数运行会报错：
+
+```
+RuntimeError: OrderedDict mutated during iteration
+```
+
+这个的意思是，dict在遍历的时候被修改了。
+
+这个可以理解，因为当前就是访问时会对内部的dict进行修改的，把访问到的放后面去。
+
+跟OrderedDict没有关系。
+
+是LRUCache里的行为导致的。
+
+用pytest来测试
+
+```
+py.test tests/test_utils.py::test_lru_cache
+```
+
+这样测试是ok的。
+
+官方的测试例子是这样来遍历的：
+
+```
+    assert cache.lru == ['c', 'a', 'd']
+```
+
+lru是这样的：
+
+```
+    @property
+    def lru(self) -> List[K]:
+        return list(self.cache.keys())
+```
+
+只访问keys。这样是ok的。
+
+
+
 # 参考资料
 
 1、官网文档

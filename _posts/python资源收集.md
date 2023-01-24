@@ -15,6 +15,16 @@ tags:
 
 https://www.bilibili.com/video/BV1KS4y1D7Qb
 
+# 系列文章
+
+Python笔记，这个不错。讲得比较实用，不啰嗦。
+
+https://hscnotebook.com/
+
+python黑魔法，很多实用技巧
+
+https://magic.iswbm.com/
+
 # cheatsheet
 
 这个就一个文件。可以。

@@ -74,6 +74,16 @@ https://www.bilibili.com/video/BV1Qz4y1d7C1
 
 
 
+# 如何对draw.io进行二次开发
+
+这篇文章对二开的流程介绍比较好。
+
+参考资料
+
+1、DrawIO 二开 —— 是时候给你的 ProcessOn 充值终身 VIP 了
+
+https://juejin.cn/post/7017686432009420808
+
 # 参考资料
 
 1、

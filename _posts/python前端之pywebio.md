@@ -82,6 +82,16 @@ https://github.com/ngshiheng/burplist-frontend/
 
 https://github.com/pywebio/PyWebIO/network/dependents
 
+
+
+可以通过pywebio的insight下面的dependents查看有哪些项目依赖了pywebio。
+
+这样就可以搜索到不少的。
+
+这个是一个短网址服务。但是写得不怎么样。这个产品形态可以参考。
+
+https://github.com/TwinIsland/ShortenURL
+
 # 竞品
 
 https://zhuanlan.zhihu.com/p/486698242

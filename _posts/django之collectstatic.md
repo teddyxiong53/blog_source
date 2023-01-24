@@ -5,7 +5,7 @@ tags:
 	- django
 ---
 
-1
+
 
 把静态文件收集到 STATIC_ROOT中。
 

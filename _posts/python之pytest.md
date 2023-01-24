@@ -5,7 +5,7 @@ tags:
 	- python
 ---
 
-1
+
 
 pytest是python里的单元测试框架。
 
@@ -98,7 +98,7 @@ flask的源代码里，就已经给测试做了打桩的。
 
 还有一个专门的testing.py文件。
 
-#HelloWorld
+# HelloWorld
 
 ```
 import pytest
