@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 在看vma相关的文章的时候，看到vdso这个东西。了解一下。
 
@@ -39,7 +39,7 @@ hlxiong@hlxiong-VirtualBox:~$ ldd /bin/bash
 
 
 
-参考资料
+# 参考资料
 
 1、Linux内核特性之VDSO
 

@@ -1177,6 +1177,18 @@ virtual-package可以满足我的需求吗？
 
 不可以。
 
+
+
+在buildroot里，一个virtual package表示这样的package：
+
+它的概念的由其他的1个或者多个package来提供的。
+
+
+
+参考资料
+
+https://buildroot.org/downloads/manual/adding-packages-virtual.txt
+
 # skeleton
 
 skeleton是骨架的意思。表示的是要生成的rootfs的整体结构。
@@ -2137,6 +2149,23 @@ SKELETON_CUSTOM_PROVIDES = skeleton
 ```
 
 这个是说，skeleton-custom这个package对外呈现也是作为skeleton存在吗？
+
+另外还有package/openssl和package/libopenssl。
+
+在libopenssl.mk里：
+
+```
+LIBOPENSSL_PROVIDES = openssl
+```
+
+在openssl.mk里：
+
+```
+$(eval $(virtual-package))
+$(eval $(host-virtual-package))
+```
+
+
 
 # 什么时候需要完全重新编译
 

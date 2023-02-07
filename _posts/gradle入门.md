@@ -117,7 +117,7 @@ include ':app',':library'
 
 
 
-#HelloWorld
+# HelloWorld
 
 新建一个build.gradle文件。
 
@@ -261,7 +261,7 @@ hlxiong@hlxiong-VirtualBox ~/work/test/gradle $ tree
 
 
 
-参考资料
+# 参考资料
 
 1、Gradle 使用指南
 

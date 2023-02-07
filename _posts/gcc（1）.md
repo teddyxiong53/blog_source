@@ -316,7 +316,189 @@ ld --help
 	Only set DT_NEEDED for following dynamic libs if used
 ```
 
+# -march=xx
 
+This specifies the name of the target ARM architecture. GCC uses this name to determine what kind of instructions it can emit when generating assembly code. This option can be used in conjunction with or instead of the -mcpu= option.
+
+这个指定了生成的汇编代码所使用的指令集。
+
+可以跟-mcpu=这个选项一起使用，也可以替代-mcpu=选项。
+
+可能的取值有：
+
+```
+‘armv4t’, ‘armv5t’, ‘armv5te’, ‘armv6’, ‘armv6j’, ‘armv6k’, ‘armv6kz’, ‘armv6t2’, ‘armv6z’, ‘armv6zk’, ‘armv7’, ‘armv7-a’, ‘armv7ve’, ‘armv8-a’, ‘armv8.1-a’, ‘armv8.2-a’, ‘armv8.3-a’, ‘armv8.4-a’, ‘armv8.5-a’, ‘armv8.6-a’, ‘armv9-a’, ‘armv7-r’, ‘armv8-r’, ‘armv6-m’, ‘armv6s-m’, ‘armv7-m’, ‘armv7e-m’, ‘armv8-m.base’, ‘armv8-m.main’, ‘armv8.1-m.main’, ‘armv9-a’, ‘iwmmxt’ and ‘iwmmxt2’.
+```
+
+大多数的架构都支持extension。
+
+所以可以在架构名字后面加上+xx的extension
+
+这些extension按照顺序解析，可以加上多个extension。
+
+一个extension会自动把自己依赖的基础extension使能。
+
+例如+crypto会自动使能+simd这个。
+
+要禁用某个特性，则使用+noxx这样。
+
+```
+-march=armv7-a+simd+nofp+vfpv4
+等价于
+-march=armv7-a+vfpv4
+
+因为
+simd会被nofp关闭掉。
+```
+
+这个有个表格来列举各个架构支持的extension。
+
+如果没有列出来的，那就是不支持的。
+
+## vfp
+
+
+
+### 浮点计算的分类
+
+(1)硬浮点(hard-float)
+
+编译器将代码直接编译成**硬件浮点协处理器**(浮点运算单元FPU)能识别的指令，
+
+这些指令在执行的时候**ARM核直接把它转给协处理器执行**。
+
+**FPU 通常有一套额外的寄存器来完成浮点参数传递和运算。**
+
+使用实际的硬件浮点运算单元(FPU)会带来性能的提升。
+
+(2)软浮点(soft-float)
+
+编译器把浮点运算转成浮点运算的函数调用和库函数调用，
+
+**没有FPU的指令调用，也没有浮点寄存器的参数传递。**
+
+浮点参数的传递也是通过ARM寄存器或者堆栈完成。
+
+现在的Linux系统默认编译选择使用hard-float,
+
+如果系统没有任何浮点处理器单元，这就会产生非法指令和异常。
+
+**因而一般的系统镜像都采用软浮点以兼容没有VFP的处理器。**
+
+
+
+用一句话总结，软浮点是通过浮点库去实现浮点运算的，效率低；硬浮点是通过浮点运算单元(FPU)来完成的，效率高。
+
+### 软浮点的举例
+
+一、使用浮点库实现浮点运算(soft-float)
+
+例如:我想实现两个浮点数相加，代码如下:
+
+![img](images/random_name/aHR0cDovL3d3dy5lbWJlZHUub3JnL0NvbHVtbi9pbWFnZXMvQ29sdW1uODIxLTEuanBn)
+
+使用GNU ARM编译器翻译成的部分汇编代码如下:
+
+![img](images/random_name/aHR0cDovL3d3dy5lbWJlZHUub3JnL0NvbHVtbi9pbWFnZXMvQ29sdW1uODIxLTIuanBn)
+
+从图中我们可以知道，默认情况下，编译器使用的是软浮点，
+
+图中`__aeabi_fadd`这个函数是在浮点库中实现。
+
+如果想让代码能正常的运行，还需要在连接的时候静态连接一下浮点库。
+
+### 硬浮点使用举例
+
+使用硬件浮点实现浮点运算(hard-float)
+
+使用硬件浮点的时候，**我们需要给编译器传递一些参数**，让编译器编译出硬件浮点单元处理器能识别的指令。
+
+(1)-mfpu=name
+
+参数-mfpu就是用来指定要产生那种硬件浮点运算指令,常用的右vfp和neon等。
+
+浮点协处理器指令:
+
+ARM10 and ARM9:
+    -mfpu=vfp(or vfpv1 or vfpv2)
+    Cortex-A8:
+    -mfpu=neon
+
+(2) -mfloat-abi=value
+
+-mfloat-abi=soft 使用这个参数时，其将调用软浮点库(softfloat lib)来支持对浮点的运算，GCC编译器已经有这个库了，一般在libgcc里面。这时根本不会使用任何浮点指令，而是采用常用的指令来模拟浮点运算。但使用的ARM芯片不支持硬浮点时，可以考虑使用这个参数。在使用这个参数时，连接时一般会出现下面的提示：
+
+undefined reference to `__aeabi_fdiv'
+
+或者类似的提示，主要因为一般情况下连接器没有去主动寻找软浮点库，这时使用将libgcc库加入即可。
+
+-mfloat-abi=softfp
+
+-mfloat-abi=hard
+
+这两个参数都用来产生硬浮点指令，至于产生哪里类型的硬浮点指令，需要由
+
+-mfpu=xxx参数来指令。这两个参数不同的地方是：
+
+-mfloat-abi=softfp生成的代码采用兼容软浮点调用接口(即使用-mfloat-abi=soft时的调用接口)，这样带来的好处是：兼容性和灵活性。库可以采用-mfloat-abi=soft编译，而关键的应用程序可以采用-mfloat-abi=softfp来编译。特别是在库由第三方发布的情况下。
+
+-mfloat-abi=hard生成的代码采用硬浮点(FPU)调用接口。这样要求所有库和应用程序必须采用这同一个参数来编译，否则连接时会出现接口不兼容错误。
+
+
+
+
+
+
+
+VFP--ARM浮点体系结构机介绍【转】
+
+https://www.cnblogs.com/sky-heaven/p/13391788.html
+
+ARM 浮点运算，软浮点，硬浮点
+
+https://blog.csdn.net/boyemachao/article/details/104018363
+
+
+
+## 参考资料
+
+1、
+
+https://gcc.gnu.org/onlinedocs/gcc/ARM-Options.html
+
+
+
+# neon和fpu是什么关系
+
+Neon是适用于ARM Cortex-A系列处理器的一种128位SIMD(Single Instruction, Multiple Data,单指令、多数据)扩展结构。
+
+NEON 可增强许多多媒体用户体验：
+
+
+
+[浮点运算器](https://link.zhihu.com/?target=https%3A//baike.baidu.com/item/%E6%B5%AE%E7%82%B9%E8%BF%90%E7%AE%97%E5%99%A8)（英文：floating point unit，简称FPU）是计算机系统的一部分，它是专门用来进行浮点数运算的。典型的运算有加减乘除和开方。一些系统（尤其是比较老的，基于[微代码](https://link.zhihu.com/?target=https%3A//baike.baidu.com/item/%E5%BE%AE%E4%BB%A3%E7%A0%81)体系的）还可以计算超越函数，例如指数函数或者三角函数，
+
+尽管对大多数现在的处理器，这些功能都由软件的函数库完成。
+
+
+
+浮点数运算常常是用特别的总线传输的。在早期的没有[中断机制](https://link.zhihu.com/?target=https%3A//baike.baidu.com/item/%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6)的大尺度架构（的处理器）中，[浮点运算](https://link.zhihu.com/?target=https%3A//baike.baidu.com/item/%E6%B5%AE%E7%82%B9%E8%BF%90%E7%AE%97)有时与整数运算独立传输。今时今日，许多CPU或架构都有超过一个[浮点运算器](https://link.zhihu.com/?target=https%3A//baike.baidu.com/item/%E6%B5%AE%E7%82%B9%E8%BF%90%E7%AE%97%E5%99%A8)，例如PowerPC 970 和基于Netburst和AMD64架构的处理器（分别例如奔腾（Pentium）4和[速龙](https://link.zhihu.com/?target=https%3A//baike.baidu.com/item/%E9%80%9F%E9%BE%99)（Athlon）64）
+
+
+
+# -mtune=name
+
+For some ARM implementations better performance can be obtained by using this option. 
+
+可能带来一些性能提升。
+
+Additionally, this option can specify that GCC should tune the performance of the code for a big.LITTLE system. Permissible names are: ‘cortex-a15.cortex-a7’, ‘cortex-a17.cortex-a7’, ‘cortex-a57.cortex-a53’, ‘cortex-a72.cortex-a53’, ‘cortex-a72.cortex-a35’, ‘cortex-a73.cortex-a53’, ‘cortex-a75.cortex-a55’, ‘cortex-a76.cortex-a55’.
+
+华为麒麟980 2大(高频*A76*) 2中(中频*A76*)4小(*A55*魔改) 
+
+就是A76做大核，A55做小核。
+
+https://zhuanlan.zhihu.com/p/56294793
 
 # 参考资料
 

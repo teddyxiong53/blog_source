@@ -83,6 +83,15 @@ wget -O ~/.config/clash/config.yaml  <你的订阅地址>
 
 我直接从我的pc上把config.yml文件的内容拷贝过去粘贴进去就好了。
 
+那个db文件，直接从电脑上的拷贝过去放到指定的目录就好了。
+
+还有，注意mode要配置为rule方式，比global还要好一些。
+
+```
+mode: rule
+log-level: info
+```
+
 
 
 参考资料

@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 ```
 文件名
@@ -33,7 +33,13 @@ tags:
 
 
 
-参考资料
+我觉得谷歌的c++编码规范，我不太喜欢，感觉有些怪异。风格不够统一。
+
+看起来不协调。
+
+
+
+# 参考资料
 
 1、C++谷歌命名规范
 
@@ -42,3 +48,9 @@ https://www.jianshu.com/p/f56383486520
 2、Google 开源项目风格指南 (中文版)
 
 https://zh-google-styleguide.readthedocs.io/en/latest/
+
+3、**Qt编程规范**
+
+这个比较简单务实。
+
+https://blog.51cto.com/u_15753490/5670387

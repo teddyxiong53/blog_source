@@ -340,7 +340,7 @@ foreach
 
 ## 函数
 
-提供了超过100个內建函数。
+提供了超过1000个內建函数。
 
 ## 魔数常量
 
@@ -371,7 +371,51 @@ __NAMESPACE__
 
 也有引用的概念。也是用&号来表示。
 
+# 写给python程序员的php入门课
 
+我的web开发知识是从Python入门的。
+
+所以这个角度比较合适。
+
+## helloworld
+
+```
+which php
+/usr/bin/php
+```
+
+可以看到有一个php的解释器。
+
+新建一个hello.php。内容如下：
+
+```
+<?php
+echo "hello php";
+```
+
+然后这样执行：
+
+```
+php ./hello.php 
+```
+
+然后就跟python的入门的顺序很相似了。
+
+感觉很亲切。
+
+我们也可以启动一个web服务器，通过浏览器来访问刚刚新建的hello.php文件。
+
+```
+php -S 0.0.0.0:8000
+```
+
+
+
+## 参考资料
+
+1、
+
+https://foofish.net/php-tutorial.html
 
 # 参考资料
 

@@ -254,6 +254,10 @@ https://github.com/teddyxiong53/c_code/tree/master/cmake_template
 message([SEND_ERROR | STATUS | FATAL_ERROR] "message to display" ...)
 ```
 
+```
+message(FATAL_ERROR "${}" )
+```
+
 
 
 指定链接路径
@@ -331,7 +335,7 @@ file命令
 
 
 
-##include命令
+## include命令
 
 主要用来载入CMakeLists.txt文件，或者cmake模块。
 
@@ -345,7 +349,7 @@ include(CheckFunctionExists) #这个是一个cmake模块。
 
 
 
-#cmake脚本语言
+# cmake脚本语言
 
 ```
 1、#表示注释。
@@ -786,6 +790,18 @@ The C compiler identification is unknown
 Could not find toolchain file: cmake/toolchain.cmake
 
 
+
+# 接口库add_library interface
+
+这类库有属性，能`install()`，`export`和`imported`，但可能没有build过程。像`纯头文件库`或`完全针对target的设计`
+
+例如这个：
+
+```
+add_library(MultipartParser INTERFACE)
+```
+
+就是对于c++里的那种只有头文件的项目。
 
 
 

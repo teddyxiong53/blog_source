@@ -34,7 +34,12 @@ Ubuntu16.04默认安装的openssl是1.0.2g的。
 
 
 
-参考资料
+# 参考资料
 
-1、
+1、OpenSSL源码库目录解析
 
+https://blog.csdn.net/starboybenben/article/details/50549854
+
+2、
+
+https://xghost.blog.csdn.net/article/details/110099236

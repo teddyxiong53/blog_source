@@ -70,6 +70,129 @@ Alexa Directive Sequencer Library：AVS指令集，接收从AVS Server接收到�
 
  Mediaplayer：语音播放。
 
+# 使用到的设计模式
+
+avs代码里使用到的设计模式还是不少。
+
+如果不能梳理出这些设计模式。就不能很好地理解代码的内部逻辑。
+
+搜索“avs-sdk design pattern”
+
+avs引入了一个名字为Manufactory的组件来简化客户的集成操作。
+
+有了这个组件，客户就不需要深入理解core代码，就可以很顺利地添加、删除、定制一个avs组件。
+
+1.21版本的sdk，提供了一个preview的例子，来demo这个的用法。
+
+这个机制在2021年基本稳定。
+
+下面的内容，就描述Manufactory是如何工作的。
+
+avs sdk的演化
+
+2017年8月的1.0版本。支持5个capability agents，代码量150K行。
+
+2020年6月的1.20版本，支持14个capability agents。代码量480K行。
+
+所以这个时候，就有必要进行优化sdk的集成工作了。
+
+
+
+sdk本身是可定制的。
+
+你完全可以添加、删除、定制组件。
+
+当前sdk使用了依赖注入把组件注入到sdk core里。
+
+
+
+在1.20版本，DefaultClient的create函数，接收的参数超过了58个。
+
+这个对于集成的挑战就非常大了。
+
+## 通过组件化来提高模块化水平
+
+现在sdk由这4种组件组成：
+
+* 核心组件。例如DirectiveSequencer、FocusManager。是avs的核心，必须使用。
+* 可选组件。例如SmartHomeEndpoints、DisplayCard。
+* 外部组件。例如电话、MRM，默认不包含，需要另外获取代码进行集成。
+* 其他feature。播放器、唤醒词、授权方法等等。
+
+## 通过Manufactory来定制你的device
+
+有了Manufactory，你可以不关注组件的细节。
+
+你只需要request一个组件，然后使用。
+
+Manufactory负责create和init对象，处理依赖关系，管理对象的生命周期。
+
+一个组件包含了多个factory。这些factory用来创建各种object。
+
+Manufactory对外提供一个`get<>()`方法。
+
+App可以通过`get<>()`方法来request一个对象。
+
+Manufactory会先从object cache里检查是否有现成的。
+
+如果没有，就调用factory产生一个。
+
+
+
+如果你要增加一个新的受到Manufactory管理的class。
+
+这样做：
+
+1、在你的class里提供一个factory方法。
+
+2、定义一个组件。
+
+3、把factory添加到组件。
+
+4、把组件传递给Manufactory。
+
+5、从Manufactory申请你的对象。
+
+
+
+Manufactory通过c++模板来实现类型检查和依赖关系解析。
+
+
+
+## ComponentAccumulator的方法
+
+```
+addPrimaryFactory
+addComponent
+addUnloadableFactory
+	可以卸载的对象。
+addRetainedFactory
+	这个创建的对象会一直alive。
+```
+
+# 关于namespace
+
+我之前一直觉得这个namespace层数太多了。
+
+现在仔细看，发现还是有规律的。
+
+Interface的定义，都是在AVSCommon\SDKInterfaces目录下。
+
+这个下面只有include。所以只有抽象。
+
+几乎所有的类都以Interface结尾。
+
+而在AVSCommon\SDKInterfaces下的子目录里的。
+
+```
+例如AVSCommon\SDKInterfaces\include\AVSCommon\SDKInterfaces\Endpoints
+下面的文件名字，都是以Endpoint开头的。
+所以using namespace的时候，也可以知道哪个类在哪个namespace下。
+信息有一定冗余，但是极大地提高了识别性。
+```
+
+应用编程时，都是面向Interface的。
+
 
 
 
@@ -86,3 +209,7 @@ https://github.com/alexa/avs-device-sdk/wiki
 3、
 
 https://blog.csdn.net/teksky163/article/details/80393304
+
+4、Managing AVS Device SDK components with Manufactory
+
+https://developer.amazon.com/en-US/blogs/alexa/device-makers/2020/12/managing-avs-device-sdk-components-with-manufactory

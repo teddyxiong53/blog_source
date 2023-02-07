@@ -210,9 +210,65 @@ return d->mnAge;
 
 
 
+# 代码分析
+
+我是看buildroot里的集成的qt的代码。
+
+```
+qmetaobject.h里
+QMetaMethod
+	有这些常用方法：
+	methodSignature
+
+	
+QMetaMethodPrivate
+
+	
+qobjectdefs.h
+
+QMetaObject
+
+	className
+	superClass 返回d.superdata;
+	inherits
+	cast
+	tr
+	
+	methodOffset
+	enumeratorOffset
+	propertyOffset
+	classInfoOffset
+	
+	constructorCount
+	methodCount
+	enumeratorCount
+	propertyCount
+	classInfoCount
+	
+	indexOfConstructor
+	indexOfMethod
+	...
+	
+	connect
+	disconnect
+	disconnectOne
+	connectSlotsByName
+	
+	activate
+	invokeMethod
+	
+	newInstance
+	
+	struct {
+	}d; //private data
+
+	
+QMetaObject::Connection
+```
 
 
-参考资料
+
+# 参考资料
 
 1、QT:QObject 简单介绍
 
