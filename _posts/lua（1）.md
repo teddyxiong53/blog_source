@@ -434,9 +434,42 @@ https://github.com/teal-language/tl
 
 点号后面跟属性，冒号后面跟方法。
 
+调用时的 player.takeDamage(player, 20) 稍显不和谐（据说用术语叫做 DRY），于是就要出动「冒号操作符」这个专门为此而生的语法糖了：
+
+```
+player:takeDamage(20)              --> 等同于 player.takeDamage(player, 20)
+function player:takeDamage(amount) --> 等同于 function player.takeDamage(self, amount)
+```
+
+https://www.kancloud.cn/thinkphp/lua-guide/43811
+
+## 类
+
+类的意义在于提取一类对象的共同点从而实现量产（我瞎扯的 >_<）。
+
+同样木有 Class 概念的 Javascript 使用 prototype 实现面向对象，
+
+**Lua 则通过 Metatable 实现与 prototype 类似的功能。**
+
+
+
 ## `self.__index = self `
 
 这句的作用是什么？
+
+顾名思义 Metatable 也是一个 Table，
+
+可以通过在其中存放一些函数（称作 metamethod）从而修改一些默认的求值行为（如何显示为字符串、如何相加、如何连接、如何进行索引）。
+
+Metatable 的 `__index` 域设置了「如何进行索引」的方法。
+
+例如调用 foo.bar 时，如果在 foo 中没有找到名为 bar 的域时，
+
+则会调用 Metatable：__index(foo, bar)。
+
+
+
+
 
 Lua 查找一个表元素时的规则，其实就是如下 3 个步骤:
 
@@ -491,6 +524,21 @@ o2.say()
 
 ```
 
+## 继承
+
+```lua
+RMBPlayer = Player:create()
+function RMBPlayer:broadcast(message)
+	print(message)    
+end
+function RMBPlayer:takeDamage(amount)
+	self.health = self.health - amount/(self.money/100)    
+end
+vip = RMBPlayer:create{money = 200}
+vip:takeDamage(20)
+vip:broadcast('haha')
+```
+
 
 
 参考资料
@@ -506,6 +554,8 @@ https://blog.csdn.net/weixin_34301307/article/details/85976950
 ## 参考资料
 
 https://www.runoob.com/lua/lua-object-oriented.html
+
+https://www.kancloud.cn/thinkphp/lua-guide/43811
 
 # 调试方法
 
@@ -1506,6 +1556,254 @@ https://zhuanlan.zhihu.com/p/346355282
 # lua实现枚举类型
 
 
+
+# lua_pcall
+
+
+
+```
+if (luaL_loadfile(L, fname) || // 读取文件，将内容作为一个函数压栈
+    lua_pcall(L, 0, 0, 0))     // 执行栈顶函数，0个参数、0个返回值、无出错处理函数（出错时直接把错误信息压栈）
+    error();
+```
+
+
+
+```
+--test.lua
+function test(x,y)
+    return x + y
+end
+lua_loadfile(L,"test.lua");
+
+--调用
+lua_pushnumber(L,10);   --x 值入栈
+lua_pushnumber(L,20);   --y 值入栈
+lua_pcall(L,2,1,0);
+```
+
+如果没有错误此时栈顶的值为30
+
+如果运行出错，lua_pcall会返回一个非零的结果,如果指定了错误处理函数会先调用错误处理函数，然后再将错误信息入栈，在将返回结果和错误信息入栈之前会先将函数和参数从栈中移除。错误处理函数必须在被调用函数和其他参数之前入栈
+
+参考资料
+
+1、
+
+https://www.kancloud.cn/thinkphp/lua-guide/43808
+
+2、
+
+https://blog.csdn.net/u010782644/article/details/79641284
+
+
+
+# setfenv
+
+这个函数是用来设置环境的。
+
+为什么需要这个函数？
+
+因为我们在全局环境里设置变量的时候，很容易碰到名字冲突。
+
+尤其是在使用某些库的时候。
+
+会出现变量之间相互覆盖的情况。
+
+这个时候，我们就需要一个非全局的环境来解决这个问题。
+
+setfenv就是用来做这个事情的。
+
+setfenv的原型是：
+
+```
+setfenv(f, table)
+当参数1是一个函数的时候，表示设置这个函数的环境。
+当参数1是一个数字的时候：
+	为1时，表示当前函数。
+	为2时，表示自己的上一层函数。
+	为3时，表示自己上两层函数。
+	为N时，依次类推。
+```
+
+所谓函数的环境，
+
+一个环境就是一个table。
+
+函数被限定为智能访问这个table里的东西。
+
+看下面的代码：
+
+```lua
+newfenv = {}
+setfenv(1, newfenv) -- 这个就是吧当前的env设置为一个空的table。
+--里面找不到print函数的。所以下面的函数会报错。
+print(1)
+```
+
+可以这样来继承已有的内容
+
+```lua
+a = 10
+newfenv = {_G = _G}
+setfenv(1, newfenv)
+_G.print(1)
+_G.print(_G.a)
+_G.print(a) -- 这个会找不到，因为新的table是没有a，但是可以通过_G.a来访问
+```
+
+从上面看到，这个做法有一点不方便。
+
+可以用metatable来改进一下。
+
+```
+newfenv = {}
+setmetatable(newfenv, {__index = _G})
+setfenv(1, newfenv)
+print(1)
+```
+
+这样对于没有冲突的符号，直接访问就可以。
+
+如果是有冲突的符号，那么通过`_G.xx`的方式来访问。
+
+可以用getfenv(f)函数来查看函数的环境。默认是返回`_G`。
+
+
+
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/u013517637/article/details/53999170
+
+
+
+# 模块
+
+lua的模块是由变量、函数等构成的table。
+
+因此创建一个模块很简单。
+
+就是创建一个table。
+
+然后把需要export的变量、函数放进去，最后返回这个table就好了。
+
+格式是这样的：
+
+```lua
+module = {} -- 定义一个名为module的模块
+module.constant = "this is a constant" -- 定义常量
+--定义一个函数
+function module.func1()
+	io.write("this is a public function")
+end
+local function module.func2()
+   print("this is a private function") 
+end
+
+function module.func3()
+    func2()
+end
+
+return module
+```
+
+加载模块：
+
+```
+require ("module")
+或者
+require "module"
+
+更好的做法是，给个名字。
+local m = require("module")
+```
+
+require的返回值，取决于导入的文件的返回值。
+
+如果没有返回值，那么默认是返回true。
+
+# 函数的本质
+
+第六章 More About Functions 中说到我们平时在 Lua 中写的函数声明
+
+```
+function foo (x) return 2*x end
+```
+
+其实是一种语法糖，本质上我们可以把它写成如下代码：
+
+```
+foo = function (x) return 2*x end
+```
+
+于是也就可以说
+
+- Lua 中的所有函数都是匿名函数，之前所谓「具名函数」只是保存了某个匿名函数的变量罢了。
+- Lua 中的函数声明其实只是一个语句而已。
+
+# lua标准库
+
+
+
+# Lua 函数用法和它的"诡异"之处
+
+Lua 函数调用时, 需要带括号(对于单个参数的函数,某些值不需要用括号, 如字符串, 表). 
+
+```
+例如
+print("123")可以
+print "1123" 也可以。
+require "xx" 可以
+require("xx") 也可以
+
+函数调用必须带括号, 除了单个参数的函数, 并且参数类型为字符串, 表构造器时, 可以不带括号.
+```
+
+但是注意return是可以带括号也可以不带括号的.
+
+这里重点说到括号, 因为括号和返回多值的函数关系很大, 也就是"诡异"的地方, 后面会举例.
+
+
+
+**函数可以作为一个语句执行**, 那有点类似一个过程语言, 执行完的函数结果被抛弃掉.
+
+例如 : 
+
+print("abc") -- 这作为一个语句执行.
+
+函数也可以在一个表达式中执行, 那么结果会被返回, 对于多值函数需要注意返回的值的个数.
+
+例如 :
+
+i = math.sin(123)  -- **这里的math.sin函数在表达式中, 所以结果返回**.
+
+
+
+参考资料
+
+1、
+
+https://developer.aliyun.com/article/11384
+
+# 把penlight库研究透
+
+这个研究透了，lua的语法和应用就基本没有问题了。
+
+
+
+# `_G`和`_ENV`关系
+
+
+
+参考资料
+
+1、
+
+https://juejin.cn/post/6844904121862995981
 
 # 参考资料
 

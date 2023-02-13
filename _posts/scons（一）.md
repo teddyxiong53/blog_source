@@ -143,7 +143,7 @@ Program("hello", "main.c", LIBS=['foo'], LIBPATH=".")
 
 
 
-#4.SConstruct和SConscript关系
+# 4.SConstruct和SConscript关系
 
 SConstruct是主要文件。SConscript相当于函数一样的功能，里面最后面会返回一些对象。
 
@@ -191,7 +191,7 @@ Return("obj")
 
 
 
-#5.env 
+# 5.env 
 
 环境变量用于设置编译过程中用到的各种参数。
 

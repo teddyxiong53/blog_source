@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 pinctrl是用来管理soc的管脚复用的。叫做pinctrl子系统。
 
@@ -39,6 +39,53 @@ pinctrl是kernel对pin进行管理的核心。
 其他的driver要使用pin资源的时候，都需要向pinctrl来申请。
 
 所以pinctrl是一个很重要的子系统。
+
+# 我的理解
+
+先看pinctrl目录的头文件。
+
+重要的就是这些结构体。
+
+```
+struct pinctrl_dev;
+struct pinctrl_map;
+struct pinmux_ops;
+struct pinconf_ops;
+struct pin_config_item;
+struct gpio_chip;
+
+struct pinctrl_pin_desc
+	这个是对每个pin的描述。
+	
+struct pinctrl_gpio_range
+
+struct pinctrl_ops
+	操作的对象是struct pinctrl_dev
+	就6个函数。
+	重要的就是dt_node_to_map这个。
+	
+struct pinctrl_desc
+	这个是描述一款soc的pinctrl。
+	注册到kernel里。
+	是对soc的pinctrl进行全局配置的。
+	配套的函数有：
+	pinctrl_register
+	pinctrl_register_and_init
+	devm_pinctrl_register
+	
+struct pinmux_ops
+	这个就是request、set_mux这些函数。
+	
+struct pinconf_ops
+	pin_config_set 这些函数。
+	
+consumer.h
+	这个就是提供给i2c等驱动用的接口。都放在这里面。
+	pinctrl_gpio_request
+	pinctrl_gpio_direction_input
+	pinctrl_gpio_direction_output
+	pinctrl_put
+```
 
 
 

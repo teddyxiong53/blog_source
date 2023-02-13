@@ -66,7 +66,7 @@ ALL_LIBS 包括：
 ALL_TOOLS：tools/musl-gcc
 ```
 
-#先编译一下
+# 先编译一下
 
 我在alpine里进行编译。这个系统就是用的musl的。
 
@@ -213,6 +213,111 @@ vm-alpine-0:~/work/musl-master/src/stdlib$ ls -lh *.c
 
 所以文件虽然多。1500个文件，就是对应了1500个函数。
 
-# 编译配置
+# 分析crt的文件
 
-前面我们进行了编译。
+这个是链接生成C可执行文件的一些基础o文件。
+
+主要就是crt1.c文件。
+
+内容就这样：
+
+```
+#include <features.h>
+#include "libc.h"
+
+#define START "_start"
+
+#include "crt_arch.h"
+
+int main();
+weak void _init();
+weak void _fini();
+int __libc_start_main(int (*)(), int, char **,
+	void (*)(), void(*)(), void(*)());
+
+void _start_c(long *p)
+{
+	int argc = p[0];
+	char **argv = (void *)(p+1);
+	__libc_start_main(main, argc, argv, _init, _fini, 0);
+}
+```
+
+先看features.h里的内容。
+
+这些source到底表示什么含义？
+
+```
+_ALL_SOURCE
+_GNU_SOURCE
+_DEFAULT_SOURCE 
+_BSD_SOURCE
+_POSIX_SOURCE
+_POSIX_C_SOURCE
+_XOPEN_SOURCE
+```
+
+就是表示你希望编译出来的libc支持哪些特性。
+
+例如支持所有的特性。
+
+支持gun的特性。
+
+支持bsd的特性。
+
+支持posix的特性。
+
+支持xopen的特性。
+
+
+
+# get started
+
+## 使用musl-gcc的wrapper
+
+这个是为了很方便地在基于glibc的系统上测试musl的库。
+
+但是只能用在C语言上。不能用在C++上。
+
+在configure musl的时候，有3个重要的标志可以传递。
+
+这个configure脚本，只是一个普通的脚本，目的就是生成一个config.mak文件。
+
+```
+--prefix=xx
+	这个是配置musl的安装位置，建议放在~/musl这样的目录。
+--exec-prefix=xx
+	musl-gcc wrapper的安装位置。
+	建议放在~/bin目录。
+--syslibdir=xx
+	动态linker的安装位置，默认是/lib。
+	建议放在~/musl/lib目录。
+```
+
+confiugre之后，会生成一个config.mak文件。
+
+然后make && make install就可以。
+
+然后编译你的测试文件，用musl-gcc，而不是gcc。
+
+```
+CC="musl-gcc -static" ./configure --prefix=$HOME/musl && make
+```
+
+## 使用musl库编译交叉编译器
+
+
+
+# 参考资料
+
+1、Feature Test Macros
+
+https://www.gnu.org/software/libc/manual/html_node/Feature-Test-Macros.html
+
+2、官方wiki
+
+https://wiki.musl-libc.org/
+
+3、使用musl库作为默认库的系统
+
+https://wiki.musl-libc.org/projects-using-musl.html

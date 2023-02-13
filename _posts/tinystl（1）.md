@@ -124,11 +124,13 @@ Generated .build/projects/test_tinystl.vcxproj...
 Done (86ms).
 ```
 
-但是打不开。这个不继续看了。
 
-再看这个。
 
-https://github.com/whq703/tinySTL
+我简化实现一个linux下的版本看看。
+
+只考虑linux的情况。
+
+
 
 
 

@@ -5,7 +5,7 @@ tags:
 	- Linux
 ---
 
-1
+
 
 ldd --verision就可以查看。
 
