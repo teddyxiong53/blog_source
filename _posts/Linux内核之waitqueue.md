@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 在Linux的驱动程序里，使用等待队列来实现阻塞进程的唤醒。
 
@@ -26,8 +26,10 @@ tags:
 
 ```
 1、等待队列头。wait_queue_head_t。
-2、等待队列项。wait_queue_t。
+2、等待队列项。wait_queue_entry_t。
 ```
+
+
 
 在内核里的文件是linux/wait.h和kernel/wait.c。
 
@@ -88,9 +90,12 @@ interruptible_sleep_on
 
 
 
-参考资料
+# 参考资料
 
 1、linux中的阻塞机制及等待队列
 
 https://www.cnblogs.com/gdk-0078/p/5172941.html
 
+2、
+
+https://www.cnblogs.com/hueyxu/p/13745029.html

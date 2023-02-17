@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 在include/linux/jiffies.h里。
 
@@ -34,3 +34,7 @@ https://www.cnblogs.com/fanweisheng/p/11141978.html
 2、jiffies溢出与时间先后比较-time_after,time_before
 
 https://blog.csdn.net/jk110333/article/details/8177285
+
+3、
+
+https://www.cnblogs.com/zhangshenghui/p/7069702.html

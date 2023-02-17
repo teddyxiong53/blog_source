@@ -99,7 +99,43 @@ map和set的对比
 
 
 
+# qt和stl对比
 
+QTL比起STL的话，**最大的特点是统一用了写时复制技术。缺点是不支持用户自定allocator。**
+
+在这里先简单类比下吧，具体数据可以看后面的benchmark
+
+- **QLinkedList —— std::list** 两者都是双向链表，两者可以直接互转。
+- **QVector —— std::vector** 两者都是动态数组，都是根据sizeof(T)进行连续分配，保证成员内存连续，能够用data()直接取出指针作为c数组使用，两者可以直接互转。
+- **QMap —— std::map** 两者都是红黑树算法，但不能互转，因为数据成员实现方式不同。std::map的数据成员用的是std::pair，而QMap用的是自己封装的Node，当然还是键值对.
+- **QMultiMap —— std::multimap** 同上。
+- **QList —— 暂无**。QList其实不是链表，是优化过的vector，官方的形容是array list。它的存储方式是分配连续的node，每个node的数据成员不大于一个指针大小，所以对于int、char等基础类型，它是直接存储，对于Class、Struct等类型，它是存储对象指针。
+
+`QList还规避了模板最大的问题——代码量膨胀。由于QList其实是用void*存储对象，所以它的绝大部分代码是封装在了操作void*的cpp里，头文件只暴露了对其的封装。`
+
+
+
+- **可靠性**——二者都有长期在大型系统级商业应用上使用的经历，并且除了c++11版本特性引入外，代码实现上基本没有大的变动，所以可靠性均无问题。当然，**为了保证效率，两者都不提供thread safe**，最多提供reentrant
+- **安全性**——Qt变量存STL不存在安全隐患，毕竟都是class，只要是支持copy constructor和assignment operator的对象，都可以放心存STL。而且由于Qt对象广泛使用了写时复制机制，所以存储时时空开销非常小。
+
+
+
+## 总结 
+
+　　QTL比起STL，性能差别不明显，主要差异在：
+
+1. QTL不支持allocator；
+2. QTL没有shirnk接口（最新的几个版本里有了，不过不叫shirnk）；
+3. QTL没有rbegin()/rend()（同上，最近几个版本有了，相同API名称）;
+4. QTL对c++11特性的支持较晚（同上，Qt5.6开始才全面支持新特性），在这之前的版本，比起支持比如右值引用的STL版本，性能要略差。
+
+
+
+参考资料
+
+1、
+
+https://zhuanlan.zhihu.com/p/24035468
 
 # 参考资料
 

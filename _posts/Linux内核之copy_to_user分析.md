@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 在驱动里，应用层跟内核交互数据，有copy_to_user这一系列的函数。
 
@@ -40,8 +40,31 @@ mmap一般是把一段连续的物理地址映射成一个虚拟地址，这样�
 
 
 
-参考资料
+在内核空间和用户空间交换数据时，
+
+get_user和put_user是两个两用的函数。
+
+相对于copy_to_user和copy_from_user(将在另一篇博客中分析)，
+
+这两个函数主要用于完成一些简单类型变量(char、int、long等)的拷贝任务，
+
+对于一些复合类型的变量，比如数据结构或者数组类型，
+
+get_user和put_user函数还是无法胜任，
+
+这两个函数内部将对指针指向的对象长度进行检查，
+
+在arm平台上只支持长度为1，2，4，8的变量。
+
+下面我具体分析，首先看get_user的定义(linux/include/asm-arm/uaccess.h)：
+
+
+# 参考资料
 
 1、copy_to_user与mmap的工作原理
 
 https://blog.csdn.net/do2jiang/article/details/5403802
+
+2、linux内核中的get_user和put_user
+
+https://blog.csdn.net/ce123_zhouwei/article/details/8457822

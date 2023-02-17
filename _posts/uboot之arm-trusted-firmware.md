@@ -26,7 +26,7 @@ ATF冷启动实现分为5个步骤：
 
 
 
-参考资料
+# 参考资料
 
 1、ARM Trusted Firmware分析——启动、PSCI、OP-TEE接口
 
