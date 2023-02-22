@@ -95,6 +95,14 @@ typedef void (*Method)(PikaObj* self, Args* args);
 
 
 
+pika在lvgl ubuntu vscode sim下运行
+
+因为我只有这个测试环境。
+
+也比较习惯这个测试环境。看看怎么跑起来。
+
+
+
 # 参考资料
 
 1、

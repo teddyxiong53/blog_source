@@ -666,6 +666,203 @@ cd /workspace/lv_micropython/examples
 
 https://docs.lvgl.io/latest/en/html/get-started/micropython.html
 
+
+
+# 代码分析
+
+以8.3dev的为例进行分析。
+
+目录分析
+
+```
+core
+	包括了
+	disp
+		设置bg color、bg image、opa、load动画、theme。
+	event、
+	group、
+	indev、
+	obj_class
+	obj_draw
+	obj_pos
+	obj_scroll
+	obj_style_gen
+	obj_style
+	obj_tree
+	obj
+	refr
+	theme
+draw
+	这个是对接下层绘图的。
+	arc
+	img
+	label
+	line
+	mask
+	rect
+	transform
+	triangle
+	buf
+	cache
+	decoder
+	
+extra
+	layouts
+		flex和grid这2种布局。
+	libs
+		bmp、png等库。
+	others
+		fragment等实现。
+	themes
+		实现了3种theme。
+		basic
+		default
+		mono
+	widgets
+		这个和外层的widget是什么关系呢？这里是复杂的高级的组件。
+		这里有：
+		animimg
+		calendar
+		chart
+		colorwheel
+		imgbtn
+		keyboard
+		led
+		list
+		menu
+		meter
+		msgbox
+		span
+		spinbox
+		spinner
+		spinner
+		tabview
+		tileview
+		win
+font
+	一种基础字体的不同尺寸的文件。
+hal
+	3个东西：
+	disp：输出
+	indev：输入
+	tick
+misc
+	anim_timeline
+	anim
+	area
+	assert
+	async
+	bidi
+	color
+	fs
+	gc
+	ll
+	log
+	lru
+	math
+	mem
+	printf
+	style_gen
+	style
+	templ
+	timer
+	tlsf
+	txt-ap
+	txt
+	utils
+widgets
+	arc
+	bar
+	btn
+	btnmatrix
+	canvas
+	checkbox
+	dropdown
+	img
+	label
+	line
+	objx_templ
+	roller
+	slider
+	switch
+	table
+	textarea
+	
+```
+
+event有哪些？
+
+```
+// input event 
+pressed
+pressing
+press lost
+short clicked
+logn pressed
+long pressed repeat
+clicked
+released
+scroll begin
+scroll end
+scroll
+gesture
+key
+focused
+defocused
+leave
+
+hit test
+
+// drawing event
+cover check
+refr ext draw size
+draw main begin
+draw main
+draw main end
+draw post begin
+draw post
+draw post end
+draw part begin
+draw part end
+
+//special event
+value changed
+insert
+refresh
+ready
+cancel
+
+// other event
+delete
+child changed
+child created
+child deleted
+screen unload start
+screen load start
+screen loaded
+screen unloaded
+size changed
+style changed
+layout changed
+get self size
+
+```
+
+以btn为例进行分析。
+
+```
+typedef struct {
+    lv_obj_t obj;
+} lv_btn_t; // 只是简单集成，没有新的属性。
+
+extern const lv_obj_class_t lv_btn_class;
+
+//对外只暴露这个接口。
+lv_obj_t * lv_btn_create(lv_obj_t * parent);
+```
+
+
+
 # 参考资料
 
 1、Embedded GUI Using Linux Frame Buffer Device with LVGL
