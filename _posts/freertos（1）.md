@@ -283,6 +283,84 @@ err：例如 projdefs.h中定义的errQUEUE_FULL
 
 至于这么严格的代码规范是否值得推崇，这个见仁见智，个人比较喜欢Linux代码风格，对于过于复杂的代码规范，在实际开发中个人觉得有时候会让人不爽。
 
+# 中断管理
+
+这时候我们就需要确定在 ISR Code 和 NON-ISR Code 中的运行时间的分配问题以及ISR程序如何与NON-ISR程序进行通讯的问题。
+
+
+
+需要说明一下，
+
+系统API函数和宏定义以 FromISR 和 FROM_ISR 结尾的
+
+才能在中断处理函数ISR中使用，
+
+其余的API或者宏定义如果在ISR中使用可能会导致错误。
+
+
+
+FreeRTOS允许中断嵌套，
+
+这里首先说明一下处理器中断系统中的
+
+数值优先级Numberic prioirty 和 
+
+逻辑优先级Logical priority，
+
+数值优先级是写入在中断优先级寄存器中的
+
+用于计算中断的优先级的数值，
+
+逻辑优先级表示的是通过计算数值优先级得到的中断的实际优先级，
+
+有的系统是数值优先级和逻辑优先级呈正比，
+
+但是有的是呈反比，
+
+比如ARM Cortex-M处理器就是后者，
+
+中断的数值优先级越高表示的实际的逻辑优先级就越低，相反，数值优先级越小，表示的逻辑优先级越高。
+
+
+
+中断嵌套指的是在某个中断正在处理的时候，
+
+发生一个更高优先级的中断，
+
+这就发生了中断嵌套。
+
+在FreeRTOS系统中，要支持完整的中断嵌套，
+
+需要将configMAX_SYSCALL_INTERRUPT_PRIORITY（或configMAX_API_CALL_INTERRUPT_PRIORITY）
+
+表示的逻辑优先级设置成高于configKERNEL_INTERRUPT_PRIORITY表示的逻辑优先级。
+
+处理器有7个优先级1 - 7，数值优先级越高代表的逻辑优先级越高。
+
+configKERNEL_INTERRUPT_PRIORITY is set to one. 内核中断优先级设置为1，也就是最低优先级。
+
+configMAX_SYSCALL_INTERRUPT_PRIORITY is set to three. 设置系统调用FreeRTOS API的中断优先级最高为3。
+
+
+
+（1）建立一个全面的中断嵌套模型需要设置 configMAX_SYSCALL_INTERRUPT_PRIRITY为比 configKERNEL_INTERRUPT_PRIORITY 更高的优先级
+
+如上假定常量 configMAX_SYSCALL_INTERRUPT_PRIRITY 设置为 3，configKERNEL_INTERRUPT_PRIORITY 设置为 1
+
+（2）假定这种情形基于一个具有七个不同中断优先及的微控制器。这里的七个优先级仅仅是本例的一种假定，并非对应于任何一种特定的微控制器架构
+
+（3）处于中断优先级 1 到 3(含)的中断会被内核或处于临界区的应用程序阻塞执行， 但是它们可以调用中断安全版本的 FreeRTOS API 函数
+
+（4）处于中断优先级 4 （高于configMAX_SYSCALL_INTERRUPT_PRIRITY）及以上的中断不受临界区影响，所以其不会被内核的任何行为阻塞，可以立即得到执行
+
+注：这是由微控制器本身对中断优先级的限定所决定的。通常 需 要 严 格 时 间 精 度 的 功 能 ( 如 电 机 控 制 ) 会 使 用 高 于configMAX_SYSCALL_INTERRUPT_PRIRITY 的优先级，
+
+以保证调度器不会对其中断响应时间造成抖动
+
+（5）不需要调用任何 FreeRTOS API 函数的中断，可以自由地使用任意优先级
+
+
+
 # 参考资料
 
 1、Lab32: QEMU + FreeRTOS
@@ -300,3 +378,11 @@ https://www.cnblogs.com/iot-dev/p/11681067.html
 4、
 
 https://www.eet-china.com/mp/a35448.html
+
+5、
+
+https://blog.51cto.com/u_12956289/2916953
+
+6、
+
+https://www.cnblogs.com/smartjourneys/p/7939736.html

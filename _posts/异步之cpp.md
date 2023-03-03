@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 async会捕获所有的异常，保存到future里，然后在future.get()的时候再抛出来。
 
@@ -14,7 +14,7 @@ async会捕获所有的异常，保存到future里，然后在future.get()的时
 
 
 
-可以说，std::async帮我们将std::future、std::promise和std::packaged_task三者结合了起来。
+可以说，**std::async帮我们将std::future、std::promise和std::packaged_task三者结合了起来。**
 
 那么我就使用async这个类就够了。不去研究promise了。
 

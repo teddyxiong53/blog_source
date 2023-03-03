@@ -90,9 +90,32 @@ https://gstreamer.mazdermind.de/
 gst-launch-1.0 --gst-plugin-path=$HOME/gst-template/gst-plugin/src/.libs TESTPIPELINE
 ```
 
+# 插件没有加载的原因
+
+一般是因为插件加载有出错。
+
+```
+gst-inspect-1.0 |grep xx
+```
+
+这样查看真正出错的原因：
+
+```
+rm ~/.cache/gstreamer-1.0/ -rf
+gst-inspect-1.0  | grep xx
+```
+
+然后解决问题再看看。
+
+查看黑名单
+
+```
+gst-inspect-1.0 -b
+```
 
 
-参考资料
+
+# 参考资料
 
 1、gstreamer插件指南
 
@@ -119,3 +142,7 @@ https://lists.freedesktop.org/archives/gstreamer-devel/2007-October/016184.html
 这个关于libtool object file的。
 
 https://www.gnu.org/software/libtool/manual/html_node/Creating-object-files.html
+
+7、
+
+https://zhuanlan.zhihu.com/p/557704790

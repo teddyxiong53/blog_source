@@ -81,3 +81,31 @@ function func1() {
 
 单片机？
 
+# esp32例子分析
+
+这个是全链路的，比较完整。
+
+总体的逻辑是：
+
+1、在板端运行一个webserver（基于mongoose库），程序框架的arduino的。使用了freertos。
+
+2、webserver支持http和ws这2种协议。
+
+协议升级是这里做的：
+
+```
+static void cb(struct mg_connection *c, int ev, void *ev_data, void *fn_data) {
+  if (ev == MG_EV_HTTP_MSG) {
+    struct mg_http_message *hm = (struct mg_http_message *) ev_data;
+    if (mg_http_match_uri(hm, "/ws")) {
+      mg_ws_upgrade(c, hm, NULL);
+    } else {
+      mg_http_reply(c, 302, "Location: http://elk-js.com/\r\n", "");
+    }
+  } else if (ev == MG_EV_WS_MSG) {
+```
+
+3、websocket上使用了jsonrpc。执行收到的js脚本内容。并把执行结果返回。
+
+
+

@@ -71,6 +71,42 @@ bash run.sh
 
 我直接在linux下进行安装和编译看看。
 
+直接在tools/pikaCompiler目录下执行：
+
+```
+bash ./build.sh 
+```
+
+报错：
+
+```
+./build.sh: line 4: cargo: command not found
+./build.sh: line 5: cbindgen: command not found
+cp: cannot stat 'target/release/libpikabinder.a': No such file or directory
+```
+
+所以需要先安装rust的环境。
+
+```
+ curl https://sh.rustup.rs -sSf | sh
+```
+
+应该在port/linux下面进行操作。
+
+先安装依赖。
+
+```
+sh install_dependency.sh
+```
+
+再实现init.sh脚本。
+
+```
+sh init.sh
+```
+
+关键是要安装cbindgen和upx这2个工具。
+
 
 
 # visual studio工程
@@ -334,6 +370,274 @@ pika在lvgl ubuntu vscode sim下运行
 因为我只有这个测试环境。
 
 也比较习惯这个测试环境。看看怎么跑起来。
+
+
+
+```
+pika_compiler_entry
+	首先的版本信息。VersionInfo
+		分析requestment.txt的内容。
+		打开文件一行行分析。
+	然后创建Compiler
+		指定输出到pikascript-api/目录。
+		analyse_py_package_main 这个是分析main.py
+		然后检查pyi文件。
+		analyse_c_package_top
+		
+		
+obj_getPtr
+
+method_def
+constructor_def
+class_def
+
+obj_setClass
+
+class_inhert
+
+
+MethodProp
+MethodPropNative
+	这个就3个成员，ptr、type字符串、name（调试用的，可以不用）
+	
+	
+ARG_TYPE_UNDEF = 0,
+ARG_TYPE_NONE,
+ARG_TYPE_NULL, arg_setNull 这个时候设置的
+ARG_TYPE_VOID,  arg_newContent 设置
+这4个类型有什么区别？
+
+ARG_TYPE_OBJECT,
+ARG_TYPE_OBJECT_META,
+ARG_TYPE_OBJECT_NEW,
+这3个object类型又有什么区别？
+
+ARG_TYPE_METHOD_NATIVE,
+ARG_TYPE_METHOD_NATIVE_CONSTRUCTOR,
+ARG_TYPE_METHOD_CONSTRUCTOR,
+ARG_TYPE_METHOD_OBJECT,
+ARG_TYPE_METHOD_STATIC,
+这5种method的区别。
+
+
+struct Arg 
+这个是最基础的一个结构体。
+可变长的，靠的0长度的数组来实现。
+
+
+argPath
+这个是一个字符串，访问到结构体的属性。怎么做到的？
+就是靠struct Arg来存放的内容。
+本质是通过name去找对应的函数指针。
+
+
+把pika在嵌入式Linux上跑起来。
+加上lvgl的。
+做一个快速开发框架。
+根据配置生成代码。
+怎样生成需要的代码。
+拖拽生成配置，根据配置再生成代码。
+这个不就是android的方式嘛。
+推广到其他开发场景。
+
+```
+
+# pika_cjson分析
+
+这个是一个比较合适的分析对象。
+
+先看使用方法。
+
+```
+import pika_cjson
+jstr = '{'name': 'aa'}'
+o = pika_cjson.Parse(jstr)
+a.print()
+```
+
+先就分析这个代码。
+
+在pika_cjson.pyi里，定义了一个方法Parse。
+
+```
+def Parse(value: str) -> cJSON: ...
+```
+
+接收的是str参数，返回一个cJSON对象。
+
+```
+class cJSON(TinyObj):
+    cJSON_Invalid: int
+    cJSON_False: int
+    cJSON_True: int
+    cJSON_NULL: int
+    cJSON_Number: int
+    cJSON_String: int
+    cJSON_Array: int
+    cJSON_Object: int
+    cJSON_Raw: int
+    def print(self) -> str: ...
+    def __del__(self): ...
+    def __init__(self): ...
+    def getObjectItem(self, string: str) -> cJSON: ...
+    def getArrayItem(self, index: int) -> cJSON: ...
+    # 下面省略了一些函数没有列出来。
+```
+
+cjson对象有上面这些属性。
+
+先看构造方法和析构方法。
+
+构造方法里，只是对类属性进行了赋值。
+
+```
+void pika_cjson_cJSON___init__(PikaObj* self) {
+    /* const value */
+    obj_setInt(self, "cJSON_Invalid", cJSON_Invalid);
+    obj_setInt(self, "cJSON_False", cJSON_False);
+    obj_setInt(self, "cJSON_True", cJSON_True);
+    obj_setInt(self, "cJSON_NULL", cJSON_NULL);
+    obj_setInt(self, "cJSON_Number", cJSON_Number);
+    obj_setInt(self, "cJSON_String", cJSON_String);
+    obj_setInt(self, "cJSON_Array", cJSON_Array);
+    obj_setInt(self, "cJSON_Object", cJSON_Object);
+    obj_setInt(self, "cJSON_Raw", cJSON_Raw);
+}
+```
+
+析构函数，对内存进行了释放。
+
+```
+void pika_cjson_cJSON___del__(PikaObj* self) {
+    cJSON* item = obj_getPtr(self, "item");
+    if (obj_getInt(self, "needfree") == 1) {
+        cJSON_Delete(item);
+    }
+}
+```
+
+item和needfree这2个实例属性，在pyi文件里是不会有体现的。在构造阶段也无法得知这个信息，只有在parse的时候才能得到这个信息。
+
+Parse函数里才有体现。
+
+```
+PikaObj* pika_cjson_Parse(PikaObj* self, char* value) {
+    cJSON* item = cJSON_Parse(value);
+    if (NULL == item) {
+        obj_setErrorCode(self, 3);
+        __platform_printf("Error: cJSON parse faild.\r\n");
+        return NULL;
+    }
+    PikaObj* cjson_obj = newNormalObj(New_pika_cjson_cJSON);
+    obj_setPtr(cjson_obj, "item", item);
+    obj_setInt(cjson_obj, "needfree", 1);
+    return cjson_obj;
+}
+```
+
+print函数
+
+```
+char* pika_cjson_cJSON_print(PikaObj* self) {
+    cJSON* item = obj_getPtr(self, "item");
+    char* res = cJSON_Print(item);
+    obj_setStr(self, "_buf", res);
+    cJSON_free(res);
+    return obj_getStr(self, "_buf");
+}
+```
+
+可以看到，这里又增加了一个`_buf`的私有实例属性。
+
+
+
+# package\PikaStdDevice分析
+
+基础类是BaseDev
+
+```
+class BaseDev:
+    @PIKA_C_MACRO_IF("PIKA_EVENT_ENABLE")
+    def addEventCallBack(self, eventCallback: any): 
+        """ Add an event callback. """
+
+    @abstractmethod
+    @PIKA_C_MACRO_IF("PIKA_EVENT_ENABLE")
+    def platformGetEventId(self): ...
+```
+
+需要实现2个函数：
+
+一个是添加event回调。一个是拿到event id。
+
+
+
+```
+strGetSize
+	就是strlen
+strAppend
+	相当于strcat
+strCut
+	strCut(buffs, method_dec, '(', ')');
+	看起来是把2个符号中间的字符串取出来。
+strIsStartWith
+	很明显。
+strEqu
+	判断字符串是否相等。
+strDeleteChar
+	删除指定的字符。
+strRemovePrefix
+	移除前缀。
+strPopFirstToken
+	 strPopFirstToken(&objPath_ptr, '.');
+strCountSign
+	统计符号的个数。
+strGetTokenNum
+	strGetTokenNum(defaultStmts, ',');
+strGetFirstToken
+strGetLastToken	
+strIsContain
+	是否包含字符。
+strCopy
+	strcpy。
+
+```
+
+
+
+```
+arg_newContent
+    只被下面2个函数调用了。
+    args_getBuff
+    arg_setBytes
+
+args_getBuff
+	大量被dataStrs.c里的函数使用。
+	还有PikaParser.c里使用。
+	这个函数的作用是：创建一个buffer。
+	然后挂到Arg链表上。
+	返回对应的char *buffer指针。
+	
+```
+
+
+
+```
+EventCQ
+	事件环形队列。
+	
+```
+
+```
+class_defineConstructor
+class_defineMethod
+```
+
+
+
+```
+const char magic_code_pyo[] = {0x0f, 'p', 'y', 'o'};
+```
 
 
 

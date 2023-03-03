@@ -133,6 +133,36 @@ int main()
 
 
 
+```
+#include <iostream>
+#include <future>
+#include <utility> //std::move
+
+int do_get_value() {
+    return 11;
+}
+
+int main(int argc, char const *argv[])
+{
+    std::future<int> foo, bar;
+    foo = std::async(do_get_value);
+    bar = std::move(foo);
+    if (foo.valid()) {
+        std::cout << "foo's value is" << foo.get() << "\n";
+    } else {
+        std::cout << "foo is not valid\n";
+    }
+    if (bar.valid()) {
+        std::cout << "bar's value is " << bar.get() << "\n";
+    }
+
+    return 0;
+}
+
+```
+
+
+
 # 参考资料
 
 1、C++并发编程之std::future
@@ -142,3 +172,7 @@ http://www.cnblogs.com/zhanghu52030/p/9522287.html
 2、C++11 多线程 future/promise简介
 
 https://blog.csdn.net/jiange_zh/article/details/51602938
+
+3、
+
+https://blog.csdn.net/iuices/article/details/123601858

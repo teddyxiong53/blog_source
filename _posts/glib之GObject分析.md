@@ -26,7 +26,61 @@ GObject 是基于GType的。
 
 GType是glib运行时类型认证和管理系统。
 
-理解GType是理解GObject的关键。
+**理解GType是理解GObject的关键。**
+
+
+
+GObject 的动态类型系统允许程序在运行时进行类型注册，它的最主要目的有两个：
+
+1 ）使用面向对象的设计方法来编程。 
+
+GObject 仅依赖于 [GLib](http://zh.wikipedia.org/wiki/GLib) 和 [libc](http://zh.wikipedia.org/w/index.php?title=Libc&action=edit&redlink=1) , 通过它可使用纯 C 语言设计一整套面向对象的软件模块。
+
+2 ）多语言交互。
+
+在为已经使用 GObject 框架写好的函数库建立多语言连结时，可以很容易对应到许多语言，包括 C++ 、 Java 、 Ruby 、 Python 和 .NET/Mono 等。 
+
+GObject 被设计为可以直接使用在 [C](http://zh.wikipedia.org/wiki/C语言) 程序中，也 [封装](http://zh.wikipedia.org/w/index.php?title=封装&action=edit&redlink=1) 至其他语言。 
+
+
+
+C 的 API 是常常是一些从二进制文件中导出的函数集和全局变量。
+
+C 的函数可以有任意数量的参数和一个返回值。
+
+每个函数有唯一的由函数名确定的标识符，
+
+并且由 C 类型来描述参数和返回值。
+
+类似的，由 API 导出的全局变量也是由它们的名字和类型所标识。
+
+一个 C 的 API 可能仅仅定义了一些类型集的关联。
+
+
+
+如果你了解函数调用和 C 类型至你所在平台的机器类型的映射关系，
+
+你可 以在内存中解析到每个函数的名字从而找 到这些代码所关联的函数的位置，
+
+并且构 造出一个用在这个函数上的参数列表。
+
+ 最后，你可以用这个参数列表来调用这 个目标 C 函数。
+
+第一个指令在堆栈上建立了 十六进制的值 0xa （十进制为 10 ）作为一个 32 位的整型，并调用了 function_foo 函数。
+
+就如你看到的， C 函数的调用由 gcc 实现成了 本地机器码的调用（这是实现起来最快的 方法）。
+
+
+
+GLib 用的解决办法是， 
+
+使用 GType 库来保存 在当前运行环境中的 所有由开发者描述的 对象的描述。
+
+这些“ 动态类型”库将被特 殊的“通用粘合代码”
+
+来自动转换函数参数和进行函数调用在不同的运行环境之间。
+
+
 
 
 
@@ -259,9 +313,314 @@ glib目录下的GMainLoop这些，都是普通的结构体。
 
 
 
+# 实现面向对象的特性
+
+## 实现封装
+
+很简单，我们只需要建立自己的头文件，并添加一些宏定义G_DEFINE_TYPE即可。
+
+Gtype API 是 Gobject 系统的 基础 ，
+
+它提供注册和管理所有基本数据、用户定义对象和接口类型的技术实现。
+
+如： G_DEFINE_TYPE 宏、 G_DEFINE_INTERFACE 宏、 g_type_register_static 函数等都在 GType 实现。
+
+## 实现继承
+
+前面我们已经介绍，在 GObject 世界里， 类 是两个结构体的组合，一个是 实例结构体 ，另一个是 类结构体 。
+
+GOBJECT 的继承需要实现实例结构体的继承和类结构体的继承。
+
+## 构造函数
+
+object 对象的初始化可分为 2 部分：类结构体初始化和实例结构体初始化。
+
+类结构体初始化函数只被调用一次，
+
+而实例结构体的初始化函数的调用次数等于对象实例化的次数。
+
+**这意味着， 所有对象共享的数据，可保存在类结构体中，**
+
+**而所有对象私有的数据，则保存在实例结构体中 。**
+
+## 实现多态
+
+用 C 的 struct 可以实现对象。
+
+普通的结构体成员可以实现为成员数据，
+
+而对象的成员函数则可以由函数指针成员来实现。
+
+很多开源的软件也正是这么做的。
 
 
-参考资料
+
+这样的实现有一些严重的缺陷：
+
+别扭的语法、类型安全问题、缺少封装，
+
+更实际的问题是 空间浪费严重 。
+
+每一个实例化的对象需要 4 字节的指针来指向其每一个成员方法，
+
+而这些方法对于类的每个实例（对象）应该都是相同的，所以是完全冗余的。
+
+假设一个类有 4 个方法， 1000 个实例，那么我们将浪费接近 16KB 的空间。
+
+
+
+很明显，我们不需要为每个实例保存这些指针，我们只需要保存一张包含这些指针的表。
+
+
+
+（1）Gobject为每个子类在内存中保存了一份包含成员函数指针的表. 
+
+这个表，就是我们在C++经常说到的虚方法表（vtable）。
+
+当你想调用一个虚方法时，
+
+你必须先向系统请求查找这个对象所对应的虚方法表。
+
+这张表包含了一个由函数指针组成的结构体。
+
+在调用这些函数时，需要在运行时查找合适的函数指针，这样就能允许子类覆盖这个方法，我们称之为“虚函数”。
+
+(2)  Gobject系统要求我们向它注册新声明的类型，系统同时要求我们去向它注册（对象的和类的）结构体构造和析构函数（以及其他的重要信息），这样系统就能正确的实例化我们的对象。
+
+（3）Gobject系统通过枚举化所有的向它注册的类型来记录新的对象类型，并且要求所有实例化对象的第一个成员是一个指向它自己类的虚函数表的指针，每个虚函数表的第一个成员是它在系统中保存的枚举类型的数字表示。
+
+
+
+g_object_new 能够为我们进行对象的实例化 . 所以它必然要知道对象对应的 类的数据结构 .
+
+![image-20230224150140235](images/random_name/image-20230224150140235.png)
+
+除第一个参数外， 很容易猜想后面的参数都是 “ 属性名 - 属性值 ”的配对。
+
+第一个参数其实是一个宏： 具体细节可以不去管它，可以知道它是去获取数据类型
+
+
+
+要想实现前面讲述的让 g_object_new 函数中通过“属性名 - 属性值”结构为 Gobject 子类对象的属性进行初始化，我们需要完成以下工作：
+
+（1）实现xx_xx_set_property与xx_xx_get_property函数，完成g_object_new函数“属性名-属性值”结构向Gobject子类属性的映射;
+
+ (2)在Gobject子类的类结构体初始化函数中，让Gobject基类的两个函数指针set_property与get_property分别指向xx_xx_set_property与xx_xx_get_property。
+
+（3）在Gobject子类的类结构体初始化函数中，为Gobject子类安装具体对象的私有属性。
+
+**可以看出，set_property是Gobject的虚函数实现，是运行时的多态。**
+
+## 实现泛型
+
+假设我们需要一种数据类型，
+
+可以实现一个可以容纳多类型元素的链表，
+
+我想为这个链表编写一些接口，可以不依赖于任何特定的类型，
+
+并且不需要我为每种数据类型声明一个多余的函数。
+
+这种接口必然能涵盖多种类型，我们称它为GValue（Generic Value，泛型）。
+
+
+
+要编写一个泛型的属性设置机制，
+
+我们需要一个将其参数化的方法，
+
+以及与实例结构体中的成员变量名查重的机制。
+
+从外部上看，我们希望使用C字符串来区分属性和公有API，
+
+但是内部上来说，这样做会严重的影响效率。
+
+因此我们枚举化了属性，使用索引来标识它们。
+
+
+
+属性规格，在Glib中被称作!GParamSpec，
+
+它保存了对象的gtype，对象的属性名称，属性枚举ID，属性默认值，边界值等，类型系统用!GParamSpec来将属性的字符串名转换为枚举的属性ID，
+
+**GParamSpec也是一个能把所有东西都粘在一起的大胶水。**
+
+## 实现闭包
+
+一个Closure是一个抽象的、通用表示的回调（callback）。它是一个包含三个对象的简单结构：
+
+   （1）一个函数指针（回调本身） ，原型类似于：
+
+  return_type function_callback (… , gpointer user_data);
+
+   （2） user_data指针用来在调用Closure时传递到callback。
+
+  （3）一个函数指针，代表Closure的销毁：当Closure的引用数达到0时，这个函数将被调用来释放Closure的结构。
+
+### 闭包给多语言绑定带来了方便
+
+## 消息系统：Signal机制
+
+使用 GObject 信号机制，一般有三个步骤：
+
+（1）信号注册，主要解决信号与数据类型的关联问题
+
+（2）信号连接，主要处理信号与闭包的连接问题；
+
+（3）信号发射,  调用callback进行处理。
+
+## 实现单例
+
+在gobject\tests\object.c这个测试代码里。
+
+```c
+typedef GObject MySingletonObject;
+typedef GObjectClass MySingletonObjectClass;
+
+GType my_singleton_object_get_type (void);
+
+G_DEFINE_TYPE (MySingletonObject, my_singleton_object, G_TYPE_OBJECT)
+
+static MySingletonObject *singleton;
+
+//下面实现实例初始化函数，构造函数，析构函数，class初始化函数4个函数。
+static void
+my_singleton_object_init (MySingletonObject *obj)
+{
+}
+
+static GObject *
+my_singleton_object_constructor (GType                  type,
+                                 guint                  n_construct_properties,
+                                 GObjectConstructParam *construct_params)
+{
+  GObject *object;
+
+  if (singleton)
+    return g_object_ref (singleton);
+
+  object = G_OBJECT_CLASS (my_singleton_object_parent_class)->
+    constructor (type, n_construct_properties, construct_params);
+  singleton = (MySingletonObject *)object;
+
+  return object;
+}
+
+static void
+my_singleton_object_finalize (MySingletonObject *obj)
+{
+  singleton = NULL;
+
+  G_OBJECT_CLASS (my_singleton_object_parent_class)->finalize (obj);
+}
+
+static void
+my_singleton_object_class_init (MySingletonObjectClass *klass)
+{
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+  object_class->constructor = my_singleton_object_constructor;
+  object_class->finalize = my_singleton_object_finalize;
+}
+```
+
+测试代码
+
+```c
+MySingletonObject *one, *two, *three;
+one = g_object_new (my_singleton_object_get_type (), NULL);
+two = g_object_new (my_singleton_object_get_type (), NULL);
+g_assert (one == two);
+```
+
+## private属性
+
+gobject\tests\private.c
+
+```c
+#include <glib-object.h>
+
+typedef struct {
+  GObject parent_instance;
+} TestObject;
+
+typedef struct {
+  int dummy_0;
+  float dummy_1;
+} TestObjectPrivate;
+
+typedef struct {
+  GObjectClass parent_class;
+} TestObjectClass;
+
+```
+
+
+
+tests\gobject
+
+# glib里函数后缀含义说明
+
+![image-20230227135133924](images/random_name/image-20230227135133924.png)
+
+# gstreamer里的实践
+
+Gstreamer的类型系统来源于GLib Object System，
+
+GLib 对基本类型进行了重新映射，
+
+同时实现了如Lists，hash表等等算法，
+
+它比Gobject的类型更通用。
+
+Gobject和它的底层类型系统Gtype被用在 GTK+（图形用户界面工具包）和大多数GNOME 库(Linux上的图形桌面环境库)。
+
+Gtype用C的方式实现了面向对象，
+
+用来兼容不同类型的语言和提供透明的跨语言交叉访问，
+
+比如Python和C程序的互相访问。
+
+
+
+开发者用定义在gtype.h 文件中的
+
+g_type_register_static(), 
+
+g_type_register_dynamic() 和
+ g_type_register_fundamental() 
+
+来注册一个新一Gtype类型到类型系统中。
+
+一般不需要用g_type_register_fundamental() 函数来注册基本类型到类型系统。
+
+
+
+Fundamental type基类型是最顶层的类型，
+
+不从任何类型派生而来，是类型系统的核心，其他类型则从基类型派生，
+
+GtypeFundamentalFlags用来描述基类型的特性，
+
+注册为class且为可以实例化的Type极其像object。
+
+
+
+GStreamer提供了类型及其参数的定义框架，但是对于类型的含义，需要element的开发者去定义。
+
+类型定义的策略如下：
+
+* 如果已有满足需求的类型存在，则不要创建新的Type。
+* 创建新的类型前需要就类型参数等等和其他GStreamer开发者进行沟通，交流。
+* 新的Type名字不能与现存的的类型名冲突，并且类型名最好能够体现类型细节，不要取"audio/compressed"这类比较通用的类型名字，因为较为通用的名字已经存在的可能性较大，容易和现存类型冲突。
+* 描述清楚新创建的类型并加它加入到已知类型中方便其他开发者使用。
+* 不推荐创建和其他系统相同类型名但含义不同的类型。
+
+# 生成python binding
+
+
+
+# 参考资料
 
 1、GObject对象系统
 
@@ -304,3 +663,19 @@ https://blog.csdn.net/lp525110627/article/details/71082293
 这个是原文。
 
 https://developer.gnome.org/gobject/stable/howto-interface.html
+
+9、Gstreamer基础之Gobject
+
+https://blog.csdn.net/yingmuliuchuan/article/details/78491776
+
+10、wiki百科
+
+https://zh.wikipedia.org/zh-hans/GObject
+
+11、从零开始成为GStreamer专家——GStreamer类型系统
+
+https://blog.csdn.net/intel1985/article/details/122692791
+
+12、
+
+https://pygobject.readthedocs.io/en/latest/

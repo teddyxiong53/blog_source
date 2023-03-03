@@ -698,6 +698,30 @@ g_quark_to_string
 
 把glib/tests目录下的一个个自己写一遍。
 
+
+
+GQuark值是分配给字符串的数字，
+
+并且很容易测试它们的等同性。
+
+然而，它们并没有数字顺序。
+
+你不能用quark值来进行字母顺序测试。
+
+因此，你不能用它们作为排序关键字。
+
+如果你想比较quark所代表的字符串，
+
+你必须先用g_quark_to_string()来提取相应的字符串，然后才可以使用strcmp()或g_ascii_strcasecmp()。
+
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/hiccupzhu/article/details/16832649
+
 # signal用途
 
 

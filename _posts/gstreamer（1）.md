@@ -263,9 +263,39 @@ bin作为一个整体，它没有属于自己的sink pad和source pad。
 4、引用计数。
 ```
 
-# 事件Event
+# 事件Event和查询Query
+
+事件是gstreamer针对media定义的一些概念。
+
+事件和缓冲区一样，在pipeline往上下游传输。
+
+**event是绑定到pad的，**
+
+通过 gst_pad_set_event_function来设置处理函数。
+
+一般元件之间会用event相互传递事件。
+
+应用程序用的event较少，比如seek。
 
 
+
+GstQuery是向一个element或者pad查询信息，
+
+比如当前位置，总时间等。
+
+**和事件Event一样，它也是绑定到pad的。**
+
+通过gst_pad_set_query_function来设置某一pad的处理函数。
+
+
+
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/yuangc/article/details/119532651
 
 # 简单的mp3播放器
 
@@ -760,7 +790,35 @@ GstCaps* caps = gst_caps_new_empty_simple("audio/x-raw");
 
 # caps协商
 
+## 协商
 
+Capabilities 协商是为 [GStreamer](https://so.csdn.net/so/search?q=GStreamer&spm=1001.2101.3001.7020) pipeline内的数据流决定适当格式的过程。
+
+理想情况下，协商（也称为“capsnego”）将信息从pipeline中具有信息的那些部分传输到pipeline的那些易扩展的部分，
+
+受pipeline中不易扩展部分的约束。
+
+## 基本规则
+
+必须遵循这些简单的规则：
+
+1. 下游建议格式
+2. 上游决定格式
+
+caps协商中使用了 4 种 查询/事件（queries/events ）：
+
+1. GST_QUERY_CAPS：获取可能的格式
+2. GST_QUERY_ACCEPT_CAPS：检查格式是否可行
+3. GST_EVENT_CAPS：配置格式（下游）
+4. GST_EVENT_RECONFIGURE：通知上游可能的新caps
+
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/zk5950886/article/details/118421374
 
 # playbin
 
@@ -978,7 +1036,153 @@ gst-inspect-1.0 libav
 
 gst-soundcard.conf。这个会指定gst使用的hw是哪个。
 
+# 内存分配协商机制
 
+在两个衬垫的caps协商完成之后，元件之间需要确认如何分配[buffer](https://so.csdn.net/so/search?q=buffer&spm=1001.2101.3001.7020)。
+
+本文梳理Gstreamer 内存协商机制，
+
+比如当某元件不能自己分配内存时，如何使用其他元件的分配器。
+
+一般而言，内存分配的协商是在caps协商之后。
+
+根据需求匹配到对应的参数，获取到分配器和内存池，然后才能开始数据传输。
+
+
+
+
+
+
+
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/yuangc/article/details/122069594
+
+
+
+# queue2
+
+直接播放Internet上的文件而不在本地保存就被称为流播放。
+
+我们在前面教程里已经这样做过了，使用了http://的URL。
+
+本教程展示的是在播放流的时候需要记住的几个点，特别是：
+
+   如何设置缓冲
+
+   如何从打断中恢复（因为失去了时钟）
+
+当在播放流的时候，
+
+一旦从网络上取到媒体数据块就会进行解码和放入显示队列。
+
+这意味着如果网络来的数据延迟了，那么显示队列就可能没有数据，播放就会停下来。
+
+   解决这个问题的办法是建立缓冲，
+
+这就是说，在开始播放前允许队列里已经存储了一些数据。
+
+这样的话，播放虽然晚了一点开始，但如果网络有什么延时，那么还有一定的缓冲数据可以播放。
+
+
+
+这个方案已经在GStreamer里面实现了，
+
+但前面的教程中没有涉及到这个方面。
+
+有些element，像在playbin2里面用到的queue2和multiqueue，
+
+都可以建立自己的缓冲然后根据缓冲的等级发送消息到总线上。
+
+一个应用如果希望能更好的适应各种网络环境，那么就该关注这些消息，当缓冲等级低到一定程度时就要暂停播放。
+
+
+
+为了在多个sink中同步，我们使用了一个全局的时钟。
+
+这个时钟是GStreamer在所有的可以提供时钟的element中选出来的。
+
+在某些情况下，例如，一个RTP资源切换流或者更换输出设备，那么时钟就可能丢失。
+
+这时就需要重新建立一个时钟，这个过程在本教程会解释一下。
+
+
+
+当时钟丢失的时候，应用会从总线上得到一个消息。
+
+要建立一个新的时钟，应用仅仅把pipeline设置到PAUSED状态然后重新置成PLAYING即可。
+
+
+
+# 常用命令
+
+
+
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/hyl999/article/details/121486320
+
+
+
+# gstreamer vs ffmpeg
+
+目前，很大部分音视频编解码应用开发都是基于ffmpeg框架。
+
+ffmpeg API简单 上手快，也迅速成为了国内视频相关开发者的首选开源库。
+
+而gstreamer由于其复杂难懂，学习成本高，似乎在国内使用的人越来越少.
+
+于是乎， 有人认为 熟悉ffmpeg API就可以在音视频流媒体开发畅通无阻了。
+
+个人认为，不是这样。
+
+如果你只想写一个简单的音视频应用，那么也许ffmpeg再合适不过，
+
+因为它的API封装了所有细节，很多时候几个API组装就完事了。
+
+可是ffmpeg只在格式处理 编解码 转码作了比较好的封装，
+
+但却不够模块化。
+
+如果你想基于ffmpeg做一些人工智能、视频分析相关的高级前沿扩展，会显得力不从心。
+
+而gstreamer不同，
+
+它是高度模块化的管线驱动式的媒体框架，扩展性极强。
+
+理论上，不只是媒体流，gstreamer可以扩展为处理任何一种数据流。
+
+因此，架构上,gstreamer更强大，扩展性更强。
+
+ffmpeg的核心转码功能也可以作为gstreamer的插件扩展，
+
+可以认为gstreamer可以整合ffmpeg的功能，并大大超越ffmpeg所能做的范畴。
+
+
+
+ AI时代，gstreamer依托于不断更新丰富的各种AI插件,大有可为。
+
+一个典型的例子是英伟达公司基于gstreamer推出了业界首个视频分析系统框架:DeepStream
+
+
+
+
+
+
+
+参考资料
+
+1、Gstreamer被ffmpeg或其他媒体框架淘汰了吗？
+
+https://blog.csdn.net/acs713/article/details/91406931
 
 # 参考资料
 
