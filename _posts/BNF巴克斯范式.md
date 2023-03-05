@@ -47,7 +47,13 @@ FOR_STATEMENT ::=
       ")" statement
 ```
 
+下面这个举例非常直观易懂。
 
+![image-20230304201143146](images/random_name/BNF巴克斯范式/image-20230304201143146.png)
+
+```
+
+```
 
 
 
@@ -60,3 +66,7 @@ https://blog.csdn.net/haoyujie/article/details/25877045
 2、语法规范：BNF与ABNF
 
 https://kb.cnblogs.com/page/189566/
+
+3.
+
+https://www.zhihu.com/question/27051306 
