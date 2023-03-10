@@ -6,9 +6,17 @@ tags:
 
 ---
 
-1
 
-fastboot 主要是用来与bootloader的USB通讯的PC命令行工具。他一般主要也用来向bootloader传送刷机文件进行文件分区重烧。 因此在使用时，必须有一个PC机并且USB线要始终联着。所以这种方式称为线刷。  用fastboot需要bootloader 支持，所以不是每一家公司产品都支的这个功能的。
+
+fastboot 主要是用来与bootloader的USB通讯的PC命令行工具。
+
+他一般主要也用来向bootloader传送刷机文件进行文件分区重烧。 
+
+因此在使用时，必须有一个PC机并且USB线要始终联着。
+
+所以这种方式称为线刷。  
+
+用fastboot需要bootloader 支持，所以不是每一家公司产品都支的这个功能的。
 
 
 
@@ -115,11 +123,17 @@ usb_handle *open_device(void)
 
 
 
+# adb与fastboot的区别
+
+Android设备和PC之间的协议通信，除了`fastboot`协议还有使用`adb`协议。
+
+- `adb`用于Android设备系统起来后的调试，允许访问Android系统。
+- `fastboot`用于Android设备开发过程中刷写镜像使用以及Android设备起不来进入fastboot模式救砖使用，对于线刷来说(Android设备与PC机通过USB线连接)。
+- 两个协议都是将Android设备配置为USB Gadget，PC做为USB Host，通过USB进行通信，只是一个走的是`adb`协议，一个走的是`fastboot`协议，两者之间的角色定位不同。
 
 
-https://www.androidsage.com/
 
-参考资料
+# 参考资料
 
 1、
 
@@ -128,3 +142,11 @@ https://www.jianshu.com/p/d960a6f517d8
 2、刷写设备
 
 https://source.android.com/setup/build/running
+
+3、
+
+https://www.androidsage.com/
+
+4、
+
+https://wowothink.com/5ade33b8/

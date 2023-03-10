@@ -18,7 +18,7 @@ fakeroot - run a command in an environment faking root privileges for file manip
 
 有fakeroot就很方便了，在fakeroot环境中，**只需要做打包动作，里边的所有文件自动的都是root权限。**
 
-fakeroot的一般用法是fakeroot --script， script是shell脚本，把需要再root权限执行的命令写在脚本里边。
+fakeroot的一般用法是fakeroot -- script， script是shell脚本，把需要再root权限执行的命令写在脚本里边。
 
 进入fakeroot环境，文件的owner和group自动变为root。 exit 退出fakeroot， 文件的owner和group还原。
 退出fakeroot后就返回普通用户状态，fakeroot只在运行过程中起作用。

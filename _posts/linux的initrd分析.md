@@ -645,6 +645,38 @@ endef
 
 
 
+# android boot.img和recovery.img里的ramdisk分析
+
+ramdisk.img会被打包到boot.img和recovery.img中（不是同一个ramdisk.img）.
+
+ramdisk.img中比较重要的文件是"init","init.rc"，
+
+其中init是system/core/init/init.c编译而来，
+
+boot.img中ramdisk里的init.rc位于system/core/init/init.rc,
+
+而recovery.img中ramdisk里的init.rc位于bootable/recovery/etc/init.rc。
+
+
+
+kernel加载结束以后第一个进程是执行init，
+
+init会解析init.rc文件，
+
+并起相应的服务。
+
+由此可以知道正常开机和进入recovery模式起的进程是不同的。
+
+
+
+下面的代码位于bootable/recovery/etc/init.rc，
+
+由此可知，进入recovery模式后会执行sbin/recovery，
+
+此文件是bootable/recovery/recovery.cpp生成（可查看对应目录的Android.mk查看）。
+
+
+
 # 参考资料
 
 1、《Linux启动过程分析》之区别Initramfs与initrd
@@ -662,3 +694,7 @@ https://blog.csdn.net/weixin_33387339/article/details/116642946
 4、
 
 https://www.cxybb.com/article/hellfly2000/1940267
+
+5、
+
+https://blog.csdn.net/u010783226/article/details/115752477
