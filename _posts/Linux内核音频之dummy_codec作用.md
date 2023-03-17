@@ -46,7 +46,15 @@ dummy_codec作用是什么？
 
 
 
-参考资料
+# amlogic
+
+什么时候可以用dummy_codec？
+
+The CODEC that doesn't need i2c / spi / other bus controllers, can be configured as
+
+dummy_codec
+
+# 参考资料
 
 1、虚拟Codec设计思路
 

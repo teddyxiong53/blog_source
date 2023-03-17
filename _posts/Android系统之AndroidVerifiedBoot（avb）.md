@@ -2110,6 +2110,260 @@ $$(BINARIES_DIR)/$$(ROOTFS_$(2)_FINAL_IMAGE_NAME): ROOTFS=$(2)
 
 
 
+要分析一下当前的system分区的几次mount过程。
+
+```
+1、首先是ramdisk里的。
+	mount  /dev/system /mnt
+	然后切换sysroot到/mnt。这里没有明确写是否要只读。当然也可以这么写。
+2、然后是busybox的/etc/inittab里。
+	这里就明确挂载为只读了。
+	::sysinit:/bin/mount -o remount,ro /
+	但是在fstab里，还有这个：
+	/dev/root	/		ext2	rw,noauto	0	1
+	这个挂载应该会失败吧。
+3、然后是S02overlayfs里
+	这个只是处理data分区和overlay挂载。没有处理root的。
+	
+```
+
+现在/dev/dm-0的如何处理呢？
+
+现在的问题是这里：
+
+```
+/etc/init.d/S02overlayfs: line 33: ubiattach: not found
+/etc/init.d/S02overlayfs: line 54: ubidetach: not found
+/etc/init.d/S02overlayfs: line 55: ubiformat: not found
+/etc/init.d/S02overlayfs: line 56: ubiattach: not found
+/etc/init.d/S02overlayfs: line 58: ubimkvol: not found
+```
+
+出现原因是S02overlayfs里
+
+```
+mount | grep /dev/system | grep ext4
+```
+
+
+
+现在先不要切换root，停在ramdisk里，查看mount信息是这样。
+
+```
+/dev/dm-0 on /mnt type ext4 (ro,relatime)
+```
+
+然后手动切换root执行看看。
+
+手动执行switch_root跑不起来。
+
+可以了。
+
+前面的问题是测试dm-0的判断语句不对。
+
+```
+if [ -f /dev/dm-0 ]
+这个不对，
+应该是
+if [ -b /dev/dm-0 ]
+```
+
+现在可以正常启动了。
+
+现在可以换成squashfs的看看。
+
+要调整之前的打包过程。
+
+之前的打包过程，分布在各个fs/xx.mk里。
+
+其实是代码重复了。
+
+应该合并到一个文件里。
+
+aml_pack.mk里。
+
+发现这一块需要认真梳理一下才行。
+
+先把之前的逻辑完整梳理一下。
+
+之前的cpio.mk里改动的点：
+
+```
+对ROOTFS_CPIO_CMD命令做了多种情况的赋值。
+增加cpio的压缩方法支持。
+打包了boot.img
+
+现在应该把打包boot.img的部分，移到aml_pack.mk里。
+
+现在最关键的一点是，需要把cpio的打包boot.img放到最后。
+（因为依赖ext等文件系统生成后的root hash计算）
+
+所以整包的打包行为，要附加给cpio的。
+
+要确保ext、squashfs的生成在cpio之前。
+怎么确保这个顺序？
+能不能通过加依赖的方式？
+
+当前make的自然顺序是怎样的？
+按字母排序的方式？
+应该是的，include 生成的目标就是按顺序处理。
+
+```
+
+我加了依赖，顺序还是这样：
+
+```
+>>> Generating filesystem image rootfs.cpio
+>>> Generating boot image
+>>> Generating filesystem image rootfs.ext2
+>>> Generating filesystem image rootfs.tar
+```
+
+找到原因了。
+
+```
+不能这样加
+rootfs-cpio: rootfs-ext2
+而要这样：
+ifeq ($(BR2_TARGET_ROOTFS_EXT2),y)
+ROOTFS_CPIO_DEPENDENCIES += rootfs-ext2
+endif
+```
+
+现在顺序对了。
+
+看看镜像是否正常。
+
+是正常的。
+
+现在切换到squashfs的。
+
+考虑到增加一个分区会多一些麻烦，例如一些配置文件都需要调整。
+
+所以最好是不增加分区，把hash数据跟rootfs打包成一个文件。
+
+当前改成squashfs的，挂载还是失败。
+
+怎么生成的datasize还是1G的？
+
+```
+DATA_SIZE=1073741824
+```
+
+这里写错了。
+
+```
+ROOTFS_EXT2_POST_GEN_HOOKS += ROOTFS_GEN_ROOT_HASH_ENV
+```
+
+改了。
+
+但是还是不对。
+
+发现现在rootfs.squashfs得到的hash也是8M多。我记得最开始只有400K。
+
+这个大小是固定的吗？
+
+我把ext的生成文件，得到的hash大小也是一样的。
+
+我改一下生成的rootfs.hash的文件名为rootfs.hash3的，然后得到的rootfs.hash3的大小就是400K了。
+
+这是什么情况？
+
+我在shell下对rootfs.hash的文件进行删除。
+
+执行命令看到大小正常了。
+
+在aml_pack.mk里也要加上
+
+```
+$(eval $(rootfs))
+```
+
+不然不会进行打包。
+
+现在squashfs的也好了。
+
+接下来要进行的优化：
+
+```
+1、去掉单独的hash分区。
+2、把ubi的处理也加上。
+3、aml_pack.mk完善。
+4、ota的打包也要完善并测试一下。
+5、加上buildroot配置项。
+6、ab分区的也要测试一下。
+```
+
+配置项有哪些：
+
+```
+1、是否打开dm 
+```
+
+我们扩展的config include机制，文件名不能用`-`，用了会导致展开不符合预期。
+
+单独的hash分区，对于squashfs不行。
+
+所以还是加一个hash分区吧。
+
+现在改动在3个仓库：
+
+```
+uboot
+	改配置。改了可能会ota有影响。
+kernel
+	改分区配置。
+buildroot
+	调整编译流程。
+	加配置项。
+```
+
+先尽快整理提交一个版本，具体是否合入再看。
+
+要分就分细一点。
+
+烧录文件的enc加密的情况，我不管。让FAE去处理。
+
+uboot里的改动。
+
+```
++CONFIG_CMD_BOOTCTOL_AVB=y
++CONFIG_LIBAVB=y
++CONFIG_AVB_VERIFY=y
+```
+
+先只确保squashfs的完整配置走通。
+
+buildroot总的配置项，加2个：
+
+```
+BR2_AML_USE_AVB 
+	控制bootloader编译是否传递--avb的标志。
+BR2_AML_USE_DM_VERITY
+	控制是否运行veritysetup。
+```
+
+要不要加一个package来进行控制呢？
+
+不然这2个配置项无所依附。
+
+必须要加到Config.in里。
+
+增加一个
+
+```
+package/amlogic/avb-verity/Config.in
+```
+
+先进行提交。
+
+看起来改动的部分还比较可控。
+
+ubifs也比较要做了。不然提交后会影响ubi相关的编译。
+
+
+
 ## veritysetup命令
 
 根据linux文档的描述，

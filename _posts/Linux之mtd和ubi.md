@@ -256,6 +256,16 @@ UBI指的是UBI subsystem，其工作在MTD设备上，是MTD设备的高层次�
 
 而UBIFS指的是UBIFS file system，工作在UBI卷层之上。
 
+在buildroot里，ubi依赖了ubifs。
+
+```
+ROOTFS_UBI_DEPENDENCIES = rootfs-ubifs
+```
+
+所以是先生成rootfs.ubifs文件。然后生成的rootfs.ubi文件。
+
+
+
 # 参考资料
 
 1、
