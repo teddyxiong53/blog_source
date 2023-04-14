@@ -106,6 +106,34 @@ RPMB 可以对写入操作进行鉴权，但是读取并不需要鉴权，
 
 
 
+
+
+eMMC Device 在 Power On、HW Reset 或者 SW Reset 时，
+
+Host 可以触发 eMMC Boot，
+
+让 eMMC 进入Boot Mode。
+
+在此模式下，eMMC Device 会将 Boot Data 发送给 Host，
+
+这部分内容通常为系统的启动代码，如 BootLoader。
+
+
+
+
+
+# eMMC 里 DDR52 HS200 HS400 等的含义
+
+eMMC 里 DDR52 HS200 HS400 这些名词指的是不同的速度
+
+DDR52就是最高 52M clock，数据速率就是 52 x 2 = 104
+HS200 就是最高 200M clock，单通道，数据速率也是 200
+HS400 也是最高 200M clock，但是是双通道，所以数据速率是 200 x 2 = 400
+
+HS200和HS400 是 5.0 协议才有的。
+
+更详细信息可以从 spec 上找到。
+
 # 参考资料
 
 1、
@@ -119,3 +147,11 @@ https://linux-sunxi.org/Replace_NAND_with_eMMC_howto
 3、emmc 分区管理
 
 https://blog.csdn.net/u014645605/article/details/52212622
+
+4、EMMC与NAND的区别？
+
+https://www.zhihu.com/question/22688853
+
+4、eMMC 里 DDR52 HS200 HS400 等的含义
+
+https://blog.csdn.net/boyemachao/article/details/109227536

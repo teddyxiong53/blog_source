@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 MBR是Master Boot Recorder。主引导记录。
 

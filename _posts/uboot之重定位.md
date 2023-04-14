@@ -130,7 +130,7 @@ vectors放在0x0的位置，这个位置一般是nor flash，如果不remapp，�
 
 
 
-参考资料
+# 参考资料
 
 1、uboot 位置无关基础
 
@@ -139,3 +139,7 @@ http://blog.csdn.net/aaa550/article/details/17061403
 2、uboot 与 代码重定位
 
 https://www.cnblogs.com/schips/p/11239284.html
+
+3、[uboot] （番外篇）uboot relocation介绍
+
+https://blog.csdn.net/ooonebook/article/details/53047992

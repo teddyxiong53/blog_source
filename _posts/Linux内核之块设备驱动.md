@@ -303,7 +303,37 @@ block_device
 
 每个bio对应着一个连续的扇区段。故一个请求可以构造出多个bio。
 
-参考资料
+
+
+# /proc/partitions
+
+```
+major minor  #blocks  name
+
+ 179        0    7634944 mmcblk0
+ 179        1       4096 mmcblk0p1
+ 179        2      65536 mmcblk0p2
+ 179        4       8192 mmcblk0p4
+ 179        5      32768 mmcblk0p5
+ 179        6       8192 mmcblk0p6
+ 179        7      65536 mmcblk0p7
+ 179        8    1048576 mmcblk0p8
+ 179        9    6311936 mmcblk0p9
+```
+
+# blkid
+
+定位/打印块设备属性
+
+```
+# blkid 
+/dev/system: TYPE="squashfs"
+/dev/data: UUID="a20d2768-2408-48c1-8323-7d426a3510cc" BLOCK_SIZE="4096" TYPE="ext4"
+```
+
+
+
+# 参考资料
 
 1、22.Linux-块设备驱动之框架详细分析(详解)
 
@@ -316,3 +346,7 @@ https://www.cnblogs.com/lifexy/p/7651667.html
 2、bio，request，request_queue的关系
 
 https://blog.csdn.net/jasonLee_lijiaqi/article/details/82850689
+
+3、
+
+https://blog.csdn.net/gd0306/article/details/83244170

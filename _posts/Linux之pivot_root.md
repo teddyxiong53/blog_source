@@ -25,6 +25,17 @@ pivot_root主要是把整个系统切换到一个新的root目录，
 
 
 
+这个直接就是一个系统调用。
+
+```
+int pivot_root(const char *new_root, const char *put_old)
+{
+	return syscall(__NR_pivot_root, new_root, put_old);
+}
+```
+
+
+
 参考资料
 
 1、Linux中chroot与pivot_root的区别

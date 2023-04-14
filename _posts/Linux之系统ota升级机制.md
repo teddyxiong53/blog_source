@@ -205,7 +205,56 @@ Android直到N版本才引入ab系统的。之前也是基于recovery的。
 
 
 
+# 在uboot里实现升级
 
+升级包可以是放在SD卡，也可以放到芯片上的某个分区里。
+
+在uboot里使用网络，不是非常安全。
+
+在uboot里执行脚本是这样：
+
+```
+"if fatload usb 0:1 ${loadaddr} ${updatefilename}; then " \
+    "source ${loadaddr}; " \
+"fi; "
+```
+
+脚本的内容可以是这样：
+
+```
+# Update Linux kernel
+fatload usb 0:1 ${loadaddr} uImage;
+nand erase.part kernel;
+nand write ${loadaddr} kernel ${filesize};
+ 
+# Update rootfs
+fatload usb 0:1 ${loadaddr} ubi.img;
+ubi write ${loadaddr} rootfs ${filesize};
+```
+
+UBI, and we probably need to use UBIFS if we are to load an update image from the rootfs
+
+# uboot使用ubifs
+
+# genimage工具生成镜像
+
+代码在这里：
+
+https://github.com/pengutronix/genimage
+
+# android ota升级
+
+这个可以作为参考。
+
+
+
+参考资料
+
+1、
+
+这个系列文章不错
+
+https://blog.csdn.net/guyongqiangx/article/details/129019303
 
 # 参考资料
 
@@ -256,3 +305,19 @@ https://elinux.org/images/3/31/Comparison_of_Linux_Software_Update_Technologies.
 12、可在线OTA升级的嵌入式系统设计方案
 
 https://blog.csdn.net/zhou_chenz/article/details/54917622
+
+13、相关的专利
+
+https://patents.google.com/patent/CN101477471A/zh
+
+14、在Linux/U-Boot里为QSPI Flash使用UBIFS
+
+https://xilinx.eetrend.com/content/2021/100553647.html
+
+15、【f1c200s/f1c100s】使用genimage工具制作img系统镜像
+
+https://blog.csdn.net/qq_27350133/article/details/124181468
+
+16、android ota升级
+
+https://blog.csdn.net/tq501501/article/details/114403131

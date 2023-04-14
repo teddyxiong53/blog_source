@@ -677,6 +677,378 @@ init会解析init.rc文件，
 
 
 
+
+
+```
+如果命令行设置了skip_initramfs，则do_skip_initramfs会被设置为1。
+
+linux调用populate_rootfs默认会并加载boot分区自带的ramdisk（recovery），但如果do_skip_initramfs被设置为1，则会调用default_rootfs生成一个极小的rootfs：
+```
+
+# ramdisk和initrd
+
+
+
+# android的ramdisk
+
+
+
+
+
+U-Boot启动参数：
+
+setenv bootargs "root=/dev/ram rw initrd=0x31800000,16M console=tty0 console=ttySAC0,115200"
+
+我看看我当前的系统
+
+
+
+# /dev/console
+
+其实这个就又回到了最为原始的问题，
+
+那就是程序会假设自己的三个描述符(标准输入、标准输出、标准错误)都是可以信赖的，
+
+作为用户态第一个启动的、和内核交互的init程序，
+
+它的标准输入和输出是从哪里来的，如何确定呢？
+
+这里直奔主题了，为什么直接提到init？
+
+是因为如果init的确定了之后，所有派生的子进程直接集成就可以了，
+
+这就是一个责任推诿的过程，
+
+最后总得有个人来完成这个工作，
+
+**这里来完成这个责任链的用户态终点就落在了init身上。**
+
+事实上init也很无辜，
+
+它也是假设自己的三个标准描述符始终是可用的，
+
+所以问题转入内核，看一下内核是如何给init设置描述符的。
+
+```
+static int noinline init_post(void)
+{
+……
+    if (sys_open((const char __user *) "/dev/console", O_RDWR, 0) < 0)
+        printk(KERN_WARNING "Warning: unable to open an initial console.\n");
+
+    (void) sys_dup(0);
+    (void) sys_dup(0);
+}
+```
+
+这里是打开了文件系统中指定的console设备，
+
+把这个文件描述的设备作为init的文件描述符，
+
+这样实现的优点就是相同的内容，
+
+可以个根据文件系统的不同而订制不同的文件描述符，也就是可配置性强。
+
+
+
+遗憾的是，这种设备并不是一个实体设备，同样是一个虚拟设备，也就是它指向了一些东西，
+
+但是从这个设备本身无法确定是什么东西，
+
+和大家常见的“有关部门”是一个性质的。
+
+内核中对于这个设备是有特殊处理的，位于
+linux-2.6.21\drivers\char\tty_io.c
+
+为什么说它不确定，
+
+因为它是通过console_device函数来获得系统中可用的一个tty设备驱动，
+
+这个具体值是多少，就要根据内核配置了多少个可以做为控制台的设备，
+
+也就是console_drivers链表中第一个device函数能够返回驱动的那个设备。
+
+当然这里可能太随意了，男人不能说不行，女人不能说随便，所以这个不确定还是有些不妥。
+
+内核为此提供了一个强制设置的方法，
+
+就是通过内核启动参数console=来指定console使用某个确定的控制台，
+
+例如使用第二个串口/dev/ttyS2。
+
+这处理位置位于printk.c-：__setup("console=", console_setup);
+
+这样在register_console中就会为这个console开小灶，让它排在console_drivers链表的最开始。
+
+
+
+
+
+参考资料
+
+1、
+
+交互shell设置为/dev/console之后提示job control turned off(上)
+
+https://blog.csdn.net/js_xj/article/details/42740471
+
+# buildroot下的fs/initramfs用途
+
+我们的方案，使用了initramfs，但是有好几个点感觉不是很确定。
+
+1、kernel里只使能了INIT DEV
+
+2、没有看到明确使能initramfs。
+
+3、但是kernel/init/Makefile里，init dev的包含了initramfs.c的编译。
+
+看kernel里kconfig里是这么写的说明
+
+```
+config BLK_DEV_INITRD
+	bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
+	help
+	  The initial RAM filesystem is a ramfs which is loaded by the
+	  boot loader (loadlin or lilo) and that is mounted as root
+	  before the normal boot procedure. It is typically used to
+	  load modules needed to mount the "real" root file system,
+	  etc. See <file:Documentation/admin-guide/initrd.rst> for details.
+
+	  If RAM disk support (BLK_DEV_RAM) is also included, this
+	  also enables initial RAM disk (initrd) support and adds
+	  15 Kbytes (more on some other architectures) to the kernel size.
+
+	  If unsure say Y.
+```
+
+BLK_DEV_RAM应该是要这个也使能，才说明使用initrd。
+
+否则表示是initramfs。
+
+
+
+# 一篇不错的教程
+
+在早期的Linux系统中，
+
+一般就只有软盘或者硬盘被用来作为Linux的根文件系统，
+
+因此很容易把这些设备的驱动程序集成到内核中。
+
+但是现在根文件系统 可能保存在各种存储设备上，
+
+包括SCSI, SATA, U盘等等。
+
+因此把这些设备驱动程序全部编译到内核中显得不太方便。
+
+在Linux内核模块自动加载机制的介绍中，
+
+我们看到利用udevd可以实现实现内核模 块的自动加载，
+
+**因此我们希望根文件系统的设备驱动程序也能够实现自动加载。**
+
+但是这里有一个矛盾，
+
+udevd是一个可执行文件，在根文件系统被挂载前，是不 可能执行udevd的，
+
+但是如果udevd没有启动，
+
+那就无法自动加载根根据系统设备的驱动程序，
+
+同时也无法在/dev目录下建立相应的设备节点。
+
+为了解 决这个矛盾，于是出现了initrd(boot loader initialized RAM disk)。
+
+initrd是一个被压缩过的小型根目录，
+
+**这个目录中包含了启动阶段中必须的驱动模块，可执行文件和启动脚本。**
+
+**包括上面提到的udevd，**
+
+当 系统启动的时候，booload会把initrd文件读到内存中，然后把initrd的起始地址告诉内核。
+
+**内核在运行过程中会解压initrd，**
+
+**然后把 initrd挂载为根目录，**
+
+**然后执行根目录中的/initrc脚本，**
+
+您可以在这个脚本中运行initrd中的udevd，
+
+让它来自动加载设备驱动程序以及 在/dev目录下建立必要的设备节点。
+
+在udevd自动加载磁盘驱动程序之后，就可以mount真正的根目录，并切换到这个根目录中。
+
+您可以通过下面的方法来制作一个initrd文件。
+
+```
+# dd if=/dev/zero of=initrd.img bs=4k count=1024 
+# mkfs.ext2 -F initrd.img 
+# mount -o loop initrd.img  /mnt 
+# cp -r  miniroot/* /mnt 
+# umount /mnt 
+# gzip -9 initrd.img 
+```
+
+通过上面的命令，我们制作了一个4M的initrd，其中miniroot就是一个根目录。
+
+最后我们得到一个名为initrd.img.gz的压缩文件。
+
+利用initrd内核在启动阶段可以顺利的加载设备驱动程序，然而initrd存在以下缺点：
+
+- initrd大小是固定的，例如上面的压缩之前的initrd大小是4M(4k*1024)，假设您的根目录(上例中的miniroot/)总大小仅仅是 1M，它仍然要占用4M的空间。如果您在dd阶段指定大小为1M，后来发现不够用的时候，必须按照上面的步骤重新来一次。
+- initrd是一个虚拟的块设备，在上面的例子中，您可是使用fdisk对这个虚拟块设备进行分区。在内核中，对块设备的读写还要经过缓冲区管理模块，也 就是说，当内核读取initrd中的文件内容时，缓冲区管理层会认为下层的块设备速度比较慢，因此会启用预读和缓存功能。这样initrd本身就在内存 中，同时块设备缓冲区管理层还会保存一部分内容。 为了避免上述缺点，于是出现了initramfs，它的作用和initrd类似，您可以使用下面的方法来制作一个initramfs：
+
+```
+# find miniroot/ | cpio -c -o > initrd.img 
+# gzip initrd.img 
+```
+
+这样得到的initrd.img大小是可变的，
+
+它取决于您的小型根目录miniroot/的总大小，
+
+由于首选使用cpio把根目录进行打包，
+
+##  **因此这个initramfs又被称为cpio initrd.** 
+
+在系统启动阶段，
+
+bootload除了从磁盘上机制内核镜像bzImage之外，
+
+还要加载initrd.img.gz，
+
+然后把initrd.img.gz 的起始地址传递给内核。
+
+能不能把这两个文件合二为一呢？
+
+答案是肯定的，
+
+在Linux 2.6的内核中，可以把initrd.img.gz链接到内核文件(ELF格式)的一个特殊的数据段中，这个段的名字为.init.ramfs。
+
+其中全局 变量 `__initramfs_start和__initramfs_end`分别指向这个数据段的起始地址和结束地址。
+
+内核启动时会对.init.ramfs段中的数据进行解压，然后使用它作为临时的根文件系统。
+
+别看这个过程复杂，您只需要在make menuconfig中配置以下选项就可以了：
+
+```
+General setup  ---> 
+    [*] Initial RAM filesystem and RAM disk (initramfs/initrd) support 
+    (../miniroot/)    Initramfs source file(s) 
+```
+
+我们当前的配置是这样：
+
+```
+[*] Initial RAM filesystem and RAM disk (initramfs/initrd) support
+()    Initramfs source file(s)                                    
+[*]   Support initial ramdisk/ramfs compressed using gzip     
+[*]   Support initial ramdisk/ramfs compressed using LZ4
+```
+
+其中../miniroot/就是我们的小型根目录。
+
+这样就只需要一个内核镜像文件就可以了。
+
+ 内核在启动过程中，必须对以下几种情况进行处理：
+
+- 如果.init.ramfs数据段大小不为0(initramfs_end - initramfs_start != 0)，就说明这是initrd集成在内核数据段中。并且是cpio的initrd.
+- initrd是由bootloader加载到内存中的，这时bootloader会把起始地址和结束地址传递给内核，内核中的全局 initrd_start和initrd_end分别指向initrd的起始地址和结束地址。**现在内核还需要判断这个initrd是新式的cpio格式的 initrd还是旧的initrd.**
+
+#### 临时的根目录rootfs的挂载
+
+首选在内核启动过程，会初始化rootfs文件系统，**rootfs和tmpfs都是内存中的文件系统，其类型为ramfs**. 然后会把这个rootf挂载到根目录。 其代码如下：
+
+```
+[start_kernel() -> vfs_caches_init() -> mnt_init()] 
+```
+
+
+
+#### initrd的解压缩
+
+在start_kernel()的最后，调用rest_init()，rest_init()会建立一个新的内核进程，并在这个内核进程中执行 kernel_init()函数，kernel_init()会调用populate_rootfs()来探测和解压initrd文件。这个函数需要处理 上面的几种initrd的情况。
+
+
+
+```
+[kernel_init() -> populate_rootfs()]
+
+static int __init populate_rootfs(void)
+{
+        /* 如果__initramfs_end - __initramfs_start不为0，就说明这是和内核文件集成在一起的cpio的intrd。*/
+        char *err = unpack_to_rootfs(__initramfs_start,
+                         __initramfs_end - __initramfs_start, 0);
+        if (err)
+                panic(err);
+#ifdef CONFIG_BLK_DEV_INITRD
+        /* 如果initrd_start不为0，说明这是由bootloader加载的initrd， 
+         * 那么需要进一步判断是cpio格式的initrd，还是老式块设备的initrd。
+         */     
+        if (initrd_start) {
+#ifdef CONFIG_BLK_DEV_RAM
+                int fd;
+                /* 首先判断是不是cpio格式的initrd，也就是这里说的initramfs。*/
+                printk(KERN_INFO "checking if image is initramfs...");
+
+                /* 这里unpack_to_rootfs()的最后一个参数为1，表示check only，不会执行解压缩。*/
+                err = unpack_to_rootfs((char *)initrd_start,
+                        initrd_end - initrd_start, 1);
+                if (!err) {
+                        /* 如果是cpio格式的initrd，把它解压到前面挂载的根文件系统上，然后释放initrd占用的内存。*/
+                        printk(" it is/n");
+                        unpack_to_rootfs((char *)initrd_start,
+                                initrd_end - initrd_start, 0);
+                        free_initrd();
+                        return 0;
+                }
+                
+                /* 如果执行到这里，说明这是旧的块设备格式的initrd。
+                 * 那么首先在前面挂载的根目录上创建一个initrd.image文件，
+                 * 再把initrd_start到initrd_end的内容写入到/initrd.image中，
+                 * 最后释放initrd占用的内存空间(它的副本已经保存到/initrd.image中了。)。
+                 */
+
+                printk("it isn't (%s); looks like an initrd/n", err);
+                fd = sys_open("/initrd.image", O_WRONLY|O_CREAT, 0700);
+                if (fd >= 0) {
+                        sys_write(fd, (char *)initrd_start,
+                                        initrd_end - initrd_start);
+                        sys_close(fd);
+                        free_initrd();
+                }
+
+        ......
+        return 0;
+}
+rootfs_initcall(populate_rootfs);
+```
+
+
+
+经过populate_rootfs()函数的处理之后，
+
+如果是cpio格式的initrd，
+
+那么unpack_to_rootfs()函数已经把目录解 压缩到之前mount的根目录上面了。
+
+但是如果是旧的块设备的initrd，
+
+unpack_to_rootfs()函数解压缩后得到的是一个块虚拟的设备 镜像文件/initrd.image，
+
+对于这种情况，还需要进一步处理才能使用。
+
+接下来，kernel_init()就要处理这种情况。
+
+
+
+
+
+参考资料
+
+https://www.cnblogs.com/sky-heaven/p/13856545.html
+
 # 参考资料
 
 1、《Linux启动过程分析》之区别Initramfs与initrd
@@ -698,3 +1070,19 @@ https://www.cxybb.com/article/hellfly2000/1940267
 5、
 
 https://blog.csdn.net/u010783226/article/details/115752477
+
+6、
+
+https://blog.csdn.net/shangyexin/article/details/86565711
+
+7、ramdisk initrd ramfs initramfs区别与联系
+
+https://www.cnblogs.com/smartjourneys/articles/9515498.html
+
+8、
+
+https://source.android.com/docs/core/architecture/bootloader/partitions/ramdisk-partitions?hl=zh-cn
+
+9、RAMDISK as rootfs
+
+https://sites.google.com/site/myembededlife/Home/s3c2440/ramdisk-as-rootfs

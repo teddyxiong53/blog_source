@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 配置宏是CONFIG_DM。
 
@@ -185,7 +185,7 @@ gpio_set_value
 
 
 
-参考资料
+# 参考资料
 
 1、uboot 设备驱动模型
 

@@ -101,3 +101,10 @@ autoscr [addr] - run script starting at addr - A valid autoscr header must be pr
 
 运行某个内存地址上的脚本文件。
 
+
+
+# 参考资料
+
+1、
+
+https://blog.csdn.net/tangtang_yue/article/details/50634011

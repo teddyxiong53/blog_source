@@ -80,6 +80,33 @@ switch_root: not rootfs
 
 
 
+# pivot_root和switch_root区别
+
+我看我们的脚本里还有这个。
+
+那么这个的执行是在switch_root之后。
+
+```
+./etc/overlaymount:3:        pivot_root $1 $1$2 && {
+```
+
+这一层是为了其他的用途。
+
+为了实现overlay。
+
+```
+do_overlay_mount() { #<overlay dir>
+        mkdir -p $1/upper $1/work
+        fopivot $1/upper $1/work /rom 1
+}
+```
+
+```
+do_overlay_mount /data/overlay
+```
+
+
+
 # 参考资料
 
 1、

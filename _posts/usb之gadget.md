@@ -6,11 +6,23 @@ tags:
 
 ---
 
-1
 
-编写gadget的关键是在于了解udc、gadget、composite三者之间的联系和架构层次，在实际应用中gadget是不需要我们去编写的，需要我们自己去编写的是composite层，以及地对udc层的修改，下面开始详细介绍着三者。
 
-composite英文意思是复合的意思，估计是编写usb gadget层设备驱动都整合到一起，通过统一的函数usb_composite_register注册。功能各异，杂七杂八，所以称为复合层吧。
+编写gadget的关键是在于了解udc、gadget、composite三者之间的联系和架构层次，
+
+在实际应用中gadget是不需要我们去编写的，
+
+需要我们自己去编写的是composite层，以及地对udc层的修改，
+
+下面开始详细介绍着三者。
+
+composite英文意思是复合的意思，
+
+估计是编写usb gadget层设备驱动都整合到一起，
+
+通过统一的函数usb_composite_register注册。
+
+功能各异，杂七杂八，所以称为复合层吧。
 
 composite是一个可选的层，在gadget层之上。
 
@@ -36,7 +48,7 @@ composite是一个可选的层，在gadget层之上。
 
 
 
-参考资料
+# 参考资料
 
 1、使用configfs配置usb gadget设备
 
@@ -53,3 +65,7 @@ https://blog.csdn.net/chenjiebing2016/article/details/86503215
 4、How to enable Android ConfigFS gadgets
 
 https://blog.csdn.net/ztguang/article/details/53106556
+
+5、
+
+https://blog.csdn.net/birdring_0xx0/article/details/128383523

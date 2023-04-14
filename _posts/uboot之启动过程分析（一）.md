@@ -58,7 +58,7 @@ tags:
 7、调用_main。这个在arch/arm/lib/crt0.S里。
 ```
 
-#2.arch/arm/lib/crt0.S
+# 2.arch/arm/lib/crt0.S
 
 1、包含的头文件跟start.S差不多。
 

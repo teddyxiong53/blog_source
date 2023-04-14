@@ -138,6 +138,114 @@ crw-rw----    1 root     root       10,  55 Jan  1 00:00 /dev/ubi_ctrl
 
 
 
+# UBIFS的一些特点
+
+(1)可扩展性：
+
+UBIFS对flash尺寸有着很好的扩展性；
+
+也就是说mount时间，内存消耗以及I/O速度都不依赖于flash尺寸（对于内存消耗的描述并不完全准确，但是依赖性非常的低）；
+
+UBIFS可以很好的运行在GB级的flashe设备;
+
+当然UBI本身还是有扩展性的问题，
+
+无论如何UBI/UBIFS都比JFFS2的可扩展性好，如果UBI成为瓶颈，可以改进UBI而不需改变UBIFS本身。
+
+
+
+(2)快速mount：
+
+不像JFFS2，UBIFS在mount阶段不需要扫描整个文件系统，
+
+UBIFSmount的时间只是毫秒级，时间不依赖与flash的尺寸；
+
+然而UBI的初始化时间是依赖flash的尺寸的，因此必须把这个时间考虑在内。
+
+
+
+(3)write-back支持：
+
+回写或者叫延迟写更准确些吧，
+
+同JFFS2的write-through(立即写入内存)相比可以显著的提高文件系统的吞吐量。
+
+
+
+(4)异常unmount适应度：
+
+UBIFS是一个日志文件系统可以容忍突然掉电以及unclean重启；
+
+UBIFS 通过replay日志来恢复unclean unmount，
+
+在这种情况下replay会消耗一些时间，因此mount时间会稍微增加，
+
+但是replay过程并不会扫描整个flash介质，所以UBIFS的异常mount时间大概在几分之一秒。
+
+
+
+(5)快速I/O- 
+
+即使我们disable write-back（可以在unmount时使用-osync mount选项）， 
+
+UBIFS的性能仍然接近JFFS2;
+
+记住，JFFS2的同步I/O是非常惊人的，
+
+因为JFFS2不需要在flash上维护indexing data结构， 所以就没有因此而带来的负担；
+
+而UBIFS恰恰是有index数据的，
+
+UBIFS之所以够快是因为UBIFS提交日志的方式：
+
+不是把数据从一个地方移动到另外一个位置，而只是把数据的地址加到文件系统的index，
+
+然后选择不同的eraseblock作为新的日志块，此外还有multi-headed日志方式等技巧。
+
+
+
+(6)on-the_flight compression -
+
+存储在flash介质上的数据是压缩的；
+
+同时也可以灵活的针对单个文件来打开关闭压缩。
+
+例如，可能需要针对某个特定的文件打开压缩；
+
+或者可能缺省方式下支持压缩，但是对多媒体文件则关闭压缩。
+
+
+
+(7)可恢复性- 
+
+UBIFS可以从index破坏后恢复；
+
+UBIFS中的每一片信息都用一个header来描述，
+
+因此可以通过扫描整个flash介质来重构文件系统，
+
+这点和JFFS2非常类似。
+
+想像一下，如果你擦除了FAT文件系统的FAT表，对于FAT文件系统是致命的错误，
+
+但是如果擦除UBIFS的index，你仍然可以重构文件系统，
+
+当然这需要使用一个用户空间程序来做恢复
+
+
+
+(8)完整性-
+
+UBIFS通过把checksum写到flash介质上来保证数据的完整性，
+
+UBIFS不会无视损坏的文件数据或meta-data；
+
+缺省的情况，UBIFS仅仅检查meta-data的CRC，但是你可以通过mount选项，强制进行dataCRC的检查。
+
+
+
+https://blog.csdn.net/yiwuxue/article/details/10464277
+
 # ubiattach
 
 a tool to attach MTD device to UBI.
@@ -266,6 +374,289 @@ ROOTFS_UBI_DEPENDENCIES = rootfs-ubifs
 
 
 
+源代码打印非常友好，makefile中开启-v选项可以很有效的调试；
+
+mkfs.ubifs  ------ for ubi fs/usr.mnt_app.ubifs
+ubinize基于mkfs.ubifs生成UBI分区image
+
+ubinize  ------ for volume image/usr.mnt_app.ubi
+以下工具用来协助调试
+
+mtdinfo ------ 查看mtd device 信息
+ubinfo ------ 查看ubi分区信息
+
+ubifs.mk里的配置项
+
+```
+BR2_TARGET_ROOTFS_UBIFS_LEBSIZE
+	配置logical earse block的尺寸。
+	默认值是0x1f800
+	修改的话，在mkfs.ubifs的时候，传递-e参数。
+BR2_PACKAGE_SWUPDATE_AB_SUPPORT
+	这个选项应该是我们加的。
+BR2_TARGET_ROOTFS_UBIFS_MINIOSIZE
+	最小的io单元的size。
+BR2_TARGET_ROOTFS_UBIFS_MAXLEBCNT
+	最大的logical erase block 个数。
+	默认2048.
+运行时的压缩方法
+	有3个选项：none、gzip、lzo。
+压缩镜像文件的方法
+	有这些选项：none、gzip、bzip2、lzma、lzo、xz。
+BR2_TARGET_ROOTFS_UBIFS_OPTS
+	传递给mkfs.ubifs的额外的选项。
+```
+
+
+
+mkfs.ubifs的命令参数是这样：
+
+```
+mkfs.ubifs -d $(TARGET_DIR) $(UBIFS_OPTS) -o $@
+```
+
+最重要的是-d指定要打包的目录。
+
+ubi.mk里Config.in的配置项有：
+
+```
+BR2_TARGET_ROOTFS_UBI_PEBSIZE
+	物理擦除块的尺寸。
+BR2_TARGET_ROOTFS_UBI_SUBSIZE
+	sub-page的尺寸。
+	
+```
+
+这边主要使用的工具是ubinize。
+
+还有一个文件来配置相关的参数，ubinize.cfg。
+
+```
+[ubifs]
+mode=ubi
+vol_id=0
+vol_type=dynamic
+vol_name=rootfs
+vol_alignment=1
+vol_flags=autoresize
+image=BR2_ROOTFS_UBIFS_PATH
+```
+
+执行的命令：
+
+```
+ubinize -o $@ $(UBI_UBINIZE_OPTS) $(BUILD_DIR)/ubinize.cfg
+```
+
+
+
+```
+51M Feb 11  2022 rootfs.ubi
+49M Feb 11  2022 rootfs.ubifs
+```
+
+
+
+# 处理
+
+## 编译时的处理
+
+就是mkfs.ubifs得到rootfs.ubifs文件，然后ubinize rootfs.ubifs文件得到rootfs.ubi文件。
+
+rootfs.ubi文件被打包到烧录镜像里。
+
+## 运行时的处理
+
+### 先在cpio/init里
+
+```
+system_mtd_number=$(cat /proc/mtd | grep  -E "system" | awk -F : '{print $1}' | grep -o '[0-9]\+')
+这样来找到system分区对应的mtd块的编号。当前是5 。
+
+```
+
+然后进行ubiattach。
+
+```
+ubiattach /dev/ubi_ctrl -m ${system_mtd_number}
+```
+
+这个操作的作用是什么？
+
+/dev/ubi_ctrl 这个设备在什么情况下出现？
+
+后面挂载是这样：
+
+```
+mount -t ubifs /dev/ubi0_0 /mnt
+```
+
+### 在S02overlayfs里
+
+对data分区的处理
+
+```
+ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
+```
+
+这样会得到/dev/ubi1_0这个设备节点。
+
+下面这个是正常的开机情况。
+
+```
+mount -t ubifs /dev/ubi1_0 /data
+```
+
+如果是第一次烧录后。则需要下面的操作：
+
+```
+  #mount data
+  ubidetach -p /dev/mtd${data_mtd_number}
+  ubiformat -y /dev/mtd${data_mtd_number}
+  ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
+  #    ubimkvol /dev/ubi1 -s $dataSize"MiB" -N data
+  ubimkvol /dev/ubi1 -m -N data
+  mount -t ubifs /dev/ubi1_0 /data
+```
+
+## 如果没有ramdisk
+
+上面这些操作在system rootfs里能不能完成？
+
+那就要看uboot的能力了。
+
+看uboot使用ubifs的能力。
+
+
+
+参考资料
+
+https://github.com/ARM-software/u-boot/blob/master/doc/README.ubi
+
+# ubi的数据结构
+
+UBI使用了一部分的flash空间用于它自身功能的实现，因此UBI用户所获得的空间会比实际的flash空间要少。也就是说：
+
+Ø  两个PEB用来存储卷表
+
+Ø  一个PEB被保留，用以损耗均衡
+
+Ø  一个PEB被保留，用以原子LEB改变操作
+
+Ø  一定数量的PEB被保留，用以处理坏PEB；这个是用于NANDflash而不是NOR flash；保留的数量是可配置的，默认情况是每1024块保留20块。
+
+Ø  在每个PEB的开头存储EC头和VID头；这个所占用的字节数因flash类型的不同而不同。
+
+Ø  如果支持FASTMAP功能，需要额外的block来支持，一般一个FASTMAP BLOCK小于一个LEB，因此需要保留两个LEB给FASTMAP使用；具体的空间消耗，参考kernel中的如下函数：
+
+# 在ubi上使用squashfs
+
+这个是可以做的，倒是出乎我的意料的。
+
+
+
+# uboot使用ubifs
+
+UBIFS是更强壮的FLash文件系统。很多嵌入式系统都使用了UBIFS。
+
+Xilinx PetaLinux 2018.2也支持UBIFS。只需要在Linux/U-Boot里添加相关配置选项，就能为QSPI Flash创建UBIFS。
+
+
+
+**第1步，为Linux Kernel添加UBIFS配置选项。**
+
+需要注意的是，需要去掉SPI_NOR_USE_4K_SECTORS。
+
+```
+CONFIG_MTD_UBI=y
+CONFIG_MTD_UBI_WL_THRESHOLD=4096
+CONFIG_MTD_UBI_BEB_LIMIT=20
+# CONFIG_MTD_UBI_FASTMAP is not set
+# CONFIG_MTD_UBI_GLUEBI is not set
+# CONFIG_MTD_UBI_BLOCK is not set
+CONFIG_UBIFS_FS=y
+# CONFIG_UBIFS_FS_ADVANCED_COMPR is not set
+CONFIG_UBIFS_FS_LZO=y
+CONFIG_UBIFS_FS_ZLIB=y
+CONFIG_UBIFS_ATIME_SUPPORT=y
+# CONFIG_UBIFS_FS_ENCRYPTION is not set
+CONFIG_UBIFS_FS_SECURITY=y
+CONFIG_CRYPTO_DEFLATE=y
+CONFIG_CRYPTO_LZO=y
+# CONFIG_MTD_SPI_NOR_USE_4K_SECTORS is not set
+```
+
+**第2步，为U-Boot添加UBIFS配置选项。**
+
+```
+CONFIG_CMD_MTDPARTS=y
+CONFIG_MTDIDS_DEFAULT=""
+CONFIG_MTDPARTS_DEFAULT=""
+CONFIG_CMD_MTDPARTS_SPREAD=y
+CONFIG_CMD_UBI=y
+CONFIG_CMD_UBIFS=y
+CONFIG_MTD=y
+# CONFIG_CFI_FLASH is not set
+# CONFIG_ALTERA_QSPI is not set
+CONFIG_MTD_UBI=y
+CONFIG_MTD_UBI_WL_THRESHOLD=4096
+CONFIG_MTD_UBI_BEB_LIMIT=20
+# CONFIG_MTD_UBI_FASTMAP is not set
+CONFIG_RBTREE=y
+CONFIG_LZO=y
+```
+
+**第3步，根据单板需要，定义Flash分区。**
+
+启动后，在Linux里可以通过命令 cat /proc/mtd检查。
+
+```
+root@zcu106_vcu_trd:/qspi_fs# cat /proc/mtd
+dev: size erasesize name
+mtd0: 01e00000 00020000 "boot"
+mtd1: 00040000 00020000 "bootenv"
+mtd2: 00c00000 00020000 "kernel"
+mtd3: 055c0000 00020000 "spare"
+```
+
+**第4步，在Linux里创建和挂载UBIFS分区。**
+
+如果是第一次启动，在Linux里创建和挂载UBIFS分区。
+
+```
+mkdir -p /qspi_fs
+ubiformat /dev/mtd3
+ubiattach /dev/ubi_ctrl -m 3
+ubimkvol /dev/ubi0 -N qspi_ubi0 -m
+mount -t ubifs ubi0:qspi_ubi0 /qspi_fs
+```
+
+如果不是第一次启动，直接在Linux里挂载UBIFS分区。
+
+```
+ubiattach /dev/ubi_ctrl -m 3
+mount -t ubifs ubi0:qspi_ubi0 /qspi_fs
+```
+
+**第5步，创建分区后，在U-Boot里使用UBIFS。**
+
+```
+sf probe 0 50000000 0
+setenv partition "nor0,3" # Activate mtd3.
+setenv mtdids "nor0=spi0.0"
+setenv mtdparts "mtdparts=spi0.0:30m(boot),256k(bootenv),12m(kernel),87808k(spare)"
+mtdparts
+ubi part spare # Select mtd3.
+mtd
+ubifsmount ubi0:qspi_ubi0
+ubifsls
+ubifsload 0x2000000 qspi_fs_ready__do_not_remove.bin.md5
+```
+
+# 使用qemu来研究ubifs
+
+
+
 # 参考资料
 
 1、
@@ -273,3 +664,27 @@ ROOTFS_UBI_DEPENDENCIES = rootfs-ubifs
 https://blog.csdn.net/oqqyuji12345678/article/details/94616370
 
 2、在Linux下的documentation目录下，ubifs.txt里。
+
+3、
+
+https://blog.csdn.net/man9953211/article/details/97907395
+
+4、ubifs文件系统制作与移植
+
+https://blog.csdn.net/yazhouren/article/details/50109317
+
+5、
+
+http://www.linux-mtd.infradead.org/doc/ubifs.html
+
+6、
+
+https://unix.stackexchange.com/questions/455043/using-squashfs-on-top-of-ubi-as-root-file-system
+
+7、【工程师分享】在Linux/U-Boot里为QSPI Flash使用UBIFS
+
+https://xilinx.eetrend.com/content/2021/100553647.html
+
+8、
+
+https://discussion.en.qi-hardware.narkive.com/TFJ05wcr/testing-an-ubi-ubifs-on-qemu-system-mipsel

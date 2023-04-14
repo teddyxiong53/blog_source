@@ -6,7 +6,7 @@ tags:
 
 ---
 
---
+
 
 # 基本信息
 
@@ -179,6 +179,101 @@ http://www.wowotech.net/u-boot/fit_image_overview.html
 ```
 include\image.h
 include\bootstage.h
+```
+
+
+
+# DECLARE_GLOBAL_DATA_PTR 
+
+在U-Boot的源码中，使用了寄存器r9来表示全局数据结构gd。
+
+> ​          \#define DECLARE_GLOBAL_DATA_PTR   register [volatile](https://so.csdn.net/so/search?q=volatile&spm=1001.2101.3001.7020) gd_t *gd asm ("r9")
+
+那么，到底应该如何定义一个寄存器变量呢？从GCC的使用手册中可知，定义如下：
+
+> ​                         register int *foo asm ("reg");
+
+
+
+其中register关键字是必须的，
+
+asm ("reg")为嵌入式汇编，
+
+表示用reg寄存器存储gd指针，
+
+reg和CPU体系结构相关。
+
+需要注意的是，不能使用static const 和volatile等限定符，
+
+否则，预期可能与你设想的相反。
+
+特别需要主要的是volatile，
+
+就算加了也是阻止不了编译器优化的（U-Boot的定义是不符合GCC编译器规范的，如果你用grep DECLARE_GLOBAL_DATA_PTR -nr 命令在U-Boot源码中查找，你就会发现，有的定义就没有volatile）。
+
+
+
+定义寄存器变量，单有上面的定义还是不行的。
+
+因为，你虽然申明了使用reg来表示foo指针，
+
+但编译器还是会是使用reg去作其他的用途（参数传递等等）。
+
+如果想让编译器不使用reg寄存器作其他用途，
+
+则还需要使用‘-ffixed-reg’ 编译选项告诉编译器reg寄存器是固定用途寄存器。
+
+在arch/arm/config.mk文件中，可以找到‘-ffixed-reg’选项（U-Boot使用了r9寄存器）：
+
+> ​             PLATFORM_RELFLAGS += -ffunction-sections -fdata-sections \
+> ​                        -fno-common -ffixed-r9
+
+
+
+参考资料
+
+1、如何理解U-Boot中的#define DECLARE_GLOBAL_DATA_PTR register volatile gd_t *gd asm ("r9")
+
+https://blog.csdn.net/xunmengxiaozi/article/details/100176690
+
+# 对aarch64的启动
+
+```
+Essentially, the boot loader should provide (as a minimum) the
+following:
+
+1. Setup and initialise the RAM
+2. Setup the device tree
+3. Decompress the kernel image
+4. Call the kernel image
+```
+
+```
+The device tree blob (dtb) must be placed on an 8-byte boundary and must
+not exceed 2 megabytes in size.
+```
+
+dtb不能超过2M的大小。
+
+解压内核镜像
+
+这个bootloader可以选择进行解压。
+
+Image.gz的头部有这样的信息：
+
+```
+The decompressed kernel image contains a 64-byte header as follows::
+
+  u32 code0;			/* Executable code */
+  u32 code1;			/* Executable code */
+  u64 text_offset;		/* Image load offset, little endian */
+  u64 image_size;		/* Effective Image size, little endian */
+  u64 flags;			/* kernel flags, little endian */
+  u64 res2	= 0;		/* reserved */
+  u64 res3	= 0;		/* reserved */
+  u64 res4	= 0;		/* reserved */
+  u32 magic	= 0x644d5241;	/* Magic number, little endian, "ARM\x64" */
+  u32 res5;			/* reserved (used for PE COFF offset) */
 ```
 
 

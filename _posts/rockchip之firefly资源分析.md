@@ -30,8 +30,35 @@ BR2_PACKAGE_IFUPDOWN_SCRIPTS=y
 
 
 
-参考资料
+```
+#!shell
+$ mkdir -p ~/prj/Firefly-RK3308
+$ cd ~/prj/Firefly-RK3308
+$ 7zr x Firefly-RK3308_Linux_SDK_git_20181008.7z
+$ git reset --hard
+```
+
+解压后只有一个.git目录。所以需要git reset才能看到代码。
+
+下面的readme里有说明。
+
+然后可以看从gitlab来更新代码。
+
+```
+#!shell
+$ git pull gitlab firefly:firefly
+```
+
+可以在这里在线浏览代码。
+
+[https://gitlab.com/TeeFirefly/rk3308-linux](https://gitlab.com/TeeFirefly/rk3308-linux) 
+
+# 参考资料
+
+1、
 
 https://www.t-firefly.com/doc/product/info/267.html
+
+2、
 
 https://www.codenong.com/cs106544012/

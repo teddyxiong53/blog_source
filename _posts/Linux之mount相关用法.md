@@ -49,7 +49,23 @@ mount --bind /rw_part/1.txt /ro_part/1.txt
 
 
 
-参考资料
+# mount的选项
+
+现在看linux的开机过程，各种切换rootfs的操作。
+
+对mount使用较多。
+
+所以需要把mount的选项都研究一下。
+
+基本命令：
+
+```
+mount -t type device dir
+```
+
+
+
+# 参考资料
 
 1、bind mount 的用法
 

@@ -67,6 +67,22 @@ o = (second_size + page_size – 1) / page_size
 mkbootimg --kernel $OUT/kernel --ramdisk $OUT/ramdisk.img --second kernel/resource.img --output $OUT/boot.img
 ```
 
+看帮助信息是这样：
+
+```
+usage: mkbootimg
+       --kernel <filename>
+       --ramdisk <filename>
+       [ --second <2ndbootloader-filename> ]
+       [ --cmdline <kernel-commandline> ]
+       [ --board <boardname> ]
+       [ --base <address> ]
+       [ --pagesize <pagesize> ]
+       -o|--output <filename>
+```
+
+--ramdisk是必选的吗？
+
 
 
 # 参考资料
