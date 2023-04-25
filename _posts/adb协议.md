@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 adb的全称的Android Debug Brigdge。
 
@@ -56,7 +56,7 @@ b'OKAY'
 
 
 
-参考资料
+# 参考资料
 
 1、adb 协议
 

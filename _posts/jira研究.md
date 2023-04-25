@@ -120,8 +120,16 @@ won't do 不做。
 
 
 
-参考资料
+# 参考资料
 
 1、JIRA的使用介绍（一）- 概念篇
 
 https://www.jianshu.com/p/8c14b52ce692
+
+2、
+
+https://blog.csdn.net/yangyong688/article/details/116375719
+
+3、
+
+https://zhuanlan.zhihu.com/p/377700978

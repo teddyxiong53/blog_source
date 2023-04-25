@@ -276,6 +276,23 @@ The decompressed kernel image contains a 64-byte header as follows::
   u32 res5;			/* reserved (used for PE COFF offset) */
 ```
 
+# autoboot
+
+基本的autoboot选项是：
+
+```
+  bootdelay
+  bootcmd
+  CONFIG_BOOTDELAY
+  CONFIG_BOOTCOMMAND
+```
+
+doc\README.autoboot
+
+
+
+cat u-boot.bin u-boot.dtb >image.bin
+
 
 
 # 参考资料

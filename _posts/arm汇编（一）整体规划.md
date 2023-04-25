@@ -72,7 +72,7 @@ S3C2440的是armv4的指令集。ARM9系列都是是v4或者v5指令集的。
 
 
 
-#文档内容架构
+# 文档内容架构
 
 ## Part A
 
@@ -92,7 +92,7 @@ S3C2440的是armv4的指令集。ARM9系列都是是v4或者v5指令集的。
 
 7、thumb指令集。
 
-##Part B
+## Part B
 
 内存和系统架构。
 
@@ -110,7 +110,7 @@ S3C2440的是armv4的指令集。ARM9系列都是是v4或者v5指令集的。
 
 7、其他
 
-##Part C
+## Part C
 
 浮点相关。不看了。
 
@@ -172,7 +172,7 @@ AS - the portable GNU assembler.
 
 6、常量。
 
-##4. section和relocation
+## 4. section和relocation
 
 1、背景。
 
@@ -184,7 +184,7 @@ AS - the portable GNU assembler.
 
 5、bss 段。
 
-##5.符号symbol 
+## 5.符号symbol 
 
 1、label
 
@@ -202,7 +202,7 @@ AS - the portable GNU assembler.
 
 2、整数表达式
 
-##7. 汇编伪指令
+## 7. 汇编伪指令
 
 1、.abort
 
@@ -236,7 +236,7 @@ AS - the portable GNU assembler.
 
 重点看前面8章的。
 
-#其他资料
+# 其他资料
 
 除了上面的两份手册，我就重点根据泰晓科技的相关文档来学习。
 
@@ -244,7 +244,7 @@ http://tinylab.org/linux-assembly-language-quick-start/
 
 
 
-#环境搭建
+# 环境搭建
 
 1、win7 pc上安装VMware。
 

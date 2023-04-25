@@ -6,7 +6,21 @@ tags:
 
 ---
 
-1
+
+
+# 在线环境
+
+https://cpulator.01xz.net/?sys=arm-de1soc
+
+这个网站很好。
+
+首选用这个来做学习环境。
+
+还有很详细的文档。
+
+https://cpulator.01xz.net/doc/
+
+# 本机环境
 
 新建一个hello.s的文件，写入下面的内容：
 
@@ -87,7 +101,7 @@ SYMBOL TABLE:
 
 
 
-参考资料
+# 参考资料
 
 1、arm-linux 汇编(1) – Helloworld
 

@@ -6,7 +6,25 @@ tags:
 
 ---
 
---
+
+
+Android 产品中，内核格式是Linux标准的zImage，
+
+根文件系统采用ramdisk格式。
+
+这两者在Android下是直接合并在一起取名为boot.img,
+
+会放在一个独立分区当中。
+
+**这个分区格式是Android自行制定的格式。**
+
+Android开发时，最标准的做法是重新编译于内核和根文件系统，
+
+然后调用Android给的命令行文件mkbootimg来打包。
+
+常用的就是打包和解包工具：unpackbootimg 和 mkbootimg
+
+
 
 Android 产品中，内核格式是[Linux](https://so.csdn.net/so/search?from=pc_blog_highlight&q=Linux)标准的zImage，
 
@@ -83,7 +101,7 @@ usage: mkbootimg
 
 --ramdisk是必选的吗？
 
-
+参数是必选的，但是里面的内容可以是空的。
 
 # 参考资料
 
@@ -94,3 +112,7 @@ https://blog.csdn.net/Nyiragongo/article/details/103254684
 2、boot.img的生成过程，解析mkbootimg
 
 https://blog.csdn.net/Obsession2015/article/details/85101845
+
+3、
+
+https://www.cnblogs.com/viiv/p/15674864.html

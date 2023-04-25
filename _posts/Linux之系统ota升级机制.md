@@ -256,6 +256,42 @@ https://github.com/pengutronix/genimage
 
 https://blog.csdn.net/guyongqiangx/article/details/129019303
 
+
+
+# Mender
+
+Mender 支持嵌入式 Linux OTA 更新中的系统和应用软件更新。
+
+业内许多人将系统更新称为固件更新或无线固件 (FOTA)。
+
+这通常是引导加载程序、内核和根文件系统。
+
+应用程序或软件无线 (SOTA) 更新是指用户空间中的软件，可以是容器、包、文件和目录。
+
+
+
+Mender 使用更新模块执行应用程序更新，该模块允许在设备上安装不同类型的软件。 Mender 还提供了通过使用状态脚本进行自定义更新的自由。
+
+
+
+Mender 在部署 OTA 软件更新时的首要指示是安全性和稳健性。
+
+安全可防止设备被攻击者劫持，安装未经授权的软件，并且功能强大，因此更新不会使设备无法使用。
+
+它确保在发生电源或网络连接等故障时有回退模式，并且没有半途而废的软件安装（原子性）。
+
+
+
+参考资料
+
+1、
+
+https://mender.io/blog/ota-update-embedded-linux
+
+2、
+
+https://mender.io/user/pages/05.resources/04.whitepapers/embedded-linux/mender-whitepaper-software-updates-for-embedded-linux.pdf
+
 # 参考资料
 
 1、嵌入式 Linux 软件更新机制及架构汇总

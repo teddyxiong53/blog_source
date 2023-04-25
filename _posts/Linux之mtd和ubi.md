@@ -146,7 +146,7 @@ UBIFS对flash尺寸有着很好的扩展性；
 
 也就是说mount时间，内存消耗以及I/O速度都不依赖于flash尺寸（对于内存消耗的描述并不完全准确，但是依赖性非常的低）；
 
-UBIFS可以很好的运行在GB级的flashe设备;
+UBIFS可以很好的运行在GB级的flash设备;
 
 当然UBI本身还是有扩展性的问题，
 
@@ -246,7 +246,95 @@ UBIFS不会无视损坏的文件数据或meta-data；
 
 https://blog.csdn.net/yiwuxue/article/details/10464277
 
-# ubiattach
+# ubi
+
+UBIFS工作在UBI卷之上，不能在MTD设备之上运行，也不能在block设备上运行，
+
+因为ubifs的设计就是raw flash设备之上的文件系统。
+
+**这里为了便于理解，提到了一点ubusfs的概念，本文将着重介绍ubi，ubifs不是本文的重点内容。**
+
+![](images/random_name/c2813b597ab14f3ab20ab2e73d10a821.png)
+
+
+
+UBI的主要功能如下：
+
+UBI 提供可以动态创建、删除或调整大小的卷；
+UBI 在整个闪存设备上实现磨损均衡(您可能认为您在不断地写入/擦除UBI卷的同一个逻辑擦除块，但实际上UBI 会将其均衡分配到闪存芯片的所有物理擦除块)；
+UBI 透明地处理坏物理擦除块；
+UBI会处理坏的擦除块，无需上层软件参与。 UBI 有一个保留的物理擦除块池，当一个物理擦除块变坏时，它会透明地用一个好的物理擦除块替换它。 UBI 将数据从新发现的坏物理擦除块移动到好的物理擦除块。 结果是 UBI 卷的用户不会注意到 I/O 错误，因为 UBI 会透明地处理它们。
+UBI 通过清理将丢失数据的机会降至最低。
+NAND 闪存容易受到读写操作中发生的位翻转错误的影响。位翻转由ECC校验和纠正，但它们可能会随着时间的推移累积并导致数据丢失。UBI通过将数据从具有位翻转的物理擦除块移动到其他物理擦除块来处理这个问题。这个过程称为scrub。 scrub工作在后台透明地完成，并且对上层隐藏。
+
+
+
+一个UBI卷就是一串连续的逻辑擦除块(LEBs)。
+
+UBI卷大小在创建卷时指定，但以后可能会更改（卷可动态调整大小）。UBI提供用户空间工具用于操作UBI卷。
+
+UBI卷有两种类型：
+
+静态卷。 静态卷是只读的，其内容受CRC-32校验和保护。
+动态卷。动态卷是可读写的，上层(文件系统)负责确保数据完整性。
+
+静态卷通常用于内核、initramfs 和 dtb。 较大的静态卷在打开时可能会损失部分性能，因为需要计算 CRC-32。
+
+动态卷可以动态创建、删除、调整大小。内核、initramfs或dtb之外的其他镜像最好使用动态卷。
+
+MTD分区和UBI卷的相同点：
+
+两者都由擦除块组成——在UBI卷的情况下是逻辑擦除块，在MTD分区的情况下是物理擦除块；
+两者都支持三种基本操作：读、写和擦除。
+
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/qq_24835087/article/details/125336305
+
+# ubi命令行工具
+
+这篇文章里讲得很好。
+
+https://blog.csdn.net/qq_24835087/article/details/125336305
+
+tools	说明	备注
+ubinfo	提供有关在系统中找到的UBI设备和卷的信息	
+ubiattach	链接MTD设备（原始Flash设备）到UBI并且创建相应的UBI设备	
+ubidetach	将MTD设备与UBI设备分离（与ubiattach的作用相反）；	
+ubimkvol	在 UBI 设备上创建 UBI 卷	
+ubirmvol	从 UBI 设备中删除 UBI 卷	
+ubiblock	管理 UBI 卷的块接口	
+ubiupdatevol	更新ubi卷，也可以用来清空ubi卷	
+ubicrc32	计算与 UBI使用的初始种子相同的文件的 CRC-32校验和	
+ubinize	生成ubi镜像	注意是ubi镜像不是ubifs镜像
+ubiformat	格式化空flash，擦除flash并保留擦除计数器，将UBI镜像写入flash	
+mtdinfo	查看系统中所有的mtd设备信息	
+
+## ubinize
+
+
+
+## ubiattach
+
+ubiattach工具用于链接MTD设备（raw Flash设备）到UBI并且创建相应的UBI设备。
+
+ubiattach的mtd设备可以是空设备，
+
+也可以是已经烧写了ubi镜像的设备；
+
+如果是前者，还需要手动创建卷之后才能使用。
+
+如果是后者，则会自动识别里面的ubi镜像信息，
+
+并根据ubi镜像的配置文件()自动创建卷，最后由用户手动挂载就可以使用了。
+
+
+
+
 
 a tool to attach MTD device to UBI.
 
@@ -352,6 +440,14 @@ do_overlay_mount() { #<overlay dir>
         fopivot $1/upper $1/work /rom 1
 }
 ```
+
+
+
+## ubimkvol
+
+ubimkvol工具用于在UBI设备上创建UBI卷
+
+
 
 # ubi和ubifs关系
 
@@ -553,7 +649,14 @@ UBI使用了一部分的flash空间用于它自身功能的实现，因此UBI用
 
 这个是可以做的，倒是出乎我的意料的。
 
+对RAW Flash ：
 
+- ubiblock：位于UBI顶部的只读块设备
+  利用CONFIG_MTD_UBI_BLOCK配置编译。
+- 允许将SquashFS放在UBI卷上。
+- 引导时间和读取性能不错。非常适合于只读根文件系统。
+
+https://zhuanlan.zhihu.com/p/114583958
 
 # uboot使用ubifs
 
@@ -653,9 +756,251 @@ ubifsls
 ubifsload 0x2000000 qspi_fs_ready__do_not_remove.bin.md5
 ```
 
+
+
+
+
+参考资料
+
+1、
+
+http://www.armadeus.org/wiki/index.php?title=UBIFS#U-Boot_access_to_UBIFS_partitions
+
+2、
+
+https://www.rocketboards.org/foswiki/Documentation/EnablingUBIFS
+
 # 使用qemu来研究ubifs
 
 
+
+# ubifs vs squashfs
+
+ubifs相比于squashfs有什么优势？
+
+
+
+参考资料
+
+1、
+
+https://ewh.ieee.org/r4/se_michigan/cs/20131019/A%20Comparative%20Analaysis%20Between%20Embedded%20Linux%20File%20Systems_old_format.pdf
+
+2、
+
+https://zhuanlan.zhihu.com/p/114583958
+
+# 直接挂载ubifs为rootfs
+
+```
+2）设置UBIFS文件系统作为根文件系统启动的参数
+
+OMAP3 DevKit8000 # setenv bootargs console=ttyS2,115200n8 ubi.mtd=4 root=ubi0:rootfs
+    rootfstype=ubifs video=omapfb:mode:4.3inch_LCD
+    OMAP3 DevKit8000 # setenv bootcmd nand read.i 80300000 280000 200000/;bootm 80300000
+
+根文件系统的位置在MTD4上
+
+系统启动时会打印出如下和UBI相关的信息：
+
+Creating 5 MTD partitions on "omap2-nand":
+    0x00000000-0x00080000 : "X-Loader"
+    0x00080000-0x00260000 : "U-Boot"
+    0x00260000-0x00280000 : "U-Boot Env"
+    0x00280000-0x00680000 : "Kernel"
+    0x00680000-0x08000000 : "File System"
+    UBI: attaching mtd4 to ubi0
+    UBI: physical eraseblock size: 131072 bytes (128 KiB)
+    UBI: logical eraseblock size: 129024 bytes
+    UBI: smallest flash I/O unit: 2048
+    UBI: sub-page size: 512
+    UBI: VID header offset: 512 (aligned 512)
+    UBI: data offset: 2048
+    UBI: attached mtd4 to ubi0
+    UBI: MTD device name: "File System"
+    UBI: MTD device size: 121 MiB
+    UBI: number of good PEBs: 970
+    UBI: number of bad PEBs: 2
+    UBI: max. allowed volumes: 128
+    UBI: wear-leveling threshold: 4096
+    UBI: number of internal volumes: 1
+    UBI: number of user volumes: 1
+    UBI: available PEBs: 0
+    UBI: total number of reserved PEBs: 970
+    UBI: number of PEBs reserved for bad PEB handling: 9
+    UBI: max/mean erase counter: 2/0
+```
+
+所以最关键的这几个赋值：
+
+```
+ubi.mtd=4 root=ubi0:rootfs rootfstype=ubifs 
+```
+
+ubi.mtd=4 这个传递给了kernel使用吗？
+
+./Documentation/filesystems/ubifs.txt
+
+这个文档看看。
+
+```
+ 0: SPL                 0x00020000 0x00000000 0  
+
+1: SPL.backup1         0x00020000 0x00020000 0  
+
+2: SPL.backup2         0x00020000 0x00040000 0
+
+ 3: SPL.backup3         0x00020000 0x00060000 0
+
+ 4: u-boot              0x001e0000 0x00080000 0
+
+ 5: u-boot-env          0x00020000 0x00260000 0  
+
+6: kernel              0x00500000 0x00280000 0  
+
+7: rootfs              0x0f880000 0x00780000 0
+```
+
+
+
+看看下面这个bootargs设置：
+
+If the default arguments are not correct, you can also set them with this command:
+
+```
+setenv bootargs 'mem=128M console=ttyS0,115200 mtdparts=atmel_nand:4M(bootstrap/uboot/kernel)ro,-(rootfs) root=/dev/mtdblock1 rw rootfstype=ubifs ubi.mtd=1 root=ubi0:rootfs'
+```
+
+那么看起来就是要这样写：
+
+root=/dev/mtdblock6
+
+但是还是不行。
+
+是不是要这样写上mtdparts的信息？
+
+```
+mtdparts=atmel_nand:4M(bootstrap/uboot/kernel)ro,-(rootfs)
+```
+
+ root=ubi0:rootfs
+
+这个是关键。
+
+
+
+参考资料
+
+1、
+
+http://www.embeddedlinux.org.cn/html/filesys/201111/08-1821.html
+
+2、
+
+https://e2e.ti.com/support/processors-group/processors/f/processors-forum/333046/how-to-nandboot-using-ubifs
+
+3、
+
+https://www.linux4sam.org/bin/view/Linux4SAM/FlashRootFs_SAM9N12
+
+4、
+
+https://www.cnblogs.com/zxc2man/p/7568731.html
+
+5、
+
+https://www.toradex.com/zh-cn/blog/ubi-zhi-du-wen-jian-xi-tong
+
+# mtd设备和block设备的区别
+
+./Documentation/filesystems/ubifs.txt这里看到的。
+
+1、mtd设备代表flash设备，由128KB一个的erase block组成。而block设备的block大小一般是512字节。
+
+2、mtd设备支持3种主要的操作：
+
+```
+1、在一个eraseblock里的某个offset来读取。
+2、在一个eraseblock里某个offset写入。
+3、擦除一个eraseblock。
+```
+
+而block设备的操作是2个：
+
+```
+1、读一个block。
+2、写一个block。
+```
+
+3、eraseblock必须先擦除才能进行写入。block设备可以直接写。
+
+4、eraseblock的寿命相比于block要短。
+
+5、eraseblock有不容忽视的坏块问题。
+
+
+
+# 一个比较复杂的ubinize.cfg文件
+
+```
+[sysfs_volume]
+mode=ubi
+image=machine-image.squashfs
+vol_id=0
+vol_type=dynamic
+vol_name=rootfs
+vol_size=55MiB
+[md_rootfs_volume]
+mode=ubi
+image=machine-image.squashfs.verity
+vol_id=1
+vol_type=dynamic
+vol_name=md-rootfs
+vol_size=1MiB
+[sdatafs_volume]
+mode=ubi
+image=sdata.squashfs
+vol_id=2
+vol_type=dynamic
+vol_name=sdatafs
+vol_size=8MiB
+[md_sdatafs_volume]
+mode=ubi
+image=sdata.squashfs.verity
+vol_id=3
+vol_type=dynamic
+vol_name=md-sdatafs
+vol_size=1MiB
+[cache_volume]
+mode=ubi
+vol_id=4
+vol_type=dynamic
+vol_name=cachefs
+vol_size=154MiB
+[systemrw_volume]
+mode=ubi
+vol_id=5
+vol_type=dynamic
+vol_name=systemrw
+vol_size=6MiB
+[persist_volume]
+mode=ubi
+vol_id=6
+vol_type=dynamic
+vol_name=persist
+vol_size=6MiB
+[usrfs_volume]
+mode=ubi
+image=usrfs.ubifs
+vol_id=7
+vol_type=dynamic
+vol_name=usrfs
+vol_flags = autoresize
+```
+
+
+
+https://lore.kernel.org/linux-mtd/66b982ef-c446-e0e7-9d44-41597695dc72@sigma-star.at/t/
 
 # 参考资料
 

@@ -59,12 +59,31 @@ jenkins提供了plugin，可以通过从gitlab上拉取代码直接部署（已�
 
 所以，通过比较，推荐使用gitlab作为版本管理工具，并且不与gerrit做集成。
 
+# gitlab工作流
 
+## GitLab 中的一些概念
 
+Fork: GitLab, GitLab 中引入的概念，获取一个独立版本的repo
+
+Group - folder，相当于目录，里边有一些projects
+
+Project： 跟Gerrit 中的Project 概念一致，git 里面叫 repo
+
+Issue：Jira 中的ticket
+
+Plan：Jira 中的 dashboard，对应 GitLab 中的 Issue Board
+
+Milestone：Jira 中的 sprint
 
 
 
 参考资料
+
+1、
+
+https://www.jianshu.com/p/b49fdc9576e0
+
+# 参考资料
 
 1、GitLab 与 Gerrit对比
 

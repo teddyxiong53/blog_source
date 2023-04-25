@@ -8,6 +8,30 @@ tags:
 
 
 
+# 介绍
+
+bootargs 是 uboot 在启动 Linux 内核时传递给内核的引导参数，参数中一般包含启动存储介质、文件系统分区及挂载方式和终端串口等参数。
+
+bootargs是环境变量中的重中之重，
+
+甚至可以说整个环境变量都是围绕着bootargs来设置的。
+
+bootargs的种类非常非常的多，
+
+我们平常只是使用了几种而已。
+
+bootargs非常的灵活，内核和文件系统的不同搭配就会有不同的设置方法，
+
+甚至你也可以不设置 bootargs,
+
+而直接将其写到内核中去（在配置内核的选项中可以进行这样的设置），
+
+正是这些原因导致了bootargs使用上的困难。
+
+bootargs的种类非常的多，而且随着kernel的发展会出现一些新的参数，使得设置会更加灵活多样。
+
+
+
 uboot启动kernel的时候，会传递一些bootargs过去。
 
 例如这样：
@@ -171,7 +195,7 @@ teddy@teddy-ubuntu:~/work/mylinuxlab/kernel/linux-stable$ find -name "*.c" | xar
 ./arch/arm/mm/mmu.c:240:__setup("noalign", noalign_setup);
 ```
 
-
+# 常用的bootargs
 
 但是我还是总结一下常用的setup。
 
@@ -209,8 +233,150 @@ netdev=
 
 ## 用户自定义
 
+
+
+# /proc/cmdline和bootargs
+
+
+
+在linux启动时候，串口log中会打印cmdline
+
+```
+[    0.000000] c0 0 (swapper) Kernel command line: earlycon androidboot.selinux=permissive uart_dma keep_dbgclk_on clk_ignore_unused initrd=0xd0000000,38711808 rw crash_page=0x8f040000 initrd=/recoveryrc boot_reason=0x2000 ota_status=0x1001
+```
+
+在linux启动完成后，通过 cat /proc/cmdline也是可以看到cmdline. 那么cmdline是如何添加的呢？
+
+(1)、 在dts中的bootargs中添加
+
+```
+/ {
+    model = "yyyyyyy";
+    compatible = "yyyyyyy", "xxxxxxxx";
+
+    chosen {
+        /*
+         * initrd parameters not set in dts file since the ramdisk.img size
+         * need to check in uboot, and the initrd load address and size will
+         * set in uboot stage.
+         */
+        bootargs = "earlycon androidboot.selinux=permissive uart_dma keep_dbgclk_on clk_ignore_unused";
+        stdout-path = "serial0:115200";
+    };
+......
+}
+
+```
+
+(2)、在uboot中添加
+
+u-boot/common/cmd_bootm.c
+
+```
+append_bootargs("recovery=1");
+
+sprintf(dm_buf,"init=/init skip_initramfs rootwait root=/dev/dm-0 dm=\"system none ro,0 1 android-verity /dev/mmcblk0p%d\"",ret);
+append_bootargs((const char *)dm_buf);
+
+```
+
+(3)在mkbootimg的参数里添加
+
+```
+INTERNAL_BOOTIMAGE_ARGS += --cmdline "$(INTERNAL_KERNEL_CMDLINE)"
+```
+
+
+
+在跳转linux kernel之前(如uboot中)，
+
+**将cmdline数据放到了FDT中，**
+
+然后将FDT的地址写入到了X0中。
+
+然后再跳转linux kernel.
+
+
+
+别问我怎么知道的，请看kernel-4.14/Documentation/arm64/booting.txt
+
+linux kernel从stext开始启动，整个流程大概就是读取X0(FDT地址)保存到X21中，又将X21保存到`__fdt_pointer`全局变量中
+然后再将`__fdt_pointer`解析处**cmdline数据到boot_command_line全局变量中**
+
+在setup_arch()的时候，调用setup_machine_fdt将fdt解析到了boot_command_line全局变量中
+
+```
+在start_kernel()打印了cmdline.
+asmlinkage __visible void __init start_kernel(void)
+{
+…
+pr_notice(“Kernel command line: %s\n”, boot_command_line);
+…
+}
+```
+
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/weixin_42135087/article/details/107957684
+
+
+
+https://blog.csdn.net/TommyMusk/article/details/103946029
+
+
+
+# boot_command_line
+
+全局变量
+
+1.command_line
+
+2.default_command_line
+
+3.saved_command_line
+
+内核参数的解析一共有两处，一处是setup_arch()->parse_cmdline()用于解析内核参数中关于内存的部分，另外一处是start_kernel()->parse_option()用于解析其余部分。
+
+根据执行的先后顺序，可以将处理函数分为三个大类，他们分别存在于下面三个段：
+
+```cpp
+__setup_start = .; *(.init.setup) __setup_end = .;
+__early_begin = .; *(.early_param.init) __early_end = .;
+__start___param = .; *(__param) __stop___param = .;
+```
+
+这三个段存储的不是参数，而是command line参数所需要的处理函数。
+
+1 .early_param.init段
+
+它所处理的参数例如：initrd=, cachepolicy=, nocache, nowb, ecc=, vmalloc=, mem=等等。
+
+这些处理函数是通过__early_param宏来定义的，例如：
+
+
+
+
+
+参考资料
+
+1、Linux command line详细解析
+
+https://blog.csdn.net/CHS007chs/article/details/80743624
+
 # 参考资料
 
 1、
 
 https://blog.csdn.net/skyflying2012/article/details/41142801
+
+2、
+
+https://blog.csdn.net/Industio_CSDN/article/details/122035752
+
+3、
+
+https://www.cnblogs.com/eleclsc/p/11444898.html

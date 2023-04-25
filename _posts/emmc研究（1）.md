@@ -134,6 +134,62 @@ HS200和HS400 是 5.0 协议才有的。
 
 更详细信息可以从 spec 上找到。
 
+
+
+
+
+# emmc为什么还没有淘汰掉nand
+
+Flash 存储问题总是在我们技术支持渠道位列榜首。
+
+Toradex 投入了大量资源保证存储尽可能的稳定。
+
+然而，了解一些关于存储的基本知识还是十分重要的。
+
+首先你需要知道存储是否磨损，当往内置的存储设备上写入大量数据后，你就很容易损坏它。
+
+通过这篇博文，我们想要告诉你 Flash 存储可能会遇到的一些问题。
+
+我们先简单介绍技术内容。
+
+
+
+Flash 类型：
+
+Raw Flash vs Managed Flash
+
+
+
+目前，Toradex 计算机模块采用 NOR、NAND 和 eMMC Flash。
+
+
+
+NOR 和 NAND 是 raw 存储设备。
+
+NAND 和 NOR 之间的主要差别是 NOR 允许随机寻址，不需要纠错以及较高的每比特成本。
+
+NAND 则只能页读取，每页中的一些位可能出错，因此需要纠错机制。
+
+
+
+eMMC Flash 则结合使用 NAND 和一个内置控制器，后者处理大部分使用 NAND flash 时候，本来需要你自己完成的一些列任务。
+
+**eMMC 也称为 managed NAND。**
+
+在另一方面，NAND 和 NOR 需要有 OS 和驱动来完成对应的处理。
+
+我们稍后会在本博文中讨论这两种不同的挑战。
+
+
+
+
+
+参考资料
+
+1、
+
+https://www.toradex.com/zh-cn/blog/what-you-should-know-about-flash-storage
+
 # 参考资料
 
 1、

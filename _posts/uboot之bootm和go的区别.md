@@ -709,6 +709,22 @@ bootm 0x30000000
 
 
 
+# bootm, bootz, booti
+
+这几个都是从内存中的某个地址获得kernel image。bootz是启动zImage，而bootm和booti是启动uImage，其中booti专门用来启动ARM64的kernel image。
+它们的基本语法是：`bootX <kernel address> <rootdisk address> <fdt(dts file) address>`，这里的address都是指内存的物理地址，需要提前把image和file加载到内存中，其中根文件系统的地址可以省略（包含在kernel image中），用**-**来代替。
+在常规的启动引导过程中，uboot的各种启动方式实际上最后都是调用**bootz**的，但之前会设置很多环境变量作为启动的参数。在调试过程中，我们也同样可以手动设置好参数，直接用bootX系列来启动系统。
+
+
+
+参考资料
+
+1、
+
+https://conanwhf.github.io/2017/06/13/bootup-5-ubootcmd/
+
+
+
 # 参考资料
 
 1、uboot 命令分析(一) — bootm
