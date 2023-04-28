@@ -535,7 +535,415 @@ async.h
 
 ```
 
+对外的头文件层次
 
+```
+awtk.h
+	awtk_tkc.h：基础库。
+	awtk_base.h: 基础组件。
+	awtk_global.h: 全局工具函数。
+	awtk_widgets.h: 各组组件。
+```
+
+
+
+# tkc目录分析
+
+这个是基础库实现。
+
+```
+action_queue_t
+action_queue_create
+action_queue_recv
+action_queue_send
+action_queue_destroy
+
+
+action_thread_pool_t
+action_thread_pool_create
+action_thread_pool_exec
+action_thread_pool_destroy
+
+
+action_thread_t
+action_thread_create
+action_thread_exec
+action_thread_set_on_idle
+action_thread_set_on_quit
+action_thread_destroy
+
+
+asset_type_t
+asset_font_type_t
+asset_data_type_t
+asset_script_type_t
+asset_image_type_t
+asset_ui_type_t
+asset_info_t
+asset_info_create
+asset_info_destroy
+asset_info_unref
+asset_info_ref
+asset_info_get_type
+asset_info_get_name
+
+
+```
+
+
+
+```
+async_call
+async_call_init
+async_call_deinit
+
+
+wbuffer_t
+wbuffer_init
+wbuffer_rewind
+wbuffer_init_extendable
+wbuffer_extend_capacity
+wbuffer_deinit
+wbuffer_skip
+wbuffer_write_uint8
+wbuffer_write_uint16
+wbuffer_write_uint32
+wbuffer_write_binary
+wbuffer_write_string
+wbuffer_has_room
+
+rbuffer_t
+rbuffer_init
+...
+
+color_parse
+
+rgba_t
+color_t
+color_init
+color_create
+color_from_str
+color_r
+color_g
+color_b
+color_destroy
+
+```
+
+
+
+```
+compressor_t
+compressor_compress
+compressor_uncompress
+compressor_destroy
+
+
+tk_cond_var_t
+tk_cond_var_create
+tk_cond_var_wait
+tk_cond_var_awake
+tk_cond_var_destroy
+
+
+tk_cond_t
+tk_cond_create
+tk_cond_wait
+tk_cond_wait_timeout
+tk_cond_signal
+tk_cond_destroy
+
+```
+
+## mem.c
+
+这个主要是为了对接不同的os来做的抽象层。
+
+
+
+# types_def.h
+
+这个定义了基本类型和工具宏。
+
+bool类型的定义。
+
+```
+#if defined(__GNUC__) && !defined(__cplusplus)
+typedef _Bool bool_t;
+#else
+typedef uint8_t bool_t;
+#endif
+```
+
+尺寸的定义。
+
+```
+typedef int32_t xy_t;
+typedef int32_t wh_t;
+```
+
+对象类型
+
+```
+struct _value_t;
+typedef struct _value_t value_t;
+
+struct _object_t;
+typedef struct _object_t object_t;
+```
+
+返回值
+
+```
+ret_t
+```
+
+包含log.h头文件
+
+```
+#include "tkc/log.h"
+```
+
+返回工具
+
+```
+goto_error_if_fail
+break_if_fail
+return_if_fail
+return_value_if_fail
+```
+
+大小范围
+
+```
+#define tk_min(a, b) ((a) < (b) ? (a) : (b))
+#define tk_abs(a) ((a) < (0) ? (-(a)) : (a))
+#define tk_max(a, b) ((a) > (b) ? (a) : (b))
+#define tk_roundi(a) (int32_t)(((a) >= 0) ? ((a) + 0.5f) : ((a)-0.5f))
+#define tk_clamp(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
+#define tk_clampi(a, mn, mx) 
+```
+
+ARRAY_SIZE
+
+一些基础的函数类型。
+
+```
+typedef void* (*tk_create_t)(void);
+typedef ret_t (*tk_destroy_t)(void* data);
+typedef ret_t (*tk_on_done_t)(void* data);
+typedef ret_t (*tk_on_result_t)(void* ctx, const void* data);
+typedef bool_t (*tk_is_valid_t)(void* data);
+```
+
+
+
+# str类型实现
+
+类型：
+
+```
+str_t
+	3个成员。
+	size。
+	capacity。
+	char *str。
+	
+```
+
+
+
+接口：
+
+```
+
+str_init
+str_extend
+str_eq
+str_set
+str_clear
+str_set_with_len
+str_append
+str_append_more
+str_append_with_len
+str_insert
+str_insert_with_len
+str_remove
+str_append_char
+str_append_int
+str_append_double
+str_append_json_str
+str_append_json_int_pair
+str_append_json_str_pair
+str_append_json_double_pair
+str_append_json_bool_pair
+str_pop
+str_unescape
+str_decode_xml_entity
+str_decode_xml_entity_with_len
+str_from_int
+str_from_float
+str_from_value
+str_from_wstr
+str_from_wstr_with_len
+str_to_int
+str_to_float
+str_encode_hex
+str_decode_hex
+str_end_with
+str_start_with
+str_trim
+str_trim_left
+str_trim_right
+str_replace
+str_to_lower
+str_to_upper
+str_expand_vars
+str_reset
+```
+
+# 关于使用的LGPL license的问题
+
+https://github.com/zlgopen/awtk/issues/715
+
+# 控件层级树结构
+
+```
+window_base
+	window
+		dialog
+	
+widget
+
+theme
+
+children_layouter
+
+clip_board
+
+event_type
+event
+	wheel_event：滚轮的值，alt/ctrl/shift键是否按下。
+	orientation_event：旋转事件。0/90/180/270
+	value_change_event：new_value、old_value。
+	pointer_event：x/y。其他按键是否按下。
+	key_event：key_value。
+	paint_event：一个canvas指针。
+	window_event：一个widget_t指针。
+	multi_gesture_event：x/y。rotation。
+	assets_event：
+	
+font
+
+input_engine
+input_method
+
+main_loop
+
+shortcut
+```
+
+
+
+# vtable_t
+
+# object系统
+
+```
+object_t
+object_vtable_t
+emitter_t 事件分发器，用来实现观察者模式。
+```
+
+src\tkc\object_default.c
+
+这个提供了vtable的实现。
+
+跟object_default.c对等还有什么文件？
+
+src\tkc\object_compositor.c
+
+```
+object_default_t
+对象接口的缺省实现。
+相当于object_t的子类。
+多了属性个数，属性容量和属性表这3个成员。
+```
+
+# conf_io
+
+这个的对xml、ini、json、ubjson这些配置文件的抽象。
+
+
+
+# 绘制原理
+
+AWTK 提供了两种画布：
+
+普通（canvas）和矢量图画布（vgcanvas），
+
+通过调用这两种画布提供的画图接口，可以实现不同的绘图功能。
+
+
+
+canvas：
+
+普通画布可以实现一些简单的绘制功能，
+
+如：绘制水平或垂直直线、文本、图片、矩形等。
+
+如果需要绘制比较复杂一点的图形就需要使用矢量图画布，
+
+如：绘制椭圆、圆弧等。
+
+vgcanvas：
+
+与 canvas 相比 vgcanvas 的效率要低一些，
+
+但功能也丰富些。
+
+绘制一些简单的图形，如线条、矩形等可以用 canvas；
+
+复杂一点图形，如圆角矩形就用 vgcanvas。
+
+备注：即使是渲染同一个效果，vgcanvas 也会比 canvas 慢。
+
+
+
+AWTK 常用的渲染模式有两种，
+
+分别为 AGGE 和 OpenGL。
+
+前者是软件渲染，
+
+主要通过 CPU 来计算界面数据并将其拷贝到显存中实现显示，兼容性比较好，
+
+但渲染效果一般，速度慢，适合没有 GPU 的嵌入式平台；
+
+后者基于 OpenGL/GLES 实现，渲染效果好，适合有 GPU 的平台，常用于 PC。
+
+
+NANOVG 是第三方的矢量画布库，默认只提供 OpenGL 的适配，
+
+但它本身是支持重载的，
+
+因此，后面 AWTK 中自行增加了 AGGE 的适配。
+
+在 AWTK 中，存在 NANOVG 前后端的概念，具体定义如下：
+
+NANOVG 前端：指 NANOVG 对外提供的抽象接口，供画布类型调用。
+
+NANOVG 后端：指 NANOVG 的具体实现，即真正的将图像数据绘制到屏幕上，比如默认提供的 OpenGL，以及 AWTK 后来增加 AGGE。
+
+NANOVG 的作用其实就是给 AWTK 提供了矢量画布的功能。
+
+
+
+参考资料
+
+1、
+
+https://blog.csdn.net/weixin_40026797/article/details/124831631
 
 # 参考资料
 
