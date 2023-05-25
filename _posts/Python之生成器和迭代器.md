@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 python的for循环抽象程度高于C语言。python的for循环可以作用在所有的可迭代对象上。
 
@@ -37,7 +37,7 @@ for i, value in enumerate(['a', 'b', 'c']):
 
 序列可以迭代的原因：iter这个内置函数。
 
-当解释器需要迭代对象x的时候，会自动调用iter(x)。
+**当解释器需要迭代对象x的时候，会自动调用iter(x)。**
 
 内置的iter函数有如下作用：
 
@@ -176,9 +176,9 @@ class A:
 
 **迭代器只能往前不能后退，就像过河的卒子一样。**
 
-迭代器有2个基本方法：
+**迭代器有2个基本方法：**
 
-iter() / next()
+**iter() / next()**
 
 看一个简单例子。
 
@@ -285,6 +285,126 @@ a+b当前等于1 。
 生成器的特点是：被调用的时候，不是执行函数体，而是返回一个迭代器。
 
 
+
+# iter()和next()关系
+
+iter()函数用来把一个对象转换成可迭代对象。
+
+而next()函数用来把可迭代对象进行迭代。
+
+看这个例子就懂了。
+
+```
+my_list = [1, 2, 3, 4, 5]
+my_iterator = iter(my_list)
+print(next(my_iterator))  # 输出：1
+print(next(my_iterator))  # 输出：2
+
+```
+
+# list是迭代器吗
+
+不是。因为迭代器是指实现了 `__iter__` 方法的对象。而list没有。
+
+但是list是可迭代对象。
+
+可以用iter(my_list)来把一个list转换为一个迭代器。
+
+# 迭代器本质
+
+迭代器是一种惰性计算的机制
+
+# 迭代器协议
+
+迭代器协议（Iterator Protocol）是一种在 Python 中定义迭代器的约定，通过实现特定的方法，使对象成为一个迭代器。
+
+迭代器协议要求迭代器对象实现两个特殊方法：
+
+1. `__iter__()` 方法：返回迭代器对象自身。该方法被用于支持可迭代对象的语法，使迭代器可以在需要可迭代对象的地方使用。
+2. `__next__()` 方法：返回迭代器中的下一个元素。如果没有更多的元素可供迭代，应该抛出 `StopIteration` 异常。
+
+根据迭代器协议的要求，一个对象只要实现了这两个方法，就可以被视为迭代器。
+
+# 把一个生成器函数当前普通函数来运行
+
+这个也是pywebio里看到的。
+
+因为single_input这个函数一定是有yield在里面。
+
+而对于thread方式的，需要把这个当成普通函数来调用。
+
+所以是这样做的：
+
+```
+def run_as_function(gen):
+    res = None
+    while 1:
+        try:
+            res = gen.send(res)
+        except StopIteration as e:
+            if len(e.args) == 1:
+                return e.args[0]
+            return
+
+```
+
+而这个知识点，在chatgpt上查到是这样：
+
+要将生成器函数转换为普通函数并运行，可以使用 `yield from` 或 `yield` 语句来逐步迭代生成器，并获取生成器的值。以下是一个示例：
+
+```python
+def generator_func():
+    yield 1
+    yield 2
+    yield 3
+
+def normal_func():
+    generator = generator_func()  # 创建生成器对象
+    result = []
+
+    # 使用 yield from 语句迭代生成器并获取值
+    try:
+        while True:
+            value = next(generator)  # 获取生成器的下一个值
+            result.append(value)
+    except StopIteration:
+        pass
+
+    return result
+
+output = normal_func()
+print(output)  # 输出: [1, 2, 3]
+```
+
+在上述示例中，`generator_func()` 是一个生成器函数，通过使用 `yield` 语句生成数值。`normal_func()` 是一个普通函数，它将生成器函数转换为普通函数来运行。
+
+在 `normal_func()` 中，首先创建了生成器对象 `generator`，然后使用 `yield from` 语句逐步迭代生成器并获取值。`next(generator)` 用于获取生成器的下一个值，直到生成器抛出 `StopIteration` 异常为止。
+
+通过将生成器的值添加到 `result` 列表中，最后返回包含所有生成器值的列表。
+
+请注意，生成器在每次迭代时都会保留其内部状态，因此可以在不同的函数调用之间保持生成器的状态。这意味着在每次调用 `normal_func()` 时，将继续从上次停止的位置继续迭代生成器。
+
+使用 `yield from` 或 `yield` 可以将生成器函数转换为普通函数来运行，并逐步获取生成器的值。这样可以在普通函数中利用生成器的特性，进行灵活的数据处理和控制流程操作。
+
+# 把一个生成器函数转成协程来使用
+
+还是pywebio里的。
+
+```
+async def to_coroutine(gen):
+    res = None
+    while 1:
+        try:
+            c = gen.send(res)
+            res = await c
+        except StopIteration as e:
+            if len(e.args) == 1:
+                return e.args[0]
+            return
+
+```
+
+# 怎么理解生成器的send函数
 
 
 

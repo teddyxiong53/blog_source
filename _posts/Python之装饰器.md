@@ -130,6 +130,17 @@ pi@raspberrypi:~/work/test/py-test$ ./test.py
 <function inner at 0x76af6430>
 ```
 
+# 装饰器的分类
+
+
+Python 装饰器可以根据其应用和功能进行不同的分类。下面是一些常见的装饰器分类：
+
+1. 函数装饰器（Function Decorators）：这是最常见的装饰器类型，它们用于修改、增强或包装函数的行为。函数装饰器在函数定义之前使用 `@` 符号进行声明，并将目标函数作为参数传递给装饰器函数。常见的函数装饰器包括 `@property`、`@staticmethod`、`@classmethod` 等。
+2. 类装饰器（Class Decorators）：类装饰器用于修改、增强或包装类的行为。与函数装饰器类似，类装饰器也使用 `@` 符号进行声明，并将目标类作为参数传递给装饰器类。类装饰器可以在类定义之前或之后应用，并对类进行修改或封装。类装饰器的使用相对较少，但在某些场景中非常有用。
+3. 方法装饰器（Method Decorators）：方法装饰器用于修改、增强或包装类的方法行为。方法装饰器在方法定义之前使用 `@` 符号进行声明，并将目标方法作为参数传递给装饰器函数。方法装饰器可以应用于实例方法、静态方法和类方法，用于扩展其功能或为其提供额外的行为。
+4. 参数化装饰器（Parameterized Decorators）：参数化装饰器是一种装饰器，它本身接受参数并返回实际的装饰器函数。这样的装饰器可以根据传入的参数动态地生成不同的装饰器。参数化装饰器可以通过额外的函数嵌套层次或使用类来实现。
+5. 类型检查装饰器（Type Checking Decorators）：这些装饰器用于在运行时对函数参数和返回值进行类型检查。它们可以帮助捕获类型错误并提供更强的类型安全性。常见的类型检查装饰器包括 `mypy`、`pylint` 等第三方库提供的装饰器。
+
 # 2.一个实用的实例
 
 假设我们现在要用一个二维坐标对象的库。坐标对象不支持数学运算。
@@ -259,9 +270,130 @@ def bar(a):
 print bar('xhl')
 ```
 
+# 参数化装饰器
+
+```
+def repeat(n):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            for _ in range(n):
+                result = func(*args, **kwargs)
+            return result
+        return wrapper
+    return decorator
+
+@repeat(3)
+def greet(name):
+    print(f"Hello, {name}!")
+
+greet("Alice")
+
+```
 
 
-参考资料
+
+# python自带的常用装饰器
+
+## @property
+
+```
+class Circle:
+    def __init__(self, radius):
+        self.radius = radius
+
+    @property
+    def diameter(self):
+        return self.radius * 2
+
+    @diameter.setter
+    def diameter(self, value):
+        self.radius = value / 2
+
+circle = Circle(5)
+
+print(circle.radius)    # 输出：5
+print(circle.diameter)  # 输出：10
+
+circle.diameter = 14
+print(circle.radius)    # 输出：7
+print(circle.diameter)  # 输出：14
+
+```
+
+Python 自带的一些常用装饰器包括：
+
+1. `@property`: 将方法转换为只读属性，允许通过属性访问的方式调用方法。
+2. `@staticmethod`: 将方法定义为静态方法，不需要访问实例属性或调用实例方法，直接通过类名调用。
+3. `@classmethod`: 将方法定义为类方法，可以访问类属性，并通过类名调用或在子类中进行覆盖。
+4. `@abstractmethod`: 用于定义抽象方法，必须在子类中实现，否则会引发 `TypeError`。
+5. `@staticmethod` 和 `@classmethod` 都是用于修饰类方法的装饰器，**两者之间的主要区别是 `@classmethod` 可以访问类的属性，而 `@staticmethod` 不能。**
+
+```
+from abc import abstractmethod
+
+class MyClass:
+    @property
+    def my_property(self):
+        return "This is a property"
+
+    @staticmethod
+    def my_static_method():
+        return "This is a static method"
+
+    @classmethod
+    def my_class_method(cls):
+        return f"This is a class method of {cls.__name__}"
+
+    @abstractmethod
+    def my_abstract_method(self):
+        pass
+
+class MyDerivedClass(MyClass):
+    def my_abstract_method(self):
+        return "Implementation of abstract method"
+
+obj = MyClass()
+
+print(obj.my_property)
+print(MyClass.my_static_method())
+print(MyClass.my_class_method())
+
+derived_obj = MyDerivedClass()
+print(derived_obj.my_abstract_method())
+```
+
+
+
+staticmethod和classmethod的区别举例：
+
+```
+class MyClass:
+    class_attribute = "Class Attribute"
+
+    @staticmethod
+    def static_method():
+        return "Static Method"
+
+    @classmethod
+    def class_method(cls):
+        return f"Class Method. class_attribute: {cls.class_attribute}"
+
+obj = MyClass()
+
+# 调用静态方法
+print(obj.static_method())  # 输出：Static Method
+print(MyClass.static_method())  # 输出：Static Method
+
+# 调用类方法
+print(obj.class_method())  # 输出：Class Method. class_attribute: Class Attribute
+print(MyClass.class_method())  # 输出：Class Method. class_attribute: Class Attribute
+
+
+```
+
+
+
+# 参考资料
 
 1、python装饰器的4种类型：函数装饰函数、函数装饰类、类装饰函数、类装饰类
 

@@ -5,7 +5,9 @@ tags:
 - autojs
 ---
 
-1
+--
+
+
 
 定位组件是autojs的最常见的操作，这很类似前端的定位dom元素。
 
@@ -135,7 +137,7 @@ click(500, 500)
 
 调用不能进行click操作。
 
-打印这对象。可卡因看到`clickable: false; `。
+打印这对象。可以看到`clickable: false; `。
 
 ```
 boundsInParent: Rect(0, 0 - 170, 77); boundsInScreen: Rect(781, 412 - 951, 489); packageName: com.taobao.taobao; className: android.view.View; text: null; contentDescription: 逛10秒+10; viewId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; enabled: true; password: false; scrollable: false; [ACTION_SELECT, ACTION_CLEAR_SELECTION, ACTION_ACCESSIBILITY_FOCUS, ACTION_NEXT_AT_MOVEMENT_GRANULARITY, ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY, ACTION_SET_SELECTION]
@@ -216,7 +218,7 @@ run()
 
 
 
-参考资料
+# 参考资料
 
 1、Auto.js快速入门实战教程
 

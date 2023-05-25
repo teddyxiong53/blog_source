@@ -298,7 +298,7 @@ let a : string|number; //表示a可是string类型或者number类型。
 
 不过，类型确定后，就可以使用特定的方法了。
 
-例如，我们给上面的a，幅值为`abc`。现在可以确定为string类型了。
+例如，我们给上面的a，赋值为`abc`。现在可以确定为string类型了。
 
 就可以使用`s.length`了。
 
@@ -333,7 +333,7 @@ let a:Person ={
 
 interface里的属性，定义实例的时候，必须都一一匹配。多了少了，都编译报错。
 
-这就是所谓的形状一致。
+**这就是所谓的形状一致。**
 
 不过，为了灵活性，可以使用可选属性，这样：
 
@@ -498,7 +498,7 @@ funtion push(arr: any[], ...items:any) {
 
 rest参数只能是最后一个参数。
 
-## 函数重装
+## 函数重载
 
 参数个数不同，或者类型不同时，做出不同的处理。
 
@@ -709,7 +709,104 @@ class Car implements Alarm {
 
 
 
+# ts可以export哪些东西
 
+（来自chatgpt）
+
+在 TypeScript 中，可以使用 `export` 关键字将各种实体（entities）导出为模块的公共接口，以供其他模块使用。以下是 TypeScript 中可以使用 `export` 导出的一些实体：
+
+1. 导出变量：
+
+   ```
+   typescriptCopy code
+   export const myVariable = 42;
+   ```
+
+2. 导出函数：
+
+   ```
+   typescriptCopy codeexport function myFunction() {
+     // 函数实现
+   }
+   ```
+
+3. 导出类：
+
+   ```
+   typescriptCopy codeexport class MyClass {
+     // 类定义
+   }
+   ```
+
+4. 导出接口：
+
+   ```
+   typescriptCopy codeexport interface MyInterface {
+     // 接口定义
+   }
+   ```
+
+5. 导出类型别名：
+
+   ```
+   typescriptCopy code
+   export type MyType = string | number;
+   ```
+
+6. 导出枚举：
+
+   ```
+   typescriptCopy codeexport enum MyEnum {
+     Value1,
+     Value2,
+     Value3
+   }
+   ```
+
+7. 导出命名空间/模块：
+
+   ```
+   typescriptCopy codeexport namespace MyNamespace {
+     // 命名空间/模块定义
+   }
+   ```
+
+8. 导出默认实体（default export）：
+
+   ```
+   typescriptCopy codeexport default myVariable;
+   // 或者
+   export default function myFunction() {
+     // 默认函数实现
+   }
+   // 或者
+   export default class MyClass {
+     // 默认类定义
+   }
+   ```
+
+
+
+# ts跟d.ts的区别
+
+在 TypeScript 中，`.ts` 文件用于编写 TypeScript 代码，而 `.d.ts` 文件用于编写类型声明文件（Type Declaration File）。
+
+以下是 `.ts` 文件和 `.d.ts` 文件在语法上的区别：
+
+1. 内容类型：
+   - `.ts` 文件包含实际的 TypeScript 代码，可以包含变量声明、函数定义、类定义、模块导入导出等。
+   - `.d.ts` 文件包含类型声明，用于描述其他 JavaScript 或 TypeScript 代码的类型信息，但不包含实际的可执行代码。
+2. 导出方式：
+   - `.ts` 文件可以使用 `export` 关键字导出变量、函数、类等，使其可以在其他文件中被导入和使用。
+   - **`.d.ts` 文件一般不需要导出具体的值，而是导出类型声明，以供其他文件使用。类型声明使用 `export` 或 `export declare` 关键字进行导出。**
+3. 类型声明：
+   - `.ts` 文件中可以同时包含代码和类型声明，即可以定义变量、函数等的实现代码，并且使用类型注解为它们指定类型。
+   - `.d.ts` 文件中只包含类型声明，用于描述其他代码的类型信息，例如函数的参数类型、返回值类型、类的成员类型等。
+4. 文件命名：
+   - `.ts` 文件通常根据其包含的功能或模块进行命名，例如 `example.ts`。
+   - `.d.ts` 文件通常与其对应的 `.ts` 文件同名，并以 `.d.ts` 作为文件扩展名，例如 `example.d.ts`。
+
+总结来说，`.ts` 文件用于编写实际的 TypeScript 代码，包含变量、函数、类的定义和实现。而 `.d.ts` 文件用于编写类型声明，描述其他代码的类型信息，**并通常与 `.ts` 文件同名**，但不包含实际的执行代码。
 
 # 参考资料
 

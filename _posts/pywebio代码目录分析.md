@@ -42,6 +42,7 @@ pyinstaller_datas
 	指定pyinstaller要打包进去的内容。
 catch_exp_call
 	就是捕获异常，记录到日志里。
+	但是实际没有使用。
 iscoroutinefunction
 isgeneratorfunction
 get_function_name
@@ -78,10 +79,17 @@ Setter
 	
 ObjectDictProxy
 	是对默认的dict进行了一个简单的封装。
+	为什么要这个封装？默认的有什么问题？
+	就是为了访问不存在的属性不要抛出异常。
+	跟Setter的目的类似。
+	在代码中的使用是：
+	local = ObjectDictProxy(lambda: get_current_session().save)
+	注意它的参数，是setter函数，是存到session的里面了。
 	
 ReadOnlyObjectDict
 	继承了ObjectDictProxy
-	
+	readonly是靠把delitem、delattr、setitem、setattr这4个函数重写为
+		raise NotImplemented。
 LimitedSizeQueue
 	queue.Queue的子类。
 	
@@ -347,3 +355,95 @@ ScriptModeSession
 	__init__
 ```
 
+# webiojs代码分析
+
+浏览器是client，服务器是server。通过websocket连接进行双向通信。
+
+client发给server的event。
+
+server发给client的command。（这个命名跟avs的类似）
+
+```
+//session.ts里的定义：
+export interface Command {
+    command: string
+    task_id: string
+    spec: any
+}
+
+export interface ClientEvent {
+    event: string,
+    task_id: string,
+    data: any
+}
+
+```
+
+# pin的用法
+
+## pin_update
+
+有3个pin_xx函数
+
+pin_update
+
+pin_on_change
+
+pin_wait_change
+
+
+
+# demos分析
+
+## markdown_previewer
+
+这个没有使用async的方式。看看是怎么做到动态刷新的。
+
+靠的是一个死循环里一个pin_wait_change。
+
+这个模式我可以用来做edid解析器这样的应用。
+
+实时修改并预览结果。
+
+这个demo就是用来演示pin_wait_change的。
+
+# remote_access实现分析
+
+在start_server的函数，传递remote_access=True的话，那么会生成一个这样的可以在公网访问的地址：
+
+```
+http://w2flh9ps2hui.app.pywebio.online
+```
+
+这个是如何实现的？
+
+```
+start_remote_access_service
+	依赖了ssh。
+	server = os.environ.get('PYWEBIO_REMOTE_ACCESS', 'app.pywebio.online:1022')
+	然后创建了一个thread。
+	cmd = "ssh -oStrictHostKeyChecking=no -R 80:127.0.0.1:%s -p %s %s -- --output json" % (
+        local_port, server_port, server)
+```
+
+# 支持websocket的backend
+
+有3个：
+
+aiohttp
+
+fastapi
+
+tornado
+
+# `_activate_callback_env` 
+
+`_activate_callback_env` 是 PyWebIO 内部使用的函数，用于激活回调环境。它用于在 PyWebIO 应用程序中处理异步回调时的上下文管理。
+
+在 PyWebIO 中，异步回调是一种机制，允许在浏览器与服务器之间进行异步通信，以实现实时更新和交互功能。当用户在浏览器中执行某些操作（例如点击按钮、输入文本等），触发了回调事件时，PyWebIO 会在后台进行处理，并将结果返回给浏览器进行更新。
+
+在处理回调事件时，PyWebIO 使用了一种上下文管理的方式来管理回调环境。这种上下文管理机制确保了每个回调事件的执行都在独立的上下文中进行，以避免并发和状态混乱的问题。
+
+`_activate_callback_env` 函数的作用就是在处理回调事件之前，激活回调环境的上下文。它会创建一个新的回调环境，并将其设置为当前活动的回调环境，以确保回调事件的处理在正确的上下文中进行。
+
+由于 `_activate_callback_env` 是 PyWebIO 内部使用的函数，通常不需要在应用程序中直接调用它。它在 PyWebIO 框架内部的其他组件中被使用，以确保回调事件的正确处理。在正常使用 PyWebIO 进行应用程序开发时，无需关注 `_activate_callback_env` 函数的细节和具体实现。

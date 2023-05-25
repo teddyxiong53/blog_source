@@ -40,7 +40,7 @@ https://www.cnblogs.com/psbec/tag/wxWidgets/
 
 https://sites.google.com/site/xunjiluo/cppw-chapter-01
 
-wxpython教程
+wxpython教程，是wxpython in action的在线版本。
 
 https://wizardforcel.gitbooks.io/wxpy-in-action/content/5.html
 

@@ -330,7 +330,247 @@ Probe函数返回 `-EPROBE_DEFER`，
 
 从而再次执行这些驱动的probe函数（事实上，由于kernel driver framework不知道驱动互相之间的依赖关系，所以一旦有一个驱动成功probe了，kernel都会触发这个workqueue，让其去遍历一遍list）。
 
+# regulator框架
 
+Linux Regulator Framework分为四个部分，
+
+分别是machine，regulator，consumer，sys-class-regulator。
+
+machine可以理解为regulator在板级的硬件配置，使用regulator_init_data结构体代表regulator板级的配置。
+
+而regulator板级的配置，也可以称为约束，定义在regulation_constraints结构中。
+
+
+
+PMIC /生产者 驱动接口
+生产者是产生调节电压或电流的设备。这种设备的名称是PMIC，它可以用于功率排序、电池管理、dc - dc转换或简单的电源开关(开/关)。它通过软件控制，从输入功率调节输出功率。
+
+它处理调节器驱动程序，特别是生产者PMIC端，这需要几个头文件：
+
+```
+#include <linux/platform_device.h>
+#include <linux/regulator/driver.h>
+#include <linux/regulator/of_regulator.h>
+```
+
+内核通过一个 struct regulator_desc 结构来描述PMIC提供的每个调节器，
+
+该结构描述了调节器的特征。
+
+所谓调节器，我指的是任何独立的调节输出。
+
+例如，Intersil 的ISL6271A是一个具有三个独立调节输出的PMIC。
+
+然后在其驱动程序中应该有三个 regulator_desc 实例。
+
+这个结构包含了调节器的固定属性，如下所示:
+
+
+
+
+
+
+
+参考资料
+
+1、
+
+https://www.cnblogs.com/debruyne/p/9139386.html
+
+2、**Regulator 框架(一)： PMIC /生产者 驱动接口**
+
+https://blog.51cto.com/u_15127528/4279742
+
+3、Linux Regulator Framework(1)_概述
+
+http://www.wowotech.net/pm_subsystem/regulator_framework_overview.html
+
+4、
+
+https://blog.csdn.net/u014674293/article/details/113866110
+
+5、
+
+https://blog.csdn.net/Chihiro_S/article/details/123815812
+
+# amlogic功耗管理
+
+kernel这3个配置项。
+
+```
+CONFIG_AMLOGIC_SUSPEND=y
+CONFIG_AMLOGIC_GX_SUSPEND=y
+CONFIG_AMLOGIC_LEGACY_EARLY_SUSPEND=y
+```
+
+
+
+```
+# cat /sys/kernel/debug/regulator/regulator_summary
+ regulator                      use open bypass  opmode voltage current     min     max
+---------------------------------------------------------------------------------------
+ regulator-dummy                  4    3      0 unknown     0mV     0mA     0mV     0mV 
+    fe026000.saradc               1                                 0mA     0mV     0mV
+    vddcpu0                       1    2      0 unknown   769mV     0mA   689mV  1049mV 
+       cpu0                       0                                 0mA   769mV  1049mV
+       cpu0                       0                                 0mA     0mV     0mV
+    vddee                         1    0      0 unknown   901mV     0mA   701mV   901mV 
+ DC_12V                           5    3      0 unknown 12000mV     0mA 12000mV 12000mV 
+    12V                           4    2      0 unknown 12000mV     0mA 12000mV 12000mV 
+       VDDQ                       1    0      0 unknown  1200mV     0mA  1200mV  1200mV 
+       VDDAO_3V3                  6    5      0 unknown  3300mV     0mA  3300mV  3300mV 
+          VDDAO_1V8               1    0      0 unknown  1800mV     0mA  1800mV  1800mV 
+          VDDIO_3V3               5    5      0 unknown  3300mV     0mA  3300mV  3300mV 
+             fe330000.audiobus:pdm   1                                 0mA     0mV     0mV
+             fe330000.audiobus:spdif@0   1                                 0mA     0mV     0mV
+             fe330000.audiobus:tdm@2   1                                 0mA     0mV     0mV
+             fe330000.audiobus:tdm@1   1                                 0mA     0mV     0mV
+             fe330000.audiobus:tdm@0   1                                 0mA     0mV     0mV
+          VDDIO_X                 1    0      0 unknown  3300mV     0mA  3300mV  3300mV 
+          SD_3V3                  1    0      0 unknown  3300mV     0mA  3300mV  3300mV 
+          VDD_DSOFF_1V8           1    0      0 unknown  1800mV     0mA  1800mV  1800mV 
+    VDD3V3_AO_RTC                 2    1      0 unknown  3300mV     0mA  3300mV  3300mV 
+       AVDD_AO18_RTC-VDD1V8_AO_RTC   1    0      0 unknown  1800mV     0mA  1800mV  1800mV 
+    VCC5V                         5    5      0 unknown  5000mV     0mA  5000mV  5000mV 
+       fe330000.audiobus:pdm      1                                 0mA     0mV     0mV
+       fe330000.audiobus:spdif@0   1                                 0mA     0mV     0mV
+       fe330000.audiobus:tdm@2    1                                 0mA     0mV     0mV
+       fe330000.audiobus:tdm@1    1                                 0mA     0mV     0mV
+       fe330000.audiobus:tdm@0    1                                 0mA     0mV     0mV
+```
+
+以ba400为例，看懂里面的各个电压的具体内涵。
+
+12V这个是系统的供电电源。一直都在的，不受软件控制。
+
+```
+	dc_12v: fixedregulator0 {
+		compatible = "regulator-fixed";
+		regulator-name = "DC_12V";
+		regulator-min-microvolt = <12000000>;
+		regulator-max-microvolt = <12000000>;
+		regulator-boot-on;
+		regulator-always-on;
+	};
+```
+
+VCC5V，这个电压连接到外部的D622板子、spdif接口、usb host和usb otg这4个东西。
+
+**VDD_CPU**，这个电压也是一直打开的。不受软件控制。
+
+VDD_EE，跟VDD-CPU是连接在一起的。本质是同一个。
+
+VDDQ，一般表示差分电路用的电压输入。
+
+
+
+
+
+```
+VCC : 双极性晶体管供应正电压
+
+VDD: 场效应型晶体管的供应正电压
+
+VEE：双极性晶体管的负供应电压
+
+VSS：场效应晶体管的负供应电压
+```
+
+
+
+参考资料
+
+1、
+
+https://confluence.amlogic.com/pages/viewpage.action?pageId=188634730
+
+2、
+
+https://blog.csdn.net/m0_63737690/article/details/125482229
+
+3、VDD等电压名字的含义
+
+https://blog.csdn.net/juxianliyu/article/details/43533499
+
+# android待机功耗
+
+
+
+飞行模式底电流正常是所有功耗问题的前置条件，
+
+此时`wifi 、Bluetooth、Location、Radio` 都处于关闭状态。
+
+
+
+查看`CPU`是否进入`suspend `状态， `suspend `确切的说是 `MCU （ARM）`的`suspend `, 也是`CPU` 进入WFI（Wait For Interrupt）状态，`CPU` 进入`WFI`后，整个系统就依靠一颗 **SCP：SPM（System Power Manager）** 来控制 **睡眠/唤醒** 的流程
+
+
+
+`Audio playback` 时候`MTK `低端平台没有专门的`audio DSP（Heilo X20除外）`，故无法在`suspend `状态下完成`audio playback`，故需要`CPU` 做这件事情。
+
+通话的时候之所以可以睡眠，是疑问`modem` 充当了`dsp`的角色。
+
+
+
+手机所有亮屏的场景都是模块自身的耗电跟`Display` 部分耗电的叠加，所以`Display` 的功耗在整个系统中占比非常高。
+`Display` 功耗 = 硬件+平台+内容
+
+
+
+## 按下电源键锁屏后发生了什么
+
+
+
+## 手机测试功耗的方法
+
+### 测试前的准备
+
+**测试功耗数据之前，请先确认以下配置：**
+
+- 1.关闭` WIFI/BT/GPS`，关闭数据连接，设置飞行模式。 （根据具体测试场景设置）
+- 2.关闭 `mobile log/modem log/net log`，打开`LOG`会增加电流。注意：确认` /sdcard/mtklog （/data/mtklog）` 中是否有` LOG `生成，确定关闭成功。
+- 3.确认各个模块是否已经正常工作，各个模块都会影响功耗，需要在模块工作 OK 之后再测试功耗问题。
+- 4.测试将所有第三方 `APK `删除，排除第三方` APK` 问题。
+
+### 飞行模式
+
+**测试步骤：**
+
+- 1.设置飞行模式，关闭`WIFI/BT/GPS`，关闭数据连接
+- 2.关闭`mobile log、modem log、net log`
+- 3.按`power `键灭屏，灭屏`5`分钟后，开始测试电流，测试时间`5 ~ 10`分钟
+
+### 单sim卡待机
+
+**测试步骤：**
+
+- 1.关闭`WIFI/BT/GPS`，关闭数据连接
+- 2.关闭`mobile log、modem log、net log`
+- 3.按`power `键灭屏，灭屏`5`分钟后，开始测试电流，测试时间`5 ~ 10`分钟
+
+
+
+## android电源管理
+
+
+
+## 参考资料
+
+1、
+
+https://segmentfault.com/a/1190000024546448
+
+2、
+
+https://blog.csdn.net/feelabclihu/article/details/118227951
+
+3、
+
+https://segmentfault.com/a/1190000024546990
+
+4、android官方文档
+
+https://source.android.com/docs/core/power?hl=zh-cn
 
 # 参考资料
 

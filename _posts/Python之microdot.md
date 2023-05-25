@@ -131,6 +131,37 @@ websocket没有单独的一个class，而是使用with_websocket这个装饰器�
 
 给处理函数加上了一个ws的参数。
 
+## run方法分析
+
+```
+run
+	1、创建socket，bind，listen。
+	2、accept。
+	3、create_thread(self.handle_request 创建一个线程来处理连接。
+```
+
+```
+handle_request
+	1、创建一个req = Request.create
+		看看请求对象是怎么构造出来的。
+		需要的参数是：app本身，socket。
+		是把请求的内容readline逐行解析。
+		得到method、headers信息。
+	2、处理请求，返回响应。res = self.dispatch_request(req)
+	3、关闭socket。
+```
+
+```
+dispatch_request
+	1、如果请求的内容长度超过16K，返回413错误。
+		res = 'Payload too large', 413
+	2、find_route。就从url_map里查找。找到处理函数。
+	3、在调用handler之前，先把before_request_handlers执行一遍。
+	4、执行handler。
+	5、把after_request_handlers执行一遍。
+	6、把生成的res返回。
+```
+
 
 
 # 实现httpbin
@@ -194,6 +225,32 @@ Content-Type决定了接收数据的一方如何看待数据，如何处理数�
 当然，使用哪个并不是绝对的，必要时要根据前端的数据处理方式来决定。
 
 
+
+# 用chatgpt来辅助分析代码
+
+## tox.ini
+
+### envlist=flake8,py36,py37,py38,py39,py310,upy,benchmark 这个说明了什么
+
+在 `tox.ini` 文件中，`envlist` 是一个用于指定要运行的测试环境的配置选项。它列出了可以在 `tox` 命令中指定的环境名称。
+
+具体到你提供的示例中，`envlist` 包含了以下环境名称：
+
+- `flake8`: 表示运行 Flake8 代码风格检查。
+- `py36`, `py37`, `py38`, `py39`, `py310`: 表示运行 Python 版本为 3.6、3.7、3.8、3.9 和 3.10 的测试环境。
+- `upy`: 表示运行 MicroPython 的测试环境。
+- `benchmark`: 表示运行基准测试环境，用于性能评估。
+
+通过在 `tox` 命令中指定所需的环境名称，你可以选择性地运行特定的测试环境。例如，运行以下命令可以仅执行 Flake8 代码风格检查：
+```
+tox -e flake8
+```
+而如果你运行以下命令，则会运行所有列出的环境的测试任务：
+```
+tox
+```
+
+使用 `envlist` 可以方便地定义和管理多个测试环境，并根据需要选择性地运行它们。这对于在不同的 Python 版本、不同的操作系统或不同的测试需求下进行测试是非常有用的。
 
 
 

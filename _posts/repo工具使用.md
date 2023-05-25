@@ -772,3 +772,7 @@ https://gerrit.googlesource.com/git-repo/+/master/docs/manifest-format.md
 11、
 
 https://blog.csdn.net/counsellor/article/details/86591081
+
+12、
+
+https://www.cnblogs.com/jiangxinnju/p/14274982.html

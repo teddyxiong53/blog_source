@@ -1,0 +1,58 @@
+<mxfile host="Electron" modified="2023-05-24T12:34:37.111Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.2.8 Chrome/112.0.5615.165 Electron/24.2.0 Safari/537.36" etag="KwlPTWU5ChT71RGHNiYS" version="21.2.8" type="device">
+  <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
+    <mxGraphModel dx="721" dy="521" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="WIyWlLk6GJQsqaUBKTNV-0" />
+        <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0" />
+        <mxCell id="IHkwjAcm55qXndeb-1z_-0" value="Micordot" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="100" y="100" width="230" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="IHkwjAcm55qXndeb-1z_-1" value="&lt;div&gt;url_map&lt;/div&gt;&lt;div&gt;before_request_handlers&lt;/div&gt;&lt;div&gt;after_request_handlers&lt;/div&gt;&lt;div&gt;error_handlers&lt;/div&gt;&lt;div&gt;shutdown_requested&lt;/div&gt;&lt;div&gt;debug&lt;/div&gt;&lt;div&gt;server：就是socket handle&lt;/div&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="IHkwjAcm55qXndeb-1z_-0">
+          <mxGeometry y="26" width="230" height="124" as="geometry" />
+        </mxCell>
+        <mxCell id="IHkwjAcm55qXndeb-1z_-2" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="IHkwjAcm55qXndeb-1z_-0">
+          <mxGeometry y="150" width="230" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="IHkwjAcm55qXndeb-1z_-3" value="&lt;div&gt;route&lt;/div&gt;&lt;div&gt;get/post/put/patch/delete&lt;/div&gt;&lt;div&gt;before_request&lt;/div&gt;&lt;div&gt;after_request&lt;/div&gt;&lt;div&gt;errorhandler&lt;/div&gt;&lt;div&gt;mount&lt;/div&gt;&lt;div&gt;abort 静态&lt;/div&gt;&lt;div&gt;run 主函数&lt;/div&gt;&lt;div&gt;shutdown&lt;/div&gt;&lt;div&gt;find_route&lt;/div&gt;&lt;div&gt;handle_request&lt;/div&gt;&lt;div&gt;dispatch_request&lt;/div&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="IHkwjAcm55qXndeb-1z_-0">
+          <mxGeometry y="158" width="230" height="202" as="geometry" />
+        </mxCell>
+        <mxCell id="IHkwjAcm55qXndeb-1z_-4" value="Request" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="420" y="110" width="160" height="550" as="geometry" />
+        </mxCell>
+        <mxCell id="IHkwjAcm55qXndeb-1z_-5" value="&lt;div&gt;&lt;div&gt;max_content_length&lt;/div&gt;&lt;div&gt;max_body_length&lt;/div&gt;&lt;div&gt;max_readline&lt;/div&gt;&lt;/div&gt;&lt;div&gt;上面的是类变量&lt;/div&gt;&lt;div&gt;app&amp;nbsp;&lt;/div&gt;&lt;div&gt;client_addr&amp;nbsp;&lt;/div&gt;&lt;div&gt;method&amp;nbsp;&lt;/div&gt;&lt;div&gt;url&amp;nbsp;&lt;/div&gt;&lt;div&gt;path&amp;nbsp;&lt;/div&gt;&lt;div&gt;query_string&amp;nbsp;&lt;/div&gt;&lt;div&gt;args&amp;nbsp;&lt;/div&gt;&lt;div&gt;headers&amp;nbsp;&lt;/div&gt;&lt;div&gt;cookies&amp;nbsp;&lt;/div&gt;&lt;div&gt;content_length&amp;nbsp;&lt;/div&gt;&lt;div&gt;content_type&amp;nbsp;&lt;/div&gt;&lt;div&gt;g&amp;nbsp;&lt;/div&gt;&lt;div&gt;http_version&amp;nbsp;&lt;/div&gt;&lt;div&gt;&lt;div&gt;path&lt;/div&gt;&lt;div&gt;args&lt;/div&gt;&lt;div&gt;content_length&lt;/div&gt;&lt;div&gt;content_type&lt;/div&gt;&lt;div&gt;cookies&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="IHkwjAcm55qXndeb-1z_-4">
+          <mxGeometry y="26" width="160" height="344" as="geometry" />
+        </mxCell>
+        <mxCell id="IHkwjAcm55qXndeb-1z_-6" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="IHkwjAcm55qXndeb-1z_-4">
+          <mxGeometry y="370" width="160" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="IHkwjAcm55qXndeb-1z_-7" value="&lt;div&gt;create 静态方法&lt;/div&gt;&lt;div&gt;_parse_urlencoded&lt;/div&gt;&lt;div&gt;下面4个是property&lt;/div&gt;&lt;div&gt;body&lt;/div&gt;&lt;div&gt;stream&lt;/div&gt;&lt;div&gt;json&lt;/div&gt;&lt;div&gt;form&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;after_request&lt;/div&gt;&lt;div&gt;_safe_readline 静态方法&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="IHkwjAcm55qXndeb-1z_-4">
+          <mxGeometry y="378" width="160" height="172" as="geometry" />
+        </mxCell>
+        <mxCell id="IHkwjAcm55qXndeb-1z_-8" value="Response" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="190" y="780" width="160" height="290" as="geometry" />
+        </mxCell>
+        <mxCell id="IHkwjAcm55qXndeb-1z_-9" value="&lt;div&gt;types_map&lt;/div&gt;&lt;div&gt;send_file_buffer_size&lt;/div&gt;&lt;div&gt;default_content_type&lt;/div&gt;&lt;div&gt;already_handled&lt;/div&gt;&lt;div&gt;上面的是类变量&lt;/div&gt;&lt;div&gt;&lt;div&gt;status_code&lt;/div&gt;&lt;div&gt;headers&lt;/div&gt;&lt;div&gt;reason&lt;/div&gt;&lt;div&gt;body&lt;/div&gt;&lt;/div&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="IHkwjAcm55qXndeb-1z_-8">
+          <mxGeometry y="26" width="160" height="154" as="geometry" />
+        </mxCell>
+        <mxCell id="IHkwjAcm55qXndeb-1z_-10" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="IHkwjAcm55qXndeb-1z_-8">
+          <mxGeometry y="180" width="160" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="IHkwjAcm55qXndeb-1z_-11" value="&lt;div&gt;set_cookie&lt;/div&gt;&lt;div&gt;complete&lt;/div&gt;&lt;div&gt;write&lt;/div&gt;&lt;div&gt;body_iter&lt;/div&gt;&lt;div&gt;redirect 类方法&lt;/div&gt;&lt;div&gt;send_file 类方法&lt;/div&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="IHkwjAcm55qXndeb-1z_-8">
+          <mxGeometry y="188" width="160" height="102" as="geometry" />
+        </mxCell>
+        <mxCell id="IHkwjAcm55qXndeb-1z_-12" value="URLPattern" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="530" y="806" width="160" height="124" as="geometry" />
+        </mxCell>
+        <mxCell id="IHkwjAcm55qXndeb-1z_-13" value="&lt;div&gt;url_pattern&lt;/div&gt;&lt;div&gt;pattern&lt;/div&gt;&lt;div&gt;args&lt;/div&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="IHkwjAcm55qXndeb-1z_-12">
+          <mxGeometry y="26" width="160" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="IHkwjAcm55qXndeb-1z_-14" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="IHkwjAcm55qXndeb-1z_-12">
+          <mxGeometry y="90" width="160" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="IHkwjAcm55qXndeb-1z_-15" value="&lt;div style=&quot;color: rgb(56, 58, 66); background-color: rgb(250, 250, 250); font-family: Consolas, &amp;quot;Courier New&amp;quot;, monospace; font-size: 14px; line-height: 19px;&quot;&gt;match&lt;/div&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="IHkwjAcm55qXndeb-1z_-12">
+          <mxGeometry y="98" width="160" height="26" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
