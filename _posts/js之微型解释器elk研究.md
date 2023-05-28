@@ -107,5 +107,49 @@ static void cb(struct mg_connection *c, int ev, void *ev_data, void *fn_data) {
 
 3、websocket上使用了jsonrpc。执行收到的js脚本内容。并把执行结果返回。
 
+# 提交历史分析
+
+第一个提交是2019年10月7日。
+
+最开始是闭源的。以libelk.a和elk.h的方式提供。
+
+第二次提交增加了unittest。
+
+2021年5月2日，把之前发布的a文件都去掉了。
+
+然后开源了。
+
+# 对外接口分析
+
+一个跟C语言对接的实现接口是这样：
+
+```
+static jsval_t gpio_write(struct js* js, jsval_t *args, int nargs)
+{
+    //先检查参数。
+    bool ret ;
+    ret = js_chkargs(args, nargs, "dd");
+    if (!ret) {
+        return js_mkerr(js, "bad args");
+    }
+    int pin = js_getnum(args[0]);
+    int val = js_getnum(args[1]);
+    printf("write pin:%d value:%d\n", pin ,val);
+    return js_mknull();
+}
+```
+
+关键是这个参数的检查字符串是怎么定义的。
+
+```
+只有4个字母的情况。
+b：bool
+d：数字
+s：字符串
+j：js对象。
+```
+
+# 用elk+mongoose实现一个精简的nodejs
+
 
 
