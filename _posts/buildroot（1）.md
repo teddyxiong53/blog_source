@@ -1600,6 +1600,31 @@ endef
 
 可以用diff生成，也可以用git生成。
 
+在buildroot/dl/xx下面，把压缩包解包。
+
+以systemd下面的修改为例：
+
+假设src/network/netdev/fou-tunnel.c需要修改。
+
+那么拷贝fou-tunnel.c为fou-tunnel.c.modify。修改好之后。
+
+执行命令：
+
+```
+diff -u src/network/netdev/fou-tunnel.c src/network/netdev/fou-tunnel.c.modify > 0002-fix-fou-tunnel-compile-error.patch
+```
+
+把得到的0002-fix-fou-tunnel-compile-error.patch里的文件路径修改一下：
+
+```
+--- a/src/network/netdev/fou-tunnel.c	2020-02-07 15:50:52.000000000 +0000
++++ b/src/network/netdev/fou-tunnel.c	2023-05-29 08:41:33.488503440 +0000
+```
+
+然后把patch文件放到package/systemd目录下。
+
+这样才能在make的时候patch成功。
+
 
 
 # 添加一个user
@@ -2479,7 +2504,174 @@ images/rootfs.cpio: ROOTFS=CPIO
 
 ```
 
+# init初始化系统
 
+有这么几种，默认用的是busybox自带的。
+
+```
+BR2_INIT_BUSYBOX=y
+# BR2_INIT_SYSV is not set
+# BR2_INIT_OPENRC is not set
+# BR2_INIT_SYSTEMD is not set
+# BR2_INIT_NONE is not set
+```
+
+现在看看能不能切换到systemd。
+
+systemd一定要使用udev的。
+
+通过menuconfig来选中。看看.config有什么不同了。
+
+有较多的配置项改变。
+
+需要一个个梳理一下。
+
+```
+config BR2_INIT_SYSTEMD
+	bool "systemd"
+	depends on BR2_PACKAGE_SYSTEMD_ARCH_SUPPORTS
+	depends on BR2_TOOLCHAIN_USES_GLIBC
+	depends on BR2_TOOLCHAIN_HAS_SSP
+	depends on BR2_USE_MMU
+	depends on !BR2_STATIC_LIBS
+	depends on BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_10
+	select BR2_ROOTFS_MERGED_USR
+	select BR2_PACKAGE_SYSTEMD
+```
+
+要求BR2_ROOTFS_MERGED_USR
+
+分析一下这个文件：
+
+buildroot\package\skeleton-init-systemd\skeleton-init-systemd.mk
+
+会创建这些目录：
+
+```
+define SKELETON_INIT_SYSTEMD_INSTALL_TARGET_CMDS
+	mkdir -p $(TARGET_DIR)/home
+	mkdir -p $(TARGET_DIR)/srv
+	mkdir -p $(TARGET_DIR)/var
+	ln -s ../run $(TARGET_DIR)/var/run
+	$(SKELETON_INIT_SYSTEMD_ROOT_RO_OR_RW)
+endef
+```
+
+把.config.old跟.config对比，把不同的配置项提取出来。整理成一个config文件。include到产品的配置里。
+
+重新source setenv.sh一下。得到的文件，跟之前的一样。说明修改是有效的。
+
+现在的情况下。需要把output都删掉。然后重新编译新的目录出来看看。
+
+
+
+# 一些配置项的含义
+
+在工作过程中，碰到的一些配置，顺手用chatgpt查一下含义。然后记录下来。
+
+## BR2_NEEDS_HOST_UTF8_LOCALE
+
+`BR2_NEEDS_HOST_UTF8_LOCALE` 是 Buildroot 的一个配置选项，用于指示构建过程是否需要在主机系统上启用 UTF-8 本地化设置。
+
+当设置 `BR2_NEEDS_HOST_UTF8_LOCALE` 为 `y` 时，Buildroot 构建过程会检查主机系统的本地化设置是否为 UTF-8 编码。如果检测到主机系统没有启用 UTF-8 本地化，构建过程会尝试自动为主机系统设置 UTF-8 本地化。
+
+UTF-8 是一种广泛使用的 Unicode 字符编码，支持包括中文、日文、韩文等在内的众多字符集。在构建某些软件包或工具链时，特别是涉及多语言或国际化的应用程序时，确保主机系统启用了 UTF-8 本地化可以避免字符编码相关的问题。
+
+通过设置 `BR2_NEEDS_HOST_UTF8_LOCALE` 选项，Buildroot 可以在构建过程中检查并确保主机系统启用了 UTF-8 本地化，以提高构建软件的兼容性和正确性。
+
+请注意，`BR2_NEEDS_HOST_UTF8_LOCALE` 的设置依赖于主机系统的配置和环境，因此在某些情况下可能需要手动确保主机系统已正确启用 UTF-8 本地化。
+
+
+
+## BR2_ROOTFS_MERGED_USR
+
+`BR2_ROOTFS_MERGED_USR` 是 Buildroot 中的一个配置选项，用于控制是否将 `/usr` 目录与根文件系统合并。
+
+当设置 `BR2_ROOTFS_MERGED_USR` 为 `y` 时，Buildroot 将 `/usr` 目录与根文件系统合并为单个根文件系统。这意味着 `/usr` 目录下的内容将被移动到根文件系统的相应位置，而 `/usr` 目录本身将被删除。
+
+此配置选项的目的是符合 Filesystem Hierarchy Standard (FHS) 规范，该规范定义了 Linux 系统中不同目录的用途和布局。根据 FHS，`/usr` 目录应包含与系统无关的数据和应用程序，而不包含系统启动和维护所需的重要文件。
+
+通过设置 `BR2_ROOTFS_MERGED_USR` 选项，您可以选择是否将 `/usr` 目录与根文件系统合并，以符合 FHS 规范。这在某些情况下可能会减少文件系统的复杂性和分区的数量。
+
+请注意，合并 `/usr` 目录可能会导致一些变化和影响，因此在使用此选项之前，请确保了解和理解相关的系统需求和限制。
+
+## FHS说明
+
+Filesystem Hierarchy Standard (FHS) 是一个用于 Linux 和其他类 Unix 操作系统的文件系统布局规范。它定义了各个目录的用途和预期内容，以提供一致的文件系统结构，使不同的发行版和系统具有相似的布局和组织。
+
+以下是 FHS 规范中一些重要目录的说明：
+
+- `/bin`: 存放系统启动和基本维护所需的核心命令和可执行文件。
+
+- `/boot`: 存放启动加载程序 (bootloader) 的文件和内核镜像等引导相关的文件。
+
+- `/dev`: 存放设备文件，用于与硬件设备进行交互。
+
+- `/etc`: 存放系统配置文件，包括各种应用程序和服务的配置文件。
+
+- `/home`: 存放用户的个人主目录。
+
+- `/lib` 和 `/lib64`: 存放共享库文件，供系统和应用程序使用。
+
+- `/mnt` 和 `/media`: 用于挂载临时文件系统和可移动媒体设备的挂载点。
+
+- `/opt`: 存放可选的第三方软件包。
+
+- `/sbin`: 存放系统管理员使用的系统管理和维护命令。
+
+- `/srv`: 存放特定服务的数据目录，如网络服务的数据文件。
+
+- `/tmp`: 存放临时文件，该目录下的文件可能会在系统重启后被删除。
+
+- `/usr`: 存放与系统无关的数据和应用程序。其中 `/usr/bin` 存放用户命令，`/usr/lib` 存放非必要的库文件，`/usr/share` 存放共享数据等。
+
+- `/var`: 存放可变数据，包括日志文件、缓存文件、临时文件等。
+
+FHS 规范有助于确保不同的 Linux 系统在文件系统布局方面保持一致性，使开发者、管理员和用户更容易理解和操作系统的文件组织结构。此外，遵循 FHS 规范还有助于提高软件的可移植性和兼容性。
+
+
+
+## BR2_PACKAGE_LIBCAP
+
+`BR2_PACKAGE_LIBCAP` 是 Buildroot 构建系统中的一个选项，用于配置是否包含 libcap 库在生成的根文件系统中。
+
+libcap 是 Linux 系统中用于控制进程权限的库。它提供了一组函数和工具，用于管理和操作进程的能力（capabilities）。能力是一种细粒度的权限机制，允许进程在不具备完整 root 权限的情况下执行特权操作，从而提高系统的安全性。
+
+当 `BR2_PACKAGE_LIBCAP` 设置为 "y"（或者通过配置文件中的 `BR2_PACKAGE_LIBCAP=y` 来设置）时，Buildroot 构建系统将在生成的根文件系统中包含 libcap 库。这意味着生成的根文件系统将具备 libcap 库的功能，可以使用相关函数和工具来管理进程的能力。
+
+相反，如果 `BR2_PACKAGE_LIBCAP` 设置为 "n"，Buildroot 构建系统将不包含 libcap 库。这意味着生成的根文件系统将没有 libcap 库的功能，相关的能力管理操作将不可用。
+
+通过配置 `BR2_PACKAGE_LIBCAP`，开发者可以根据具体需求选择是否在生成的根文件系统中包含 libcap 库。这样可以灵活地控制根文件系统的大小和功能，以适应不同的嵌入式系统需求。需要注意的是，如果应用程序或系统组件依赖于 libcap，那么应该选择包含 libcap 库以满足其运行需求。
+
+## BR2_KERNEL_64_USERLAND_32
+
+`BR2_KERNEL_64_USERLAND_32` 是 Buildroot 构建系统中的一个选项，用于配置生成的根文件系统是否支持在 64 位内核下运行 32 位用户空间。
+
+在 Linux 系统中，内核和用户空间是分离的，内核负责底层系统管理和硬件访问，而用户空间则包含应用程序和用户级别的进程。一般情况下，内核和用户空间应该匹配，即 32 位内核应该与 32 位用户空间配合使用，64 位内核应该与 64 位用户空间配合使用。
+
+然而，某些情况下，可能需要在 64 位内核下运行 32 位用户空间。这种配置通常用于向后兼容性或特定应用程序的需求。`BR2_KERNEL_64_USERLAND_32` 选项就是用于配置 Buildroot 构建系统是否支持此类配置。
+
+当 `BR2_KERNEL_64_USERLAND_32` 设置为 "y"（或者通过配置文件中的 `BR2_KERNEL_64_USERLAND_32=y` 来设置）时，Buildroot 构建系统将生成支持在 64 位内核下运行 32 位用户空间的根文件系统。这意味着生成的根文件系统将包含适用于 32 位用户空间的库、工具和配置。
+
+相反，如果 `BR2_KERNEL_64_USERLAND_32` 设置为 "n"，Buildroot 构建系统将生成与内核位数相匹配的根文件系统，即 64 位内核下运行 64 位用户空间或 32 位内核下运行 32 位用户空间。
+
+通过配置 `BR2_KERNEL_64_USERLAND_32`，开发者可以根据具体需求选择生成支持 64 位内核下运行 32 位用户空间的根文件系统，以满足特定的兼容性或应用程序需求。
+
+
+
+## BR2_ENABLE_LOCALE_PURGE
+
+`BR2_ENABLE_LOCALE_PURGE` 是 Buildroot 构建系统中的一个选项，用于配置是否在生成的根文件系统中清理本地化相关的文件。
+
+在 Linux 系统中，本地化相关的文件包括语言环境配置文件、本地化消息目录和其他与多语言支持相关的文件。这些文件可能占据较大的空间，因此在嵌入式系统中可能希望减少不必要的本地化文件，以降低根文件系统的大小。
+
+当 `BR2_ENABLE_LOCALE_PURGE` 设置为 "y"（或者通过配置文件中的 `BR2_ENABLE_LOCALE_PURGE=y` 来设置）时，Buildroot 构建系统将在生成的根文件系统中进行本地化文件的清理。这意味着生成的根文件系统将删除不必要的本地化相关文件，以减少根文件系统的大小。
+
+清理的具体操作包括删除不使用的语言环境配置文件、删除未使用的本地化消息目录和其他相关文件的清理。这样可以有效地减少根文件系统的大小，特别是在对多语言支持要求较低的嵌入式系统中。
+
+相反，如果 `BR2_ENABLE_LOCALE_PURGE` 设置为 "n"，Buildroot 构建系统将保留所有的本地化相关文件，包括语言环境配置文件和本地化消息目录。
+
+通过配置 `BR2_ENABLE_LOCALE_PURGE`，开发者可以根据需求选择是否清理根文件系统中的本地化文件，以控制根文件系统的大小和特定的本地化需求。
 
 # 参考资料
 

@@ -100,3 +100,33 @@ Raspberry Pi Pico 模拟器上的一个简单的 CircuitPython，构建在 rp204
 您可以使用此模拟器在您的计算机上运行 CircuitPython 的发布固件，即使您无法访问物理硬件。您可以将其用于自动化测试（例如在 CI 环境中），以及用于教育目的。
 
 如果您正在寻找一个成熟的、用户友好的 CircuitPython 模拟器，请查看 Wokwi：在 Wokwi 上启动一个新的 CircuitPython 项目。
+
+# 支持的硬件
+
+## mcu
+
+avr
+
+esp32
+
+stm32
+
+rp2040
+
+## sensor
+
+
+
+
+
+https://wokwi.com/projects/356530577106394113
+
+
+
+
+
+# 参考资料
+
+1、
+
+https://docs.wokwi.com/zh-CN/
