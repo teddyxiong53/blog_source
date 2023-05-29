@@ -69,7 +69,13 @@ echo c > /proc/sysrq-trigger
 
 
 
-参考资料
+```
+ramoops.pstore_en=1 ramoops.record_size=0x8000 ramoops.console_size=0x4000
+```
+
+
+
+# 参考资料
 
 1、
 

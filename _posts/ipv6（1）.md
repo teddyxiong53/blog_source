@@ -140,7 +140,7 @@ ipv6在设计之初就充分考虑了ipv4和ipv6的兼容性。
 
 # Linux怎样支持ipv6
 
-
+# 检查ipv6支持
 
 你可以访问这个网站，<http://test-ipv6.com/>，来检测你的宽带是否支持ipv6.
 
@@ -156,7 +156,104 @@ ipv6在设计之初就充分考虑了ipv4和ipv6的兼容性。
 
 整体而言，目前国内大部分地区的家庭宽带和4G网络基本都已用上IPv6协议，但部分家庭路由器对IPv6的支持欠佳。
 
-参考资料
+# 编程连接ipv6的服务器
+
+## tcp编程
+
+要在Python中使用Socket编程连接到IPv6地址，可以使用`socket`模块中的`socket.AF_INET6`来创建IPv6套接字对象。然后，使用`socket.connect()`方法来建立与目标IPv6地址的连接。
+
+下面是一个简单的示例代码，演示了如何连接到IPv6地址：
+
+```python
+import socket
+
+# 创建IPv6套接字对象
+sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+
+# 目标IPv6地址和端口
+ipv6_addr = '2001:db8::1'  # 替换为目标IPv6地址
+port = 8888  # 替换为目标端口
+
+# 连接到目标IPv6地址
+sock.connect((ipv6_addr, port))
+
+# 在连接成功后，可以进行读写操作
+# 例如，发送数据
+data = 'Hello, World!'
+sock.send(data.encode())
+
+# 接收响应数据
+response = sock.recv(1024)
+print(response.decode())
+
+# 关闭套接字连接
+sock.close()
+```
+
+在代码中，首先创建了一个IPv6套接字对象`sock`，然后通过`sock.connect()`方法连接到目标IPv6地址和端口。连接成功后，可以使用`sock.send()`方法发送数据，使用`sock.recv()`方法接收响应数据。最后，记得关闭套接字连接。
+
+请根据实际情况替换代码中的目标IPv6地址和端口，并根据需要进行适当的错误处理和异常处理。
+
+## http编程
+
+要在Python中使用HTTP编程连接到IPv6地址，可以使用`http.client`模块中的`HTTPConnection`类，并通过`socket.AF_INET6`创建IPv6套接字对象。
+
+下面是一个示例代码，演示了如何使用HTTPConnection连接到IPv6地址：
+
+```python
+import http.client
+
+# 目标IPv6地址和端口
+ipv6_addr = '2001:db8::1'  # 替换为目标IPv6地址
+port = 80  # 替换为目标端口
+
+# 创建IPv6套接字对象
+sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+
+# 创建HTTPConnection对象并连接到目标IPv6地址
+conn = http.client.HTTPConnection(ipv6_addr, port, source_address=(sock, 0, 0, 0))
+
+# 发送HTTP请求
+conn.request('GET', '/')
+
+# 获取HTTP响应
+response = conn.getresponse()
+
+# 打印响应状态码和内容
+print('Response Status:', response.status)
+print('Response Content:', response.read().decode())
+
+# 关闭连接
+conn.close()
+```
+
+在代码中，首先创建了一个IPv6套接字对象`sock`，然后使用`HTTPConnection`类创建了一个HTTP连接对象`conn`，并通过`source_address`参数指定了套接字对象。然后，使用`conn.request()`方法发送HTTP请求，并使用`conn.getresponse()`方法获取HTTP响应。最后，打印响应的状态码和内容，并关闭连接。
+
+请根据实际情况替换代码中的目标IPv6地址和端口，并根据需要进行适当的错误处理和异常处理。
+
+# ipv6的使用场景
+
+IPv6在以下几个方面得到广泛应用：
+
+1. 网络通信：IPv6被设计用于替代现有的IPv4协议，以解决IPv4地址耗尽的问题。IPv6在互联网通信中扮演着重要角色，提供了更大的地址空间和更好的网络连接性能。
+
+2. 云计算和数据中心：IPv6在云计算和数据中心环境中得到广泛采用。大规模的云服务提供商和数据中心运营商使用IPv6来支持更多的主机和设备连接，提供更好的可扩展性和性能。
+
+3. 物联网（IoT）：随着物联网设备的普及，IPv6成为了连接大量物联网设备的关键技术。IPv6的地址空间足够大，可以为每个物联网设备分配一个唯一的全局地址，从而实现设备间的直接通信和远程管理。
+
+4. 移动通信：IPv6在移动通信领域的应用越来越重要。随着移动设备的增多和移动网络的发展，IPv6可以提供更多的地址，更好地支持移动设备的连接和移动性管理。
+
+5. 内部网络：许多组织和企业在内部网络中开始采用IPv6，以提供更多的IP地址和更好的网络性能。IPv6可以支持更多的终端设备和服务，并提供更好的网络安全性和管理能力。
+
+总的来说，IPv6在全球范围内的网络通信、云计算、物联网、移动通信和内部网络等领域都有广泛的应用。随着IPv4地址耗尽的压力不断增加，IPv6的重要性和应用范围将进一步扩大。
+
+
+
+# OpenThread介绍
+
+
+
+# 参考资料
 
 1、
 

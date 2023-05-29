@@ -26,13 +26,15 @@ markdown编写：typora
 
 2022年11月30日 
 
-现在开始，画图工具全部切换成vscode的drawio插件，方法是：
+~~现在开始，画图工具全部切换成vscode的drawio插件，方法是：~~
 
-1、vscode搜索drawio，安装对应的插件。
+~~1、vscode搜索drawio，安装对应的插件。~~
 
-2、新建xx.drawio文件。用vscode打开，就可以激活插件并进行绘制。
+~~2、新建xx.drawio文件。用vscode打开，就可以激活插件并进行绘制。~~
 
-3、保存的文件是未压缩的xml格式。非常便于版本管理。
+~~3、保存的文件是未压缩的xml格式。非常便于版本管理。~~
+
+直接用drawio的桌面版本，响应速度比vscode的插件要好很多。
 
 
 
