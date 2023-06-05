@@ -643,7 +643,19 @@ endef
 
 当前我们实际上没有使用。
 
+在 Buildroot 中，`fs/tar` 是一个构建选项，用于生成使用 tar 压缩算法打包的根文件系统镜像。
 
+当使用 `fs/tar` 选项时，Buildroot 会在构建过程中使用 tar 工具将根文件系统的内容打包为一个 tar 归档文件。这个归档文件通常具有 `.tar` 扩展名。
+
+这个根文件系统镜像可以用于嵌入式系统中作为引导过程中的根文件系统。它包含了操作系统所需的各种文件和目录，如设备节点、库文件、配置文件、二进制可执行文件等。
+
+在构建过程中，Buildroot 会根据配置选项和软件包列表来生成根文件系统镜像，将所需的文件和目录复制到一个临时目录中，然后使用 tar 工具进行打包。
+
+根文件系统镜像生成后，可以通过不同的方式使用，例如通过 TFTP、NFS、SD 卡等方式加载到目标设备上，并作为引导过程中的根文件系统。
+
+请注意，`fs/tar` 只是 Buildroot 中一种生成根文件系统镜像的选项之一，还有其他选项可供选择，如 `fs/cpio` 和 `fs/ext2` 等。具体使用哪个选项取决于项目需求和目标设备的要求。
+
+建议参考 Buildroot 的文档和配置文件以获取更详细的配置信息和用法示例。
 
 # android boot.img和recovery.img里的ramdisk分析
 
@@ -691,15 +703,27 @@ linux调用populate_rootfs默认会并加载boot分区自带的ramdisk（recover
 
 # android的ramdisk
 
+在 Android 中，RAM Disk（内存磁盘）是一个用于临时存储文件系统的虚拟磁盘映像，通常被称为 initramfs 或 initrd。它是一个临时的文件系统，将完整的文件系统镜像加载到内存中，用于在启动过程中提供根文件系统。
 
+Android 的 RAM Disk 主要包含以下组件：
 
+1. init 可执行文件：作为 Android 系统启动的初始进程，负责初始化系统并启动其他进程和服务。
 
+2. dev 目录：包含设备节点，用于访问硬件设备。
 
-U-Boot启动参数：
+3. proc 目录：提供了系统进程的信息和统计数据。
 
-setenv bootargs "root=/dev/ram rw initrd=0x31800000,16M console=tty0 console=ttySAC0,115200"
+4. sys 目录：用于访问内核的运行时信息和参数。
 
-我看看我当前的系统
+5. default.prop 文件：存储系统启动时的默认属性和配置。
+
+6. init.rc 文件：定义了 Android 系统的初始化过程、服务和进程启动顺序。
+
+通过将 RAM Disk 加载到内存中，Android 可以快速启动并建立起运行环境，然后加载根文件系统并继续启动其他系统组件和应用程序。
+
+RAM Disk 在 Android 的启动过程中扮演着重要的角色，它提供了必要的文件系统和资源，使系统能够正常运行和加载其他组件。RAM Disk 的内容和组织结构可以根据不同的 Android 版本和设备厂商的需求而有所变化。
+
+请注意，RAM Disk 是 Android 系统的一部分，与 Android 版本和设备相关。具体的 RAM Disk 实现和用法可能会因 Android 版本、设备制造商和定制需求而有所不同。详细了解和使用 Android 的 RAM Disk 需要参考具体的 Android 文档和设备制造商的指南。
 
 
 
@@ -826,6 +850,10 @@ BLK_DEV_RAM应该是要这个也使能，才说明使用initrd。
 否则表示是initramfs。
 
 
+
+这个应该表示的是buildroot来控制把哪些内容打包到kernel Image文件里。
+
+我们的不一样，是因为我们是借助了android的mkbootimg工具，使用了android的镜像格式。
 
 # 一篇不错的教程
 
@@ -1048,6 +1076,76 @@ unpack_to_rootfs()函数解压缩后得到的是一个块虚拟的设备 镜像�
 参考资料
 
 https://www.cnblogs.com/sky-heaven/p/13856545.html
+
+# CONFIG_INITRAMFS_SOURCE=""
+
+`CONFIG_INITRAMFS_SOURCE=""` 是 Linux 内核配置选项之一，用于指定初始化 RAM 文件系统（initramfs）的源文件。
+
+**当 `CONFIG_INITRAMFS_SOURCE` 的值为空字符串时，表示未指定任何源文件用于构建 initramfs。**
+
+**这意味着内核将使用默认的 initramfs 配置和生成机制。**
+
+通常情况下，如果需要自定义 initramfs，可以将 `CONFIG_INITRAMFS_SOURCE` 设置为一个目录的路径，该目录包含了构建 initramfs 所需的文件和目录结构。可以将自定义的文件、脚本和其他资源放置在该目录中，并在编译内核时将其指定为 `CONFIG_INITRAMFS_SOURCE`。
+
+具体的配置方法和工具可能因使用的 Linux 发行版或内核版本而有所不同。在进行内核配置时，可以使用工具如 `make menuconfig`、`make xconfig` 或 `make config` 来查找和修改 `CONFIG_INITRAMFS_SOURCE` 的设置。
+
+需要注意的是，使用 initramfs 可以在系统引导过程中加载和使用额外的文件、脚本和驱动程序，以支持特定的引导需求，如加密文件系统、网络配置、设备初始化等。自定义 initramfs 可以根据实际需求进行定制和扩展。
+
+# kernel里跟initramfs相关的配置项
+
+在 Linux 内核中，启动 initramfs 需要进行一些相关的配置。以下是一些常见的内核配置选项，用于启用和配置 initramfs 的支持：
+
+1. **CONFIG_INITRAMFS_SOURCE:** 该选项用于指定 initramfs 的源文件。可以设置为一个目录的路径，该目录包含了构建 initramfs 所需的文件和目录结构。可以将自定义的文件、脚本和其他资源放置在该目录中。
+
+2. **CONFIG_BLK_DEV_INITRD:** 该选项用于启用或禁用 initrd 的支持。当该选项被设置为 "y"，表示启用 initrd 支持。initrd 是旧版的 initramfs，现在一般推荐使用 initramfs。
+
+3. **CONFIG_RD_GZIP:** 该选项用于启用对 gzip 压缩的 initrd/initramfs 的支持。当该选项被设置为 "y"，表示启用对 gzip 压缩的 initrd/initramfs 的支持。
+
+4. **CONFIG_RD_BZIP2:** 该选项用于启用对 bzip2 压缩的 initrd/initramfs 的支持。当该选项被设置为 "y"，表示启用对 bzip2 压缩的 initrd/initramfs 的支持。
+
+5. **CONFIG_RD_LZMA:** 该选项用于启用对 lzma 压缩的 initrd/initramfs 的支持。当该选项被设置为 "y"，表示启用对 lzma 压缩的 initrd/initramfs 的支持。
+
+6. **CONFIG_RD_XZ:** 该选项用于启用对 xz 压缩的 initrd/initramfs 的支持。当该选项被设置为 "y"，表示启用对 xz 压缩的 initrd/initramfs 的支持。
+
+这些配置选项在进行内核编译时，通常可以通过工具如 `make menuconfig`、`make xconfig` 或 `make config` 进行设置和修改。具体的配置方法和工具可能因使用的 Linux 发行版或内核版本而有所不同。
+
+需要注意的是，内核启动时的 initramfs 支持还涉及到引导加载程序（如 GRUB）的配置和命令行参数的设置。在引导加载程序中，需要指定内核映像和 initramfs 文件的位置，以及相关的内核参数，以正确加载和启动 initramfs。
+
+# u-boot如何指定内核映像和 initramfs 文件的位置
+
+在 U-Boot 中，可以通过设置环境变量来指定内核映像和 initramfs 文件的位置。具体的环境变量可能因 U-Boot 版本和配置而有所不同，下面是一些常见的环境变量及其用法示例：
+
+1. **bootargs:** 这个环境变量用于指定内核启动参数，包括内核映像和 initramfs 文件的位置。示例：
+   ```
+   setenv bootargs 'console=ttyS0 root=/dev/mmcblk0p2 rw rootwait'
+   ```
+
+2. **bootcmd:** 这个环境变量用于定义启动命令。在启动命令中可以指定加载内核映像和 initramfs 文件的方式和位置。示例：
+   ```
+   setenv bootcmd 'ext4load mmc 0:1 0x8000000 /boot/zImage; ext4load mmc 0:1 0x9000000 /boot/initramfs.cpio.gz; bootz 0x8000000 0x9000000'
+   ```
+
+3. **bootargs_root:** 这个环境变量用于指定 root 文件系统的位置，可以与 initramfs 配合使用。示例：
+   
+   ```
+   setenv bootargs_root 'root=/dev/mmcblk0p2 rootwait'
+```
+   
+4. **loadaddr:** 这个环境变量用于指定加载内核映像的地址。示例：
+   
+   ```
+   setenv loadaddr 0x8000000
+```
+   
+5. **initrdaddr:** 这个环境变量用于指定加载 initramfs 文件的地址。示例：
+   
+   ```
+   setenv initrdaddr 0x9000000
+   ```
+
+需要根据具体的硬件平台和 U-Boot 版本进行适配和配置。在 U-Boot 启动时，可以通过命令行界面或者配置文件进行环境变量的设置。一般来说，需要确保设置的文件路径和设备名称与实际的存储介质和文件系统相匹配。
+
+请注意，上述示例仅为演示目的，实际的配置可能因硬件平台和需求而有所不同。请参考相关的 U-Boot 文档和说明来了解更多详细信息。
 
 # 参考资料
 

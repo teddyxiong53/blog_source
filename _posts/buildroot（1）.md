@@ -2673,6 +2673,112 @@ libcap 是 Linux 系统中用于控制进程权限的库。它提供了一组函
 
 通过配置 `BR2_ENABLE_LOCALE_PURGE`，开发者可以根据需求选择是否清理根文件系统中的本地化文件，以控制根文件系统的大小和特定的本地化需求。
 
+## TARGET_FINALIZE_HOOKS
+
+`TARGET_FINALIZE_HOOKS` 是 Buildroot 构建系统中的一个配置选项，用于定义在构建过程的最后阶段执行的自定义脚本或命令。
+
+在 Buildroot 构建系统中，构建过程分为多个阶段，包括配置、编译、安装等。`TARGET_FINALIZE_HOOKS` 配置选项允许你在构建的最后阶段执行额外的操作，以满足特定的需求或自定义行为。
+
+`TARGET_FINALIZE_HOOKS` 的配置值是一个由空格分隔的命令列表，可以包含任意数量的命令。这些命令会按照定义的顺序在构建过程的最后阶段执行。
+
+例如，假设你想在构建完成后执行一个自定义脚本 `myscript.sh`，你可以在 `TARGET_FINALIZE_HOOKS` 中指定该脚本的路径，如下所示：
+
+```
+TARGET_FINALIZE_HOOKS += /path/to/myscript.sh
+```
+
+这样，在构建过程的最后阶段，Buildroot 将执行 `/path/to/myscript.sh` 脚本。
+
+通过使用 `TARGET_FINALIZE_HOOKS`，你可以执行一系列自定义操作，例如复制文件到目标系统、打包构建结果、生成镜像等等，以满足特定的需求或自动化任务。
+
+需要注意的是，`TARGET_FINALIZE_HOOKS` 中的命令将在 Buildroot 构建系统中的最后阶段执行，因此可以使用已构建的目标文件和安装目录进行操作。
+
+如果你想了解更多关于 `TARGET_FINALIZE_HOOKS` 的配置和使用方式，建议查阅 Buildroot 的官方文档或在线资源，其中有更详细的信息和示例。
+
+
+
+这个会被每个package都有可能添加。
+
+```
+package/pkg-generic.mk:1087:TARGET_FINALIZE_HOOKS += $$($(2)_TARGET_FINALIZE_HOOKS)
+```
+
+
+
+busybox就做了这3件事情：
+
+```
+busybox/busybox.mk:227:BUSYBOX_TARGET_FINALIZE_HOOKS += BUSYBOX_SET_GETTY
+busybox/busybox.mk:229:BUSYBOX_TARGET_FINALIZE_HOOKS += SYSTEM_REMOUNT_ROOT_INITTAB
+busybox/busybox.mk:361:BUSYBOX_TARGET_FINALIZE_HOOKS += BUSYBOX_INSTALL_ADD_TO_SHELLS
+```
+
+
+
+## PURGE_LOCALES
+
+
+
+# BR2_TARGET_ROOTFS_INITRAMFS_LIST
+
+`BR2_TARGET_ROOTFS_INITRAMFS_LIST` 是 Buildroot 构建系统中的一个配置选项，用于指定要包含在 initramfs（初始 RAM 文件系统）中的文件和目录列表。
+
+在 Buildroot 中，initramfs 是一个小型的根文件系统，用于在系统引导过程中提供最初的环境和必要的组件，以便完成系统初始化和加载真正的根文件系统。`BR2_TARGET_ROOTFS_INITRAMFS_LIST` 配置选项允许您指定要包含在 initramfs 中的文件和目录。
+
+该选项的值是一个由空格分隔的文件和目录路径列表。例如：
+
+```
+BR2_TARGET_ROOTFS_INITRAMFS_LIST="/sbin/init /etc /dev/console"
+```
+
+上述示例中，指定了将 `/sbin/init`、`/etc` 和 `/dev/console` 这些文件和目录包含在 initramfs 中。
+
+通过配置 `BR2_TARGET_ROOTFS_INITRAMFS_LIST`，您可以根据您的需求定制 initramfs，并将所需的文件和目录添加到其中。这可以用于添加自定义的初始化脚本、设备节点、配置文件等到 initramfs 中，以满足特定的引导需求。
+
+请注意，使用 `BR2_TARGET_ROOTFS_INITRAMFS_LIST` 需要根据您的实际需求和系统配置进行正确的设置。确保只包含必要的文件和目录，并遵循系统初始化的最佳实践。
+
+# BR2_LINUX_KERNEL_INSTALL_TARGET
+
+`BR2_LINUX_KERNEL_INSTALL_TARGET` 是 Buildroot 工具链中的一个配置选项，用于控制 Linux 内核构建过程中的安装目标。
+
+当设置 `BR2_LINUX_KERNEL_INSTALL_TARGET` 为 "y" 时，Buildroot 将会在构建过程中安装编译好的 Linux 内核到目标系统的文件系统中。
+
+具体而言，Buildroot 会将编译好的内核镜像文件（例如 `bzImage`）复制到目标系统的适当位置，通常是在根文件系统的 `/boot` 目录下。
+
+此外，还会安装相关的内核模块文件到目标系统的 `/lib/modules` 目录中。
+
+通过设置 `BR2_LINUX_KERNEL_INSTALL_TARGET` 为 "n"，则 Buildroot 不会在构建过程中安装内核到目标系统中。
+
+这在某些特殊场景下可能会使用，例如在使用自定义的安装脚本或者其他方式进行内核的安装和部署。
+
+需要注意的是，`BR2_LINUX_KERNEL_INSTALL_TARGET` 选项的设置依赖于其他相关的内核配置选项，例如 `BR2_LINUX_KERNEL`（用于选择要编译的内核版本）、`BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE`（用于指定自定义的内核配置文件路径）等。在进行相关配置时，应仔细检查和满足这些依赖关系，以确保正确的内核安装和部署。
+
+请参考 Buildroot 的文档和说明以获取更详细的配置信息和用法示例。
+
+# BR2_REPRODUCIBLE
+
+`BR2_REPRODUCIBLE` 是 Buildroot 工具链中的一个配置选项，用于控制构建的可重现性。
+
+当设置 `BR2_REPRODUCIBLE` 为 "y" 时，
+
+Buildroot 将采取一系列措施来**提高构建过程的可重现性**，
+
+即在相同的输入条件下，构建结果应该是一致的。
+
+具体而言，设置 `BR2_REPRODUCIBLE` 会启用以下功能：
+
+1. 时间戳的固定：构建过程中生成的文件（如构建工具和构建输出）的时间戳将被固定为特定的值，而不是使用当前时间。这样可以确保文件的时间戳不会影响构建结果的差异。
+
+2. 去除随机性：在构建过程中使用的一些随机因素（如随机数生成器）将被固定为特定的种子值，以消除构建过程中的随机性。
+
+3. 构建路径固定：构建过程中使用的临时路径和构建工具的路径将会被固定为特定的值，以确保构建结果的一致性。
+
+通过设置 `BR2_REPRODUCIBLE` 为 "n"，Buildroot 将不会采取特定的措施来提高构建的可重现性。这在某些特殊情况下可能会使用，例如在需要更快的构建速度或者在非生产环境中进行调试和开发时。
+
+需要注意的是，构建的可重现性还取决于其他因素，例如构建环境的一致性、使用的工具链和构建选项等。设置 `BR2_REPRODUCIBLE` 只是 Buildroot 中一项用于提高可重现性的配置选项之一。
+
+请参考 Buildroot 的文档和说明以获取更详细的配置信息和用法示例。
+
 # 参考资料
 
 1、HOWTO: Use BuildRoot to create a Linux image for QEMU

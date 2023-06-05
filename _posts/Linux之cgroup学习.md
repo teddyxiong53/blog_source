@@ -189,3 +189,18 @@ vm-alpine-0:~/work/test/cgroup# ps ax | grep deadloop
 
 
 
+# 内核相关代码
+
+cgroup 在 Linux 内核中的实现涉及多个关键组件和模块。下面是一些与 cgroup 相关的主要内核代码：
+
+1. cgroup 核心代码：cgroup 核心代码包含在内核的 cgroup 子系统中。该代码位于 `kernel/cgroup/` 目录下，包括与 cgroup 生命周期管理、cgroup 层次结构、资源控制和统计等相关的文件。
+
+2. cgroup 文件系统：cgroup 使用了一种特殊的文件系统，称为 cgroup 文件系统。文件系统的实现代码位于 `fs/cgroup/` 目录下，包括与 cgroup 目录和文件的创建、读写、删除等相关的文件。
+
+3. cgroup 控制器（Controller）：cgroup 控制器是用于管理和控制特定资源的模块。每个控制器负责管理一种或多种资源，例如 CPU、内存、磁盘I/O、网络等。每个控制器都有相应的内核代码，位于 `kernel/cgroup/` 目录下的子目录中，例如 `cpu/`、`memory/`、`blkio/`、`net_cls/` 等。
+
+4. cgroup 调度器：cgroup 调度器是用于根据资源限制和控制策略，对 cgroup 中的进程进行调度和分配资源的模块。调度器相关的代码位于 `kernel/sched/` 目录下，包括与调度器算法、策略和实现相关的文件。
+
+5. 进程管理和关联：cgroup 在内核中与进程管理和调度紧密相关。相关代码位于 `kernel/` 目录下的进程管理相关子目录中，例如 `kernel/fork.c`、`kernel/exit.c` 等。这些代码负责将进程与 cgroup 进行关联、跟踪进程的 cgroup 归属以及进行资源限制和控制。
+
+这只是一些与 cgroup 相关的主要内核代码，涉及的代码文件还有很多，具体的代码路径和文件取决于所使用的内核版本和配置。可以通过查看 Linux 内核源代码来深入了解 cgroup 的内核实现细节。

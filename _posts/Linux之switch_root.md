@@ -107,6 +107,65 @@ do_overlay_mount /data/overlay
 
 
 
+`pivot_root` 和 `switch_root` 是两个 Linux 命令，
+
+用于切换根文件系统（root filesystem）。
+
+它们的主要区别如下：
+
+1. **目的**：
+   - `pivot_root` 命令的主要目的是将当前进程的根文件系统更改为指定目录，并将原来的根文件系统移动到新的根文件系统下的指定目录。**这样可以实现对根文件系统的切换，同时保留原始根文件系统的挂载点。**
+   - `switch_root` 命令的主要目的是将当前进程的根文件系统更改为指定目录，并启动新的 init 进程作为新的根文件系统的第一个进程。**这样可以完全切换到新的根文件系统，同时结束原始根文件系统的进程。**
+
+2. **使用方式**：
+   - `pivot_root` 命令的语法如下：
+     ```
+     pivot_root new_root put_old
+     ```
+     其中，`new_root` 是要切换到的新根文件系统的路径，`put_old` 是原始根文件系统在新根文件系统中的目录。
+   - `switch_root` 命令的语法如下：
+     
+     ```
+     switch_root new_root init
+     ```
+  其中，`new_root` 是要切换到的新根文件系统的路径，`init` 是要启动的新 init 进程的路径。
+   
+3. **行为差异**：
+   - `pivot_root` 命令将原始根文件系统移动到新的根文件系统下的指定目录，但不会启动新的 init 进程。**原始根文件系统的挂载点将保留，并继续存在于新的根文件系统中。**
+   - `switch_root` 命令将当前进程的根文件系统更改为指定目录，并启动新的 init 进程。新的 init 进程成为系统的第一个进程，并负责初始化系统环境、挂载文件系统以及启动其他进程。**原始根文件系统的进程将结束。**
+
+综上所述，`pivot_root` 和 `switch_root` 在切换根文件系统时有不同的行为和目的。选择使用哪个命令取决于您的具体需求和场景。
+
+# switch_root实现代码分析
+
+`switch_root` 命令的实现通常是在 Linux 系统的启动阶段的 initrd（initial ramdisk）或初始化脚本中完成的。
+
+下面是一个简单的 `switch_root` 实现的伪代码示例：
+
+```bash
+# 定义新根文件系统的路径和新 init 程序的路径
+new_root="/path/to/new_root"
+new_init="/path/to/new_init"
+
+# 挂载新根文件系统
+mount -o move /proc $new_root/proc
+mount -o move /sys $new_root/sys
+mount -o move /dev $new_root/dev
+
+# 切换根文件系统和启动新 init 进程
+exec chroot $new_root $new_init
+```
+
+上述示例代码的执行过程如下：
+
+1. 定义了新根文件系统的路径 `new_root` 和新 init 程序的路径 `new_init`，您需要将其替换为实际的路径。
+
+2. 使用 `mount` 命令将当前系统中的 `/proc`、`/sys` 和 `/dev` 挂载点移动到新根文件系统的对应位置。这是为了确保新根文件系统内部可以访问这些关键目录。
+
+3. 使用 `chroot` 命令切换到新根文件系统，并执行新 init 程序。`chroot` 命令将改变当前进程的根文件系统为指定目录 `new_root`，并在该目录下执行指定的命令 `new_init`，成为新的 init 进程。
+
+通过以上步骤，`switch_root` 实现了根文件系统的切换和启动新 init 进程的操作。在实际系统中，还需要处理一些额外的细节，例如卸载旧根文件系统、重新挂载文件系统等，以确保切换的正确性和稳定性。具体实现可能因系统和启动流程的不同而有所差异，但上述示例提供了一个基本的框架和思路。
+
 # 参考资料
 
 1、
