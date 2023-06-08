@@ -103,6 +103,10 @@ usage: mkbootimg
 
 参数是必选的，但是里面的内容可以是空的。
 
+# 解包工具
+
+unpackimg
+
 # 参考资料
 
 1、mkbootimg 打包 特殊参数sencond 说明（爬坑系列）

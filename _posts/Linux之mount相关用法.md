@@ -63,7 +63,21 @@ mount --bind /rw_part/1.txt /ro_part/1.txt
 mount -t type device dir
 ```
 
+# mount -n --move 
 
+`mount -n --move` 是一个 Linux 命令，用于在文件系统中**移动挂载点而不进行卸载和重新挂载。**
+
+具体而言，`mount -n --move` 命令的语法如下：
+
+```
+mount -n --move <source> <target>
+```
+
+其中，`<source>` 是要移动的挂载点的源路径，`<target>` 是要移动到的目标路径。
+
+该命令的作用是将指定的源路径挂载点移动到目标路径上，而无需进行卸载和重新挂载操作。**这对于动态更改文件系统的挂载点位置很有用，尤其是在某些场景下需要保持文件系统挂载状态不变的情况下。**
+
+需要注意的是，`mount -n --move` 命令需要以超级用户（root）权限执行。
 
 # 参考资料
 

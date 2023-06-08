@@ -723,7 +723,33 @@ bootm 0x30000000
 
 https://conanwhf.github.io/2017/06/13/bootup-5-ubootcmd/
 
+# 用bootm来启动android格式的boot.img
 
+我们使用的是android格式的boot.img文件。
+
+启动时的命令是：
+
+```
+bootm load_addr
+```
+
+可以看到没有initrd_addr、initrd_size、dtb-addr这些信息。
+
+那么是怎么读取的？
+
+这个就要靠boot.img内部的header来指明了。
+
+
+
+初始化 RAM 磁盘映像（initrd）的信息通常在 `boot.img` 的 Android 引导映像中包含。`boot.img` 是一个包含了 Android 引导程序的镜像文件，它通常包含内核镜像、设备树（Device Tree）和初始化 RAM 磁盘映像等组件。
+
+在 U-Boot 中启动 Android `boot.img` 时，U-Boot 将加载整个 `boot.img` 文件到内存中的指定地址，并从其中提取所需的组件。其中包括初始化 RAM 磁盘映像的数据。
+
+**在启动过程中，U-Boot 会解析 `boot.img` 的头部信息，并根据其中的描述来获取初始化 RAM 磁盘映像的相关信息，如加载地址、大小等。然后，U-Boot 将初始化 RAM 磁盘映像加载到内存中的指定地址。**
+
+具体的加载地址和相关信息可以通过分析 `boot.img` 的格式和结构来确定。一般来说，`boot.img` 文件格式是 Android 系统特定的，并且有一些工具和库可以用于解析和提取其中的组件。这些工具包括 `mkbootimg`、`abootimg` 等。
+
+要获取 `boot.img` 中初始化 RAM 磁盘映像的信息，您可以尝试使用这些工具来解析 `boot.img` 文件，然后查看相应的字段和数据。具体的用法和命令可能会因工具版本和系统配置而有所不同，建议参考相关工具的文档或使用帮助来了解更多详细信息。
 
 # 参考资料
 
