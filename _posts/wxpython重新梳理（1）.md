@@ -198,6 +198,14 @@ wxPython在wx.lib.embeddedimage模块下有PyEmbeddedImage类，专门用于将�
 
 
 
-参考资料
+# 一些链接
+
+
+
+https://blog.csdn.net/seniorwizard/article/details/130894657
+
+https://blog.csdn.net/jdzhangxin/article/details/78377619
+
+# 参考资料
 
 https://blog.csdn.net/qq_37534835/article/details/90715871
