@@ -71,6 +71,50 @@ BitBake与各种类型的配置文件、任务、执行器一起形成 OpenEmbed
 
 BitBake是OpenEmbedded构建系统的核心工具， 负责解析元数据，从中生成任务列表，然后执行这些任务。
 
+# yocto发展历史
+
+Yocto Project 是一个开源的、跨平台的嵌入式 Linux 构建系统，它提供了一整套工具和方法来创建自定义的嵌入式 Linux 发行版。以下是 Yocto Project 的发展历史：
+
+1. **2009年**: Yocto Project 的前身是 OpenEmbedded 构建系统，由开源社区形成，并由 Linux 基金会提供支持。OpenEmbedded 是一个构建和集成嵌入式 Linux 发行版的框架，致力于为嵌入式设备提供灵活性和可定制性。
+
+2. **2010年**: Linux 基金会宣布成立 Yocto Project，旨在为嵌入式 Linux 提供一个共同的基础设施和工具链。Yocto Project 的目标是提供一个开发者友好的、可扩展的构建系统，以便开发者可以定制和构建适合他们的特定嵌入式设备的 Linux 发行版。
+
+3. **2011年**: Yocto Project 发布了第一个稳定版本 1.0，其中包含了核心构建系统 BitBake 和 OpenEmbedded-Core 组件。
+
+4. **2012年**: Yocto Project 发布了版本 1.2，引入了更多的工具和功能，包括 Hob 图形界面工具和 Toaster 前端。
+
+5. **2014年**: Yocto Project 发布了版本 1.6，其中引入了新的图形界面工具 Hob 2.0，以及新的构建系统扩展功能。
+
+6. **2015年**: Yocto Project 发布了版本 2.0，引入了新的构建系统层次结构和改进的软件包管理工具。此版本还提供了更好的 Docker 集成和嵌入式虚拟化支持。
+
+7. **2016年**: Yocto Project 发布了版本 2.1，引入了更多的构建系统改进和功能增强，包括新的 BSP 工具和构建配置工具。
+
+8. **2017年**: Yocto Project 发布了版本 2.4，其中包含了许多性能改进、新的软件包和工具，以及对容器化和 IoT 设备的增强支持。
+
+9. **2019年**: Yocto Project 发布了版本 3.0，带来了许多重要的变化，包括对 Python 3 的支持、改进的构建系统性能、新的层管理工具等。
+
+10. **2020年**: Yocto Project 发布了版本 3.2，其中包含了对 Rust 语言的支持、增强的 SDK 功能、更好的多架构支持等。
+
+Yocto Project 持续不断地发展和改进，通过每年的新版本发布，为嵌入式开发者提供更好的构建工具和功能。它已经成为了嵌入式 Linux
+
+ 构建的主要解决方案之一，广泛应用于各种嵌入式系统和设备。
+
+# yocto跟buildroot比较
+
+Yocto Project和Buildroot都是用于构建嵌入式Linux系统的流行工具。它们有一些共同点，但也有一些区别。以下是Yocto Project和Buildroot之间的比较：
+
+1. **灵活性和可定制性**：Yocto Project被设计为高度可定制和灵活的构建系统。它使用分层的元数据和概念，允许用户根据需要自定义各个组件和功能。Buildroot则更加简单和直接，提供了一个简单的配置文件，以选择和构建所需的软件包。它的定制性较低，更适合简单的嵌入式系统需求。
+
+2. **学习曲线**：Yocto Project的学习曲线相对较陡峭，它有更复杂的架构和概念，需要一些时间和精力来理解和使用。相比之下，Buildroot更容易上手，学习和使用起来相对简单，适合初学者和对定制需求较少的项目。
+
+3. **社区支持和生态系统**：Yocto Project拥有广泛的社区支持和活跃的开发者社区，它由Linux基金会支持，并且有许多官方和第三方的层和组件可用。Buildroot社区也相当活跃，但相对规模较小，可用的软件包和层的数量较少。
+
+4. **目标设备和架构支持**：Yocto Project在目标设备和架构的支持方面非常强大，它支持广泛的硬件平台，并具有强大的跨体系结构的构建能力。Buildroot也提供了一些目标设备和架构的支持，但相对较少。
+
+5. **工具和生态系统集成**：Yocto Project提供了广泛的工具集成，包括BitBake构建引擎、OpenEmbedded Core、Crosstool-NG等。它还支持与其他工具和框架的集成，如Docker、Systemd等。Buildroot则专注于提供简单而完整的构建环境，没有像BitBake那样复杂的构建引擎。
+
+总的来说，Yocto Project适用于需要更高度定制和灵活性的复杂嵌入式系统项目，它的学习曲线较陡峭，但提供了更强大的功能和更广阔的生态系统。而Buildroot则适用于简单的嵌入式系统需求，学习曲线较平缓，更易于上手和使用。选择哪个工具取决于项目的需求、团队的技术水平和对定制程度的要求。
+
 # bitbake基本用法
 
 如您要构建的配方的名称为matchbox-desktop_1.2.3.bb：
@@ -1477,6 +1521,10 @@ EXTRA_IMAGE_FEATURES = "read-only-rootfs"
 ## PACKAGE_INSTALL
 
 PACKAGE_INSTALL和IMAGE_INSTALL关系？
+
+`PACKAGE_INSTALL` 不是 Yocto Project 中的一个预定义变量。可能是你在项目中自定义的一个变量，用于指定要安装的软件包列表。该变量的用法和含义是由你在项目中定义的。
+
+
 
 
 

@@ -1731,7 +1731,7 @@ systemctl set-default multi-user.target #设置
 
 ### 第二步
 
-systemd 执行启动所依赖的目标basic.target和sysinit.target初始化系统
+==systemd 执行启动所依赖的目标basic.target和sysinit.target初始化系统==
 
 通过查看cat /etc/systemd/system/default.target查看依赖：
 
@@ -1789,7 +1789,7 @@ lrwxrwxrwx    1 root     root          48 May 30 10:15 systemd-networkd.service 
 
 ### 第四步
 
-systemd 执行multi-user.target 下的/etc/rc.d/rc.local。
+==systemd 执行multi-user.target 下的/etc/rc.d/rc.local。==
 
 systemd是可以兼容systemv init中的rc.local配置的，
 
@@ -2608,14 +2608,23 @@ https://zhuanlan.zhihu.com/p/426438095
 
 # systemd preset-all 
 
+systemctl preset-all 会读取哪些配置文件
+
+它会读取以下位置的配置文件来确定服务的启用状态：
+
+1. 预设目录 (`/usr/lib/systemd/system-preset/`): 这个目录包含了 systemd 服务预设文件，其命名以 `.preset` 结尾。`systemctl preset-all` 会读取该目录下的预设文件，并根据其中的配置来设置服务的启用状态。
+2. 安装位置的预设目录 (`/etc/systemd/system-preset/`): 这个目录用于系统管理员自定义的 systemd 服务预设文件。类似于上述的预设目录，`systemctl preset-all` 会读取该目录下的预设文件，并根据其中的配置来设置服务的启用状态。
+
+
+
 buildroot编译的target目录下有这些：
 
 ```
-./usr/lib/systemd/system-preset/80-buildroot.preset
-./usr/lib/systemd/system-preset/81-buildroot-tty.preset
-./usr/lib/systemd/system-preset/90-systemd.preset
-./usr/lib/systemd/system-preset/50-wpa_supplicant.preset
-./usr/lib/systemd/user-preset/90-systemd.preset
+./usr/lib/systemd/system-preset/80-buildroot.preset  空的。
+./usr/lib/systemd/system-preset/81-buildroot-tty.preset 这个使能了console tty的。这个是mk里根据配置生成的。我去掉它。
+./usr/lib/systemd/system-preset/90-systemd.preset   这个文件是systemd源代码目录下的。
+./usr/lib/systemd/system-preset/50-wpa_supplicant.preset 来自于./buildroot/package/wpa_supplicant/50-wpa_supplicant.preset
+./usr/lib/systemd/user-preset/90-systemd.preset 这个文件是systemd源代码目录下的。
 ```
 
 90-systemd.preset
@@ -2664,6 +2673,58 @@ disable time-set.target
 disable time-sync.target
 ```
 
+
+
+`81-buildroot-tty.preset` 是一个 systemd 配置文件，用于配置 tty 的优先级顺序。
+
+在 systemd 中，**`preset` 文件用于定义服务或单元的启用或禁用顺序**。`81-buildroot-tty.preset` 文件特定于 Buildroot 系统，并与终端设备（tty）相关。
+
+该文件的目的是定义 Buildroot 系统中哪些 tty 设备应该启用或禁用。根据文件的名称，可以推断出该文件将影响 tty 设备的启用顺序，具体来说是第 81 个位置。
+
+通常，`81-buildroot-tty.preset` 文件位于 systemd 配置目录下的 `/etc/systemd/system-preset/` 目录中。
+
+**该文件中的每一行定义了一个 tty 设备及其对应的启用或禁用操作**。例如：
+
+```
+disable ttyAMA0
+enable ttyS0
+```
+
+上述示例表示 `ttyAMA0` 设备将被禁用，而 `ttyS0` 设备将被启用。这决定了在系统启动时哪些 tty 设备将被启用或禁用。
+
+**请注意，`81-buildroot-tty.preset` 文件是根据特定的 Buildroot 配置生成的，并且可以根据具体的 Buildroot 系统进行修改和自定义。文件中的内容可能因 Buildroot 版本和配置的不同而有所变化。**
+
+## buildroot修改systemd的preset
+
+要修改 Buildroot 中使用的 systemd 的 preset（启用/禁用）配置，可以按照以下步骤进行操作：
+
+1. 进入 Buildroot 的根目录。
+
+2. 打开 `board/<board_name>/overlay/etc/systemd/system-preset/` 目录。这个目录用于存放 systemd preset 文件的自定义配置。
+
+3. 在 `systemd-preset` 目录下创建一个新的 `.preset` 文件，例如 `my-preset.preset`。请确保文件名后缀为 `.preset`。
+
+4. 在 `.preset` 文件中添加 systemd 服务的配置。每个服务一行，使用 `enable` 或 `disable` 指令指定是否启用该服务。例如：
+
+   ```
+   enable dbus.service
+   disable my-service.service
+   ```
+
+   这将启用 `dbus.service` 服务并禁用 `my-service.service` 服务。
+
+5. 保存并关闭 `.preset` 文件。
+
+6. 在 Buildroot 根目录执行 `make` 命令重新编译 Buildroot。
+
+7. 在重新生成的根文件系统中，修改的 systemd preset 配置将生效。
+
+通过以上步骤，你可以自定义 Buildroot 中使用的 systemd 的 preset 配置，以启用或禁用特定的 systemd 服务。
+
+需要注意的是，确保 `.preset` 文件位于正确的路径下，并且文件名后缀为 `.preset`。另外，如果使用了多个 Buildroot 板级配置，则需要在相应的板级配置目录下创建 `.preset` 文件。
+
+希望以上信息对你有所帮助！如果还有其他问题，请随时提问。
+
 ## machines.target
 
 `machines.target` 是一个系统目标（target），用于表示系统中的物理和虚拟机器。
@@ -2706,6 +2767,1120 @@ http://www.jinbuguo.com/systemd/systemd.preset.html
 5. **日志记录：** systemd 提供了强大的日志记录和日志查询功能，使用 systemd Journal 进行集中的日志管理。而 Android 初始化系统通常使用 Android 的日志系统，如 logcat，以记录和显示系统日志。
 
 需要注意的是，Android 初始化系统和 systemd 是针对不同的操作系统和用途而设计的。Android 初始化系统专注于 Android 操作系统的启动和服务管理，而 systemd 则是一个更通用的初始化系统和服务管理器，用于管理 Linux 系统中的各个组件。两者在设计和实现上有很大的差异，因此在功能、配置和使用方式上也存在一些区别。
+
+# 免去login
+
+我是在buildroot下面使用systemd。
+
+当前串口上提示要登录。
+
+我想要关闭这个登录要求。
+
+要在 systemd 中通过串口实现免去登录（无需用户名和密码直接登录），可以按照以下步骤进行配置：
+
+1. 打开 `getty` 服务配置文件：使用文本编辑器打开 `getty` 服务的配置文件，路径为 `/etc/systemd/system/getty.target.wants/serial-getty@ttyS0.service`。请根据实际的串口设备名称进行调整，例如 `/etc/systemd/system/getty.target.wants/serial-getty@ttyUSB0.service`。
+
+2. 修改 `getty` 服务配置：找到 `ExecStart` 行，注释掉该行以禁用登录程序，并添加一行 `ExecStart=-/sbin/agetty --autologin <username> --noclear %I $TERM`。将 `<username>` 替换为要自动登录的用户名。
+
+   修改前：
+   ```
+   ExecStart=-/sbin/agetty -o '-p -- \\u' --keep-baud 115200,38400,9600 %I $TERM
+   ```
+
+   修改后：
+   ```
+   #ExecStart=-/sbin/agetty -o '-p -- \\u' --keep-baud 115200,38400,9600 %I $TERM
+   ExecStart=-/sbin/agetty --autologin <username> --noclear %I $TERM
+   ```
+
+3. 保存配置文件并重启 systemd：保存修改后的配置文件，并重新启动 systemd 服务。
+
+   ```
+   sudo systemctl daemon-reload
+   sudo systemctl restart serial-getty@ttyS0.service
+   ```
+
+在完成以上步骤后，系统将通过串口自动登录指定的用户名，无需提供用户名和密码。
+
+请注意，这样的自动登录可能会带来安全风险，因为任何人都可以直接访问系统而无需用户名和密码。因此，在实际使用中，请谨慎考虑自动登录的使用，并确保只在受控环境中使用。
+
+# buildroot里的systemd
+
+## SYSTEMD_INSTALL_SERVICE_TTY
+
+
+
+
+
+# systemd-getty-generator工作逻辑
+
+systemd-getty-generator 是 systemd 中的一个生成器（generator），它负责动态生成和管理 getty 服务单元。
+
+在启动过程中，systemd-getty-generator **根据系统中的终端设备以及相关的配置信息**，自动生成相应的 getty 服务单元。
+
+以下是 systemd-getty-generator 的工作逻辑：
+
+1. 设备扫描：systemd-getty-generator 首先扫描系统中的终端设备。**它检测已连接的串行端口（如 ttyS0）和虚拟控制台设备（如 tty1）等**。这些设备通常存储在 `/dev` 目录下。
+
+2. 配置检查：对于每个检测到的终端设备，systemd-getty-generator 会检查 `/etc/systemd/system/getty.target.wants/` 目录下是否存在与设备对应的 getty 服务单元配置文件。这些配置文件的命名规则通常为 `getty@ttyX.service`，其中 `ttyX` 是设备名称。
+
+3. 生成服务单元：**如果对应的配置文件不存在**，systemd-getty-generator **将根据默认模板生成一个 getty 服务单元**。该服务单元描述了如何启动和管理 getty 程序，**以及与特定终端设备的关联**。**默认模板通常包含 getty 程序的路径、命令行参数、启动条件等信息。**
+
+4. 链接服务单元：生成的 getty 服务单元会链接到 `/etc/systemd/system/getty.target.wants/` 目录下，**使其成为 getty.target 的一个依赖项**。这样，在启动或切换到对应的终端设备时，**systemd 将自动启动关联的 getty 服务。**
+
+5. 重新加载配置：如果有新的终端设备被检测到或配置发生了变化，systemd-getty-generator 会通知 systemd 重新加载配置，以确保更新后的 getty 服务单元生效。
+
+总体而言，systemd-getty-generator 的作用是自动管理终端设备的 getty 服务单元，根据设备的检测情况和配置信息，生成并链接相应的服务单元，以提供终端登录功能。它简化了终端管理的配置过程，使终端设备的启动和管理更加自动化和可靠。
+
+
+
+# getty.target.wants 目录的作用
+
+`getty.target.wants` 目录是 systemd 中用于存放 getty 服务单元启动链接的目录。它的作用是确定在特定终端设备上启动哪些 getty 服务。
+
+systemd 使用目标（target）作为单位来组织和管理服务单元。getty.target 是 systemd 中用于管理 getty 服务的目标单元，表示在控制台或终端设备上提供登录会话。
+
+`getty.target.wants` 目录是一个符号链接目录，位于 `/etc/systemd/system` 目录下。它存放了一系列符号链接，每个链接对应一个终端设备的 getty 服务单元。这些符号链接的名称通常为 `getty@ttyX.service`，其中 `ttyX` 是具体的终端设备名。
+
+通过将 getty 服务单元的符号链接放置在 `getty.target.wants` 目录中，systemd 在启动过程中会自动加载和启动这些服务单元。这样，当系统切换到对应的终端设备时，systemd 会自动启动关联的 getty 服务，以提供终端登录功能。
+
+通过将符号链接放置在 `getty.target.wants` 目录中，可以方便地配置和管理需要在特定终端设备上启动的 getty 服务。当需要添加、删除或禁用某个终端设备的 getty 服务时，只需创建、删除或禁用相应的符号链接即可，而无需直接修改原始的 getty 服务单元文件。
+
+总而言之，`getty.target.wants` 目录的作用是存放 getty 服务单元的启动链接，以确定在特定终端设备上启动哪些 getty 服务。它提供了方便的方式来配置和管理 getty 服务，使系统能够在需要时自动启动适当的 getty 服务以提供登录功能。
+
+
+
+# buildroot-console.conf文件的作用
+
+因为我看到这个文件的内容是：
+
+```
+[Install]
+DefaultInstance=
+```
+
+这个的作用是什么？
+
+在 `buildroot-console.conf` 文件中，`[Install]` 部分用于指定默认的实例（Instance）。在 systemd 中，服务单元可以有多个实例，通过实例可以在不同的环境或配置下运行相同的服务。
+
+在 `[Install]` 部分中，`DefaultInstance=` 用于设置默认的实例。它指定了在没有明确指定实例时，应该使用的默认实例名称。
+
+例如，如果 `DefaultInstance=tty1`，那么当没有指定具体的实例名称时，systemd 将使用 `tty1` 作为默认实例。
+
+这个默认实例通常与终端设备的名称相关。
+
+在启动过程中，systemd 会根据终端设备的名称和配置信息来确定要使用的实例。
+
+请注意，`DefaultInstance=` 只适用于特定的服务单元（例如 getty 服务单元），
+
+并且需要在对应的服务单元配置文件中进行设置。
+
+在 `buildroot-console.conf` 文件中，`DefaultInstance=` 用于配置默认实例。
+
+具体的配置取决于您的需求和系统配置。
+
+
+
+```
+# cat /usr/lib/systemd/system/serial-getty@.service.d/buildroot-console.conf
+[Install]
+DefaultInstance=ttyAMA0
+```
+
+# initrd.target
+
+```
+[Unit]
+Description=Initrd Default Target
+Documentation=man:systemd.special(7)
+OnFailure=emergency.target
+OnFailureJobMode=replace-irreversibly
+ConditionPathExists=/etc/initrd-release
+Requires=basic.target
+Wants=initrd-root-fs.target initrd-root-device.target initrd-fs.target initrd-parse-etc.service
+After=initrd-root-fs.target initrd-root-device.target initrd-fs.target basic.target rescue.service rescue.target
+AllowIsolate=yes
+```
+
+# man 7 systemd.special
+
+这部分描述的是特殊的systemd unit。
+
+包括了：
+
+```
+basic.target, bluetooth.target, cryptsetup-pre.target, cryptsetup.target, ctrl-alt-del.target, default.target, emergency.target,
+       exit.target, final.target, getty.target, getty-pre.target, graphical.target, halt.target, hibernate.target, hybrid-sleep.target,
+       suspend-then-hibernate.target, initrd-fs.target, initrd-root-device.target, initrd-root-fs.target, kbrequest.target, kexec.target,
+       local-fs-pre.target, local-fs.target, machines.target multi-user.target, network-online.target, network-pre.target, network.target,
+       nss-lookup.target, nss-user-lookup.target, paths.target, poweroff.target, printer.target, reboot.target, remote-cryptsetup.target,
+       remote-fs-pre.target, remote-fs.target, rescue.target, rpcbind.target, runlevel2.target, runlevel3.target, runlevel4.target,
+       runlevel5.target, shutdown.target, sigpwr.target, sleep.target, slices.target, smartcard.target, sockets.target, sound.target,
+       suspend.target, swap.target, sysinit.target, system-update.target, time-sync.target, timers.target, umount.target, -.slice,
+       system.slice, user.slice, machine.slice, -.mount, dbus.service, dbus.socket, display-manager.service, init.scope, syslog.socket,
+       system-update-cleanup.service
+```
+
+## basic.target
+
+`basic.target` 是 systemd 的一个基本目标单元，它定义了在系统启动过程中必须启动的基本服务和任务。这些基本服务和任务是实现系统的最小功能所需的，通常包括底层的初始化、加载核心模块、挂载文件系统等。
+
+## system/basic.target 和user/basic.target关系
+
+`system/basic.target` 和 `user/basic.target` 是 systemd 中的两个基本目标单元，分别用于系统级别和用户级别的服务管理。
+
+1. `system/basic.target`：它是 systemd 在系统级别的基本目标单元。它定义了系统启动过程中必须启动的基本服务和任务，用于实现系统的最小功能。这包括底层的初始化、加载核心模块、挂载文件系统等。在系统引导过程中，systemd 首先启动 `system/basic.target`，然后按照定义的依赖关系加载和执行其中的服务和任务。
+
+2. `user/basic.target`：它是 systemd 在用户级别的基本目标单元。它定义了**用户登录后**必须启动的基本服务和任务。这些服务和任务通常与用户会话相关，如启动用户的窗口管理器、启动用户级别的服务等。当用户登录后，systemd 启动 `user/basic.target`，并根据定义的依赖关系加载和执行其中的服务和任务。
+
+`system/basic.target` 和 `user/basic.target` 是独立的目标单元，分别管理系统级别和用户级别的服务。它们的内容和执行过程相互独立，不会相互影响。
+
+需要注意的是，`user/basic.target` 只在启用了用户级别的 systemd 实例（user instance）时才有效。用户级别的 systemd 实例是在用户登录时启动的，用于管理用户级别的服务和进程。如果未启用用户级别的 systemd 实例，则 `user/basic.target` 不会被使用。
+
+总结来说，`system/basic.target` 是 systemd 在系统级别的基本目标单元，用于定义系统启动过程中必须启动的基本服务和任务。`user/basic.target` 是 systemd 在用户级别的基本目标单元，用于定义用户登录后必须启动的基本服务和任务。它们独立管理系统级别和用户级别的服务，不会相互影响。
+
+user/basic.target依赖这几个。
+
+```
+Wants=sockets.target timers.target paths.target
+```
+
+system/basic.target依赖这几个：
+
+```
+Wants=sockets.target timers.target paths.target slices.target
+After=sysinit.target sockets.target paths.target slices.target tmp.mount
+RequiresMountsFor=/var /var/tmp
+Wants=tmp.mount
+```
+
+## sysinit.target 
+
+`sysinit.target` 是 systemd 启动过程中的一个目标单元，它定义了系统初始化阶段必须启动的服务和任务。
+
+这些服务和任务的目的是在系统引导过程中进行系统初始化操作，如加载驱动程序、设置系统时钟、初始化网络等。
+
+完成 `sysinit.target` 单元的启动后，systemd 将继续启动其他目标单元，如 `basic.target`、`multi-user.target` 等，以实现系统的完整启动。
+
+```
+Wants=local-fs.target swap.target
+After=local-fs.target swap.target emergency.service emergency.target
+```
+
+## tmp.mount
+
+`tmp.mount` 是 systemd 的一个挂载单元（mount unit），它用于挂载临时文件系统（tmpfs）到 `/tmp` 目录。
+
+在 Linux 系统中，`/tmp` 目录通常用于存储临时文件，如临时缓存、临时下载文件等。为了提高性能和安全性，许多系统会将 `/tmp` 目录挂载为临时文件系统，使用内存来存储临时文件，而不是直接写入硬盘。
+
+`tmp.mount` 单元定义了如何挂载临时文件系统到 `/tmp` 目录。它包含了挂载的参数、依赖关系和执行顺序等信息。当系统启动时，systemd 会自动加载和启动 `tmp.mount` 单元，根据定义的配置将临时文件系统挂载到 `/tmp` 目录。
+
+通过使用临时文件系统，可以提高文件的读写速度，减少对硬盘的访问，同时也可以增加安全性，因为在系统重启后，临时文件系统中的文件将被清空，不会留下潜在的敏感信息。
+
+需要注意的是，`tmp.mount` 单元的具体配置可以根据发行版和系统配置而有所不同。在一些系统中，可能会使用其他名称的挂载单元来挂载临时文件系统。
+
+总结来说，`tmp.mount` 是 systemd 的一个挂载单元，用于将临时文件系统挂载到 `/tmp` 目录。它提供了挂载的参数和配置，通过使用临时文件系统，可以提高性能和安全性。具体配置可能因发行版和系统配置的不同而有所变化。
+
+```
+ConditionPathIsSymbolicLink=!/tmp
+DefaultDependencies=no
+Conflicts=umount.target
+Before=local-fs.target umount.target
+After=swap.target
+
+[Mount]
+What=tmpfs
+Where=/tmp
+Type=tmpfs
+Options=mode=1777,strictatime,nosuid,nodev
+```
+
+当设置 `DefaultDependencies=no` 时，表示该单元不应具有默认的依赖关系。换句话说，该单元将不会自动继承与其类型相关的默认依赖关系。这样可以让你更灵活地定义自己的依赖关系。
+
+### unit文件里[Mount]的配置
+
+在 systemd 单元文件中，`[Mount]` 部分用于配置文件系统挂载相关的选项。下面是一些常见的 `[Mount]` 配置选项：
+
+- `What=`：指定要挂载的文件系统的设备或路径。可以是设备节点（如 `/dev/sdb1`）、UUID（如 `UUID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`）或路径（如 `/mnt/data`）。
+
+- `Where=`：指定挂载点的路径，即将文件系统挂载到的目录。
+
+- `Type=`：指定文件系统的类型，例如 `ext4`、`ntfs`、`vfat` 等。
+
+- `Options=`：指定挂载的选项，例如读写权限 (`rw`)、只读权限 (`ro`)、访问权限 (`noexec`)、禁止同步写入 (`async`) 等。
+
+- `ReadOnly=`：指定文件系统是否以只读模式挂载。可以设置为 `yes` 或 `no`。
+
+- `ExecOptions=`：指定可执行文件的挂载选项，例如允许执行 (`exec`)、禁止执行 (`noexec`)。
+
+- `User=`：指定允许哪些用户挂载文件系统。可以设置为用户名或用户组名。
+
+- `Group=`：指定挂载文件系统时所属的用户组。
+
+- `SloppyOptions=`：指定是否允许挂载选项的容错性。设置为 `yes` 可以忽略无效的选项而不引发错误。
+
+- `TimeoutSec=`：指定挂载操作的超时时间，以秒为单位。
+
+- `RequiredFor=`, `Requires=`, `WantedBy=`, `Conflicts=`, `Before=`, `After=` 等：用于定义与其他单元的依赖关系、顺序关系和冲突关系。
+
+上述仅是 `[Mount]` 部分常用的配置选项，实际的配置取决于具体的需求和场景。可以根据实际情况在单元文件中配置适当的选项，以定义文件系统挂载的行为和属性。
+
+## local-fs.target
+
+```
+DefaultDependencies=no
+Conflicts=shutdown.target
+After=local-fs-pre.target
+OnFailure=emergency.target
+OnFailureJobMode=replace-irreversibly
+```
+
+`local-fs.target` 是 systemd 的一个目标单元，它是启动过程中文件系统相关单元的依赖目标。
+
+在 systemd 启动过程中，`local-fs.target` 用于**控制文件系统的挂载和准备**。当系统启动时，包括根文件系统和其他本地文件系统（如 `/home`、`/var` 等）的挂载单元会依赖于 `local-fs.target`。
+
+只有当 `local-fs.target` 完成之后，相关的文件系统挂载单元才会开始执行。
+
+`local-fs.target` 的主要作用是确保在启动过程中的适当时机进行文件系统的挂载。**它提供了一个同步点**，以便在文件系统挂载之前进行必要的准备工作，如检查磁盘一致性、进行文件系统修复等。
+
+此外，`local-fs.target` 也可以用作其他单元的依赖目标。通过将其他单元（如服务单元）的依赖关系指向 `local-fs.target`，可以确保在启动或激活这些单元之前，文件系统已经完成挂载和准备。
+
+总之，`local-fs.target` 在 systemd 中扮演着协调文件系统挂载和准备的重要角色，确保在系统启动过程中的适当时机进行相关操作，并管理文件系统与其他单元之间的依赖关系。
+
+
+
+OnFailure=emergency.target
+
+当一个单元的执行失败，并且它配置了 `OnFailure=emergency.target`，系统会自动触发进入 `emergency.target`。这意味着当该单元失败时，系统将转入紧急模式，提供一个最小功能的环境来处理系统问题。
+
+
+
+依赖的：
+
+```
+local-fs.target
+● ├─-.mount
+● ├─boot-efi.mount
+● ├─home.mount
+● ├─systemd-fsck-root.service
+● └─systemd-remount-fs.service
+```
+
+
+
+### -.mount
+
+`-.mount` 是 systemd 中的一个特殊挂载单元（mount unit），**用于表示根文件系统的挂载点。**
+
+在 systemd 中，`-.mount` 是根文件系统的挂载点单元，它在系统引导过程中负责挂载根文件系统。这个挂载单元的名称是固定的，表示根文件系统的挂载点。
+
+==`-.mount` 单元没有实际的配置文件，它是由 systemd 自动生成的。==它负责在系统引导时自动挂载根文件系统，并处理相关的依赖关系和挂载顺序。
+
+挂载根文件系统是系统引导过程中的一个关键步骤，它是启动 Linux 操作系统所必需的。`-.mount` 单元确保在引导过程中正确地挂载根文件系统，并使其他依赖于根文件系统的单元能够正常启动。
+
+需要注意的是，`-.mount` 单元是由 systemd 管理的，通常不需要手动操作或干预。在正常情况下，系统会自动处理根文件系统的挂载过程，并确保引导顺利进行。
+
+## swap.target
+
+对于嵌入式来说，这个是空的。
+
+## system.slice
+
+`system.slice` 是 systemd 中的一个切片（slice）单元，用于管理系统级别的进程组。
+
+在 systemd 中，**切片是一种组织和管理进程的机制，它将相关的进程组织在一起并提供资源限制和控制。**
+
+`system.slice` 切片是系统级别的切片，用于管理与系统相关的进程。
+
+`system.slice` 切片包含了许多子切片和单元，
+
+用于组织和管理不同类型的系统进程。
+
+**它是 systemd 的一个默认切片，用于将系统级别的进程分类和隔离。**
+
+通过将进程放置在适当的切片中，systemd 可以根据需要对进程进行资源管理、优先级控制和监控。
+
+`system.slice` 切片为系统进程提供了一个统一的管理点，使系统管理员能够更好地了解和控制系统中运行的进程。
+
+需要注意的是，`system.slice` 切片是**由 systemd 自动创建和管理的，通常不需要手动干预。**
+
+它是 systemd 中进程管理的一部分，用于提供系统级别的进程控制和资源管理功能。
+
+```
+system.slice
+● └─-.slice
+```
+
+### system.slice 构成
+
+`system.slice` 是 systemd 中的一个切片（slice）单元，用于管理系统级别的进程组。它由一系列子切片和单元组成，用于组织和管理不同类型的系统进程。
+
+以下是 `system.slice` 可能包含的一些子切片和单元：
+
+1. `system.slice` 的子切片：`-.slice`、`user.slice`、`machine.slice` 等。这些子切片用于进一步组织和管理不同类型的进程。
+
+2. 服务单元：`systemd.service` 类型的单元，表示系统级别的服务进程。例如，`systemd-logind.service`、`network.service` 等。
+
+3. 套接字单元：`systemd.socket` 类型的单元，用于管理系统级别的套接字。例如，`systemd-journald.socket`、`dbus.socket` 等。
+
+4. 设备单元：`systemd.device` 类型的单元，用于管理系统级别的设备。例如，`dev-hugepages.mount`、`dev-mqueue.mount` 等。
+
+5. 虚拟文件系统单元：`systemd.automount` 类型的单元，用于自动挂载虚拟文件系统。例如，`proc-sys-fs-binfmt_misc.automount`。
+
+6. 其他类型的单元：还可以包含其他类型的单元，如路径单元、定时器单元等，用于系统级别的进程管理和控制。
+
+这些子切片和单元在 `system.slice` 中组织起来，构成了系统级别的进程组。它们共同协作，使系统管理员能够更好地管理和控制系统中运行的进程，并提供资源隔离和优先级控制的功能。
+
+需要注意的是，`system.slice` 的具体构成可能会因不同的系统配置和运行环境而有所差异。具体的构成可以通过运行 `systemctl list-dependencies system.slice` 命令来查看系统上的实际情况。
+
+
+
+buildroot下面的配置文件是system/user.slice。
+
+```
+Before=slices.target
+```
+
+slices.target的内容是：
+
+```
+Wants=-.slice system.slice
+```
+
+### -.slice
+
+`-.slice` 是 systemd 中的一个特殊切片（slice），它是根切片（root slice）或称为根容器。它是整个 systemd 切片层次结构的顶级切片，用于组织和管理系统中的所有其他切片和单元。
+
+根切片（`-.slice`）是一个虚拟切片，它没有对应的定义文件。它的作用是为其他切片和单元提供一个父容器。所有其他切片和单元都直接或间接地属于根切片。
+
+在 systemd 的切片层次结构中，各个切片按层次关系组织在一起。根切片是最顶层的切片，下面是一些可能的子切片：
+
+- `system.slice`: 系统级别的切片，用于管理系统级别的进程组。
+- `user.slice`: 用户级别的切片，用于管理用户级别的进程组。
+- `machine.slice`: 机器级别的切片，用于管理容器或虚拟机级别的进程组。
+
+通过将各个切片组织在一起，systemd 可以对进程进行层次化管理和控制，提供资源隔离、优先级控制和监控的功能。
+
+需要注意的是，`-.slice` 是一个系统级别的切片，对应的根容器。它是 systemd 切片层次结构中的顶级切片，没有对应的定义文件。它在 systemd 初始化过程中自动创建，无需手动干预。
+
+## sockets.target
+
+桌面系统：
+
+```
+sockets.target
+● ├─acpid.socket
+● ├─apport-forward.socket
+● ├─avahi-daemon.socket
+● ├─cups.socket
+● ├─dbus.socket
+● ├─dm-event.socket
+● ├─docker.socket
+● ├─rpcbind.socket
+● ├─snapd.socket
+● ├─systemd-initctl.socket
+● ├─systemd-journald-audit.socket
+● ├─systemd-journald-dev-log.socket
+● ├─systemd-journald.socket
+● ├─systemd-udevd-control.socket
+● ├─systemd-udevd-kernel.socket
+● └─uuidd.socket
+```
+
+buildroot：
+
+```
+sockets.target
+● ├─dbus.socket
+● ├─dm-event.socket
+○ ├─systemd-journald-audit.socket
+● ├─systemd-journald-dev-log.socket
+● ├─systemd-journald.socket
+● ├─systemd-networkd.socket
+● ├─systemd-udevd-control.socket
+● └─systemd-udevd-kernel.socket
+```
+
+### dbus.socket
+
+这个也是有一个具体的文件的。
+
+```
+[Socket]
+ListenStream=/var/run/dbus/system_bus_socket
+```
+
+查看依赖：
+
+```
+dbus.socket
+● ├─-.mount
+● ├─system.slice
+● └─sysinit.target
+●   ├─blk-availability.service
+○   ├─dev-hugepages.mount
+○   ├─dev-mqueue.mount
+○   ├─kmod-static-nodes.service
+●   ├─lvm2-monitor.service
+○   ├─sys-fs-fuse-connections.mount
+○   ├─sys-kernel-config.mount
+○   ├─sys-kernel-debug.mount
+●   ├─sys-kernel-tracing.mount
+●   ├─systemd-ask-password-console.path
+●   ├─systemd-journal-flush.service
+●   ├─systemd-journald.service
+○   ├─systemd-machine-id-commit.service
+○   ├─systemd-modules-load.service
+●   ├─systemd-network-generator.service
+○   ├─systemd-pstore.service
+●   ├─systemd-resolved.service
+●   ├─systemd-sysctl.service
+●   ├─systemd-timesyncd.service
+●   ├─systemd-tmpfiles-setup-dev.service
+●   ├─systemd-tmpfiles-setup.service
+●   ├─systemd-udev-trigger.service
+●   ├─systemd-udevd.service
+●   ├─systemd-update-done.service
+●   ├─local-fs.target
+●   │ ├─-.mount
+○   │ ├─systemd-fsck-root.service
+●   │ ├─systemd-remount-fs.service
+●   │ └─tmp.mount
+●   └─swap.target
+```
+
+但是看对应的dbus.socket文件里，只有这样：
+
+```
+[Socket]
+ListenStream=/var/run/dbus/system_bus_socket
+```
+
+## paths.target
+
+在systemd中，`paths.target`是一种特殊的目标（target），用于指定文件路径相关的操作。它是systemd单元（unit）的一种类型，可以在系统引导过程中或在运行时对特定文件路径进行操作。
+
+`paths.target`用于监视和触发文件路径的状态变化。当指定的路径存在或满足特定条件时，systemd将触发与该目标关联的其他单元。例如，您可以定义一个服务单元（service unit），当指定的路径出现变化时，启动该服务。
+
+以下是一个`paths.target`单元的示例配置文件（位于`/etc/systemd/system/`目录下）：
+
+```plaintext
+[Unit]
+Description=Monitor a file path
+Documentation=man:path.unit(5)
+
+[Path]
+PathExists=/path/to/file
+Unit=my-service.service
+
+[Install]
+WantedBy=multi-user.target
+```
+
+在这个示例中，当`/path/to/file`存在时，`my-service.service`将被启动。通过`[Install]`部分，您还可以定义该单元的启动级别（WantedBy）。
+
+要使用`paths.target`，您需要将相关的配置文件放置在适当的systemd目录中（通常是`/etc/systemd/system/`）。然后使用`systemctl`命令启用和管理该单元。
+
+
+
+# slice文件和target文件的关系
+
+在 systemd 中，slice 文件和 target 文件都用于组织和管理系统中的单元。它们之间有一些相似之处，但也存在一些区别。
+
+Slice 文件是用于组织和管理进程切片的单元。
+
+一个 slice 文件定义了一组相关进程的组合，它们可以共享资源、限制资源使用和优先级，并以层次结构的方式进行组织。
+
+slice 文件使用 `.slice` 后缀命名，如 `system.slice`、`user.slice` 等。
+
+它们通常存储在 `/usr/lib/systemd/system/`、`/lib/systemd/system/` 或 `/etc/systemd/system/` 等路径下。
+
+Target 文件用于定义一组需要同时启动或停止的单元。
+
+**它们是一种特殊类型的 slice 文件，用于表示特定的系统状态或运行级别。**
+
+target 文件使用 `.target` 后缀命名，如 `multi-user.target`、`graphical.target` 等。它们通常存储在 `/usr/lib/systemd/system/`、`/lib/systemd/system/` 或 `/etc/systemd/system/` 等路径下。
+
+Slice 文件和 target 文件之间的关系是：
+
+1. Slice 文件可以作为 target 文件的依赖。这意味着当一个 target 文件被启动或停止时，它所依赖的 slice 文件也会被相应地启动或停止。
+
+2. **Target 文件可以包含多个 slice 文件作为其成员**。这意味着一个 target 文件可以同时启动或停止它所包含的多个 slice 文件中的进程。
+
+3. Slice 文件和 target 文件都可以包含其他单元，如服务单元、套接字单元等，以便进行更细粒度的管理和控制。
+
+总的来说，slice 文件用于组织和管理进程切片，而 target 文件用于定义系统状态或运行级别，并包含要同时启动或停止的单元。它们在 systemd 中扮演不同的角色，但可以相互关联和协作，以实现对系统资源和进程的有效管理。
+
+## slices.target
+
+```
+[Unit]
+Description=Slices
+Documentation=man:systemd.special(7)
+Wants=-.slice system.slice
+After=-.slice system.slice
+```
+
+
+
+# systemd的默认依赖规则
+
+systemd有一组默认的依赖规则，用于确定单元之间的启动顺序。这些默认规则可确保系统的核心组件按正确的顺序启动，并处理它们之间的依赖关系。以下是systemd的一些默认依赖规则：
+
+1. `default.target`：默认目标是systemd启动过程中的初始目标，通常是multi-user.target。其他单元通常会依赖于该目标，以确保在启动时正确加载。
+
+2. `basic.target`：基本目标是systemd启动过程中的第一个实际目标，它仅包含系统所需的最基本功能。其他更高级别的目标都依赖于它。
+
+3. `sysinit.target`：系统初始化目标包含在系统引导期间启动的早期系统服务。其他单元在引导过程中可能依赖于这些服务。
+
+4. `multi-user.target`：多用户目标是在引导过程中启动的大多数常规系统服务和用户会话。它是大多数服务器和桌面系统的默认目标。
+
+5. `graphical.target`：图形目标是针对桌面环境的目标，通常依赖于multi-user.target。它包含启动图形界面和相关的服务。
+
+这只是一小部分systemd的默认依赖规则，实际上还有更多目标和单元之间的依赖关系。依赖规则可以通过单元文件中的`Requires`、`Wants`、`After`等指令来自定义和修改。每个单元都可以在其配置文件中显式指定所依赖的其他单元、启动顺序以及其他属性。
+
+
+
+# systemd-path
+
+在桌面系统上看到的是这样：
+
+```
+temporary: /tmp
+temporary-large: /var/tmp
+system-binaries: /usr/bin
+system-include: /usr/include
+system-library-private: /usr/lib
+system-library-arch: /usr/lib/x86_64-linux-gnu
+system-shared: /usr/share
+system-configuration-factory: /usr/share/factory/etc
+system-state-factory: /usr/share/factory/var
+system-configuration: /etc
+system-runtime: /run
+system-runtime-logs: /run/log
+system-state-private: /var/lib
+system-state-logs: /var/log
+system-state-cache: /var/cache
+system-state-spool: /var/spool
+user-binaries: /home/amlogic/.local/bin
+user-library-private: /home/amlogic/.local/lib
+user-library-arch: /home/amlogic/.local/lib/x86_64-linux-gnu
+user-shared: /home/amlogic/.local/share
+user-configuration: /home/amlogic/.config
+user-runtime: /run/user/1000
+user-state-cache: /home/amlogic/.cache
+user: /home/amlogic
+user-documents: /home/amlogic/Documents
+user-music: /home/amlogic/Music
+user-pictures: /home/amlogic/Pictures
+user-videos: /home/amlogic/Videos
+user-download: /home/amlogic/Downloads
+user-public: /home/amlogic/Public
+user-templates: /home/amlogic/Templates
+user-desktop: /home/amlogic/Desktop
+search-binaries: /home/amlogic/.local/bin:/home/amlogic/.cargo/bin:/home/amlogic/tools/go/bin:/home/amlogic/.nvm/versions/node/v14.17.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/amlogic/tools/bitbake/bin:/home/amlogic/platform-tools
+search-library-private: /home/amlogic/.local/lib:/usr/local/lib:/usr/lib:/lib
+search-library-arch: /home/amlogic/.local/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:/lib/x86_64-linux-gnu
+search-shared: /home/amlogic/.local/share:/usr/local/share:/usr/share:/var/lib/snapd/desktop
+search-configuration-factory: /usr/local/share/factory/etc:/usr/share/factory/etc
+search-state-factory: /usr/local/share/factory/var:/usr/share/factory/var
+search-configuration: /home/amlogic/.config:/etc
+```
+
+# getty.target
+
+qemu上
+
+```
+getty.target
+● └─serial-getty@ttyAMA0.service
+```
+
+桌面系统：
+
+```
+getty.target
+● ├─getty-static.service
+● └─getty@tty1.service
+```
+
+
+
+在 systemd 中，有两个模板单元负责在文本控制台上显示登录提示：
+
+1. `getty@.service`负责[虚拟终端](https://en.wikipedia.org/wiki/Virtual_console)(VT) 登录提示，即显示在`/dev/tty1`和类似设备中的 VGA 屏幕上的提示。
+2. `serial-getty@.service`负责所有其他终端，包括`/dev/ttyS0`等串行端口。`它与getty@.service`在几个方面有所不同：除其他外，`$TERM`环境变量设置为 `vt102`（希望这是大多数串行终端的良好默认值）而不是`linux`（这仅是 VT 的正确选择），并且清除 VT 回滚缓冲区（并且仅适用于 VT）的特殊逻辑被跳过。
+
+
+
+让我们仔细看看`getty@.service`是如何启动的，
+
+即虚拟终端（即非串行 TTY）上的登录提示是如何工作的。
+
+传统上，Linux 机器上的 init 系统被配置为在启动时产生固定数量的登录提示。
+
+`在大多数情况下，在前六个 VT tty1`到`tty6`上产生了六个 getty 程序实例 。
+
+在 systemd 世界中，我们使它更加动态：
+
+**为了使事情更有效，登录提示现在仅按需启动。**
+
+当您切换到 VT 时，getty 服务被实例化为 `getty@tty2.service`、`getty@tty5.service`等等。
+
+由于我们不必再无条件地启动 getty 进程，这使我们可以节省一些资源，并使启动速度更快一些。
+
+这种行为对用户来说基本上是透明的：
+
+如果用户激活 VT，getty 会立即启动，因此用户几乎不会注意到它并非一直在运行。
+
+如果他随后登录并键入`ps，`他会注意到 getty 实例仅针对他目前切换到的 VT 运行。
+
+默认情况下，这种自动生成仅针对最高为 VT6 的 VT（以便接近 Linux 系统的传统默认配置）[1]。请注意，只有在没有其他子系统占有 VT 时才会尝试自动生成 getty。更具体地说，如果用户通过 GNOME 频繁使用[快速用户切换](https://en.wikipedia.org/wiki/Fast_user_switching)，他也会在前六个 VT 上获得他的 X 会话，因为为每个会话分配了最低的可用 VT。
+
+两个 VT 由自动生成逻辑专门处理：首先 `tty1`得到特殊处理：如果我们启动到图形模式，显示管理器将占有这个 VT。如果我们启动到多用户（文本）模式，则会在其上启动一个 getty——无条件地，没有任何按需逻辑[2]。
+
+其次，`tty6`是专门为自动生成的 getty 保留的，对 X [3]等其他子系统不可用。这样做是为了确保始终有办法获得文本登录，即使由于快速用户切换 X 拥有超过 5 个 VT。
+
+
+
+串行终端（以及所有其他类型的非 VT 终端）上登录提示的处理与 VT 不同。
+
+默认情况下，systemd 将在主内核[4]控制台上实例化一个`serial-getty@.service`，如果它不是虚拟终端的话。
+
+`内核控制台是内核输出自己的日志消息的地方，通常通过诸如console=ttyS0 `[5]之类的参数在引导加载程序的内核命令行上进行配置。
+
+这个逻辑确保当用户要求内核将其输出重定向到某个串行终端时，他也会在引导完成时自动获得登录提示[6]。systemd 还将在第一个特殊的 VM 控制台（即`/dev/hvc0`， `````/dev/xvc0`，`/dev/hvsi0`），如果系统在提供这些设备的 VM 中运行。 此逻辑在名为[systemd-getty-generator 的](http://www.freedesktop.org/software/systemd/man/systemd-getty-generator.html)[生成器](http://www.freedesktop.org/wiki/Software/systemd/Generators)中实现 ，该生成器在启动时早期运行，并根据执行环境引入必要的服务。
+
+在许多情况下，这种自动逻辑应该已经足以让您在需要时获得登录提示，而无需对 systemd 进行任何特定配置。然而，有时需要手动配置串行 getty，例如，如果需要多个串行登录提示或内核控制台应重定向到与登录提示不同的终端。为了促进这一点，为每个你希望它在[7]上运行的串行端口实例化一次`serial-getty@.service`就足够了 ：
+
+# 禁止agetty启动
+
+如果在你的嵌入式系统中没有`/etc/systemd/logind.conf`文件，那么你可以尝试使用`/etc/systemd/system/`目录下的单元文件来禁用`agetty`服务。以下是一种方法：
+
+1. 在`/etc/systemd/system/`目录中创建一个新的单元文件，例如`disable-getty.service`：
+   ```
+   sudo nano /etc/systemd/system/disable-getty.service
+   ```
+
+2. 在打开的文件中输入以下内容：
+   ```
+   [Unit]
+   Description=Disable agetty service
+
+   [Service]
+   ExecStart=/bin/true
+   RemainAfterExit=yes
+   Type=oneshot
+
+   [Install]
+   WantedBy=multi-user.target
+   ```
+
+   这个单元文件将执行一个虚拟的命令 `/bin/true`，并将其设置为一次性服务。
+
+3. 保存文件并关闭编辑器。
+
+4. 重新加载systemd配置：
+   ```
+   sudo systemctl daemon-reload
+   ```
+
+5. 停用和禁用`agetty`服务：
+   ```
+   sudo systemctl stop getty@tty1.service
+   sudo systemctl disable getty@tty1.service
+   ```
+
+   这将停止和禁用`agetty`服务在tty1上的运行。如果你想禁用其他终端上的`agetty`服务，可以相应地更改`tty1`为其他终端编号（例如`tty2`、`tty3`等）。
+
+6. 重新启动systemd：
+   ```
+   sudo systemctl restart systemd
+   ```
+
+现在，`agetty`服务将被禁用并不会在对应的终端上运行。请记住，在禁用`agetty`服务后，你将无法通过终端登录进行交互式会话。这适用于一些特定的嵌入式系统场景，例如使用串口或网络远程访问进行系统管理。
+
+请注意，以上步骤仅提供了一种禁用`agetty`服务的方法，具体的系统配置可能因嵌入式系统的不同而有所差异。确保在你的系统中使用适当的路径和命令。此外，禁用`agetty`服务可能会影响系统的其他功能和服务，因此在进行相关更改之前，请确保你了解其影响并备份重要数据。
+
+# user-.slice.d
+
+`user-.slice.d` 是systemd中的一个目录，用于配置和定制用户切片（user slice）。
+
+在systemd中，用户切片是为每个用户会话创建的一个单独的切片单元，用于管理与该用户相关的进程和资源。用户切片提供了一种隔离和限制用户会话中的进程资源的机制，以确保用户会话的稳定和安全。
+
+`user-.slice.d` 目录用于存放针对用户切片的配置和定制文件。在该目录下可以放置各种配置文件，以覆盖或修改默认的用户切片设置。这些配置文件可以包含切片属性、资源限制、进程控制参数等。
+
+通过在 `user-.slice.d` 目录中放置配置文件，可以对特定用户切片应用自定义的设置，例如设置特定的资源限制、绑定特定的CPU、限制内存使用等。这样可以根据实际需求对用户切片进行个性化的调整。
+
+需要注意的是，`user-.slice.d` 目录中的配置文件会覆盖默认的用户切片设置。因此，在修改或添加配置文件时，请确保了解其对用户切片行为的影响，并进行适当的测试和验证。
+
+buildroot里的10-defaults.conf里来是这样：
+
+```
+[Unit]
+Description=User Slice of UID %j
+Documentation=man:user@.service(5)
+After=systemd-user-sessions.service
+StopWhenUnneeded=yes
+
+[Slice]
+TasksMax=33%
+```
+
+# systemd-sysv-generator
+
+output\build\systemd-252.4\src\sysv-generator\sysv-generator.c
+
+一旦 `systemd-sysv-generator` 完成检测和转换，它将创建对应的 systemd 服务单元文件，并放置在 `/run/systemd/generator/` 或 `/etc/systemd/system/` 目录中，具体取决于操作系统的配置。
+
+## systemd-sysv-generator是在编译时执行还是运行时执行
+
+`systemd-sysv-generator` 是在运行时执行的，而不是在编译时执行。
+
+当 systemd 初始化系统时，它会启动 `systemd-sysv-generator` 进程，并由其负责检测和转换 SysV init 脚本为 systemd 单元。
+
+这个过程是动态的，发生在系统启动期间。
+
+`systemd-sysv-generator` 会扫描特定的目录，查找符合规则的 SysV init 脚本，并根据脚本的内容生成相应的 systemd 服务单元。
+
+生成的 systemd 单元文件可以在 `/run/systemd/generator/` 或 `/etc/systemd/system/` 目录中找到，具体取决于系统的配置。
+
+需要注意的是，`systemd-sysv-generator` 是作为 systemd 的一部分进行安装和配置的，因此它在 systemd 安装后会自动运行，无需手动操作。它会在每次系统启动时执行，以确保将 SysV init 脚本转换为 systemd 单元并进行正确的集成。
+
+
+
+这个配置是通过 systemd 的相关配置文件进行指定的。在大多数 Linux 发行版中，systemd 的配置文件通常位于 `/etc/systemd/` 目录下。
+
+具体来说，生成的 systemd 单元文件的存放位置由以下两个配置项控制：
+
+1. `systemd-sysv-generator` 默认的生成目录可以通过修改 `/etc/systemd/system.conf` 配置文件中的 `RuntimeDirectory` 选项来调整。例如，你可以将其设置为 `/run/systemd/generator/`：
+   
+   ```
+   RuntimeDirectory=generator
+   ```
+这样生成的 systemd 单元文件将存放在 `/run/systemd/generator/` 目录中。
+   
+2. 如果你希望将生成的 systemd 单元文件保存到永久存储位置，可以通过修改 `/etc/systemd/system.conf` 配置文件中的 `UnitPath` 选项来指定。例如，你可以将其设置为 `/etc/systemd/system/`：
+   ```
+   UnitPath=/etc/systemd/system/
+   ```
+   这样生成的 systemd 单元文件将存放在 `/etc/systemd/system/` 目录中。
+
+请注意，修改 systemd 的配置文件需要管理员权限。在修改后，你需要重新加载 systemd 的配置或重新启动系统，以使配置生效。
+
+需要注意的是，具体的配置文件路径和配置项名称可能因 Linux 发行版的不同而略有差异。在某些情况下，你可能需要参考特定发行版的文档或查阅 systemd 的手册来获取准确的配置信息。
+
+
+
+1. **RuntimeDirectory**: 指定运行时目录的路径，例如 `/run/systemd`。用于存放运行时生成的文件。
+2. **UnitPath**: 指定单元文件的搜索路径，例如 `/etc/systemd/system`。这是用于存放静态单元文件的位置。
+
+
+
+## 执行
+
+```
+systemctl enable --now systemd-sysv-generator
+```
+
+我在板端执行，报错：
+
+```
+Failed to enable unit: Unit file systemd-sysv-generator.service does not exist.
+```
+
+
+
+# modprobe.d/      modules-load.d/ 这2个目录是什么关系
+
+`modprobe.d/` 和 `modules-load.d/` 是两个目录，用于配置内核模块的加载行为和规则，它们在 Linux 系统中具有不同的作用和关系。
+
+1. `modprobe.d/` 目录：
+   - 位于 `/etc/modprobe.d/` 路径下。
+   - 用于配置 `modprobe` 命令的行为和规则。
+   - `modprobe` 命令用于动态加载和卸载内核模块。
+   - 在 `modprobe.d/` 目录中，你可以创建以 `.conf` 结尾的文件，其中每个文件包含一条 `modprobe` 命令的配置选项和参数。
+   - 这些配置选项可以指定要加载的内核模块、加载时的参数和选项等。
+
+2. `modules-load.d/` 目录：
+   - 位于 `/etc/modules-load.d/` 路径下。
+   - 用于配置 Systemd 的 `systemd-modules-load.service` 服务。
+   - `systemd-modules-load.service` 服务负责在系统启动过程中加载所需的内核模块。
+   - 在 `modules-load.d/` 目录中，你可以创建以 `.conf` 结尾的文件，其中每个文件列出要在启动时加载的内核模块。
+   - 每行一个内核模块名称。
+
+虽然这两个目录都用于配置内核模块的加载，但它们分别针对不同的工具和服务。
+
+==`modprobe.d/` 目录是为了配置 `modprobe` 命令的行为，而 `modules-load.d/` 目录是为了配置 Systemd 的内核模块加载服务。==
+
+
+
+在大多数情况下，建议使用 `modules-load.d/` 目录来配置系统的内核模块加载规则，因为它是与 Systemd 集成的标准方式。
+
+如果你需要配置 `modprobe` 命令的行为，可以使用 `modprobe.d/` 目录。
+
+
+
+# systemd是否支持syslog
+
+是的，systemd 支持与 syslog（系统日志）的集成。systemd 提供了 `journald`，它是 systemd 的日志管理器，可以用作传统的 syslog 守护进程的替代方案。`journald` 提供了一种集中管理和存储系统日志的方法，并提供了一些高级功能。
+
+**当系统使用 systemd 作为 init 系统时，系统日志会直接由 `journald` 处理，而不是传统的 syslog 守护进程。**`journald` 将日志消息存储在二进制格式的日志文件中，并提供了基于日志来源、优先级、时间戳等条件进行过滤和查询的功能。
+
+**但是，systemd 仍然可以与传统的 syslog 守护进程集成，以便将日志消息发送到 syslog。**可以通过配置 systemd 的 `rsyslog` 或 `syslog-ng` 插件来实现此集成。这样做可以使 systemd 日志和传统 syslog 日志同时存在，并满足特定的日志需求。
+
+要了解更多关于 systemd 的日志管理和与 syslog 的集成方式，请参考 systemd 官方文档以及相关的 syslog 集成配置文档。
+
+需要注意的是，具体的配置和集成方法可能因操作系统和 systemd 版本而有所差异，建议查阅相关文档并根据实际情况进行配置。
+
+希望以上信息对你有所帮助！如果还有其他问题，请随时提问。
+
+# systemd调试服务
+
+
+
+# systemd ExecStart是一个复杂脚本的模板
+
+是的，`ExecStart` 属性可以包含一个复杂脚本的模板，以实现更灵活的命令执行。
+
+在 systemd 服务文件中，`ExecStart` 属性可以包含一个完整的脚本命令行，而不仅仅是单个命令。你可以使用变量、条件语句、循环等来构建更复杂的命令。
+
+以下是一个示例，展示了如何在 `ExecStart` 属性中使用模板：
+
+```plaintext
+[Service]
+ExecStart=/bin/bash -c '
+    var1="value1"
+    var2="value2"
+    if [ "$var1" = "value1" ]; then
+        echo "Variable var1 is set to value1"
+    fi
+    for i in {1..5}; do
+        echo "Iteration $i"
+        sleep 1
+    done
+'
+```
+
+在上述示例中，`ExecStart` 属性包含了一个 `/bin/bash -c` 命令，后跟一个用单引号包裹的复杂脚本。脚本内部定义了变量 `var1` 和 `var2`，并使用了条件语句和循环进行逻辑控制。
+
+你可以根据需要修改示例脚本，并将其嵌入到你的 systemd 服务文件的 `ExecStart` 属性中。
+
+请注意，在使用复杂脚本模板时，确保脚本的语法正确，且能够在指定的执行环境中运行。你可以使用 `systemctl --verify` 命令验证服务文件的语法和语义错误。
+
+希望这可以满足你的需求！如有任何其他问题，请随时提问。
+
+# 自己进行进程的检查重启判断
+
+如果你希望在 `ExecStart` 后面的脚本后台执行时，能够捕获异常并进行重新启动判断，可以通过以下几种方法来实现：
+
+1. 使用 `ExecStartPost` 属性：在 systemd 服务文件中，可以使用 `ExecStartPost` 属性来指定在主 `ExecStart` 命令执行完成后执行的命令。你可以在 `ExecStartPost` 命令中编写脚本来检查服务的退出状态码，并根据需要执行重新启动操作。例如：
+
+```plaintext
+[Service]
+ExecStart=/path/to/your-command &
+ExecStartPost=/path/to/restart-check-script
+```
+
+在上述示例中，`ExecStart` 命令使用 `&` 将其放入后台执行，而 `ExecStartPost` 命令则用于执行重新启动检查脚本。
+
+2. 使用自定义的启动脚本：将复杂的脚本放入一个单独的启动脚本中，并在该脚本中处理异常和重新启动逻辑。然后，在 systemd 服务文件中使用该脚本作为 `ExecStart` 的命令。例如：
+
+```plaintext
+[Service]
+ExecStart=/path/to/start-script
+```
+
+在自定义的启动脚本中，你可以使用适当的语法和命令来后台执行你的脚本，并进行异常检测和重新启动判断。
+
+无论哪种方法，都可以在后台执行的脚本或脚本模板中捕获异常，并根据自定义的逻辑进行重新启动操作。请根据你的具体需求选择适当的方法，并确保脚本的正确性和可靠性。
+
+希望这对你有所帮助！如果还有其他问题，请随时提问。
+
+## 调整某个service的reboot检查间隔
+
+```
+Restart=always
+RestartSec=60s
+```
+
+## 默认的时间间隔是多少
+
+在 systemd 中，`RestartSec` 属性的默认值是 100 毫秒（0.1 秒）。这意味着如果没有显式设置 `RestartSec` 属性，系统将默认等待 0.1 秒后重新启动服务。
+
+## RemainAfterExit=yes
+
+在 systemd 服务文件中，`RemainAfterExit` 是一个用于定义服务的状态的属性。当将 `RemainAfterExit` 设置为 `yes` 时，**它表示即使在服务主进程退出后，该服务仍然被视为处于活动状态。**
+
+通常情况下，当一个服务的主进程退出时，systemd 会将该服务的状态标记为停止。但是，如果在服务文件中设置了 `RemainAfterExit=yes`，则 systemd 将保持该服务的状态为活动状态，不受主进程的退出影响。
+
+**这个属性通常用于一些特殊类型的服务，比如后台进程或守护进程，它们的状态在主进程退出后仍然被认为是活动的。**
+
+以下是一个示例 systemd 服务文件中使用 `RemainAfterExit=yes` 的部分：
+
+```plaintext
+[Service]
+ExecStart=/path/to/your-command
+RemainAfterExit=yes
+```
+
+通过设置 `RemainAfterExit` 为 `yes`，即可指示 systemd 在主进程退出后仍将该服务视为活动状态。
+
+希望这能解答你的问题！如果还有其他疑问，请随时提问。
+
+## systemd-tmpfiles-setup.service
+
+`systemd-tmpfiles-setup.service` 是一个由 systemd 提供的服务单元，用于在启动过程中创建和管理临时文件和目录。
+
+在 Linux 系统中，临时文件和目录对于临时性的数据存储和处理非常重要。`systemd-tmpfiles-setup.service` 服务负责根据预定义的规则，在系统启动时自动创建和清理临时文件和目录。
+
+该服务会读取位于 `/usr/lib/tmpfiles.d/` 和 `/etc/tmpfiles.d/` 目录中的配置文件，这些配置文件定义了需要在每次启动时创建、修改或删除的临时文件和目录。
+
+通过配置这些规则，可以确保临时文件和目录的正确权限、所有权和清理策略。这有助于保持系统的整洁性和安全性，并避免临时文件和目录积累导致的磁盘空间问题。
+
+`systemd-tmpfiles-setup.service` 通常是在系统启动过程中自动运行的，它的目的是在早期阶段设置临时文件和目录，以便后续的服务和进程可以使用它们。
+
+要查看 `systemd-tmpfiles-setup.service` 的状态，可以使用以下命令：
+
+```
+systemctl status systemd-tmpfiles-setup.service
+```
+
+
+
+```
+# ls /usr/lib/tmpfiles.d/
+dbus.conf                      static-nodes-permissions.conf
+etc.conf                       systemd-tmp.conf
+home.conf                      systemd.conf
+journal-nocow.conf             tmp.conf
+legacy.conf                    var.conf
+portables.conf                 x11.conf
+```
+
+service里就是执行了这个命令：
+
+```
+/usr/bin/systemd-tmpfiles --create --remove --boot --exclude-prefix=/dev
+```
+
+## systemctl list-unit-files输出内容解析
+
+`systemctl list-unit-files` 命令用于列出 systemd 中所有单元文件的状态和信息。其输出内容包含以下几个字段：
+
+1. UNIT FILE：单元文件的名称。它包括单元文件的类型和名称，例如服务（service）、套接字（socket）、挂载（mount）等。
+
+2. STATE：单元文件的当前状态。常见的状态包括 enabled（已启用）、disabled（已禁用）、static（静态）、masked（已屏蔽）等。
+
+   - enabled：表示单元文件已启用，并会在系统启动时自动加载和运行。
+   - disabled：表示单元文件已禁用，不会在系统启动时自动加载和运行。
+   - static：表示单元文件是静态的，无法启动或停止。
+   - masked：表示单元文件已屏蔽，无法启动。
+
+3. DROP-IN：任何与单元文件关联的 drop-in 配置文件的数量。
+
+   drop-in 配置文件是用于修改或扩展现有单元文件配置的附加配置文件。它们通常位于 `/etc/systemd/system/单元文件名称.d/` 目录中。
+
+4. UNIT LOAD：单元文件的加载状态。常见的加载状态包括 loaded（已加载）、not-found（未找到）等。
+
+   - loaded：表示单元文件已加载并可用。
+   - not-found：表示未找到单元文件。
+
+5. ACTIVE：单元文件的当前活动状态。常见的活动状态包括 active（活动）、inactive（非活动）、activating（正在激活）、deactivating（正在停用）等。
+
+   - active：表示单元文件当前处于活动状态。
+   - inactive：表示单元文件当前处于非活动状态。
+   - activating：表示单元文件正在激活中。
+   - deactivating：表示单元文件正在停用中。
+
+6. SUB：单元文件的当前子状态。子状态是活动状态的更具体的描述。
+
+7. DESCRIPTION：单元文件的描述信息。
+
+通过分析 `systemctl list-unit-files` 命令的输出内容，你可以了解到系统中所有单元文件的状态、加载情况和活动状态。这对于管理和调试 systemd 单元文件非常有用。
+
+希望这回答了你的问题！如果还有其他疑问，请随时提问。
+
+## systemd 的状态是generated说明什么
+
+在 systemd 中，"generated" 状态表示服务单元是由系统自动生成的。
+
+当一个服务单元的状态显示为 "generated" 时，这意味着该服务单元的配置文件（.service 文件）不是直接手动创建的，而是通过其他机制（例如模板、生成器等）根据系统的特定条件自动生成的。
+
+这种自动生成的机制可以根据系统配置和需要动态地创建、管理和调整服务单元。生成的服务单元通常是基于系统环境、硬件设备、用户配置等因素进行自适应。
+
+例如，当使用 systemd 的模板化服务单元（template unit）时，根据需要动态地生成多个实例。这些实例根据模板中的参数进行自定义，以满足不同的需求。
+
+当服务单元的状态显示为 "generated" 时，说明该服务单元的配置是由 systemd 自动处理的，而不是手动创建或编辑的。这样的机制使得 systemd 更加灵活和适应性强，能够根据系统的变化和需求进行动态调整和管理。
+
+# system-generators
+
+```
+/usr/lib/systemd/system-generators # ls
+systemd-debug-generator          systemd-rc-local-generator
+systemd-fstab-generator          systemd-run-generator
+systemd-getty-generator          systemd-system-update-generator
+systemd-gpt-auto-generator       systemd-sysv-generator
+```
+
+## systemd-debug-generator 
+
+`systemd-debug-generator` 是 systemd 的一个生成器脚本，用于生成用于调试目的的单位文件。它位于 `/usr/lib/systemd/system-generators/` 目录下。
+
+该生成器脚本会检查系统是否启用了调试模式，如果是，则生成一系列用于调试的单位文件，以便在系统调试期间使用。
+
+这些调试单位文件通常包括 `systemd-debug-shell.service`、`systemd-debug-generator.service`、`systemd-debug-generator.socket` 等，用于提供调试 shell、收集调试信息等功能。
+
+**当 systemd 启动时，如果系统启用了调试模式，`systemd-debug-generator` 将自动运行并生成相应的调试单位文件。**
+
+需要注意的是，`systemd-debug-generator` 是 systemd 内置的生成器脚本，通常无需进行手动配置或修改。它主要用于 systemd 开发和调试环境中，以便提供调试功能。
+
+希望这个解答对你有帮助！如果你有其他问题，请随时提问。
+
+
+
+## /run/systemd/generator.late目录
+
+```
+/run/systemd/generator.late # ls
+S02lightDaemon.service       S80mdns.service
+S02overlayfs.service         S82airplay2.service
+S39wifi.service              S83dsd.service
+S40network.service           S89usbgadget.service
+S41dhcpcd.service            avs_mdns.service
+S43sysname.service           avs_moniter.service
+S43webserver.service         bluealsa_profilecfg.service
+S44bluetooth.service         get_sysname.service
+S48avs.service               ntpdate.service
+S49optee.service             rc.modules.service
+S71_load_dspa.service
+```
+
+怎么控制这个generate的行为呢？
+
+# systemd禁止运行时生成/etc/init.d对应的service文件
+
+如果你希望禁止 systemd 在运行时自动生成 `/etc/init.d` 目录下对应的 service 文件，可以通过修改 systemd 的配置文件来实现。
+
+打开 `/etc/systemd/system.conf` 文件，找到并修改以下行：
+
+```
+RuntimeWatchdogSec=0
+```
+
+将上述行的值修改为 `0`，表示禁用运行时监控 watchdog。
+
+保存文件后，重新加载 systemd 配置：
+
+```
+systemctl daemon-reload
+```
+
+这样修改后，systemd 将不再运行时生成 `/etc/init.d` 目录下的 service 文件。
+
+请注意，这是一个系统范围的修改，将影响所有服务。如果你只想针对特定的服务禁用自动生成，请参考 systemd unit 文件的相关选项，例如 `Generator`、`ConditionPathExists` 等。
+
+在进行任何系统配置修改之前，请确保备份重要文件，并在测试环境中进行验证。
 
 # 参考资料
 

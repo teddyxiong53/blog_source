@@ -136,7 +136,7 @@ do_overlay_mount /data/overlay
    
    - `pivot_root` 命令的主要目的是将当前进程的根文件系统更改为指定目录，并将原来的根文件系统移动到新的根文件系统下的指定目录。**这样可以实现对根文件系统的切换，同时保留原始根文件系统的挂载点。**
 - `switch_root` 命令的主要目的是将当前进程的根文件系统更改为指定目录，并启动新的 init 进程作为新的根文件系统的第一个进程。**这样可以完全切换到新的根文件系统，同时结束原始根文件系统的进程。**
-   
+  
 2. **使用方式**：
    - `pivot_root` 命令的语法如下：
      
@@ -148,8 +148,10 @@ do_overlay_mount /data/overlay
      
      ```
      switch_root new_root init
+     ```
     ```
      其中，`new_root` 是要切换到的新根文件系统的路径，`init` 是要启动的新 init 进程的路径。
+    ```
    
 3. **行为差异**：
    - `pivot_root` 命令将原始根文件系统移动到新的根文件系统下的指定目录，但不会启动新的 init 进程。**原始根文件系统的挂载点将保留，并继续存在于新的根文件系统中。**
@@ -186,6 +188,57 @@ exec chroot $new_root $new_init
 3. 使用 `chroot` 命令切换到新根文件系统，并执行新 init 程序。`chroot` 命令将改变当前进程的根文件系统为指定目录 `new_root`，并在该目录下执行指定的命令 `new_init`，成为新的 init 进程。
 
 通过以上步骤，`switch_root` 实现了根文件系统的切换和启动新 init 进程的操作。在实际系统中，还需要处理一些额外的细节，例如卸载旧根文件系统、重新挂载文件系统等，以确保切换的正确性和稳定性。具体实现可能因系统和启动流程的不同而有所差异，但上述示例提供了一个基本的框架和思路。
+
+
+
+# systemd实现pivot_root的功能
+
+在 systemd 中，pivot_root 是一个用于切换系统根目录的操作。它允许将当前根文件系统（rootfs）更改为另一个文件系统，同时保持进程的执行环境不变。
+
+在传统的 Linux 系统中，可以使用 `pivot_root` 系统调用来执行根文件系统的切换操作。但在 systemd 中，并没有直接提供一个 `pivot_root` 命令，**而是通过 systemd 的启动机制来实现这个概念。**
+
+systemd 使用 `initrd` 或 `initramfs` 初始化根文件系统，并在启动过程中将其切换到真正的根文件系统。这个切换过程由 systemd 的启动单元（unit）来管理。
+
+在 systemd 中，有两个重要的启动单元与根文件系统切换相关：
+
+1. `initrd.target`：它是 systemd 的一个特殊目标单元，用于初始化和加载初始根文件系统（initrd）。
+2. `switch-root.target`：它是 systemd 的另一个特殊目标单元，用于在启动过程中切换到真正的根文件系统。
+
+在启动过程中，`initrd.target` 负责加载 initrd，并执行相关的初始化任务。一旦完成，它将触发 `switch-root.target` 单元的启动。`switch-root.target` 单元会执行根文件系统的切换操作，将系统切换到真正的根文件系统，并继续执行后续的启动任务。
+
+具体而言，`switch-root.target` 单元会**使用 `chroot` 命令来实现根文件系统的切换。**`chroot` 命令将当前的根文件系统更改为指定的目录，并在该目录下执行命令。这样，systemd 就能够实现根文件系统的切换，同时保持进程的执行环境不变。
+
+总结来说，systemd 通过启动单元和 `chroot` 命令来实现根文件系统的切换，类似于传统的 `pivot_root` 操作。
+
+这样可以实现在启动过程中将初始根文件系统切换为真正的根文件系统，并继续执行后续的启动任务。
+
+```
+ExecStart=/usr/bin/systemctl --no-block switch-root /sysroot
+```
+
+## 另外一个方式
+
+在`systemd`中，`pivot_root`功能由`systemd-nspawn`工具实现，用于在容器中更改根文件系统的挂载点。
+
+`systemd-nspawn`是`systemd`套件中的一个工具，用于创建和管理Linux容器。它使用`chroot`系统调用来改变容器的根文件系统，但也支持使用`pivot_root`系统调用。
+
+以下是使用`systemd-nspawn`进行`pivot_root`的示例命令：
+
+```
+systemd-nspawn --directory=/path/to/rootfs --bind=/newroot:/ --machine=container-name
+```
+
+在上面的示例中，`/path/to/rootfs`是原始根文件系统的路径，`/newroot`是新的根文件系统的挂载点。`--bind=/newroot:/`选项用于将新的根文件系统绑定到容器的根目录。`--machine=container-name`选项指定了容器的名称。
+
+执行上述命令后，`systemd-nspawn`将在容器中创建一个新的挂载点，并将原始根文件系统切换到新的挂载点。这样就实现了`pivot_root`的功能。
+
+请注意，`systemd-nspawn`是`systemd`套件中的一部分，因此您需要安装`systemd`来使用`systemd-nspawn`工具。此外，`systemd-nspawn`还提供了许多其他的容器管理功能，可以进一步探索和使用。
+
+但是不对，这个是操作容器的。
+
+不是我需要的。
+
+
 
 # 参考资料
 
