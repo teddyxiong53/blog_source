@@ -8,6 +8,8 @@ tags:
 
 --
 
+# 简介
+
 spdif是sony和Philips合作开发的接口。
 
 缩写里的d表示digital。
@@ -40,7 +42,7 @@ SPDIF IN在声卡上的典型应用就是CD SPDIF，但也并不是每一种支�
 
 
 
-**数字音箱与数字声卡的关系**
+# **数字音箱与数字声卡的关系**
 
 其次大家可能对依靠同轴SPDIF OUT连接[数字式音箱](https://baike.baidu.com/item/数字式音箱)从而实现纯[数字音频](https://baike.baidu.com/item/数字音频)回放的具体原理不太清楚，
 
@@ -80,13 +82,15 @@ CREATIVE的FPS2000 Digital、Sound Works 2.1Digital就属于这种类型。
 
 
 
-spdif上传输pcm格式数字音频。数字的抗干扰能力比模拟信号好得多。
+spdif上传输pcm格式数字音频。**数字的抗干扰能力比模拟信号好得多。**
 
 传输容易受到干扰。
 
+# spdif信号
+
 S/PDIF往往被用来传输压缩过的音频讯号，它由 IEC 61937标准而定制。
 
-
+spdif发出的波形为BMC编码，时钟与数据混合在一起进行编码。
 
 # 参考资料
 
@@ -97,3 +101,7 @@ https://baike.baidu.com/item/SPDIF/7208010?fr=aladdin
 2、
 
 https://www.touying.com/t-43734-1.html
+
+3、
+
+https://blog.csdn.net/CallMe_Xu/article/details/120533677

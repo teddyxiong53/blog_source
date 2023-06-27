@@ -54,6 +54,10 @@ The CODEC that doesn't need i2c / spi / other bus controllers, can be configured
 
 dummy_codec
 
+==就是不需要i2c、spi这种控制接口的codec，就是dummy_codec。==
+
+
+
 # 参考资料
 
 1、虚拟Codec设计思路

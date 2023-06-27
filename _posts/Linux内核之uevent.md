@@ -5,7 +5,9 @@ tags:
 	- Linux
 ---
 
+--
 
+# 简介
 
 什么是uevent机制？
 
@@ -246,9 +248,48 @@ mdev.conf由用户层指定，因此更具灵活性。本文无意展开对mdev�
 
 
 
+# 手动改uevent文件的方式触发事件
 
+以下是一个示例，展示如何使用sysfs中的"uevent"文件来处理U盘插入和拔出事件：
 
-参考资料
+1. 找到U盘对应的sysfs路径。可以通过以下命令找到U盘的设备路径：
+
+   ```shell
+   lsblk -o NAME,TYPE,MOUNTPOINT
+   ```
+
+   在输出中找到U盘对应的设备名称，例如"/dev/sdb"，然后在/sys/devices目录下找到相应的设备路径，如"/sys/devices/pci0000:00/0000:00:0a.0/usb1/1-1/1-1.2/1-1.2:1.0/host7/target7:0:0/7:0:0:0/block/sdb".
+
+2. 进入U盘设备的sysfs路径：
+
+   ```shell
+   cd /sys/devices/pci0000:00/0000:00:0a.0/usb1/1-1/1-1.2/1-1.2:1.0/host7/target7:0:0/7:0:0:0/block/sdb
+   ```
+
+3. 打开"uevent"文件进行编辑：
+
+   ```shell
+   sudo nano uevent
+   ```
+
+4. 在"uevent"文件中输入以下内容：
+
+   ```
+   ACTION=add
+   DEVPATH=/devices/pci0000:00/0000:00:0a.0/usb1/1-1/1-1.2/1-1.2:1.0/host7/target7:0:0/7:0:0:0/block/sdb
+   SUBSYSTEM=block
+   DEVNAME=sdb
+   ```
+
+   这些键值对描述了U盘插入事件的属性。"ACTION"指示设备的操作是添加（插入），"DEVPATH"是设备的路径，"SUBSYSTEM"指示设备所属的子系统，"DEVNAME"是设备的名称。
+
+5. 保存并关闭"uevent"文件。
+
+此时，内核会将U盘插入事件通知发送到用户空间。可以使用udev守护进程监听该事件并执行相应的规则或脚本，例如自动挂载U盘文件系统、启动特定应用程序等。
+
+请注意，以上示例仅演示了使用sysfs中的"uevent"文件触发设备事件通知的基本流程。在实际应用中，通常会结合udev规则和自定义脚本来实现更灵活的设备事件处理。
+
+# 参考资料
 
 1、内核Uevent事件机制 与 Input子系统
 
