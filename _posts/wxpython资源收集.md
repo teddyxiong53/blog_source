@@ -50,6 +50,12 @@ http://thisis.yorven.site/blog/index.php/2017/10/11/wxpython-tips/
 
 
 
+## 这个系列教程非常好
+
+https://blog.csdn.net/seniorwizard/article/details/130917682
+
+
+
 # 代码
 
 搜索wxpython editor
