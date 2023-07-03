@@ -400,6 +400,380 @@ encode_bitmaps.py这个是wxpython的demo里的一个工具。
 
 ```
 
+# 实现国际化和本地化
+
+# wxpython里的颜色表示
+
+在 wxPython 中，可以使用不同的方式来表示颜色。下面是几种常用的方式：
+
+1. RGB 值表示：使用 0-255 之间的整数表示红、绿、蓝三原色的强度，例如：
+
+   ````python
+   red = wx.Colour(255, 0, 0)  # 红色
+   green = wx.Colour(0, 255, 0)  # 绿色
+   blue = wx.Colour(0, 0, 255)  # 蓝色
+   ```
+
+2. 十六进制表示：使用六位十六进制数表示红、绿、蓝三原色的强度，例如：
+
+   ````python
+   red = wx.Colour(0xFF, 0, 0)  # 红色
+   green = wx.Colour(0, 0xFF, 0)  # 绿色
+   blue = wx.Colour(0, 0, 0xFF)  # 蓝色
+   ```
+
+3. 预定义颜色名称：wxPython 中提供了一些常用颜色的预定义名称，例如：
+
+   ````python
+   red = wx.RED  # 红色
+   green = wx.GREEN  # 绿色
+   blue = wx.BLUE  # 蓝色
+   ```
+
+4. HTML 颜色表示：使用 HTML 颜色代码表示颜色，例如：
+
+   ````python
+   red = wx.Colour('#FF0000')  # 红色
+   green = wx.Colour('#00FF00')  # 绿色
+   blue = wx.Colour('#0000FF')  # 蓝色
+   ```
+
+在 wxPython 中，可以将颜色应用于各种控件和绘图操作中。例如，可以将颜色应用于按钮、文本、背景等控件，或者将颜色用于绘制图形、线条等。
+
+需要注意的是，wxPython 中的颜色表示可能因不同平台而有所不同，例如在 Windows 上使用的 RGB 值与在 Linux 上使用的 RGB 值可能不同。因此，建议使用 wxPython 中提供的预定义颜色名称，以确保在不同平台上都能获得一致的效果。
+
+## 预定义颜色梳理
+
+在 wxPython 中，可以使用预定义的颜色名称来表示常见的颜色。以下是 wxPython 中预定义的一些常用颜色及其说明：
+
+- `wx.BLACK`：黑色
+- `wx.WHITE`：白色
+- `wx.RED`：红色
+- `wx.GREEN`：绿色
+- `wx.BLUE`：蓝色
+- `wx.CYAN`：青色
+- `wx.MAGENTA`：洋红色
+- `wx.YELLOW`：黄色
+- `wx.LIGHT_GREY`：浅灰色
+- `wx.MEDIUM_GREY`：中灰色
+- `wx.DARK_GREY`：深灰色
+- `wx.TRANSPARENT`：透明色
+
+除了上述预定义颜色之外，wxPython 还提供了一些较少使用的预定义颜色，例如：
+
+- `wx.Colour(0, 128, 0)`：深绿色
+- `wx.Colour(128, 0, 128)`：紫色
+- `wx.Colour(255, 140, 0)`：橙色
+- `wx.Colour(210, 105, 30)`：棕色
+
+如果需要使用其他颜色，可以使用 `wx.Colour()` 类来创建自定义颜色。其构造函数可以接受红、绿、蓝三原色的值，例如：
+
+```python
+my_color = wx.Colour(255, 255, 0)  # 创建一个黄色
+```
+
+需要注意的是，wxPython 中预定义的颜色名称可能因不同平台而有所不同，例如在 Windows 上使用的颜色名称可能与在 Linux 上使用的颜色名称不同。因此，建议在使用预定义颜色名称时进行测试，以确保在不同平台上都能获得一致的效果。
+
+# wxpython的类构造参数
+
+一般是这6个：
+
+```
+parent
+id
+name
+上面3个一般都要。
+pos
+size
+空间信息。
+style：风格。
+```
+
+# wx.Window分析
+
+在 wxPython 中，`wx.Window` 是所有可显示窗口的基类，它提供了一些基本的窗口功能。`wx.Window` 类是许多其他 wxPython 控件的直接或间接父类，包括 `wx.Frame`、`wx.Panel`、`wx.Dialog` 等。
+
+`wx.Window` 类提供了许多常用的方法和事件，可以用于处理鼠标、键盘、绘图和尺寸变化等事件。以下是一些常用的方法和事件：
+
+- `wx.Window.SetBackgroundColour(colour)`：设置窗口的背景颜色。
+- `wx.Window.SetForegroundColour(colour)`：设置窗口的前景颜色。
+- `wx.Window.SetSizer(sizer)`：将指定的 Sizer 应用到窗口上。
+- `wx.Window.GetSize()`：获取窗口的大小。
+- `wx.Window.GetPosition()`：获取窗口的位置。
+- `wx.Window.SetSize(size)`：设置窗口的大小。
+- `wx.Window.SetPosition(pos)`：设置窗口的位置。
+- `wx.Window.Refresh()`：刷新窗口。
+- `wx.Window.Show(show=True)`：显示或隐藏窗口。
+
+`wx.Window` 类还提供了许多事件，可以用于处理鼠标、键盘、绘图和尺寸变化等事件。以下是一些常用的事件：
+
+- `wx.EVT_LEFT_DOWN`：鼠标左键按下事件。
+- `wx.EVT_LEFT_UP`：鼠标左键释放事件。
+- `wx.EVT_RIGHT_DOWN`：鼠标右键按下事件。
+- `wx.EVT_RIGHT_UP`：鼠标右键释放事件。
+- `wx.EVT_MOUSEWHEEL`：鼠标滚轮滚动事件。
+- `wx.EVT_KEY_DOWN`：键盘按键按下事件。
+- `wx.EVT_KEY_UP`：键盘按键释放事件。
+- `wx.EVT_PAINT`：绘图事件。
+- `wx.EVT_SIZE`：窗口大小变化事件。
+
+在使用 `wx.Window` 类时，可以通过继承该类来创建自定义窗口，也可以直接使用该类来创建基本窗口。例如，以下是一个使用 `wx.Window` 类创建一个基本窗口的示例代码：
+
+```python
+import wx
+
+class MyFrame(wx.Frame):
+    def __init__(self):
+        super().__init__(None, title='My Frame')
+        self.panel = wx.Window(self, size=(200, 200))
+        self.panel.SetBackgroundColour(wx.RED)
+
+if __name__ == '__main__':
+    app = wx.App()
+    frame = MyFrame()
+    frame.Show()
+    app.MainLoop()
+```
+
+在这个例子中，我们使用 `wx.Window` 类创建了一个大小为 (200, 200) 的红色窗口，并将其添加到了 `wx.Frame` 中。我们还可以使用其他方法和事件来处理这个窗口的鼠标、键盘、绘图和尺寸变化等事件。
+
+# 前景色和背景色
+
+在 GUI 编程中，前景色和背景色通常用于定义窗口和控件的颜色。
+
+前景色指的是控件上的文本、边框和图标等元素的颜色，而背景色则指的是控件本身的颜色。
+
+# wx.Control分析
+
+在 wxPython 中，`wx.Control` 是所有具有用户交互能力的控件的基类，包括按钮、文本框、复选框、单选框等等。
+
+`wx.Control` 类提供了许多常用的方法和事件，可以用于处理鼠标、键盘、尺寸变化等事件。以下是一些常用的方法和事件：
+
+- `wx.Control.GetLabelText()`：获取控件中显示的文本。
+- `wx.Control.SetLabelText(label)`：设置控件中显示的文本。
+- `wx.Control.Enable(enable=True)`：启用或禁用控件。
+- `wx.Control.IsEnabled()`：检查控件是否启用。
+- `wx.Control.SetFocus()`：将键盘焦点设置到控件上。
+- `wx.Control.GetSize()`：获取控件的大小。
+- `wx.Control.GetPosition()`：获取控件的位置。
+- `wx.Control.SetSize(size)`：设置控件的大小。
+- `wx.Control.SetPosition(pos)`：设置控件的位置。
+- `wx.Control.Refresh()`：刷新控件。
+- `wx.Control.Show(show=True)`：显示或隐藏控件。
+
+`wx.Control` 类还提供了许多事件，可以用于处理鼠标、键盘和尺寸变化等事件。以下是一些常用的事件：
+
+- `wx.EVT_LEFT_DOWN`：鼠标左键按下事件。
+- `wx.EVT_LEFT_UP`：鼠标左键释放事件。
+- `wx.EVT_RIGHT_DOWN`：鼠标右键按下事件。
+- `wx.EVT_RIGHT_UP`：鼠标右键释放事件。
+- `wx.EVT_MOUSEWHEEL`：鼠标滚轮滚动事件。
+- `wx.EVT_KEY_DOWN`：键盘按键按下事件。
+- `wx.EVT_KEY_UP`：键盘按键释放事件。
+- `wx.EVT_SIZE`：控件大小变化事件。
+
+在使用 `wx.Control` 类时，可以通过继承该类来创建自定义控件，也可以直接使用该类来创建基本控件。例如，以下是一个使用 `wx.Control` 类创建一个基本按钮的示例代码：
+
+```python
+import wx
+
+class MyFrame(wx.Frame):
+    def __init__(self):
+        super().__init__(None, title='My Frame')
+        self.button = wx.Button(self, label='Click Me', pos=(50, 50))
+
+if __name__ == '__main__':
+    app = wx.App()
+    frame = MyFrame()
+    frame.Show()
+    app.MainLoop()
+```
+
+在这个例子中，我们使用 `wx.Control` 类创建了一个名为 `button` 的按钮，并将其添加到了 `wx.Frame` 中。我们还可以使用其他方法和事件来处理这个按钮的鼠标、键盘和尺寸变化等事件。
+
+# wxpython自带参数读取和保存
+
+在 wxPython 中，常用的参数读取和保存方式包括使用 `wx.Config` 类和 `wx.FileConfig` 类。
+
+`wx.Config` 类是一个基类，用于实现应用程序的配置信息的读取和保存。它提供了一组简单的接口，可以读取和保存应用程序的配置信息，包括字符串、整数、浮点数、布尔值等数据类型。`wx.Config` 类提供了多种实现方式，包括注册表、INI 文件、XML 文件等，可以根据具体情况选择不同的实现方式。
+
+默认是保存到注册表的。
+
+```
+import wx
+
+class MyFrame(wx.Frame):
+    def __init__(self):
+        super().__init__(None, title='My Frame')
+        self.config = wx.FileConfig('MyApp', style=wx.CONFIG_USE_LOCAL_FILE)
+
+        self.text_ctrl = wx.TextCtrl(self)
+        self.load_button = wx.Button(self, label='Load')
+        self.save_button = wx.Button(self, label='Save')
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        vbox.Add(self.text_ctrl, proportion=1, flag=wx.EXPAND|wx.ALL)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(self.load_button, flag=wx.RIGHT, border=10)
+        hbox.Add(self.save_button)
+        vbox.Add(hbox, flag=wx.ALIGN_RIGHT|wx.ALL, border=10)
+
+        self.SetSizer(vbox)
+
+        self.load_button.Bind(wx.EVT_BUTTON, self.OnLoad)
+        self.save_button.Bind(wx.EVT_BUTTON, self.OnSave)
+
+    def OnLoad(self, event):
+        text = self.config.Read('text', 'Hello, world!')
+        self.text_ctrl.SetValue(text)
+
+    def OnSave(self, event):
+        text = self.text_ctrl.GetValue()
+        self.config.Write('text', text)
+        self.config.Flush()
+
+if __name__ == '__main__':
+    app = wx.App()
+    frame = MyFrame()
+    frame.Show()
+    app.MainLoop()
+
+```
+
+上面代码是保存到文件里的。
+
+默认是ini的。路径在：C:\Users\teddy\AppData\Roaming\MyApp.ini
+
+怎么指定为其他类型的文件呢？
+
+我测试了，路径和xml都不能成功指定。
+
+这个用起来还是挺麻烦的。
+
+## 自己用json做参数配置
+
+```
+import wx
+import json
+
+class MyFrame(wx.Frame):
+    def __init__(self):
+        super().__init__(None, title='My Frame')
+        self.config_file = 'config.json'
+
+        self.text_ctrl = wx.TextCtrl(self)
+        self.load_button = wx.Button(self, label='Load')
+        self.save_button = wx.Button(self, label='Save')
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        vbox.Add(self.text_ctrl, proportion=1, flag=wx.EXPAND|wx.ALL)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(self.load_button, flag=wx.RIGHT, border=10)
+        hbox.Add(self.save_button)
+        vbox.Add(hbox, flag=wx.ALIGN_RIGHT|wx.ALL, border=10)
+
+        self.SetSizer(vbox)
+
+        self.load_button.Bind(wx.EVT_BUTTON, self.OnLoad)
+        self.save_button.Bind(wx.EVT_BUTTON, self.OnSave)
+
+    def OnLoad(self, event):
+        try:
+            with open(self.config_file, 'r') as f:
+                config = json.load(f)
+        except FileNotFoundError:
+            config = {}
+        text = config.get('text', 'Hello, world!')
+        self.text_ctrl.SetValue(text)
+
+    def OnSave(self, event):
+        text = self.text_ctrl.GetValue()
+        config = {'text': text}
+        with open(self.config_file, 'w') as f:
+            json.dump(config, f)
+
+if __name__ == '__main__':
+    app = wx.App()
+    frame = MyFrame()
+    frame.Show()
+    app.MainLoop()
+
+```
+
+# wxpython日志输出到控件
+
+## 方式1
+
+```
+import wx
+import logging
+
+class LogPanel(wx.Panel):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.text_ctrl = wx.TextCtrl(self, style=wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
+        self.clear_button = wx.Button(self, label='Clear')
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        vbox.Add(self.text_ctrl, proportion=1, flag=wx.EXPAND|wx.ALL, border=10)
+        vbox.Add(self.clear_button, flag=wx.ALIGN_RIGHT|wx.ALL, border=10)
+
+        self.SetSizer(vbox)
+
+        self.clear_button.Bind(wx.EVT_BUTTON, self.OnClear)
+
+        # 创建日志处理器
+        self.handler = LogHandler(self.text_ctrl)
+
+        # 创建日志器
+        self.logger = logging.getLogger()
+        self.logger.setLevel(logging.DEBUG)
+        self.logger.addHandler(self.handler)
+
+    def OnClear(self, event):
+        self.text_ctrl.Clear()
+
+class LogHandler(logging.Handler):
+    def __init__(self, text_ctrl):
+        super().__init__()
+        self.text_ctrl = text_ctrl
+
+    def emit(self, record):
+        msg = self.format(record) + '\n'
+        wx.CallAfter(self.text_ctrl.WriteText, msg)
+
+class MyFrame(wx.Frame):
+    def __init__(self):
+        super().__init__(None, title='My Frame')
+
+        self.log_panel = LogPanel(self)
+        self.text_ctrl = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        vbox.Add(self.log_panel, proportion=1, flag=wx.EXPAND)
+        vbox.Add(self.text_ctrl, flag=wx.EXPAND|wx.ALL, border=10)
+
+        self.SetSizer(vbox)
+
+        self.logger = logging.getLogger()
+        self.logger.addHandler(self.log_panel.handler)
+
+        self.text_ctrl.Bind(wx.EVT_TEXT_ENTER, self.OnEnter)
+
+    def OnEnter(self, event):
+        text = self.text_ctrl.GetValue()
+        self.logger.debug(text)
+        self.text_ctrl.SetValue('')
+
+if __name__ == '__main__':
+    app = wx.App()
+    frame = MyFrame()
+    frame.Show()
+    app.MainLoop()
+
+```
+
 
 
 # 一些链接

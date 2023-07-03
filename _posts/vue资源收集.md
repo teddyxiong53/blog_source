@@ -34,3 +34,8 @@ https://juejin.im/post/5c52a572e51d4504375b98de
 
 代码：https://github.com/lzxb/vue-cnode
 
+
+
+一篇文章看懂vue
+
+https://blog.fundebug.com/2019/06/03/vue-development-tutorial/

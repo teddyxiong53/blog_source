@@ -103,9 +103,105 @@ animal: [cat, dog]
 
 数组还可以嵌套数组。
 
+# yml和json对比
 
+好的，以下是一个比较复杂的YAML文件示例，包含了多层嵌套的数据结构和一些特殊的YAML语法：
 
-参考资料
+```yaml
+# example.yml
+name: John
+age: 30
+city: New York
+pets:
+  - name: Fluffy
+    species: cat
+    age: 2
+  - name: Fido
+    species: dog
+    age: 4
+friends:
+  - name: Alice
+    age: 28
+  - name: Bob
+    age: 32
+education:
+  high school:
+    name: High School A
+    location: New York
+    graduation year: 2010
+  college:
+    name: College B
+    location: Boston
+    graduation year: 2014
+```
+
+使用Python中的PyYAML库可以将其转换为JSON格式的文件。以下是将example.yml文件转换为JSON格式文件example.json的代码：
+
+```python
+# example.py
+
+import yaml
+import json
+
+# 读取YAML文件
+with open('example.yml', 'r') as f:
+    data = yaml.load(f, Loader=yaml.FullLoader)
+
+# 将数据转换为JSON格式
+json_data = json.dumps(data, indent=4)
+
+# 保存JSON格式文件
+with open('example.json', 'w') as f:
+    f.write(json_data)
+```
+
+执行上述代码后，会生成一个example.json文件，其内容如下：
+
+```json
+{
+    "name": "John",
+    "age": 30,
+    "city": "New York",
+    "pets": [
+        {
+            "name": "Fluffy",
+            "species": "cat",
+            "age": 2
+        },
+        {
+            "name": "Fido",
+            "species": "dog",
+            "age": 4
+        }
+    ],
+    "friends": [
+        {
+            "name": "Alice",
+            "age": 28
+        },
+        {
+            "name": "Bob",
+            "age": 32
+        }
+    ],
+    "education": {
+        "high school": {
+            "name": "High School A",
+            "location": "New York",
+            "graduation year": 2010
+        },
+        "college": {
+            "name": "College B",
+            "location": "Boston",
+            "graduation year": 2014
+        }
+    }
+}
+```
+
+可以看到，example.json文件与example.yml文件的结构基本相同，但是使用了JSON特有的语法，如使用双引号包含字符串，使用逗号分隔数组元素等。此外，YAML文件的键值对使用了冒号分隔，而JSON文件则使用了冒号和双引号分隔。
+
+# 参考资料
 
 1、
 
