@@ -8,6 +8,16 @@ tags:
 
 --
 
+# 资源收集
+
+这个系列文章不错。
+
+https://segmentfault.com/a/1190000006173864
+
+
+
+# 背景
+
 我决定用libev来做我的网络库。
 
 看看怎么使用。
@@ -117,7 +127,68 @@ gcc test.c -lev
 
 这里我对Libev的学习就是依照这样的一个逻辑一步一步走的。
 
+# 对外接口
 
+```
+时间相关
+ev_tstamp ev_time();//获取当前的时间戳
+void ev_sleep(ev_tstamp t);// 睡眠
+
+错误处理相关
+void ev_set_syserr_cb(void (*cb)(char *msg));//设置发生严重错误时的行为。默认是abort。
+
+signal相关
+void ev_feed_signal(int sig);//模拟一个信号触发
+
+eventloop相关
+struct ev_loop *ev_default_loop(unsigned int flags);//创建或者返回默认的loop。
+	//默认的这个loop最特殊，只有它可以处理ev_child事件。
+struct ev_loop *ev_loop_new(unsigned int flags);//
+	这里flag常用的有：
+	EVFLAG_AUTO :这个是默认值，
+	EVFLAG_NOENV
+	EVBACKEND_EPOLL
+void ev_loop_destroy(struct ev_loop *loop);
+int ev_is_default_loop(struct ev_loop *loop);
+void ev_suspend (struct ev_loop *loop);//暂停loop
+void ev_resume (struct ev_loop *loop);
+bool ev_run (struct ev_loop *loop, int flags);
+void ev_break (struct ev_loop *loop, how);
+void ev_ref (struct ev_loop *loop);
+void ev_unref (struct ev_loop *loop);
+	只要 reference count 不为0，ev_run 函数就不会返回。
+	
+```
+
+## ev_loop_destroy 
+
+销毁`ev_loop`。注意这里要将所有的 IO 清除光之后再调用，因为这个函数并不中止所有活跃（active）的 IO。部分 IO 不会被清除，比如 signal。这些需要手动清除。这个函数一般和`ev_loop_new`一起出现在同一个线程中。
+
+# EVFLAG_AUTO
+
+EVFLAG_AUTO 是 libev 库中用于设置 watcher 的标志之一。设置 EVFLAG_AUTO 标志后，libev 库会自动选择最合适的 I/O 多路复用机制，从而提高程序的效率和可移植性。
+
+EVFLAG_AUTO 标志的使用非常简单，只需要在创建 watcher 时将 EVFLAG_AUTO 标志作为第二个参数传递给对应的初始化函数即可。例如：
+
+```c
+ev_io_init(&io_watcher, io_cb, fd, EVFLAG_AUTO); // 创建一个 EVFLAG_AUTO 的 ev_io watcher
+```
+
+EVFLAG_AUTO 标志的主要作用有以下几点：
+
+1. 自动选择最合适的 I/O 多路复用机制
+
+在不同的操作系统上，I/O 多路复用机制的实现方式可能不同，如在 Linux 上可以使用 epoll、在 macOS 上可以使用 kqueue。EVFLAG_AUTO 标志会自动选择最合适的 I/O 多路复用机制，从而提高程序的效率和可移植性。
+
+2. 隐藏 I/O 多路复用机制的差异
+
+不同的 I/O 多路复用机制在使用方式和实现细节上可能存在差异，这可能会给程序员带来一定的麻烦。EVFLAG_AUTO 标志会隐藏 I/O 多路复用机制的差异，使得程序员可以更加专注于业务逻辑的实现，而不用过多关注系统底层的实现细节。
+
+3. 提高程序的可移植性
+
+由于 EVFLAG_AUTO 标志会自动选择最合适的 I/O 多路复用机制，因此可以使得程序更加具有可移植性。这使得程序可以在不同的操作系统和硬件平台上运行，而不需要对代码进行过多的修改和调整。
+
+需要注意的是，虽然 EVFLAG_AUTO 标志可以自动选择最合适的 I/O 多路复用机制，但是在一些特殊情况下，手动选择 I/O 多路复用机制可能会更加有效和合适。因此，在实际应用中，应该根据具体情况选择合适的方式进行设置。
 
 # Libev 支持：
 
@@ -135,6 +206,20 @@ gcc test.c -lev
 - ev_idle，ev_embed，ev_prepare 和 ev_check：和事件观察器处理事件循环机制本身。
 - ev_stat：文件观察者
 - ev_fork：fork 事件的有限支持。
+
+### 时间显示
+
+Libev 使用一个`ev_tstamp`数据类型来表示1970年以来的秒数，实际类型是 C 里面的`double`类型。
+
+
+
+### 错误事件
+
+Libev 使用三种层级的错误：
+
+1. **操作系统错误**：调用`ev_set_syserr_cb`所设置的回调。默认行为是调用`abort()`
+2. **参数错误**：调用`assert`
+3. **内部错误（bug）**：内部调用`assert`
 
 # ev_async用法
 
@@ -224,7 +309,52 @@ ev_timer_stop
 
 https://blog.csdn.net/gqtcgq/article/details/49402041
 
+# ev_stat一般的用途
 
+ev_stat 是 libev 库中用于监视文件状态变化的一个 watcher 类型。它可以监视文件或目录的状态变化，如文件的修改、删除、重命名等，从而在状态变化时触发对应的回调函数进行处理。
+
+ev_stat 的一般用途包括以下几个方面：
+
+1. 监视文件状态变化
+
+ev_stat 可以监视文件或目录的状态变化，如文件的修改、删除、重命名等。当文件状态发生变化时，会触发对应的回调函数进行处理。这在需要及时处理文件状态变化的应用中非常有用，如实时监控文件系统、自动备份文件等。
+
+2. 实现文件系统监控
+
+通过使用 ev_stat 监视文件或目录的状态变化，可以实现文件系统监控功能。例如，可以监视某个目录下的文件，当有新文件添加或者文件被删除时，可以及时进行处理，如发送邮件通知、备份文件等。
+
+3. 实现文件同步
+
+通过使用 ev_stat 监视文件或目录的状态变化，可以实现文件同步功能。例如，可以监视某个目录下的文件，当文件被修改时，可以自动将修改的内容同步到其他机器上，从而实现文件同步。
+
+以下是一个使用 ev_stat 监视文件状态变化的示例：
+
+```c
+#include <ev.h>
+#include <stdio.h>
+#include <sys/stat.h>
+
+void stat_cb(EV_P_ ev_stat *w, int revents) {
+    if (revents & EV_STAT) {
+        printf("file %s changed\n", w->path);
+    }
+}
+
+int main() {
+    struct ev_loop *loop = EV_DEFAULT;
+    ev_stat stat_watcher;
+    ev_stat_init(&stat_watcher, stat_cb, "test.txt", 0); // 初始化 ev_stat watcher
+    ev_stat_start(loop, &stat_watcher); // 开始监听文件状态变化
+
+    ev_run(loop, 0); // 进入事件循环
+
+    return 0;
+}
+```
+
+在上面的代码中，我们创建了一个 ev_stat watcher，并在回调函数中输出一条日志。在主函数中，我们初始化了 ev_stat watcher 并开始监听文件状态变化。当文件状态发生变化时，会触发对应的回调函数输出日志。
+
+需要注意的是，在实际应用中，使用 ev_stat 监视文件状态变化时需要考虑文件系统的性能和安全性，避免对文件系统造成过大的负载和安全风险。
 
 # 系列文章
 
