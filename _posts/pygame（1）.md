@@ -501,7 +501,259 @@ while running:
 pygame.quit()
 ```
 
+# pygame绘制太阳系运行动画
 
+```
+import pygame
+import math
+
+# 初始化 Pygame
+pygame.init()
+
+# 设置窗口尺寸和标题
+width, height = 800, 600
+screen = pygame.display.set_mode((width, height))
+pygame.display.set_caption("太阳系运动动画")
+
+# 定义颜色
+BLACK = (0, 0, 0)
+YELLOW = (255, 255, 0)
+GRAY = (127, 127, 0)
+BLUE = (0, 0, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+
+# 设置时钟对象
+clock = pygame.time.Clock()
+
+# 行星类
+class Planet:
+    def __init__(self, name, radius, distance, speed, color):
+        self.name = name
+        self.radius = radius
+        self.distance = distance
+        self.speed = speed
+        self.color = color
+        self.angle = 0
+
+    def update(self):
+        self.angle += self.speed
+
+    def draw(self):
+        x = width // 2 + math.cos(math.radians(self.angle)) * self.distance
+        y = height // 2 + math.sin(math.radians(self.angle)) * self.distance
+        pygame.draw.circle(screen, self.color, (int(x), int(y)), self.radius)
+
+# 创建行星对象
+sun = Planet("Sun", 50, 0, 0, YELLOW)
+mercury = Planet("Mercury", 10, 100, 1, GRAY)
+venus = Planet("Venus", 15, 150, 0.8, RED)
+earth = Planet("Earth", 20, 200, 0.6, BLUE)
+mars = Planet("Mars", 15, 250, 0.4, RED)
+
+# 主循环
+running = True
+while running:
+    # 处理事件
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # 清屏
+    screen.fill(BLACK)
+
+    # 绘制行星
+    sun.draw()
+    mercury.update()
+    mercury.draw()
+    venus.update()
+    venus.draw()
+    earth.update()
+    earth.draw()
+    mars.update()
+    mars.draw()
+
+    # 刷新屏幕
+    pygame.display.flip()
+
+    # 控制帧率
+    clock.tick(60)
+
+# 退出程序
+pygame.quit()
+
+```
+
+# pygame除了游戏之外，还有哪些妙用
+
+除了游戏开发之外，Pygame 还可以应用于其他领域，下面是一些 Pygame 的其他妙用示例：
+
+1. 可视化工具：Pygame 提供了绘图、图像处理和交互功能，可以用于创建各种可视化工具，例如数据可视化、图形绘制、图像处理等。
+
+2. 交互式图形界面：借助 Pygame 的绘图和事件处理功能，可以创建交互式的图形用户界面（GUI），用于构建应用程序、工具或演示。
+
+3. 模拟和仿真：Pygame 的绘图和物理引擎功能可用于创建各种模拟和仿真场景，例如物理模拟、粒子系统、汽车驾驶模拟等。
+
+4. 教育和学习工具：Pygame 可以用于开发教育工具和学习资源，例如交互式数学教学、物理实验模拟、编程学习等。
+
+5. 图像处理和计算机视觉：Pygame 提供了处理图像和视频的功能，可以用于计算机视觉应用，例如图像识别、目标跟踪、图像处理等。
+
+6. 艺术和创意项目：Pygame 的绘图和动画功能可以用于艺术和创意项目，例如生成艺术图像、交互式艺术展示、音乐可视化等。
+
+7. 物理实验和控制：结合外部硬件接口（如 Arduino），Pygame 可以用于物理实验和控制项目，例如机器人控制、传感器数据采集等。
+
+这些只是一些示例，Pygame 的灵活性和可扩展性使其适用于许多其他领域和项目。您可以根据自己的需求和创意，发挥 Pygame 的优势，应用于各种有趣和实用的场景。
+
+# 基于pygame的gui演示
+
+下面是一个简单的基于 Pygame 的 GUI 演示示例，其中使用按钮、文本框和标签等元素：
+
+```python
+import pygame
+import pygame_gui
+
+# 初始化 Pygame
+pygame.init()
+
+# 设置窗口尺寸和标题
+width, height = 400, 300
+screen = pygame.display.set_mode((width, height))
+pygame.display.set_caption("GUI 演示")
+
+# 设置 GUI 管理器
+manager = pygame_gui.UIManager((width, height))
+
+# 创建按钮
+button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((150, 100), (100, 50)),
+                                     text="点击我",
+                                     manager=manager)
+
+# 创建文本框
+text_box = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((50, 200), (300, 30)),
+                                               manager=manager)
+
+# 创建标签
+label = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((50, 250), (300, 30)),
+                                    text="",
+                                    manager=manager)
+
+# 主循环
+running = True
+while running:
+    time_delta = pygame.time.Clock().tick(60) / 1000.0
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        # 处理 GUI 事件
+        manager.process_events(event)
+
+        if event.type == pygame.USEREVENT:
+            if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                if event.ui_element == button:
+                    label.set_text("按钮被点击了")
+        
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN:
+                label.set_text("输入的文本是：" + text_box.text)
+
+    # 更新 GUI
+    manager.update(time_delta)
+
+    # 清屏
+    screen.fill((255, 255, 255))
+
+    # 绘制 GUI
+    manager.draw_ui(screen)
+
+    # 刷新屏幕
+    pygame.display.flip()
+
+# 退出程序
+pygame.quit()
+```
+
+这个示例使用 Pygame 和 Pygame GUI 库来创建一个简单的 GUI 界面。其中包含一个按钮、一个文本框和一个标签。点击按钮会在标签中显示相应的消息，同时在按下回车键后会将文本框中的内容显示在标签中。
+
+您可以根据自己的需求和创意，添加更多的 GUI 元素、布局和交互功能，以创建更复杂和丰富的 GUI 应用程序。
+
+# pygame 物理模拟仿真示例
+
+下面是一个使用 Pygame 实现简单物理模拟仿真的示例，其中模拟了一个小球的自由落体运动：
+
+```python
+import pygame
+import random
+
+# 初始化 Pygame
+pygame.init()
+
+# 设置窗口尺寸和标题
+width, height = 800, 600
+screen = pygame.display.set_mode((width, height))
+pygame.display.set_caption("物理模拟仿真")
+
+# 定义颜色
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+
+# 小球类
+class Ball:
+    def __init__(self, radius, x, y):
+        self.radius = radius
+        self.x = x
+        self.y = y
+        self.velocity = 0
+
+    def update(self):
+        # 更新小球的位置和速度
+        self.y += self.velocity
+        self.velocity += 0.1
+
+        # 检查小球是否碰到地面
+        if self.y + self.radius >= height:
+            self.y = height - self.radius
+            self.velocity *= -0.9
+
+    def draw(self):
+        pygame.draw.circle(screen, RED, (int(self.x), int(self.y)), self.radius)
+
+# 创建小球对象
+ball = Ball(30, width // 2, 0)
+
+# 设置时钟对象
+clock = pygame.time.Clock()
+
+# 主循环
+running = True
+while running:
+    # 处理事件
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # 清屏
+    screen.fill(WHITE)
+
+    # 更新和绘制小球
+    ball.update()
+    ball.draw()
+
+    # 刷新屏幕
+    pygame.display.flip()
+
+    # 控制帧率
+    clock.tick(60)
+
+# 退出程序
+pygame.quit()
+```
+
+在这个示例中，一个小球从顶部开始自由落体运动，通过模拟重力和碰撞来更新小球的位置和速度。小球在碰到地面时会有一定的反弹，并逐渐减缓运动。
+
+您可以根据需要修改小球的初始位置、速度和半径等参数，以及调整重力和碰撞的模拟规则，来实现不同的物理仿真效果。例如，可以模拟更复杂的碰撞、添加其他物体等。
 
 # 参考资料
 

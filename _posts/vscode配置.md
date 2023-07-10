@@ -402,6 +402,14 @@ https://blog.csdn.net/qq_39549803/article/details/111877597
 
 https://blog.csdn.net/weixin_42880082/article/details/121242368
 
+修改快捷方式的参数为这样：
+
+```
+Code.exe --user-data-dir d:\vscode-data
+```
+
+然后每次都从快捷方式来启动vscode即可。
+
 
 
 # 头文件ifndef snippet
