@@ -1095,6 +1095,12 @@ libtimerdir := $(real_top)
 
 ```
 
+# 添加有值的宏定义
+
+```
+AM_CPPFLAGS += -Dmalloc=my_malloc -Dfree=my_free -Dcalloc=my_calloc -Drealloc=my_realloc
+```
+
 
 
 # 参考资料

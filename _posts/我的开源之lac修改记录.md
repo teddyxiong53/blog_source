@@ -1159,3 +1159,14 @@ teddy@teddy-VirtualBox:~/work/test/micropython/ports/unix$
 # 这里有一些小型的实现，还有lua
 
 https://github.com/nodemcu/nodemcu-firmware/blob/release/app/
+
+# 删掉重新来
+
+因为里面的代码有点混乱。
+
+或者是重新弄一个基于xmake的精简版本。
+
+就叫lac3
+
+把所有的代码都编译为一个大的库。而不再分很多小的库。
+

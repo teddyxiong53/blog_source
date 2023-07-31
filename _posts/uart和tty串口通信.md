@@ -238,6 +238,141 @@ int tcflush(int fd, int queue_selector);
 
 请确保在调用 `tcflush()` 函数之前已经打开了正确的串口设备，并且将其文件描述符（`uart_fd`）传递给函数。
 
+# linux命令行调试ttyS
+
+```
+stty -F /dev/ttyS0 115200 cs8 -parenb -cstopb
+cat /dev/ttyS0
+```
+
+这样是可以读取到的。
+
+# 虚拟串口
+
+本次实现的虚拟串口主要是借助tty_register_driver、tty_port_register_device实现，
+
+而不是借助uart_register_driver、uart_add_one_port，
+
+等我们后面介绍了uart子系统之后，
+
+再借助uart_register_driver、uart_add_one_port实现一次虚拟串口。
+
+
+
+https://blog.csdn.net/lickylin/article/details/105851107
+
+https://www.51cto.com/article/644846.html
+
+# pty来测试双向通信
+
+我现在写了个在ttyS上跑的协议。
+
+但是目前没有环境测试。
+
+我想放在一对pty上进行测试。
+
+看看怎么做。
+
+如果需要将上述示例代码拆分为两个单独的测试命令，可以使用不同的方式来实现双向通信。以下是两个示例：
+
+1. 使用Python的pty模块实现
+
+```python
+import pty
+import os
+
+# 创建pty伪终端
+master, slave = pty.openpty()
+
+# 读取子进程的输出并打印到控制台
+def read_slave():
+    while True:
+        data = os.read(master, 1024)
+        if not data:
+            break
+        print(data.decode(), end='')
+
+# 将数据写入伪终端
+def write_slave():
+    while True:
+        data = input()
+        os.write(master, data.encode())
+
+# 创建新线程来读取子进程输出
+import threading
+threading.Thread(target=read_slave, daemon=True).start()
+
+# 从控制台读取输入并发送到伪终端
+write_slave()
+```
+
+这个示例使用pty.openpty函数创建了一个pty伪终端，并创建了两个函数来读取子进程的输出并将数据写入伪终端。然后，使用Python的threading模块创建一个新线程来读取子进程输出，并在主线程中从控制台读取输入并发送到伪终端。
+
+2. 使用Linux的socat命令实现
+
+```bash
+# 创建pty伪终端
+socat -d -d pty,raw,echo=0 pty,raw,echo=0
+
+# 在第一个终端中输入命令
+echo 'Hello World' > /dev/pts/2
+
+# 在第二个终端中读取输出
+cat < /dev/pts/3
+```
+
+这个示例使用Linux的socat命令创建了一个pty伪终端，并在两个不同的终端中分别发送和接收数据。在第一个终端中，使用echo命令将数据写入/dev/pts/2，即伪终端的主设备文件；在第二个终端中，使用cat命令从/dev/pts/3，即伪终端的从设备文件中读取数据。由于socat命令会自动将伪终端的主设备文件和从设备文件关联起来，因此在第二个终端中可以直接读取到第一个终端中发送的数据。
+
+# stty参数
+
+为了把这个命令用好。需要把所有的参数都看一遍。
+
+## 查看当前的配置
+
+```
+/ # stty -a
+speed 38400 baud;stty: standard input
+ line = 0;
+intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>;
+eol2 = <undef>; swtch = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R;
+werase = ^W; lnext = ^V; flush = ^O; min = 1; time = 0;
+-parenb -parodd -cmspar cs8 -hupcl -cstopb cread -clocal -crtscts
+-ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff
+-iuclc -ixany -imaxbel -iutf8
+opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0
+isig icanon iexten echo echoe echok -echonl -noflsh -xcase -tostop -echoprt
+echoctl echoke -flusho -extproc
+```
+
+这是一个在Linux系统中运行的命令“stty -a”的输出结果，它显示了当前终端的配置参数。以下是对每个参数的解释：
+
+- speed 38400 baud：终端的波特率（传输速率）为38400比特/秒。
+- line = 0：未指定行控制。
+- intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>；eol2 = <undef>；swtch = <undef>；start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R; werase = ^W; lnext = ^V; flush = ^O：这些是特殊字符的定义，例如中断字符（intr）、挂起字符（susp）和回车字符（eof）等。这些定义可以用于控制终端的行为。
+- -parenb -parodd -cmspar cs8 -hupcl -cstopb cread -clocal -crtscts：这些是终端的基本设置，例如奇偶校验、数据位数、流控制等。
+- -ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff -iuclc -ixany -imaxbel -iutf8：这些是输入模式设置，例如控制如何处理输入的换行符、回车符、信号字符等。
+- opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0：这些是输出模式设置，例如控制如何处理输出的换行符、回车符等。
+- isig icanon iexten echo echoe echok -echonl -noflsh -xcase -tostop -echoprt echoctl echoke -flusho -extproc：这些是控制终端行为的设置，例如启用信号（isig）、启用规范模式（icanon）等。
+
+这些设置可以通过运行“stty”命令来更改。例如，“stty -echo”将禁用回显功能，使得用户在输入时无法看到自己的输入。
+
+# python操作串口
+
+```
+import serial
+
+# 打开串口，这里的串口号和波特率根据实际情况进行修改
+ser = serial.Serial('COM3', 115200)
+print('串口参数配置：', ser.get_settings())
+# 发送字符串
+ret = ser.write('aaa\r\n'.encode())
+print('ret:', ret)
+# 关闭串口
+ser.close()
+```
+
+
+
 # 参考资料
 
 1、UART概述（上）
