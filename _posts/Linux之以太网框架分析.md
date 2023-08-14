@@ -6,7 +6,9 @@ tags:
 
 ---
 
+--
 
+# 驱动代码分析
 
 以树莓派上的ENC28J60驱动为入口进行分析。
 
@@ -116,9 +118,99 @@ udp_sendmsg
 
 2、后面skb就一直没有什么变化，一直到enc28j60_hw_tx里，把数据取出来用。
 
+# buildroot下让插入网线自动打开eth0并获取ip
 
 
 
+在使用 Buildroot 构建的嵌入式 Linux 系统中，您可以通过配置网络脚本来实现在插入网线时自动打开网卡（如 eth0）并请求获取 IP 地址。以下是一种方法，您可以在 Buildroot 中使用自定义的网络脚本来实现这一目标：
 
+1. **创建网络脚本：**
 
+   在 Buildroot 的配置中，找到 Networking Utilities 并确保其已选中。然后在自定义的目录中创建一个脚本文件，例如 `my_network_script.sh`。
+
+2. **编辑网络脚本：**
+
+   打开 `my_network_script.sh` 并添加以下内容，用于启用网卡并请求获取 IP 地址：
+
+   ```bash
+   #!/bin/sh
+
+   # Enable eth0 interface
+   ip link set eth0 up
+
+   # Request IP address via DHCP
+   udhcpc -i eth0
+   ```
+
+3. **构建并集成网络脚本：**
+
+   在 Buildroot 配置中，找到 Target packages → Networking applications，并确保 BusyBox 中的 `udhcpc` 选项已勾选。
+
+   将 `my_network_script.sh` 文件复制到 Buildroot 构建目录的 `board/your_board_name/post-build/` 目录中。确保 `my_network_script.sh` 脚本具有可执行权限。
+
+4. **配置 Buildroot：**
+
+   在 Buildroot 的配置中，找到 Target packages → BusyBox，将 `udhcpc` 命令添加到 BusyBox 中，以便在根文件系统中包含它。
+
+5. **构建并烧录镜像：**
+
+   使用 Buildroot 构建并烧录嵌入式 Linux 系统镜像到目标设备。
+
+6. **在目标设备上配置启动：**
+
+   在目标设备上运行 Buildroot 构建的 Linux 系统后，可以将 `my_network_script.sh` 添加到启动脚本中，以便在启动时自动执行。
+
+请注意，这只是一种在 Buildroot 下实现自动打开网卡并请求获取 IP 地址的方法。具体实施可能会根据您的 Buildroot 配置和系统需求有所不同。在实际应用中，请确保您的网络设置符合您的需求和目标设备的硬件。
+
+## 检测RJ45的插入事件
+
+在 Linux 中，您可以使用一些方法来检测到 RJ45 网线插入和拔出的事件。以下是两种常见的方法：
+
+1. **通过 udev 规则：**
+
+   udev 是 Linux 系统中的一个设备管理框架，可以用于监控和响应设备事件。您可以通过创建 udev 规则来捕捉网线插入和拔出事件。
+
+   - 首先，创建一个 udev 规则文件，例如 `99-net-cable.rules`，并将其放置在 `/etc/udev/rules.d/` 目录下：
+
+     ```bash
+     sudo nano /etc/udev/rules.d/99-net-cable.rules
+     ```
+
+   - 在规则文件中添加以下内容，以指定网线插入和拔出的动作：
+
+     ```bash
+     SUBSYSTEM=="net", ACTION=="change", RUN+="/path/to/your/script.sh"
+     ```
+
+   - 保存文件并关闭。
+
+   - 创建一个脚本文件（例如 `script.sh`），在脚本中添加您希望在网线插入和拔出时执行的操作。可以使用脚本来触发事件、通知用户或执行其他任务。
+
+   - 为脚本文件添加可执行权限：
+
+     ```bash
+     chmod +x /path/to/your/script.sh
+     ```
+
+   - 重启 udev 以使规则生效：
+
+     ```bash
+     sudo udevadm control --reload
+     ```
+
+   现在，当您插入或拔出 RJ45 网线时，udev 规则将会运行脚本，从而触发您定义的操作。
+
+2. **使用 ethtool 命令：**
+
+   Linux 中的 `ethtool` 命令可以用于配置和查询网络接口的状态。您可以使用 `ethtool` 命令来检测网线的插入和拔出事件。
+
+   - 执行以下命令来获取网卡的状态信息，包括连接状态（链接是否正常）：
+
+     ```bash
+     ethtool eth0
+     ```
+
+   - 您可以编写脚本，定期执行 `ethtool` 命令来检测连接状态的变化。如果状态发生变化，您可以在脚本中触发相应的操作。
+
+请注意，udev 规则是一种更为高级和灵活的方法，可以在更广泛的设备事件上使用。而 `ethtool` 命令是一种直接查询网络接口状态的方法。选择方法取决于您的需求和应用场景。
 

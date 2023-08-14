@@ -835,6 +835,130 @@ avformat_open_input
 
 一个codec的分析
 
+# 基于ffmpeg的项目有哪些
+
+基于 FFmpeg 的项目非常多样，涵盖了音视频处理、多媒体应用、流媒体服务等多个领域。以下是一些基于 FFmpeg 的项目示例：
+
+1. **视频编辑和转码软件**：许多视频编辑软件和转码工具使用 FFmpeg 作为核心引擎，提供视频剪辑、转码、滤镜效果等功能，如 HandBrake、FFmpegGUI、Shotcut 等。
+
+2. **流媒体服务器**：一些流媒体服务器使用 FFmpeg 作为处理音视频流的引擎，用于实时编码、转码和传输音视频数据，如 NGINX RTMP Module、Wowza Streaming Engine 等。
+
+3. **媒体播放器**：一些媒体播放器使用 FFmpeg 解码和渲染音视频数据，提供多种格式的媒体播放支持，如 VLC、MPlayer、MPV 等。
+
+4. **音视频分析工具**：一些工具利用 FFmpeg 的能力来分析音视频文件，提取元数据、检测编码信息、生成波形图等，如 MediaInfo、ffprobe 等。
+
+5. **实时音视频通信**：一些实时音视频通信应用（如视频会议、直播）使用 FFmpeg 来处理和传输音视频数据，如 WebRTC 库、Jitsi Meet 等。
+
+6. **音视频编解码库**：一些项目专注于构建基于 FFmpeg 的高层封装或接口，使开发者更容易使用 FFmpeg 进行音视频编解码操作，如 LibAV、pydub 等。
+
+7. **音频处理工具**：一些工具专注于音频处理领域，利用 FFmpeg 来处理和转换音频文件，如 Audacity、SoX 等。
+
+8. **游戏开发**：一些游戏开发项目使用 FFmpeg 来处理游戏中的音频和视频资源，实现游戏内的音视频播放效果。
+
+9. **媒体框架**：一些媒体处理框架使用 FFmpeg 来处理音视频数据，为开发者提供丰富的媒体操作功能，如 GStreamer、OpenCV 等。
+
+需要注意的是，这只是一小部分基于 FFmpeg 的项目示例。由于 FFmpeg 是一个强大且灵活的多媒体框架，它在不同领域有着广泛的应用。如果你对特定领域的项目有兴趣，可以在开源社区或代码托管平台上寻找更多的项目示例。
+
+# ffmpeg主要结构体分析
+
+FFmpeg 中有许多重要的结构体，用于存储和管理音视频数据、参数、上下文等信息。这些结构体是实现各种功能的基础，以下是一些主要的 FFmpeg 结构体：
+
+1. **AVFormatContext（封装格式上下文）**：用于管理音视频文件的封装格式信息，包括文件名、格式、流信息、封装器和解封装器等。
+
+2. **AVCodecContext（编解码器上下文）**：用于管理音视频编解码器的参数和状态，包括编码器类型、编码参数、解码参数、位率等。
+
+3. **AVFrame（音视频帧）**：用于存储音视频数据的帧，包括图像数据、音频数据、时间戳、采样率等。
+
+4. **AVPacket（音视频数据包）**：用于存储编码后的音视频数据，包括压缩数据、时间戳、数据大小等。
+
+5. **AVFilterContext（过滤器上下文）**：用于管理音视频过滤器的参数和状态，包括输入输出连接、滤镜链等。
+
+6. **AVIOContext（输入输出上下文）**：用于管理自定义的输入输出操作，包括读取、写入、定位等。
+
+7. **AVDictionary（字典）**：用于存储键值对的数据结构，用于传递和存储元数据、选项等信息。
+
+8. **AVRational（有理数）**：表示一个有理数，用于处理时间戳、帧率等。
+
+9. **AVStream（音视频流）**：用于存储音视频流的信息，如流索引、编解码器信息、时基等。
+
+10. **AVFilterGraph（过滤器图）**：用于管理音视频过滤器的图结构，包括过滤器链和连接。
+
+11. **AVCodec（编解码器）**：用于描述音视频编解码器的信息，如名称、类型、支持的格式等。
+
+这些结构体相互关联，构成了 FFmpeg 的核心数据结构，用于处理音视频数据的读取、编解码、转换、过滤等各个方面。在使用 FFmpeg 进行音视频处理时，你会涉及到操作这些结构体来进行数据的传递和管理。每个结构体都具有特定的功能和属性，需要根据具体的任务进行使用和配置。
+
+# ffmpeg 重采样
+
+FFmpeg 提供了 `libswresample` 库，用于实现音频的重采样（resampling）。重采样是将音频数据从一个采样率和格式转换为另一个采样率和格式的过程，常用于将音频适应不同的播放设备或处理需求。
+
+以下是使用 FFmpeg 进行音频重采样的基本步骤：
+
+1. **初始化 `SwrContext`：** 首先，你需要初始化一个 `SwrContext` 结构，该结构包含了重采样的参数和状态。
+
+```c
+SwrContext *swr_ctx = swr_alloc();
+```
+
+2. **设置参数：** 设置重采样的输入和输出参数，包括输入采样率、输出采样率、输入样本格式、输出样本格式等。
+
+```c
+av_opt_set_int(swr_ctx, "in_channel_layout", in_channel_layout, 0);
+av_opt_set_int(swr_ctx, "in_sample_rate", in_sample_rate, 0);
+av_opt_set_sample_fmt(swr_ctx, "in_sample_fmt", in_sample_fmt, 0);
+
+av_opt_set_int(swr_ctx, "out_channel_layout", out_channel_layout, 0);
+av_opt_set_int(swr_ctx, "out_sample_rate", out_sample_rate, 0);
+av_opt_set_sample_fmt(swr_ctx, "out_sample_fmt", out_sample_fmt, 0);
+```
+
+3. **初始化重采样上下文：** 根据设置的参数，初始化重采样上下文。
+
+```c
+swr_init(swr_ctx);
+```
+
+4. **循环重采样：** 对输入的音频数据进行重采样，将结果写入输出缓冲区。
+
+```c
+int nb_samples = ...; // 输入样本数
+uint8_t *in_data[AV_NUM_DATA_POINTERS] = {in_samples_data}; // 输入样本数据
+int in_linesize[AV_NUM_DATA_POINTERS] = {in_samples_linesize}; // 输入样本行大小
+
+int out_samples = ...; // 输出样本数
+uint8_t *out_data[AV_NUM_DATA_POINTERS] = {out_samples_data}; // 输出样本数据
+int out_linesize[AV_NUM_DATA_POINTERS] = {out_samples_linesize}; // 输出样本行大小
+
+swr_convert(swr_ctx, out_data, out_samples, (const uint8_t **)in_data, nb_samples);
+```
+
+5. **释放资源：** 最后，记得释放分配的资源。
+
+```c
+swr_free(&swr_ctx);
+```
+
+这只是一个简单的示例，实际的重采样过程可能会涉及更多的参数和设置。重采样过程需要根据具体的需求和情况进行调整。你可以参考 FFmpeg 的文档和示例来了解更多关于 `libswresample` 的用法和详细步骤。
+
+# ffmpeg怎样保证ABI兼容
+
+为了保证 FFmpeg 的 ABI（Application Binary Interface）兼容性，即确保不同版本的 FFmpeg 库能够与已编译的应用程序二进制文件正确链接并运行，FFmpeg 团队采取了一系列策略和实践：
+
+1. **版本号管理：** FFmpeg 使用了版本号规则，其中包括主版本号、次版本号和修订版本号。当 API 或 ABI 发生不兼容性更改时，主版本号会增加。次版本号增加表示有新功能的引入，但不影响 ABI 兼容性。修订版本号增加表示只有兼容性修复的变更。
+
+2. **符号版本控制：** FFmpeg 使用符号版本控制（Symbol Versioning）来标识库中的符号（函数和变量），以指定它们的版本和兼容性。这有助于确保应用程序链接的是正确版本的符号，从而保持 ABI 兼容性。
+
+3. **二进制兼容性测试：** FFmpeg 团队在每个主要发布版之前进行二进制兼容性测试，以验证新版本是否与先前版本保持兼容。这有助于捕获潜在的兼容性问题并进行修复。
+
+4. **API/ABI 文档和声明：** FFmpeg 提供详细的 API 和 ABI 文档，以指导开发者正确地使用和链接 FFmpeg 库。API 文档描述了每个公共函数的用法，而 ABI 文档描述了符号版本控制的规则和库之间的兼容性。
+
+5. **废弃和移除策略：** 当不再需要某些旧 API 或 ABI 时，FFmpeg 会首先将其标记为已废弃，并在后续版本中移除。这使得开发者在迁移代码时有足够的时间进行适应。
+
+6. **稳定分支：** FFmpeg 维护一个稳定分支，用于维护和修复旧版本的问题。这有助于确保旧版本的 ABI 兼容性。
+
+7. **API 扩展：** FFmpeg 的 API 扩展通常在较新的版本中引入，以保持较旧版本的 ABI 兼容性。新功能会在次版本号增加时引入。
+
+总之，FFmpeg 通过版本管理、符号版本控制、文档、测试等多种方式来保证 ABI 兼容性，以确保开发者能够稳定地使用不同版本的 FFmpeg 库进行开发。开发者在使用 FFmpeg 时应该参考相关的文档和指南，以确保正确链接和使用库的版本。
+
 
 
 # 参考资料
