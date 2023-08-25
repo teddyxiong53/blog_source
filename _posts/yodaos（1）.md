@@ -8,6 +8,8 @@ tags:
 
 --
 
+# 编译
+
 **解决办法**：这些都是同样类型的错误，修复方法是#include<sys/sysmacros.h>添加到ismounted.c，devname.c，debugfs.c，create_inode.c文件中
 
 

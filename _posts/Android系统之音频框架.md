@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 音频逻辑上相对比较简单，我以音频为切入点，来分析一下Android系统的整体框架。
 
@@ -40,13 +40,13 @@ judyln:/ # cat /proc/asound/cards
 
 市场的声卡非常多，对于一个os来说，应该怎样管理各种声卡，对上层提供统一的接口呢？
 
-在Android系统里，很不是的tiny-xxx的项目。
+在Android系统里，有很多tiny-xxx的项目。
 
 因为完整的开源项目都比较大，所以就进行瘦身，就有了这些tiny项目了。
 
 对于音频，是tinyalsa。在external目录下。
 
-tinyalsa只支持了两种interface，而对于rawmidi、sequencer、timer都不支持。
+**tinyalsa只支持了两种interface，而对于rawmidi、sequencer、timer都不支持。**
 
 对于嵌入式设备来说，够用了。
 
@@ -79,6 +79,8 @@ Library这一层，在frameworks/av/media/libmedia目录下。用C++写的。
 1、以库为主线。
 
 2、以进程为主线。
+
+
 
 比如AudioFlinger和AudioPolicyService都驻留于名为mediaserver的系统进程中;
 

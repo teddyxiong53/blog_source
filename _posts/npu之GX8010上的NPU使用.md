@@ -8,6 +8,8 @@ tags:
 
 --
 
+# NPU
+
 搜索TF跟NPU对接的，找到了GX8010这个国芯的资料。
 
 NPU处理器专门为物联网人工智能而设计，用于加速神经网络的运算，
@@ -44,10 +46,24 @@ NPU内部有6个MAC，SNPU有3个。
 
 并提供了一套API让用户方便地运行TensorFlow模型。
 
+# VSP
+
+这个文档写得不错。可以学习一下。
+
+# skylarkos
+
+SkylarkOS是基于NationalChip AI芯片构建的嵌入式Linux系统，集成了语音信号处理，神经网络运算，WIFI，蓝牙，播放器，GUI等丰富的功能组件，内置灵活高效的JS APP框架，帮助用户快捷地打造自己的AI应用方案
 
 
-参考资料
+
+https://gitlab.com/nationalchip/skylarkos-getstarted
+
+# 参考资料
 
 1、GX8010上NPU的使用
 
 http://ai.nationalchip.com/docs/gx8010/npukai-fa-zhi-nan/npujian-jie.html
+
+2、
+
+http://139.196.170.32/docs/pdf/GX8010_VSP_SDK_DG.pdf

@@ -6,7 +6,9 @@ tags:
 
 ---
 
-1
+--
+
+# alsa的命令分类
 
 alsa的命令有3套。
 
@@ -15,11 +17,13 @@ alsa的命令有3套。
 aplay
 arecord
 amixer
+
 这个是图形界面的。调试用。
 alsaconf
 alsactl    
 alsamixer  
 alsaucm
+
 这个是Android里的tiny版本。
 tinycap
 tinyplay
@@ -193,9 +197,33 @@ amixer -c 0 set PCM 2dB+
 
 Mic Boost是什么？
 
+# amixer cget和sget区别是什么
 
+在 ALSA（Advanced Linux Sound Architecture）中，`amixer` 是一个用于控制和调整音频设置的命令行工具。在使用 `amixer` 命令时，你会经常看到 `cget` 和 `sget` 这两个选项，它们在功能和用法上有一些区别。
 
-参考资料
+1. **`cget`（Capture Get）：** `cget` 选项用于获取捕获（录制）音频设置的当前值。它可以用于查询当前音频输入设备（如麦克风）的设置参数，如音量、增益等。
+
+   例如，使用以下命令可以获取当前捕获音频设备的音量设置：
+
+   ```bash
+   amixer cget numid=1
+   ```
+
+   在输出中，你将看到当前音量设置的详细信息。
+
+2. **`sget`（Switch Get）：** `sget` 选项用于获取开关类型设置的当前状态。它通常用于查询音频设备上的开关设置，比如静音状态。
+
+   例如，使用以下命令可以获取音频设备的静音状态：
+
+   ```bash
+   amixer sget Master
+   ```
+
+   在输出中，你将看到当前静音状态的详细信息。
+
+总之，`cget` 用于获取捕获（录制）音频设置的当前值，而 `sget` 用于获取开关类型设置的当前状态。它们是 `amixer` 命令的不同选项，用于查询和显示音频设置的信息。
+
+# 参考资料
 
 1、linux 用命令设置系统音量大小
 

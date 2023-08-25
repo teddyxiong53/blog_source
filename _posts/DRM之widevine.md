@@ -151,3 +151,11 @@ https://source.android.com/docs/core/media/drm?hl=zh-cn
 6、keybox
 
 https://blog.csdn.net/qq_27061049/article/details/129032100
+
+7、Google Widevine及其工作原理
+
+https://aijishu.com/a/1060000000312201
+
+8、
+
+https://bbs.16rd.com/thread-580797-1-1.html

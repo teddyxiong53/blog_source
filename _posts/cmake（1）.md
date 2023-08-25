@@ -803,7 +803,557 @@ add_library(MultipartParser INTERFACE)
 
 就是对于c++里的那种只有头文件的项目。
 
+# string处理
 
+在CMake中，字符串的处理是很常见的任务，例如拼接、分割、替换等。以下是一些常见的CMake字符串处理函数的用法示例：
+
+1. **字符串拼接：**
+   ```cmake
+   set(NAME "John")
+   set(GREETING "Hello, ${NAME}!")
+   message(${GREETING})
+   ```
+
+2. **字符串长度：**
+   
+   ```cmake
+   set(TEXT "Hello, World!")
+   string(LENGTH ${TEXT} LEN)
+   message("Length of TEXT is ${LEN}")
+```
+   
+3. **字符串截取：**
+   ```cmake
+   set(FULL_STRING "This is a long sentence.")
+   string(SUBSTRING ${FULL_STRING} 0 4 PARTIAL_STRING)
+   message(${PARTIAL_STRING})
+   ```
+
+4. **字符串替换：**
+   ```cmake
+   set(INPUT_STRING "Hello, world!")
+   string(REPLACE "world" "CMake" NEW_STRING ${INPUT_STRING})
+   message(${NEW_STRING})
+   ```
+
+5. **字符串分割为列表：**
+   ```cmake
+   set(SPLIT_STRING "apple;banana;cherry;date")
+   string(REPLACE ";" " " SPLIT_STRING ${SPLIT_STRING})
+   separate_arguments(LIST_OF_FRUITS UNIX_COMMAND ${SPLIT_STRING})
+   foreach(FRUIT ${LIST_OF_FRUITS})
+       message(${FRUIT})
+   endforeach()
+   ```
+
+6. **字符串转换为大写或小写：**
+   ```cmake
+   set(UPPER_CASE "hello, cmake!")
+   string(TOUPPER ${UPPER_CASE} UPPER_RESULT)
+   message(${UPPER_RESULT})
+
+   set(LOWER_CASE "Hello, CMake!")
+   string(TOLOWER ${LOWER_CASE} LOWER_RESULT)
+   message(${LOWER_RESULT})
+   ```
+
+7. **查找子字符串的位置：**
+   ```cmake
+   set(FIND_STRING "CMake is a great tool.")
+   string(FIND ${FIND_STRING} "great" POSITION)
+   message("Position of 'great': ${POSITION}")
+   ```
+
+这些示例展示了一些CMake字符串处理函数的用法，但CMake支持的字符串操作远不止这些。你可以查阅CMake官方文档来了解更多的字符串处理函数以及它们的用法。
+
+# message用法
+
+在CMake中，`message` 命令用于向终端输出消息，用于调试、信息显示以及构建过程中的反馈。以下是一些常见的 `message` 命令的用法示例：
+
+1. **输出普通文本：**
+   ```cmake
+   message("Hello, World!")
+   ```
+
+2. **输出变量的值：**
+   ```cmake
+   set(NAME "Alice")
+   message("Hello, ${NAME}!")
+   ```
+
+3. **输出条件判断的结果：**
+   
+   ```cmake
+   if(WIN32)
+       message("Running on Windows")
+   else()
+       message("Not running on Windows")
+   endif()
+```
+   
+4. **输出警告信息：**
+   ```cmake
+   if(NOT DEFINED MY_VARIABLE)
+       message(WARNING "MY_VARIABLE is not defined.")
+   endif()
+   ```
+
+5. **输出错误信息：**
+   ```cmake
+   if(NOT DEFINED REQUIRED_VARIABLE)
+       message(FATAL_ERROR "REQUIRED_VARIABLE is not defined.")
+   endif()
+   ```
+
+6. **输出状态信息：**
+   
+   ```cmake
+   message(STATUS "Configuring project...")
+```
+   
+7. **输出调试信息：**
+   
+   ```cmake
+   message(DEBUG "Debugging information: ${DEBUG_INFO}")
+   ```
+
+请注意，`message` 命令可以用于输出不同级别的信息，如普通信息、警告、错误、状态等。在构建过程中，它可以帮助你了解变量的值、条件判断的结果以及构建流程中的各种情况。在CMake的生成过程中，你可以在终端或CMake生成的构建日志中看到这些消息。
+
+需要注意的是，`message` 命令在CMakeLists.txt文件中使用，不会影响生成的代码或可执行文件，只是在构建过程中用于输出信息。
+
+# 命令不区分大小写
+
+在大多数情况下，CMake 命令不区分大小写，这意味着你可以使用大写、小写或混合大小写来编写命令，CMake 都会将其解释为相同的命令。例如，`MESSAGE`、`message`、`MeSsAgE` 都会被认为是相同的命令。
+
+然而，CMake 的变量和属性名称是区分大小写的。这意味着 `MY_VARIABLE`、`my_variable` 和 `My_Variable` 都被视为不同的变量。因此，在编写 CMake 文件时，要注意变量和属性名称的大小写。
+
+# cmake定义和使用变量
+
+在 CMake 中，你可以使用 `set` 命令来定义变量，然后可以使用 `${}` 语法来引用这些变量。下面是一些关于定义和使用变量的示例：
+
+1. **定义变量：**
+   ```cmake
+   set(MY_VARIABLE "Hello, CMake!")
+   ```
+
+2. **引用变量：**
+   ```cmake
+   message(${MY_VARIABLE})
+   ```
+
+3. **引用变量中的字符串：**
+   
+   ```cmake
+   set(NAME "Alice")
+   message("Hello, ${NAME}!")
+```
+   
+4. **变量的值可以被修改：**
+   
+   ```cmake
+   set(MY_NUMBER 42)
+   message("My number is ${MY_NUMBER}")
+   set(MY_NUMBER 99)
+   message("Now my number is ${MY_NUMBER}")
+```
+   
+5. **默认值和空值：**
+   
+   ```cmake
+   set(DEFAULT_VALUE "Hello, Default!")
+   set(NO_VALUE)
+   message("Default: ${DEFAULT_VALUE}")
+   message("No value: ${NO_VALUE}")
+```
+   
+6. **条件设置变量：**
+   ```cmake
+   if(WINDOWS)
+       set(PLATFORM "Windows")
+   else()
+       set(PLATFORM "Other")
+   endif()
+   message("Running on ${PLATFORM}")
+   ```
+
+7. **引用多个变量：**
+   ```cmake
+   set(FIRST_NAME "John")
+   set(LAST_NAME "Doe")
+   set(FULL_NAME "${FIRST_NAME} ${LAST_NAME}")
+   message("Full name: ${FULL_NAME}")
+   ```
+
+需要注意的是，CMake 中的变量具有作用域，就像其他编程语言一样。局部变量在定义它们的块内可见，全局变量则在整个文件内可见。此外，CMake 中的变量名是区分大小写的，`MY_VARIABLE` 和 `my_variable` 是不同的变量。
+
+在编写 CMakeLists.txt 文件时，合理使用变量可以帮助你更好地管理构建过程和配置选项。
+
+# cmake list用法
+
+在 CMake 中，列表（List）是一种数据结构，用于存储一系列值。你可以使用列表来存储文件列表、目录列表、编译选项列表等。CMake 提供了一些用于处理列表的函数来进行操作。以下是一些常见的 CMake 列表用法示例：
+
+1. **定义列表：**
+   
+   ```cmake
+   set(FILE_LIST file1.cpp file2.cpp file3.cpp)
+```
+   
+2. **引用列表元素：**
+   
+   ```cmake
+   list(GET FILE_LIST 0 FIRST_FILE)
+   message("First file: ${FIRST_FILE}")
+```
+   
+3. **获取列表长度：**
+   
+   ```cmake
+   list(LENGTH FILE_LIST FILE_LIST_LENGTH)
+   message("Number of files: ${FILE_LIST_LENGTH}")
+```
+   
+4. **遍历列表：**
+   
+   ```cmake
+   foreach(FILE ${FILE_LIST})
+       message("File: ${FILE}")
+   endforeach()
+```
+   
+5. **添加元素到列表末尾：**
+   ```cmake
+   list(APPEND FILE_LIST file4.cpp)
+   ```
+
+6. **从列表中移除元素：**
+   ```cmake
+   list(REMOVE_ITEM FILE_LIST file2.cpp)
+   ```
+
+7. **将列表连接为字符串：**
+   
+   ```cmake
+   string(REPLACE ";" " " FILE_LIST_STR "${FILE_LIST}")
+   message("Files as string: ${FILE_LIST_STR}")
+```
+   
+8. **使用列表作为循环计数器：**
+   ```cmake
+   foreach(i RANGE 1 5)
+       message("Index: ${i}")
+   endforeach()
+   ```
+
+需要注意的是，CMake 中的列表是由分号 `;` 分隔的一系列值。你可以使用列表函数来操作这些列表，执行添加、删除、遍历等操作。列表在构建过程中非常有用，可以用于定义文件列表、编译选项列表、库依赖等等。
+
+# cmake macro用法
+
+在 CMake 中，宏（Macro）是一种用于执行一系列命令的自定义函数。宏可以带有参数，允许你在构建过程中重复使用相同的代码块。以下是一些关于 CMake 宏的用法示例：
+
+1. **定义宏：**
+   ```cmake
+   macro(MyMacro ARG1 ARG2)
+       message("Macro called with arguments: ${ARG1} and ${ARG2}")
+   endmacro()
+   ```
+
+2. **调用宏：**
+   ```cmake
+   MyMacro("Hello" "CMake")
+   ```
+
+3. **宏可以包含多条命令：**
+   ```cmake
+   macro(PrintVariables)
+       message("Value of VAR1: ${VAR1}")
+       message("Value of VAR2: ${VAR2}")
+   endmacro()
+
+   set(VAR1 "Value 1")
+   set(VAR2 "Value 2")
+
+   PrintVariables()
+   ```
+
+4. **宏参数可以是可选的：**
+   
+   ```cmake
+   macro(OptionalMacro ARG1 ARG2)
+       if(ARG2)
+           message("Second argument provided: ${ARG2}")
+       else()
+           message("Second argument not provided.")
+       endif()
+endmacro()
+   
+   OptionalMacro("First Argument")
+   OptionalMacro("First Argument" "Second Argument")
+```
+   
+5. **宏内部使用变量：**
+   ```cmake
+   macro(MacroWithVariables)
+       set(LOCAL_VAR "Local Value")
+       message("Inside macro: ${LOCAL_VAR}")
+   endmacro()
+
+   set(LOCAL_VAR "Global Value")
+   message("Outside macro: ${LOCAL_VAR}")
+
+   MacroWithVariables()
+   ```
+
+6. **宏可以调用其他宏：**
+   ```cmake
+   macro(OuterMacro)
+       message("Outer macro started.")
+       InnerMacro()
+       message("Outer macro finished.")
+   endmacro()
+
+   macro(InnerMacro)
+       message("Inner macro called.")
+   endmacro()
+
+   OuterMacro()
+   ```
+
+宏是 CMake 中代码复用的重要机制，可以帮助你避免重复编写相同的代码块，提高代码的可维护性和可读性。当你需要在多个地方使用相同的代码时，可以将其封装为宏，并通过调用宏来执行这些操作。
+
+# add_executable
+
+在 CMake 中，`add_executable` 是一个用于定义可执行文件的命令。它用于告诉 CMake 如何将源代码编译成一个可执行文件。以下是 `add_executable` 命令的用法示例：
+
+```cmake
+# 定义可执行文件，名称为 my_app
+add_executable(my_app main.cpp file1.cpp file2.cpp)
+
+# 将头文件目录添加到可执行文件的包含路径
+target_include_directories(my_app PRIVATE ${CMAKE_SOURCE_DIR}/include)
+
+# 将链接的库添加到可执行文件
+target_link_libraries(my_app PRIVATE my_library)
+```
+
+在上面的示例中：
+
+- `add_executable(my_app main.cpp file1.cpp file2.cpp)`：这行代码定义了一个名为 `my_app` 的可执行文件，它由 `main.cpp`、`file1.cpp` 和 `file2.cpp` 这些源文件编译而来。
+- `target_include_directories(my_app PRIVATE ${CMAKE_SOURCE_DIR}/include)`：这行代码将头文件目录添加到可执行文件的包含路径中。`${CMAKE_SOURCE_DIR}` 表示项目的根目录，`include` 是包含头文件的目录。
+- `target_link_libraries(my_app PRIVATE my_library)`：这行代码将名为 `my_library` 的库链接到可执行文件。这样，`my_app` 就能够使用 `my_library` 中定义的函数和变量。
+
+请注意，`add_executable` 命令通常会与其他 CMake 命令一起使用，以配置构建过程和链接依赖库。这些命令一起协同工作，将源代码转换为可执行文件。
+
+# add_dependencies
+
+在 CMake 中，`add_dependencies` 是一个用于定义目标之间依赖关系的命令。它允许你指定一个目标依赖于另一个或多个目标，以确保在构建时正确地处理它们的依赖关系。以下是 `add_dependencies` 命令的用法示例：
+
+```cmake
+# 定义两个目标：my_app 和 my_library
+add_executable(my_app main.cpp)
+add_library(my_library my_source.cpp)
+
+# 将 my_app 设置为依赖于 my_library
+add_dependencies(my_app my_library)
+```
+
+在上面的示例中：
+
+- `add_executable(my_app main.cpp)` 和 `add_library(my_library my_source.cpp)` 分别定义了两个目标：可执行文件 `my_app` 和库 `my_library`。
+- `add_dependencies(my_app my_library)` 将 `my_app` 设置为依赖于 `my_library`。这意味着在构建 `my_app` 之前，CMake 将确保构建 `my_library`。
+
+`add_dependencies` 命令对于确保在正确顺序下构建不同的目标非常有用。例如，在构建一个可执行文件之前，可能需要先构建相关的库。通过使用 `add_dependencies` 命令，你可以指定这些依赖关系，从而确保构建过程正确无误。
+
+需要注意的是，`add_dependencies` 命令只是建议构建顺序，它不会强制使目标按特定顺序构建。构建系统会尽力满足这些依赖关系，但如果依赖关系无法满足，可能会导致构建失败。
+
+# set_property
+
+在 CMake 中，`set_property` 是一个用于设置属性的命令。它可以用于为目标、源文件、目录等设置属性，从而影响构建和编译的行为。以下是 `set_property` 命令的用法示例：
+
+```cmake
+# 为一个目标设置属性
+set_property(TARGET my_target PROPERTY CXX_STANDARD 11)
+
+# 为一个源文件设置属性
+set_property(SOURCE my_source.cpp PROPERTY COMPILE_DEFINITIONS MY_DEFINE)
+
+# 为一个目录设置属性
+set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT my_project)
+```
+
+在上面的示例中：
+
+- `set_property(TARGET my_target PROPERTY CXX_STANDARD 11)`：这行代码为名为 `my_target` 的目标设置属性。在这里，设置了 C++ 标准为 11。这会影响编译过程，使其使用 C++11 特性进行编译。
+- `set_property(SOURCE my_source.cpp PROPERTY COMPILE_DEFINITIONS MY_DEFINE)`：这行代码为名为 `my_source.cpp` 的源文件设置属性。在这里，设置了编译宏 `MY_DEFINE`，它将在编译该源文件时生效。
+- `set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT my_project)`：这行代码为目录设置属性。在这里，将 Visual Studio 中的启动项目设置为 `my_project`，这将影响在 Visual Studio 中的构建行为。
+
+`set_property` 命令可以用于影响构建过程中的各种行为，如编译选项、链接选项、生成器相关的设置等。需要根据实际需求查阅 CMake 文档以了解更多属性和使用方法。
+
+# INCLUDE(GNUInstallDirs)
+
+在 CMake 构建系统中，`INCLUDE(GNUInstallDirs)` 是一个指令，用于包含 CMake 的标准模块 `GNUInstallDirs`，该模块定义了一些常见的安装目录变量，用于在安装过程中指定文件的目标路径。
+
+`GNUInstallDirs` 模块为不同类型的文件（可执行文件、库文件、头文件、文档等）定义了适当的安装目录，以便将文件正确地安装到系统中。这有助于使软件包在不同的平台上保持一致的安装布局。
+
+以下是一些 `GNUInstallDirs` 模块定义的常见变量：
+
+- `CMAKE_INSTALL_BINDIR`：可执行文件的目录。
+- `CMAKE_INSTALL_LIBDIR`：库文件的目录。
+- `CMAKE_INSTALL_INCLUDEDIR`：头文件的目录。
+- `CMAKE_INSTALL_DATAROOTDIR`：共享数据文件的根目录。
+- `CMAKE_INSTALL_DOCDIR`：文档文件的目录。
+
+通过在 CMakeLists.txt 文件中使用 `INCLUDE(GNUInstallDirs)`，你可以在安装时使用这些变量来指定文件的目标路径，以便将文件正确地安装到系统的适当位置。
+
+示例：
+
+```cmake
+cmake_minimum_required(VERSION 3.0)
+project(MyProject)
+
+# 包含 GNUInstallDirs 模块
+include(GNUInstallDirs)
+
+# 安装可执行文件到 bin 目录
+install(TARGETS my_executable DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+# 安装库文件到 lib 目录
+install(TARGETS my_library DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+# 安装头文件到 include 目录
+install(FILES my_header.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+```
+
+上面的示例中，通过使用 `CMAKE_INSTALL_BINDIR`、`CMAKE_INSTALL_LIBDIR` 和 `CMAKE_INSTALL_INCLUDEDIR` 等变量，将可执行文件、库文件和头文件安装到了标准的安装目录。
+
+# aux_source_directory
+
+在 CMake 构建系统中，`aux_source_directory` 函数用于从指定的目录中查找源代码文件，并将这些源代码文件的列表存储在一个变量中。
+
+函数的语法如下：
+
+```cmake
+aux_source_directory(dir variable)
+```
+
+- `dir`：要搜索的目录。
+- `variable`：要存储源文件列表的变量名称。
+
+这个函数通常用于简化构建脚本，特别是在需要将一个目录中的多个源文件都添加到一个目标中时。它会自动搜索指定目录中的所有源代码文件，并将它们添加到指定的变量中。
+
+示例：
+
+假设在项目目录下有一个名为 `src` 的文件夹，其中包含多个 `.cpp` 文件。你可以使用 `aux_source_directory` 函数将所有 `.cpp` 文件的列表存储在一个变量中，然后将这个变量传递给 `add_executable` 或 `add_library`。
+
+```cmake
+cmake_minimum_required(VERSION 3.0)
+project(MyProject)
+
+# 查找 src 目录下的所有 .cpp 文件，并将其保存在 SRCS 变量中
+aux_source_directory(src SRCS)
+
+# 添加可执行文件，并将 SRCS 变量中的源文件添加到可执行文件中
+add_executable(my_executable ${SRCS})
+```
+
+在上面的示例中，`aux_source_directory` 函数将 `src` 目录下的所有 `.cpp` 文件的列表存储在 `SRCS` 变量中，然后将这个变量传递给 `add_executable`。这样就不需要一个个手动列出所有的源文件了。
+
+# cmake install
+
+在 CMake 构建系统中，`install` 命令用于安装编译生成的文件，包括可执行文件、库文件、头文件、文档等，到指定的目录。这样可以将构建出的文件部署到系统中，以便其他程序或用户使用。
+
+`install` 命令的基本语法如下：
+
+```cmake
+install(TARGETS targets...
+        [[ARCHIVE|LIBRARY|RUNTIME]
+          [DESTINATION <dir>]
+          [PERMISSIONS permissions...]
+          [CONFIGURATIONS [Debug|Release|...]]
+          [COMPONENT <component>]
+          [OPTIONAL]
+         ]
+        [...]
+       )
+```
+
+其中，`TARGETS` 后跟要安装的目标（可执行文件、库文件等），`DESTINATION` 后跟目标安装的路径，`PERMISSIONS` 可以设置文件的权限，`COMPONENT` 可以用于分组安装，`OPTIONAL` 表示可选安装。
+
+以下是一些示例用法：
+
+1. **安装可执行文件：**
+
+   ```cmake
+   install(TARGETS my_executable DESTINATION bin)
+   ```
+
+   这将把名为 `my_executable` 的可执行文件安装到 `bin` 目录。
+
+2. **安装库文件：**
+
+   ```cmake
+   install(TARGETS my_library DESTINATION lib)
+   ```
+
+   这将把名为 `my_library` 的库文件安装到 `lib` 目录。
+
+3. **安装头文件：**
+
+   ```cmake
+   install(FILES my_header.h DESTINATION include)
+   ```
+
+   这将把名为 `my_header.h` 的头文件安装到 `include` 目录。
+
+4. **安装文档：**
+
+   ```cmake
+   install(FILES README.md DESTINATION doc)
+   ```
+
+   这将把名为 `README.md` 的文档文件安装到 `doc` 目录。
+
+需要注意的是，`DESTINATION` 参数指定了安装的目标路径。通常，你可以使用 CMake 的预定义变量（如 `CMAKE_INSTALL_PREFIX`）来表示安装路径的根目录。例如，`DESTINATION ${CMAKE_INSTALL_PREFIX}/bin` 将可执行文件安装到根目录下的 `bin` 目录。
+
+在 CMakeLists.txt 文件中使用 `install` 命令，可以让你定义在构建后如何将生成的文件部署到系统中。
+
+# findPackage
+
+在 CMake 构建系统中，`find_package` 命令用于查找和导入其他软件包或库的配置文件，以便在你的项目中使用这些库。这可以让你的项目更容易管理依赖关系，并确保正确地链接所需的库。
+
+`find_package` 命令的基本语法如下：
+
+```cmake
+find_package(package_name [version] [EXACT] [QUIET] [MODULE]
+             [REQUIRED] [COMPONENTS [component1] [component2] ...])
+```
+
+- `package_name`：要查找的库或软件包的名称。
+- `version`：可选，指定所需的版本号。
+- `EXACT`：可选，要求找到的版本号必须与指定的版本号完全匹配。
+- `QUIET`：可选，不显示查找过程的输出。
+- `MODULE`：可选，使用 CMake 模块进行查找。
+- **`REQUIRED`：可选，如果找不到所需的包，将会报错。**
+- `COMPONENTS`：可选，列出需要的组件。
+
+当你调用 `find_package` 命令时，CMake 将会尝试在系统上查找指定的软件包，并导入其配置文件，以便在项目中使用。这些配置文件通常包含库的路径、头文件、链接标志等信息，以便正确地编译和链接项目。
+
+示例：
+
+```cmake
+cmake_minimum_required(VERSION 3.0)
+project(MyProject)
+
+# 查找并导入 OpenSSL 软件包
+find_package(OpenSSL REQUIRED)
+
+# 将 OpenSSL 的头文件和库链接到项目中
+include_directories(${OPENSSL_INCLUDE_DIR})
+target_link_libraries(my_app ${OPENSSL_LIBRARIES})
+```
+
+在上面的示例中，`find_package(OpenSSL REQUIRED)` 将查找 OpenSSL 软件包，并导入其配置文件。然后，通过使用 `${OPENSSL_INCLUDE_DIR}` 和 `${OPENSSL_LIBRARIES}` 变量，可以将 OpenSSL 的头文件路径和库链接到项目中。
+
+注意：`find_package` 命令的具体效果取决于所查找的软件包是否提供了正确的 CMake 配置文件。如果你想使用 `find_package` 导入某个库，确保该库支持 CMake 构建，并提供了相应的配置文件。
 
 # 参考资料
 

@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 tinyalsa的代码量不大，可以读一下。
 
@@ -123,7 +123,9 @@ snd_pcm_writei()-->snd_pcm_hw_writei(alsa-lib-1.1.3/src/pcm/pcm_hw.c)-->ioctl(fd
 
 tinyalsa借用了alsa-lib的一些头文件，主要是一些结构体和宏定义，没有链接alsa-lib的库。
 
+tinyalsa只实现了pcm和mixer，而且没有配置文件系统。
 
+而alsa则还实现了seq、timer、midi等接口。
 
 # tinyplay
 
@@ -591,7 +593,13 @@ struct pcm_params
 struct snd_pcm_hw_params *params = (struct snd_pcm_hw_params *)pcm_params;
 ```
 
+# pcm设备相关代码解析
 
+https://blog.csdn.net/hhx123456798/article/details/123605555
+
+
+
+https://blog.csdn.net/hhx123456798/category_11616057.html
 
 # 参考资料
 
