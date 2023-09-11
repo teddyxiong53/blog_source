@@ -496,6 +496,12 @@ WantedBy=bluetooth.target
 Alias=dbus-org.bluez.service
 ```
 
+在你提供的这个条件中，`ConditionPathIsDirectory=/sys/class/bluetooth` 表示当`/sys/class/bluetooth`是一个目录时，
+
+该systemd服务单元才会继续启动。如果`/sys/class/bluetooth`不是一个目录或者不存在，那么服务将不会启动。
+
+
+
 ```
 teddy@teddy-ThinkPad-SL410:/etc/systemd/system$ cat syslog.service 
 [Unit]
@@ -1143,7 +1149,7 @@ systemd 能够更进一步提高并发性，即便对于那些 upstart 认为存
 
 
 
-在 systemd 中，所有的任务都同时并发执行，总的启动时间被进一步降低为 T1。可见 systemd 比 upstart 更进一步提高了并行启动能力，极大地加速了系统启动时间。
+在 systemd 中，所有的任务都同时并发执行，**总的启动时间被进一步降低为 T1**。可见 systemd 比 upstart 更进一步提高了并行启动能力，极大地加速了系统启动时间。
 
 # system V
 
@@ -2607,6 +2613,10 @@ https://zhuanlan.zhihu.com/p/419372683
 https://zhuanlan.zhihu.com/p/426438095
 
 # systemd preset-all 
+
+总的来说，这个就是根据preset文件配置，决定我们最后的镜像的文件系统里，哪些service需要enable，哪些需要被disable，好建立对应的软链接。
+
+
 
 systemctl preset-all 会读取哪些配置文件
 

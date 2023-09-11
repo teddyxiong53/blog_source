@@ -110,9 +110,49 @@ protected:
 
 
 
+# qt的Q_D宏
 
+`Q_D` 宏是 Qt 框架中用于实现对象私有数据（Private Data）指针模式的一部分。它通常与 `Q_DECLARE_PRIVATE` 和 `Q_DECLARE_PUBLIC` 宏一起使用，用于在 Qt 类中将公共接口和私有实现分离开来，以提高类的封装性和可维护性。
 
-参考资料
+以下是有关 `Q_D` 宏及其相关宏的详细信息：
+
+1. **Q_DECLARE_PRIVATE 和 Q_DECLARE_PUBLIC：** 这两个宏通常与 `Q_D` 一起使用。`Q_DECLARE_PRIVATE` 用于在类的私有部分声明一个指向私有数据的指针（通常命名为 `d_ptr`），而 `Q_DECLARE_PUBLIC` 用于在类的公共部分声明一个指向类本身的指针（通常命名为 `q_ptr`）。
+
+   ```cpp
+   class MyClass {
+       Q_DECLARE_PRIVATE(MyClass)
+   public:
+       MyClass();
+       // 公共接口
+   private:
+       Q_DECLARE_PRIVATE_D(MyClass)
+       // 私有数据和实现
+   };
+   ```
+
+2. **Q_D 宏：** `Q_D` 宏通常用于在类的私有成员函数中获取指向私有数据的指针。这使得在类的实现中可以访问私有数据而不暴露给外部代码。
+
+   ```cpp
+   void MyClassPrivate::privateFunction() {
+       Q_D(MyClass); // 获取指向私有数据的指针
+       // 访问私有数据 d->...
+   }
+   ```
+
+3. **Q_Q 宏：** 与 `Q_D` 相似，`Q_Q` 宏用于在类的私有成员函数中获取指向公共接口的指针，以便在私有实现中调用公共接口的函数。
+
+   ```cpp
+   void MyClassPrivate::somePrivateFunction() {
+       Q_Q(MyClass); // 获取指向公共接口的指针
+       q->publicFunction(); // 调用公共接口函数
+   }
+   ```
+
+4. **作用：** 使用 `Q_D`、`Q_Q`、`Q_DECLARE_PRIVATE` 和 `Q_DECLARE_PUBLIC` 宏的主要目的是将类的公共接口与私有实现分离开来，提高类的封装性和可维护性。这种模式允许类的实现细节保持私有，只暴露公共接口给外部使用，同时在私有成员函数中可以方便地访问私有数据和调用公共接口函数。
+
+这种模式通常用于 Qt 中的各种类，特别是那些涉及到多线程、插件、自定义控件等场景的类。它有助于减少类的依赖关系，提高了代码的可维护性和扩展性。
+
+# 参考资料
 
 1、c++ - 为什么Qt使用d_func()实例化指向私有(private)数据的指针？
 

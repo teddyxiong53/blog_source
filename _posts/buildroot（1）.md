@@ -2428,12 +2428,36 @@ target-post-image: $(TARGETS_ROOTFS) target-finalize staging-finalize
 
 ```
 
-make source的实现
+## target-finalize
+
+在Buildroot中，`target-finalize`是一个构建过程中的一个关键步骤，
+
+其作用是执行一些与目标系统相关的最终操作和配置。
+
+这个步骤通常在所有的软件包编译和安装之后，
+
+但在生成目标系统文件系统之前执行。
+
+以下是`target-finalize`的主要作用：
+
+1. 生成目标系统文件系统：在`target-finalize`阶段，Buildroot会根据之前构建的各个软件包和组件的安装结果，创建目标系统的文件系统。这包括文件布局、目录结构、设备节点等等。
+
+2. 生成启动镜像：如果你的目标是创建一个可以烧录到嵌入式设备上的启动镜像，`target-finalize`阶段也会负责生成这个启动镜像。这通常包括 bootloaders、内核镜像、设备树文件以及其他引导所需的文件。
+
+3. 生成根文件系统镜像：`target-finalize`还负责将根文件系统中的所有文件和目录打包成一个镜像，以便在目标设备上加载和运行。这个镜像可以是各种格式，如ext4、UBIFS、SquashFS等，具体取决于你的配置。
+
+4. 最终配置和清理：在`target-finalize`阶段，还可以执行一些最终的系统配置操作，如生成/etc/fstab、/etc/network/interfaces等配置文件。此外，还会进行一些临时文件的清理，以减小生成的文件系统镜像的大小。
+
+总之，`target-finalize`是Buildroot构建过程中的最后一个关键步骤，它将之前各个阶段生成的组件整合在一起，最终生成一个完整的目标系统文件系统和启动镜像，以便在嵌入式设备上部署和运行。它确保了整个构建过程的顺利完成和系统的可用性。
+
+# make source的实现
 
 ```
 .PHONY: source
 source: $(foreach p,$(PACKAGES),$(p)-all-source)
 ```
+
+
 
 # 编译顺序
 
