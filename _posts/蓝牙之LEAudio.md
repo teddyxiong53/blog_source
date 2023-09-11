@@ -29,3 +29,6 @@ https://m.ithome.com/html/673535.htm
 
 https://www.eet-china.com/news/202001081019.html
 
+2、
+
+https://wiki.archlinux.org/title/bluetooth_headset

@@ -126,7 +126,11 @@ int main(void)
 }
 ```
 
+# arduino库标志
 
+
+
+https://arduino.github.io/arduino-cli/0.34/library-specification/
 
 # 参考资料
 
