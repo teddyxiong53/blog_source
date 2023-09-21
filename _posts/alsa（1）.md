@@ -627,13 +627,19 @@ VERSIONED_SYMBOLS
 
 
 
-参考资料
+## 参考资料
+
+1、
 
 https://blog.csdn.net/njuitjf/article/details/40544659
 
-
+2、
 
 https://www.cnblogs.com/arnoldlu/p/13552504.html
+
+3、
+
+https://stackoverflow.com/questions/35480928/alsa-unexpected-results-when-called-from-shared-library
 
 # alsa-lib的aserver作用是什么
 

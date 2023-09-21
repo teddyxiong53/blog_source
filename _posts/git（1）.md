@@ -1,5 +1,5 @@
 ---
-title: git命令使用经验
+title: git（1）
 date: 2017-10-09 19:16:08
 tags:
 	- git
@@ -121,6 +121,8 @@ git-am 就是作这件事情。
 
 - 如果你发现这个冲突是无法解决的， 要撤销整个am的东西。 可以运行git am –abort，
 - 如果你想只是忽略这一个patch，可以运行git am –skip来跳过这个patch.
+
+# hooks脚本
 
 
 

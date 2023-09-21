@@ -2803,6 +2803,22 @@ Buildroot 将采取一系列措施来**提高构建过程的可重现性**，
 
 请参考 Buildroot 的文档和说明以获取更详细的配置信息和用法示例。
 
+# BR2_PACKAGE_BUSYBOX_SHOW_OTHERS
+
+`BR2_PACKAGE_BUSYBOX_SHOW_OTHERS` 是 Buildroot 构建系统中用于配置 BusyBox 软件包的一个选项。BusyBox 是一个用于嵌入式系统的小型工具集，它包含了许多标准的Unix工具，如 `ls`、`cp`、`grep`、`find` 等，这些工具经过了精简以适应资源受限的嵌入式系统环境。
+
+`BR2_PACKAGE_BUSYBOX_SHOW_OTHERS` 选项的作用是控制 BusyBox 编译时是否包含额外的工具。这些额外的工具通常不是 BusyBox 的核心工具，但可以根据特定的需求包含进去，以增强 BusyBox 的功能。
+
+以下是 `BR2_PACKAGE_BUSYBOX_SHOW_OTHERS` 选项的可能取值和含义：
+
+- 如果设置为 `y` 或 `yes`：表示包含额外的工具。这意味着 BusyBox 将包含更多的工具，以增强系统的功能。
+  
+- 如果设置为 `n` 或 `no`：表示不包含额外的工具。这将保持 BusyBox 的核心工具，以节省系统资源。
+
+- 如果设置为其他值：具体取决于 Buildroot 配置，可能会有不同的行为。
+
+这个选项允许你根据项目的需求来定制 BusyBox 的功能，以便在嵌入式系统中使用。你可以根据项目的具体情况来选择是否包含额外的工具，以满足系统的需求并减少资源占用。
+
 # 参考资料
 
 1、HOWTO: Use BuildRoot to create a Linux image for QEMU

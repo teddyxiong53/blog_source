@@ -629,3 +629,41 @@ xmake是一个基于Lua语言的跨平台构建工具，**它的配置文件分�
 我的需求来源是，我的本地有一堆的test-xx.c的文件。要一个个编译成对应的可执行文件。
 
 https://github.com/xmake-io/xmake/issues/1938
+
+# xmake环境变量
+
+```
+$ xmake show -l envs
+XMAKE_RAMDIR            Set the ramdisk directory.
+                        
+XMAKE_GLOBALDIR         Set the global config directory of xmake.
+                        /Users/ruki/.xmake
+XMAKE_ROOT              Allow xmake to run under root.
+                        
+XMAKE_COLORTERM         Set the color terminal environment.
+                        
+XMAKE_PKG_INSTALLDIR    Set the install directory of packages.
+                        
+XMAKE_TMPDIR            Set the temporary directory.
+                        /var/folders/vn/ppcrrcm911v8b4510klg9xw80000gn/T/.xmake501/211104
+XMAKE_PKG_CACHEDIR      Set the cache directory of packages.
+                        
+XMAKE_PROGRAM_DIR       Set the program scripts directory of xmake.
+                        /Users/ruki/.local/share/xmake
+XMAKE_PROFILE           Start profiler, e.g. perf, trace.
+                        
+XMAKE_RCFILES           Set the runtime configuration files.
+
+XMAKE_CONFIGDIR         Set the local config directory of project.
+                        /Users/ruki/projects/personal/xmake-docs/.xmake/macosx/x86_64
+XMAKE_LOGFILE           Set the log output file path.
+```
+
+
+
+# XMAKE_RCFILES
+
+看rt-smart的userapps里，有这样使用：
+
+XMAKE_RCFILES           Set the runtime configuration files.
+
