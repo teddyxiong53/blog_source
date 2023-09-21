@@ -36,6 +36,12 @@ sudo apt install lua5.3
 
 那么这3个版本有什么明显的区别没有？
 
+# 资源收集
+
+H7 TOOL的方案，这个就是单片机加lua的方式，做得很强大。写法也很朴实。
+
+
+
 # lua发展历史
 
 Lua 是一种轻量级、高效的脚本语言，最初由巴西里约热内卢天主教大学（Pontifical Catholic University of Rio de Janeiro）的一个研究小组开发。下面是 Lua 的发展历史：
@@ -1117,6 +1123,59 @@ lua_settable(L,-3);
 
 https://blog.csdn.net/cooclc/article/details/115346937
 
+# userdata的用法
+
+在 Lua 中，Userdata 是一种特殊的数据类型，用于表示从 Lua 中传递给 C 语言的数据或从 C 语言传递给 Lua 的数据。Userdata 允许将自定义的 C 数据结构或对象封装在 Lua 中，并在 Lua 中对其进行操作。
+
+以下是一些 Userdata 的用法示例：
+
+1. 创建 Userdata：
+
+   在 C 语言中，使用 `lua_newuserdata` 函数将自定义的 C 数据结构分配为 Userdata，并将其推送到 Lua 栈上。例如：
+
+   ````c
+   MyData* data = (MyData*)lua_newuserdata(L, sizeof(MyData));
+   ```
+
+2. 设置 Userdata 的元表：
+
+   可以为 Userdata 设置元表（metatable），以定义 Userdata 对象的行为和操作。元表中可以包含特殊的方法，如 `__index`、`__newindex` 等。例如：
+
+   ````c
+   luaL_newmetatable(L, "MyData");
+   lua_pushstring(L, "__index");
+   lua_pushvalue(L, -2);  // 将元表复制到栈顶
+   lua_settable(L, -3);   // 设置元表的 __index 字段
+   ```
+
+3. 将 Userdata 传递给 Lua：
+
+   在 C 语言中，可以使用 `lua_pushuserdata` 将 Userdata 推送到 Lua 栈上，以便在 Lua 代码中使用。例如：
+
+   ````c
+   lua_pushuserdata(L, data);
+   ```
+
+4. 从 Lua 中获取 Userdata：
+
+   在 Lua 代码中，可以使用 `userdata` 类型来表示 Userdata，并通过 `userdata` 类型的变量访问 Userdata 中的数据和方法。例如：
+
+   ````lua
+   local ud = ...  -- 从其他地方获取 Userdata
+   ud:doSomething()  -- 调用 Userdata 中的方法
+   ```
+
+5. 在 C 中操作 Userdata：
+
+   在 C 语言中，可以使用 `lua_touserdata` 函数获取 Lua 栈上的 Userdata，并对其进行操作。例如：
+
+   ````c
+   MyData* data = (MyData*)lua_touserdata(L, index);
+   data->someField = 42;
+   ```
+
+这些示例展示了如何创建、设置元表、传递和操作 Lua Userdata。通过使用 Userdata，可以在 Lua 和 C 之间进行数据交互，并将自定义的 C 数据结构或对象封装为 Lua 中的类型，从而扩展 Lua 的功能。
+
 # userdata的元表
 
 
@@ -1139,7 +1198,243 @@ https://blog.csdn.net/Kiritow/article/details/85012879
 
  第三个域，`x`， 解释了该函数是否会抛出错误： '`-`' 表示该函数绝对不会抛出错误； '`e`' 表示该函数可能抛出错误； '`v`' 表示该函数可能抛出有意义的错误。
 
-# lua c api接口的返回值的含义
+# lua栈操作
+
+https://juejin.cn/post/7061031428602986527
+
+## 结合实例解释栈操作
+
+当在 Lua 和 C 之间进行数据交互时，栈（stack）是一个重要的概念。栈是一个先进后出（LIFO）的数据结构，用于存储 Lua 值。
+
+Lua 中的栈由 Lua 虚拟机维护，C 可以通过 Lua C API 来访问和操作栈上的值。下面通过一些示例来解释 Lua 和 C 之间的栈操作。
+
+1. 在 C 中将值推送到 Lua 栈：
+
+   ````c
+   int number = 42;
+   lua_pushinteger(L, number);
+   ```
+
+   上述代码将整数值 `42` 推送到 Lua 栈上。此时，栈顶就是刚刚推送的整数值。
+
+2. 在 C 中从 Lua 栈中获取值：
+
+   ````c
+   int number = lua_tointeger(L, -1);
+   ```
+
+   上述代码从栈顶获取整数值，并将其存储在 C 中的 `number` 变量中。`-1` 表示栈顶元素的索引。
+
+3. 在 Lua 中将值推送到 C 栈：
+
+   ````lua
+   local str = "Hello"
+   local number = 123
+   CFunction(str, number)
+   ```
+
+   在 Lua 中调用 C 函数 `CFunction`，并将字符串和数字作为参数传递给它。
+
+4. 在 C 中获取 Lua 栈中的参数：
+
+   ````c
+   const char* str = lua_tostring(L, 1);
+   int number = lua_tointeger(L, 2);
+   ```
+
+   在 C 函数 `CFunction` 中，通过 Lua C API 从栈中获取 Lua 参数。`1` 和 `2` 分别表示第一个和第二个参数在栈上的索引。
+
+5. 在 C 中将结果返回给 Lua：
+
+   ````c
+   double result = 3.14;
+   lua_pushnumber(L, result);
+   return 1;
+   ```
+
+   在 C 函数中，将结果值 `3.14` 推送到 Lua 栈上，并通过返回值 `1` 表示返回了一个结果。
+
+6. 在 Lua 中获取 C 函数的返回值：
+
+   ````lua
+   local result = CFunction("Hello", 123)
+   ```
+
+   在 Lua 中调用 C 函数 `CFunction` 并获取其返回值。
+
+这些示例展示了如何在 Lua 和 C 之间进行栈操作。推送和获取值时，栈顶的位置非常重要，可以使用正数索引（从栈底开始）或负数索引（从栈顶开始）来访问栈上的元素。在进行栈操作时，需要注意栈的平衡，确保在函数调用结束时栈的状态正确。
+
+## 更复杂一点的例子
+
+当涉及到更复杂的栈操作时，一个常见的示例是从 Lua 中调用 C 函数，并在 C 函数中操作 Lua 栈上的值。以下是一个更复杂的示例，展示了 Lua 和 C 之间的多个栈操作：
+
+Lua 代码：
+```lua
+-- 定义 Lua 函数
+function luaFunction(a, b)
+    local sum = cFunction(a, b)
+    print("Sum:", sum)
+    local result = cFunction2(a, b)
+    print("Result:", result)
+end
+```
+
+C 代码：
+```c
+// C 函数实现
+int cFunction(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    int sum = a + b;
+
+    // 将结果推送到 Lua 栈
+    lua_pushinteger(L, sum);
+
+    // 返回结果个数（1）
+    return 1;
+}
+
+int cFunction2(lua_State* L) {
+    int a = lua_tointeger(L, 1);
+    int b = lua_tointeger(L, 2);
+    int result = a * b;
+
+    // 将结果推送到 Lua 栈
+    lua_pushinteger(L, result);
+
+    // 返回结果个数（1）
+    return 1;
+}
+
+int main() {
+    // 创建 Lua 环境并加载 Lua 脚本
+    lua_State* L = luaL_newstate();
+    luaL_openlibs(L);
+    luaL_dofile(L, "script.lua");
+
+    // 注册 C 函数给 Lua 使用
+    lua_register(L, "cFunction", cFunction);
+    lua_register(L, "cFunction2", cFunction2);
+
+    // 在 Lua 中调用 Lua 函数
+    lua_getglobal(L, "luaFunction");
+    lua_pushinteger(L, 10);
+    lua_pushinteger(L, 5);
+    lua_call(L, 2, 0);
+
+    // 关闭 Lua 环境
+    lua_close(L);
+
+    return 0;
+}
+```
+
+在这个示例中，Lua 脚本定义了一个 Lua 函数 `luaFunction`，该函数调用了两个 C 函数 `cFunction` 和 `cFunction2`。
+
+在 C 代码中，通过 `lua_register` 将 C 函数注册为全局函数，以供 Lua 使用。然后，通过 `lua_getglobal` 获取 `luaFunction` 函数，并将参数 `10` 和 `5` 推送到 Lua 栈上。最后，使用 `lua_call` 调用 Lua 函数，并在 C 函数中处理栈上的值。
+
+C 函数 `cFunction` 和 `cFunction2` 分别从 Lua 栈上获取参数，执行相应的计算，并将结果推送回 Lua 栈中。Lua 函数 `luaFunction` 在调用这些 C 函数后，从 Lua 栈上获取结果并打印。
+
+通过这个示例，展示了如何在 Lua 和 C 之间进行复杂的栈操作，包括从 Lua 调用 C 函数、在 C 函数中获取参数、将结果推送回 Lua 栈，并在 Lua 中获取结果。
+
+## 其他栈操作
+
+当然！除了在 Lua 和 C 之间传递参数和结果，还可以在栈上执行其他操作，如创建和操作表、访问全局变量等。以下是一些额外的栈操作示例：
+
+1. 创建并操作 Lua 表：
+
+   ````lua
+   local myTable = {}  -- 创建一个空表
+   myTable["key1"] = "value1"  -- 设置表中的键值对
+   myTable.key2 = "value2"  -- 另一种设置键值对的方式
+   local value = myTable.key1  -- 获取表中的值
+   ```
+
+   在 Lua 中，可以通过创建表并使用索引操作符 `[]` 或点号 `.` 来设置和获取表中的键值对。
+
+   在 C 中，可以使用 Lua C API 的函数来创建和操作表：
+
+   ````c
+   lua_newtable(L);  // 创建一个空表并推送到栈上
+   lua_pushstring(L, "key1");
+   lua_pushstring(L, "value1");
+   lua_settable(L, -3);  // 设置表中的键值对
+   lua_pushstring(L, "key2");
+   lua_pushstring(L, "value2");
+   lua_settable(L, -3);
+   lua_pushstring(L, "key1");
+   lua_gettable(L, -2);  // 获取表中的值
+   const char* value = lua_tostring(L, -1);
+   ```
+
+2. 访问全局变量：
+
+   ````lua
+   globalVar = "Hello"  -- 设置全局变量
+   print(globalVar)  -- 访问全局变量并打印
+   ```
+
+   在 Lua 中，可以直接设置和访问全局变量。
+
+   在 C 中，可以使用 Lua C API 的函数来设置和访问全局变量：
+
+   ````c
+   lua_pushstring(L, "Hello");
+   lua_setglobal(L, "globalVar");  // 设置全局变量
+   lua_getglobal(L, "globalVar");  // 获取全局变量的值
+   const char* value = lua_tostring(L, -1);
+   ```
+
+3. 将函数推送到栈上并调用：
+
+   ````lua
+   local function myFunction(a, b)
+       return a + b
+   end
+
+   local result = myFunction(10, 20)
+   ```
+
+   在 Lua 中，函数也可以被推送到栈上，并通过调用 `lua_call` 或 `lua_pcall` 来执行。
+
+   在 C 中，可以使用 Lua C API 的函数来推送函数并调用：
+
+   ````c
+   lua_pushcfunction(L, myFunction);  // 推送 C 函数到栈上
+   lua_pushinteger(L, 10);
+   lua_pushinteger(L, 20);
+   lua_call(L, 2, 1);  // 调用函数，并指定参数和返回值个数
+   int result = lua_tointeger(L, -1);
+   ```
+
+这些示例展示了更多的栈操作，包括创建和操作 Lua 表、访问全局变量以及推送函数到栈上并调用。通过了解这些栈操作，你可以在 Lua 和 C 之间更灵活地进行数据交互和功能扩展。
+
+## 官方文档的例子
+
+下面的例子中，这行 Lua 代码等价于在宿主程序中用 C 代码做一些工作：
+
+```
+     a = f("how", t.x, 14)
+```
+
+这里是 C 里的代码：
+
+```
+     lua_getglobal(L, "f");                  /* function to be called */
+     lua_pushliteral(L, "how");                       /* 1st argument */
+     lua_getglobal(L, "t");                    /* table to be indexed */
+     lua_getfield(L, -1, "x");        /* push result of t.x (2nd arg) */
+     lua_remove(L, -2);                  /* remove 't' from the stack */
+     lua_pushinteger(L, 14);                          /* 3rd argument */
+     lua_call(L, 3, 1);     /* call 'f' with 3 arguments and 1 result */
+     lua_setglobal(L, "a");                         /* set global 'a' */
+```
+
+注意上面这段代码是 *平衡* 的： 到了最后，堆栈恢复成原有的配置。 这是一种良好的编程习惯。
+
+lua_remove不会留下空洞。
+
+
 
 表示返回的结果的个数。
 

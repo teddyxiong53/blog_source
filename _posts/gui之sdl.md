@@ -265,6 +265,18 @@ int main(int argc, char* argv[]) {
 
 请注意，音频和视频播放器是相对复杂的应用程序，需要处理多线程、同步、格式转换等方面的问题。因此，在实际开发中，可能需要更复杂的架构和库来处理这些问题。以上示例仅提供了一个基本的起点，以帮助您了解基于SDL的播放器的基本原理。
 
+# api文档
+
+https://wiki.libsdl.org/SDL2/APIByCategory
+
+# 相关的软件
+
+https://wiki.libsdl.org/SDL2/Libraries
+
+# 以Micro UI为切入点
+
+
+
 # 参考资料
 
 1、
