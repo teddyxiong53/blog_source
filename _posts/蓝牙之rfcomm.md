@@ -6,7 +6,7 @@ tags:
 
 ---
 
-
+--
 
 看蓝牙相关资料，看到rfcomm这个东西。了解一下。
 
@@ -259,9 +259,15 @@ l2cap_init();
     sdp_init();
 ```
 
+# bluez-alsa里的rfcomm
+
+这个是用来控制hfp和hsp的。
+
+传输AT指令的。
 
 
-#参考资料
+
+# 参考资料
 
 1、RFCOMM
 

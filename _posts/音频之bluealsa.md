@@ -434,6 +434,52 @@ io.c
 
 ```
 
+## bluealsa进程分析
+
+struct ba_config 这个结构体相当于全局的context。
+
+各种配置、flag、运行状态都放到这个里面。
+
+这个设计理念倒是跟我的习惯比较接近。
+
+就是名字上有点怪，其实不只是config。更加相当于一个context。
+
+最多可以连接7个client。
+
+poll的fd个数，就是7+2, 2表示的是控制信息的通路。
+
+默认都的配置监听POLLIN，也就是read事件。
+
+```
+{ /* initialize (mark as closed) all sockets */
+		size_t i;
+		for (i = 0; i < sizeof(config.ctl.pfds) / sizeof(*config.ctl.pfds); i++) {
+			config.ctl.pfds[i].events = POLLIN;
+			config.ctl.pfds[i].fd = -1;
+		}
+	}
+```
+
+`/var/run/state/bluealsa/hci0`。
+
+创建ctl_thread，这个thread改名为bactl。
+
+```
+pthread_setname_np(config.ctl.thread, "bactl");
+```
+
+
+
+
+
+```
+struct ba_device  对应一个手机这样的设备。持有一个hashtable，对应多个transport。
+struct ba_pcm   一个音频流的表示。
+struct ba_transport 可以是a2dp、sco、rfcomm传输中的一种。
+```
+
+bluez_profile_new_connection的时候，device_get时，进行device_new，创建一个ba_device，来表示连接过来的手机。
+
 
 
 # test-server.c
@@ -874,6 +920,29 @@ https://download.tizen.org/misc/media/conference2012/wednesday/bayview/2012-05-0
 https://git.kernel.org/pub/scm/bluetooth/bluez.git/tree/doc
 
 
+
+# A2DP RTP 说明
+
+A2DP（Advanced Audio Distribution Profile）和 RTP（Real-time Transport Protocol）是用于音频传输的两个不同的协议或标准，通常在蓝牙音频传输和网络音频流传输中使用。让我分别解释它们：
+
+1. **A2DP（Advanced Audio Distribution Profile）**：
+   - A2DP 是一种蓝牙配置文件，旨在支持高质量音频流的传输。它通常用于蓝牙音频耳机、音箱、汽车音响系统等设备中。
+   - A2DP 允许音频设备通过蓝牙连接进行高质量音频流传输，例如音乐或语音通话。
+   - A2DP 协议定义了音频编解码器的规范，以及如何在蓝牙连接上传输音频流。它支持多种音频编解码器，例如SBC（Subband Coding）、AAC（Advanced Audio Coding）等。
+   - A2DP 还支持立体声音频和多通道音频传输，允许用户在蓝牙音频设备之间共享音频。
+
+2. **RTP（Real-time Transport Protocol）**：
+   - RTP 是一种网络协议，用于在 IP 网络上实时传输音频、视频和其他多媒体数据。它通常与 RTCP（Real-time Transport Control Protocol）一起使用，用于监控和控制媒体流。
+   - RTP 的主要目标是提供实时性，确保多媒体数据以低延迟传输。它还处理丢包、流同步、时序和时间戳等问题。
+   - RTP 协议是面向连接的，但不保证可靠性。它通常用于多媒体通信，其中一些数据丢失也是可以接受的，但延迟必须尽量降低。
+
+在某些情况下，A2DP 和 RTP 可以结合使用，特别是在蓝牙音频传输中。
+
+例如，当你使用蓝牙音箱或耳机时，A2DP 可用于传输音频数据，
+
+而 RTP 可用于在 IP 网络上传输音频流。
+
+这种组合允许你在不同设备之间以高质量和实时性传输音频。总之，A2DP 和 RTP 是两个不同的协议，但它们通常在多媒体和音频传输中一起使用。
 
 # 参考资料
 

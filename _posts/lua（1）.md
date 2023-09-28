@@ -1202,6 +1202,173 @@ https://blog.csdn.net/Kiritow/article/details/85012879
 
 https://juejin.cn/post/7061031428602986527
 
+## 虚拟栈交互流程
+
+```
+    /*1.创建一个state*/
+	lua_State *L = luaL_newstate();
+	
+	/*2.入栈操作*/
+	lua_pushstring(L, "I am Bob~"); 
+	lua_pushnumber(L,2018);
+
+	/*3.取值操作*/
+	/*判断是否可以转为string*/
+	if( lua_isstring(L,1)){ 	
+                /*转为string并返回*/
+		printf("%s",lua_tostring(L,1));	
+	}
+	if( lua_isnumber(L,2)){
+		printf("%g ",lua_tonumber(L,2));
+	}
+```
+
+![image-20230926171154040](images/random_name/image-20230926171154040.png)
+
+### c调用lua
+
+假设有一个game.lua的文件。
+
+```
+--game.lua
+    name = "Bob"
+    age = 18
+    player = { name = "bob", sex = "boy"}
+    function getCoin (curCoin,change)
+        return curCoin+change
+    end
+```
+
+```c
+    lua_State *L = luaL_newstate();
+    luaL_openlibs(L);
+    luaL_dofile(L,"game.lua");
+    //读取变量
+    lua_getglobal(L,"name");   
+    printf("name = %s",lua_tostring(L,-1));
+
+    //读取数字
+    lua_getglobal(L,"age"); 
+    printf("age = %g ",lua_tonumber(L,-1));
+
+    //读取表
+    lua_getglobal(L, "player");
+    //取表中元素
+    lua_getfield(L, -1 ,"name");
+    printf("player name = %s",lua_tostring(L,-1));
+    lua_getfield(L,-2,"sex");//这里变成-2了，是因为栈顶已经被name的元素占据了。
+    printf("player sex = %s",lua_tostring(L,-1));
+
+
+    //取函数
+    lua_getglobal(L,"getCoin");
+    lua_pushnumber(L,5);
+    lua_pushnumber(L,3);
+    lua_pcall(L,2,1,0);//2-参数格式，1-返回值个数，调用函数，函数执行完，会将返回值压入栈中
+
+    printf("5 + 3 = %g",lua_tonumber(L,-1));
+
+    //关闭state
+    lua_close(L);
+
+```
+
+![image-20230926171350799](images/random_name/image-20230926171350799.png)
+
+`lua_getglobal(L,"name")`会执行两步操作：
+
+1.将name放入虚拟栈中
+
+2.由Lua去寻找变量name的值，并将变量name的值返回栈顶（替换虚拟栈中name为“Bob”）。
+
+
+
+`lua_getfield(L,-1,"name")`会执行两步操作：
+
+1.lua_pushstring(L,”name”) lua_pushstring可以把C中的字符串存放到Lua的虚拟栈里，栈顶现在是name。
+
+2.lua_gettable(L,-2),table对象现在在索引为-2的栈中,因为栈顶-1现在是name。lua_gettable函数会从虚拟栈顶取得一个值，然后根据这个值name去table中寻找对应的值“bob”，最后把找到的值放到虚拟栈顶。
+
+![image-20230926171757846](images/random_name/image-20230926171757846.png)
+
+lua 将所有的全局变量/局部变量保存在一个常规表中，这个表一般被称为全局或者某个函数（闭包）的环境。
+
+为了方便，lua 在创建最初的全局环境时，使用全局变量 _G 来引用这个全局环境。
+
+lua5.0后基于寄存器的虚拟机，
+
+**lua的编译器将local变量存储至寄存器，**
+
+对local变量的操作就相当于直接对寄存器进行操作，对global变量的操作要先获取变量，然后才能对其进一步操作，
+
+自然局部变量比全局变量快。
+
+### lua调用c
+
+1. 将C的函数包装成Lua环境认可的函数
+2. 将包装好的函数注册到Lua环境中
+3. 像使用普通Lua函数那样使用注册函数
+
+包装函数要遵循规范:
+
+```
+typedef int (*lua_CFunction) (lua_State *L);
+```
+
+
+
+示例
+
+```C
+
+static int getMoney(lua_State *L)
+{
+    // 向函数栈中压入2个值
+    lua_pushnumber(L, 915);
+    lua_pushstring(L,"Bob");
+    //这个函数的返回值则表示函数返回时有多少返回值被压入Lua栈。
+
+    //Lua的函数是可以返回多个值的
+    
+    return 2;
+}
+
+//注册函数
+lua_register(L,"getMoney",getMoney);
+
+//在lua.h中有定义 lua_register分二步做的。
+
+#define lua_register(L,n,f) (lua_pushcfunction(L, (f)), lua_setglobal(L, (n))) 
+lua_pushcfunction(L, getMoney); //将函数放入栈中
+
+lua_setglobal(L, "getMoney");   //设置lua全局变量getMoney
+```
+
+Lua中调用
+
+```
+ v1,v2 = getMoney()
+ print(v1,v2)
+```
+
+
+
+参考资料
+
+1、
+
+https://chenanbao.github.io/2018/07/28/Lua%E8%99%9A%E6%8B%9F%E6%A0%88%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B/
+
+## 虚拟栈原理
+
+
+
+参考资料
+
+1、
+
+https://chenanbao.github.io/2018/07/28/Lua%E8%99%9A%E6%8B%9F%E6%A0%88%E5%8E%9F%E7%90%86/
+
 ## 结合实例解释栈操作
 
 当在 Lua 和 C 之间进行数据交互时，栈（stack）是一个重要的概念。栈是一个先进后出（LIFO）的数据结构，用于存储 Lua 值。
