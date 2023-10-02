@@ -667,3 +667,12 @@ XMAKE_LOGFILE           Set the log output file path.
 
 XMAKE_RCFILES           Set the runtime configuration files.
 
+# 使用xmake开发Android程序
+
+# windows安装xmake
+
+在
+
+```
+Invoke-Expression (Invoke-Webrequest 'https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.ps1' -UseBasicParsing).Content
+```
