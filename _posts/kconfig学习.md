@@ -161,6 +161,20 @@ menuconfig: $(BUILD_DIR)/buildroot-config/mconf prepare-kconfig
 
 # 源代码分析
 
+这个代码是独立的。可以用来编译和使用。
+
+https://github.com/WangNan0/kbuild-standalone/tree/master
+
+```
+ $ git clone https://github.com/WangNan0/kbuild-standalone.git
+ $ cd kbuild-standalone
+ $ mkdir build
+ $ cd build
+ $ make -C ../ -f Makefile.sample O=`pwd` -j
+ $ ls ./kconfig/*conf
+   ./kconfig/conf  ./kconfig/mconf
+```
+
 
 
 # 错误分析

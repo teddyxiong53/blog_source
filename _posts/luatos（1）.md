@@ -31,3 +31,11 @@ uint8_t luavm_heap[LUAT_HEAP_SIZE] = {0};
 bpool(luavm_heap, LUAT_HEAP_SIZE);
 ```
 
+这个属于lua5.3.6较新版本新增的内容了。
+
+
+
+# lvgl的binding代码生成
+
+这个是借助了pycparser来完成的。
+

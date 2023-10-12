@@ -808,6 +808,94 @@ class Car implements Alarm {
 
 总结来说，`.ts` 文件用于编写实际的 TypeScript 代码，包含变量、函数、类的定义和实现。而 `.d.ts` 文件用于编写类型声明，描述其他代码的类型信息，**并通常与 `.ts` 文件同名**，但不包含实际的执行代码。
 
+# get关键字
+
+在TypeScript中，`get`是一个关键字，用于定义对象的属性的获取器（getter）。
+
+当在类或对象字面量中声明属性时，可以使用`get`关键字定义一个方法作为属性的获取器。获取器允许以函数的形式访问属性的值，而不是直接访问属性本身。
+
+下面是一个示例来说明`get`关键字的用法：
+
+```typescript
+class MyClass {
+  private _name: string;
+
+  constructor(name: string) {
+    this._name = name;
+  }
+
+  get name(): string {
+    return this._name;
+  }
+}
+
+const obj = new MyClass("John");
+console.log(obj.name);  // 输出: "John"
+```
+
+在上述示例中，`MyClass`类定义了一个私有属性 `_name` 和一个获取器 `name`。获取器使用`get`关键字定义，后面跟着一个方法名 `name()`。在该方法内部，我们返回了 `_name` 属性的值。
+
+通过创建 `MyClass` 类的实例 `obj`，我们可以通过访问 `obj.name` 来获取 `_name` 属性的值。注意，我们访问的是获取器方法 `name()`，而不是直接访问 `_name` 属性。
+
+使用获取器的好处是，可以在获取属性值之前执行一些逻辑，例如进行验证、计算或处理其他操作。
+
+总结：
+在TypeScript中，`get`关键字用于定义对象属性的获取器。获取器允许以函数的形式访问属性的值，而不是直接访问属性本身。通过使用获取器，可以在获取属性值之前执行自定义逻辑。
+
+# typescript class里的function关键字可以省略吗
+
+在TypeScript中，定义类的方法时，可以省略关键字`function`。这是因为在类中声明的方法默认被认为是函数。
+
+下面是一个示例来说明可以省略`function`关键字：
+
+```typescript
+class MyClass {
+  greet() {
+    console.log("Hello, World!");
+  }
+}
+
+const obj = new MyClass();
+obj.greet();  // 输出: "Hello, World!"
+```
+
+在上述示例中，我们定义了一个名为`MyClass`的类，其中包含一个名为`greet`的方法。在方法定义中，省略了`function`关键字，直接声明了方法名称`greet()`。在该方法内部，我们简单地打印出一条问候语。
+
+通过创建`MyClass`类的实例`obj`，我们可以调用`obj.greet()`来执行`greet`方法，并输出问候语。
+
+需要注意的是，省略`function`关键字只适用于类的方法声明。对于其他函数声明，如独立函数或函数表达式，仍然需要使用`function`关键字。
+
+总结：
+在TypeScript类的方法声明中，可以省略关键字`function`。这是因为在类中声明的方法默认被视为函数。因此，可以直接使用方法名称来定义方法。
+
+# DataView
+
+在TypeScript中，`DataView`是一个内置的类，用于处理二进制数据的读取和写入操作。它提供了一种跨平台、跨字节序的方式来访问和操作二进制数据。
+
+使用`DataView`，你可以读取和写入不同类型的数据，如整数、浮点数和字节。它提供了一系列方法来读取和写入指定字节偏移量处的数据。
+
+以下是一个简单的示例，演示如何使用`DataView`读取和写入二进制数据：
+
+```typescript
+const buffer = new ArrayBuffer(8);  // 创建一个8字节的ArrayBuffer
+
+const view = new DataView(buffer);  // 使用ArrayBuffer创建DataView
+
+view.setInt32(0, 42);  // 在偏移量0处写入32位整数值42
+const value = view.getInt32(0);  // 从偏移量0处读取32位整数值
+
+console.log(value);  // 输出: 42
+```
+
+在上述示例中，我们首先创建了一个8字节大小的`ArrayBuffer`，然后使用该`ArrayBuffer`创建了一个`DataView`对象。
+
+通过调用`setInt32()`方法，我们在偏移量0处写入了32位整数值42。然后，通过调用`getInt32()`方法，我们从偏移量0处读取了32位整数值。
+
+`DataView`还提供了其他用于读取和写入不同类型数据的方法，如`getUint8()`、`getFloat64()`、`setUint16()`等。这些方法允许你在指定的字节偏移量处读取和写入不同类型的数据。
+
+总结：
+`DataView`是一个用于处理二进制数据的类，提供了一种跨平台、跨字节序的方式来访问和操作二进制数据。它可以读取和写入不同类型的数据，并提供了一系列方法来处理指定字节偏移量处的数据。
+
 # 参考资料
 
 1、typescript入门教程

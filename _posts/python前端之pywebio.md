@@ -1011,6 +1011,297 @@ startWebIOClient
 
 
 
+# 用pywebio一般做可以做哪些应用
+
+PyWebIO 是一个用于构建交互式 Web 应用程序的 Python 库，它提供了一组用于在浏览器中展示输入和输出的函数和组件。PyWebIO 可以用于多种应用场景，包括但不限于以下几种：
+
+1. 数据可视化应用：PyWebIO 可以用于创建交互式的数据可视化应用，如图表、地图、仪表盘等。你可以使用 PyWebIO 的输出组件和第三方库（如 Matplotlib、Plotly 等）来生成丰富的可视化效果，并与用户进行交互。
+
+2. 在线教育应用：PyWebIO 可以用于构建在线教育应用，如在线教学平台、编程学习工具等。你可以使用 PyWebIO 的输入组件和输出组件来创建交互式的学习环境，让学生能够在浏览器中完成练习和作业。
+
+3. 数据面板和仪表盘：PyWebIO 可以用于构建数据面板和仪表盘，用于展示实时数据、指标和报表。你可以使用 PyWebIO 的布局和输出组件来创建一个交互式的数据面板，展示数据、图表、地图等内容。
+
+4. 内部工具和管理系统：PyWebIO 可以用于构建内部工具和管理系统，用于简化和改进内部流程和操作。你可以使用 PyWebIO 来创建内部工具、报表生成工具、自动化流程等，以提高工作效率。
+
+5. 原型开发和演示：PyWebIO 提供了快速原型开发的能力，你可以使用 PyWebIO 来快速搭建一个交互式的原型应用，用于演示和验证想法。
+
+需要注意的是，PyWebIO 适用于构建轻量级的交互式 Web 应用程序，并不适合构建复杂的大规模 Web 应用。对于更复杂的应用需求，可能需要考虑使用其他框架或库。
+
+总之，PyWebIO 提供了一种简单而强大的方式来构建交互式的 Web 应用程序，适用于许多不同的应用场景。你可以根据自己的需求和创意，利用 PyWebIO 来构建各种类型的应用。
+
+# chatgpt写的一些程序
+
+## 投票程序
+
+```
+from pywebio import start_server
+from pywebio.input import *
+from pywebio.output import *
+from collections import defaultdict
+import matplotlib.pyplot as plt
+from pywebio.platform.flask import webio_view
+from pywebio import STATIC_PATH
+
+def vote_app():
+    votes = defaultdict(int)  # 存储投票结果的字典
+    candidates = ['张三', '李四', '王五']  # 候选人列表
+
+    while True:
+        # 显示当前投票结果
+        items = [(option, str(votes[option])) for option in votes]
+        put_table(items, header=['选项', '票数'])
+
+        # 获取用户选择的候选人
+        selected_candidate = radio("请选择候选人：", options=candidates)
+
+        # 更新投票结果
+        votes[selected_candidate] += 1
+
+        # 显示投票成功信息
+        put_text("你已成功投票给 %s" % selected_candidate)
+
+        # 提示用户是否继续投票
+        vote_another = actions("是否继续投票？", ['是', '否'])
+        if vote_another == '否':
+            break
+
+    # 显示投票结果的柱状图
+    plt.bar(votes.keys(), votes.values())
+    plt.xlabel('people')
+    plt.ylabel('votes')
+    plt.title('result')
+    plt.savefig(STATIC_PATH + '/vote_result.png')  # 保存柱状图为图片
+
+    put_image(open(STATIC_PATH + '/vote_result.png', 'rb').read(), width='500px')  # 在网页上显示图片
+
+if __name__ == '__main__':
+    start_server(vote_app, port=8080)
+```
+
+## 测试题目
+
+```
+from pywebio import start_server
+from pywebio.input import *
+from pywebio.output import *
+
+def student_quiz_app():
+    # 定义测验题目和答案
+    questions = {
+        '1 + 1 = ?': '2',
+        'What is the capital of France?': 'Paris',
+        'Who painted the Mona Lisa?': 'Leonardo da Vinci'
+    }
+
+    score = 0
+
+    # 展示题目并获取学生答案
+    for question, answer in questions.items():
+        user_answer = input(question, type='text', placeholder='请输入答案')
+        if user_answer.strip().lower() == answer.lower():
+            score += 1
+
+    # 展示测验结果
+    put_markdown(f'## 测验结果\n\n你的得分是: {score}/{len(questions)}')
+
+if __name__ == '__main__':
+    start_server(student_quiz_app, port=8080)
+```
+
+## 简单sqlite管理工具
+
+```
+import sqlite3
+from pywebio import start_server
+from pywebio.input import input, TEXT, select
+from pywebio.output import put_text, put_table
+
+DB_FILE = 'mydatabase.db'  # SQLite 数据库文件路径
+
+def create_table():
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS students (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        age INTEGER NOT NULL,
+        email TEXT NOT NULL
+    )''')
+
+    conn.commit()
+    conn.close()
+
+def insert_data():
+    name = input("请输入姓名：", type=TEXT)
+    age = input("请输入年龄：", type=TEXT)
+    email = input("请输入邮箱：", type=TEXT)
+
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+
+    cursor.execute("INSERT INTO students (name, age, email) VALUES (?, ?, ?)", (name, age, email))
+
+    conn.commit()
+    conn.close()
+
+def query_data():
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM students")
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    if rows:
+        headers = ['ID', '姓名', '年龄', '邮箱']
+        put_table(rows)
+    else:
+        put_text("数据库中没有学生数据")
+
+def main():
+    create_table()
+
+    while True:
+        action = select("请选择操作：", options=['插入数据', '查询数据'])
+
+        if action == '插入数据':
+            insert_data()
+        elif action == '查询数据':
+            query_data()
+
+if __name__ == '__main__':
+    start_server(main, port=8080)
+```
+
+## 写一个备忘录
+
+```
+from pywebio import start_server
+from pywebio.input import input, textarea, select, checkbox, DATE
+from pywebio.output import put_text, put_table, put_buttons, put_link, put_button
+from tinydb import TinyDB, Query
+
+DB_FILE = 'notes.json'  # TinyDB 数据库文件路径
+
+def create_note():
+    title = input("请输入标题：", type="text")
+    content = textarea("请输入内容：")
+    category = select("请选择类别：", options=['工作', '学习', '生活'])
+    priority = select("请选择优先级：", options=['低', '中', '高'])
+    deadline = input("请选择截止日期和时间：", type=DATE)
+
+    db = TinyDB(DB_FILE)
+    db.insert({'title': title, 'content': content, 'category': category, 'priority': priority, 'deadline': str(deadline)})
+    db.close()
+
+    put_text("备忘录已创建！")
+
+def view_notes():
+    db = TinyDB(DB_FILE)
+    notes = db.all()
+    db.close()
+
+    if notes:
+        headers = ['标题', '类别', '优先级']
+        rows = [[note['title'], note['category'], note['priority']] for note in notes]
+        put_table(rows)
+        put_buttons(["查看详情"], onclick=[lambda: view_note_details(notes)])
+    else:
+        put_text("备忘录为空！")
+
+def view_note_details(notes):
+    note_idx = checkbox("请选择备忘录：", options=[note['title'] for note in notes])
+    note = notes[int(note_idx[0])]
+
+    put_text("标题：", note['title'])
+    put_text("类别：", note['category'])
+    put_text("优先级：", note['priority'])
+    put_text("内容：", note['content'])
+
+def delete_note():
+    db = TinyDB(DB_FILE)
+    notes = db.all()
+    db.close()
+
+    if notes:
+        note_idx = checkbox("请选择要删除的备忘录：", options=[note['title'] for note in notes])
+        note = notes[note_idx[0]]
+
+        db = TinyDB(DB_FILE)
+        db.remove(Query().title == note['title'])
+        db.close()
+
+        put_text("备忘录已删除！")
+    else:
+        put_text("备忘录为空！")
+
+def main():
+    put_button("查看备忘录", onclick=view_notes)
+    put_buttons(["创建备忘录", "删除备忘录"], onclick=[create_note, delete_note])
+
+if __name__ == '__main__':
+    start_server(main, port=8080)
+```
+
+## 快速模仿网站
+
+https://pikapython.com/ 请用pywebio模仿实现这个网站的样子
+
+```
+from pywebio import start_server
+from pywebio.input import *
+from pywebio.output import *
+from pywebio import session
+
+def main():
+    # 设置页面布局
+    set_scope('container')
+    with use_scope('container', clear=True):
+        # 设置页面标题
+        put_markdown('## PikaPython®')
+        put_markdown('### 跨平台的超轻量级嵌入式 Python 引擎')
+
+        # 设置导航菜单
+        menu_items = ['论坛', '文档中心', '视频', '开发板', 'BSP', '包管理器', 'RT-Thread', '参与贡献', '商业合作']
+        menu_selected = put_buttons(
+            [
+                {"label": v, 'value': v} for v in menu_items
+            ],
+            onclick=lambda: None
+        )
+
+        # 设置主要内容区域
+        put_html('<hr>')
+        put_markdown('逛逛我们的小店来支持我们！')
+        put_markdown('超过500￥的捐赠将会在项目仓库主页留下记录。')
+        put_markdown('QQ技术交流群: 577623681')
+
+        # 设置联系信息
+        put_html('<hr>')
+        put_markdown('定制服务')
+        put_markdown('我们提供硬件、软件、云平台和量产的一站式定制服务，帮助客户快捷、经济、可靠地完成产品。')
+        put_markdown('商务洽谈: 李工')
+        put_markdown('16643685017 (微信同号)')
+        put_markdown('深圳皮卡派科技有限公司')
+        put_markdown('Email us: liang6516@outlook.com')
+
+        # 设置底部版权信息
+        put_html('<hr>')
+        put_markdown('粤ICP备2021021187号-3')
+        put_markdown('log')
+
+    # 设置页面样式
+    # session.set_env(title='PikaPython', theme='default')
+    # session.css('.container', 'max-width: 800px; margin: 0 auto; padding: 20px;')
+
+# 启动PyWebIO应用程序
+start_server(main, port=8080, debug=True)
+```
+
+
+
 # 参考资料
 
 1、中文文档
