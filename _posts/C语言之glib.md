@@ -669,6 +669,34 @@ int main()
 
 # GQuark
 
+`GQuark` 是 GLib 库中的一个数据类型，用于管理和标识字符串的唯一符号。
+
+它的名称 "Quark" 源自粒子物理学中的术语，
+
+表示一种独特的标识符，==用于避免字符串比较的开销，提高性能。==
+
+`GQuark` 具有以下特点：
+
+1. **唯一性**：每个 `GQuark` 对象都关联了一个唯一的整数值，用于表示相应的字符串标识符。这确保了相同的字符串对应相同的 `GQuark` 值。
+
+2. **快速比较**：由于 `GQuark` 对象是整数，因此比较两个 `GQuark` 值非常快速，远远快于字符串比较。
+
+3. **用于优化**：`GQuark` 主要用于优化字符串处理，特别是在 GLib 和 GTK+ 等库中，用于加速操作。它可以用于加速字符串查找、哈希表操作等。
+
+4. **避免内存泄漏**：通过使用 `GQuark`，可以避免字符串的内存分配和泄漏问题，因为字符串常量只会分配一次并保持不变。
+
+在使用 `GQuark` 时，通常会涉及以下操作：
+
+1. 创建 `GQuark` 对象：通过调用 `g_quark_from_static_string` 或 `g_quark_from_string` 来将字符串转换为 `GQuark` 对象。
+
+2. 比较 `GQuark` 值：通过直接比较 `GQuark` 对象的整数值来判断字符串是否相等。
+
+3. 优化哈希表和查找操作：`GQuark` 可以用于优化哈希表的键，以提高查找性能。
+
+总之，`GQuark` 是 GLib 中的一种数据类型，用于管理字符串的唯一标识符，以提高性能和避免内存泄漏。它通常用于 GLib、GTK+ 和其他 GNOME 框架中，以加速字符串处理操作。
+
+
+
 quark这个词的字面含义，是一种物理单位。
 
 在glib里，用这个来表示什么含义呢？
@@ -909,6 +937,361 @@ GApplication
 	是GtkApplication的基础。
 	你不应该直接使用GApplication类。
 	通过引用计数来实现生命周期管理。
+```
+
+# GInitiallyUnowned
+
+`GInitiallyUnowned` 是 GLib 库中的一个基类，
+
+用于创建 GObject 对象的类。
+
+GLib 是一个开源库，它提供了一种用 C 语言创建面向对象代码的方式，GObject 是其面向对象系统的一部分。
+
+`GInitiallyUnowned` 是 GObject 的一个子类，==通常用于创建那些不需要立即初始化和管理生命周期的对象。==
+
+具体来说，它的特点包括：
+
+1. **不需要立即释放**：与其他 GObject 子类不同，`GInitiallyUnowned` 对象不需要立即释放（通过 `g_object_unref`）。==它们的释放通常由 GType 系统自动处理。==
+
+2. **允许延迟初始化**：`GInitiallyUnowned` 对象可以被创建并保持在内存中，而不需要立即分配资源或初始化。这对于稍后在需要时初始化对象非常有用。
+
+3. **支持延迟释放**：对象的释放通常是由 GObject 的引用计数机制管理的。然而，`GInitiallyUnowned` 对象的释放可能会延迟到稍后，例如，当对象不再被引用时。
+
+4. **适用于构建控件和窗口**：==`GInitiallyUnowned` 对象通常用于构建 GUI 控件、窗口和其他用户界面元素，因为它们可以灵活地处理对象的生命周期。==
+
+通常情况下，开发者不需要直接创建 `GInitiallyUnowned` 对象，而是使用它的子类，例如 `GtkWidget`（用于构建 GTK+ 用户界面）等。这些子类通常提供了更多的功能和适用于特定应用领域的接口。
+
+总之，`GInitiallyUnowned` 是 GObject 类的一个子类，用于创建那些不需要立即初始化和释放的对象，通常用于构建 GUI 控件和窗口等应用程序界面元素。
+
+# GInitiallyUnownedClass
+
+`GInitiallyUnownedClass` 是 GLib/GObject 中的一个结构体，
+
+用于描述 `GInitiallyUnowned` 类的类信息。
+
+在 GObject 中，每个类都由一个类结构体（class structure）来定义，
+
+该结构体包含了类的方法、属性和信号等信息。
+
+`GInitiallyUnownedClass` 结构体中包含了一些字段，
+
+这些字段定义了 `GInitiallyUnowned` 类的行为。
+
+一些常见的字段包括：
+
+- `parent_class`：指向父类的指针，它表示该类继承自哪个父类。父类的方法和属性可以在子类中被继承和重写。
+
+- `finalize`：一个函数指针，用于在对象被销毁时执行一些最终清理工作。==这是一个析构函数==，用于释放对象的资源。
+
+- `dispose`：==类似于 `finalize`，但更常用于在对象即将被销毁之前进行资源释放或断开连接等操作。==
+
+- `set_property` 和 `get_property`：用于设置和获取对象属性的函数指针，这允许开发者定义对象的属性以及对这些属性的访问方式。
+
+`GInitiallyUnownedClass` 结构体是 GObject 类系统的核心部分之一，它描述了类的行为和属性，
+
+允许开发者创建自定义的 GObject 子类。
+
+当开发者创建新的 GObject 子类时，通常需要填充和配置相应的 `GInitiallyUnownedClass` 结构体以定义类的行为。
+
+这些类结构体通常在 GObject 子类的类初始化函数中进行设置。
+
+总之，`GInitiallyUnownedClass` 结构体用于描述 `GInitiallyUnowned` 类的类信息，包括类的方法、属性和信号等，允许开发者创建自定义的 GObject 子类。
+
+# GType
+
+`GType` 是 GLib/GObject 库中的一个基本数据类型，
+
+用于表示 GObject 类型。
+
+GObject 是 GLib 库的面向对象系统，
+
+它允许在 C 语言中创建和管理面向对象的程序。
+
+`GType` 用于标识和区分不同的 GObject 类型，它是 GObject 类型系统的核心之一。
+
+`GType` 具有以下特点：
+
+1. **类型标识符**：每个 GObject 类型都与一个唯一的 `GType` 值相关联，用于标识该类型。这个值是一个整数，通常用于在运行时确定对象的类型。
+
+2. **继承关系**：`GType` 值还包含有关类型继承关系的信息。它可以用于确定一个类型是否是另一个类型的子类型，从而支持多态性和继承。
+
+3. **运行时类型检查**：`GType` 值允许在运行时检查对象的类型，这对于在面向对象程序中执行类型安全的操作非常重要。
+
+4. **类型注册**：GObject 类型通常需要在应用程序中进行注册，以便在运行时使用。`GType` 值可以用于注册和查找类型，以确保正确的类型信息。
+
+5. **类型系统的核心**：`GType` 是 GObject 类型系统的核心之一，它允许开发者创建自定义的 GObject 子类，并在 GObject 类型系统中进行管理和查找。
+
+在使用 GObject 类型时，通常会涉及以下操作：
+
+1. **定义类型**：开发者可以使用 GObject 类型系统定义新的 GObject 类型，包括创建类结构体、初始化类、注册类型等。
+
+2. **创建对象**：通过 `g_object_new` 或其他方式创建特定类型的 GObject 对象。
+
+3. **类型检查**：使用 `GType` 值进行类型检查，例如，`G_TYPE_IS_OBJECT` 或 `G_TYPE_CHECK_INSTANCE`。
+
+4. **对象操作**：在对象上执行操作，调用方法，设置属性等。
+
+总之，`GType` 是 GObject 类型系统的核心数据类型，用于标识、管理和操作 GObject 类型，以支持面向对象编程在 C 语言中的实现。
+
+# G_TYPE_IS_FUNDAMENTAL
+
+`G_TYPE_IS_FUNDAMENTAL` 是 GLib/GObject 库中的一个宏，
+
+==用于检查给定的 `GType` 是否是基本数据类型。==
+
+在 GLib/GObject 中，数据类型分为两种：
+
+==基本数据类型和派生数据类型。==
+
+基本数据类型是 GLib/GObject 提供的一组内置数据类型，
+
+如整数、布尔值、字符串等。
+
+派生数据类型是基于这些基本数据类型创建的用户自定义数据类型，
+
+通常通过创建 GObject 类的子类来实现。
+
+
+
+`G_TYPE_IS_FUNDAMENTAL` 宏用于检查给定的 `GType` 是否是基本数据类型。
+
+如果是基本数据类型，则宏返回 `TRUE`，否则返回 `FALSE`。
+
+
+
+以下是使用 `G_TYPE_IS_FUNDAMENTAL` 宏的示例：
+
+```c
+GType type = G_TYPE_STRING;
+
+if (G_TYPE_IS_FUNDAMENTAL(type)) {
+    g_print("This is a fundamental data type.\n");
+} else {
+    g_print("This is not a fundamental data type.\n");
+}
+```
+
+在这个示例中，我们检查 `G_TYPE_STRING` 是否是一个基本数据类型。由于字符串是一个基本数据类型，所以 `G_TYPE_IS_FUNDAMENTAL` 将返回 `TRUE`。
+
+这个宏通常用于在处理数据类型时进行条件检查，以确定如何处理不同类型的数据。
+
+总之，`G_TYPE_IS_FUNDAMENTAL` 是 GLib/GObject 中的一个宏，用于检查给定的 `GType` 是否是基本数据类型。这有助于在编程中根据数据类型采取不同的操作。
+
+# GTypeCValue
+
+`GTypeCValue` 是 GLib/GObject 库中的一个数据结构，
+
+**用于表示 C 值的通用容器。**
+
+它用于在不同数据类型之间进行转换和传递参数，
+
+是 GObject 类型系统中的一部分，用于处理 GObject 的属性、信号、方法等。
+
+`GTypeCValue` 具有以下特点：
+
+1. **通用容器**：`GTypeCValue` 可以用于存储不同数据类型的值，如整数、浮点数、指针等。这使得它非常灵活，可以用于处理各种数据类型。
+
+2. **类型信息**：每个 `GTypeCValue` 包含有关存储的值的类型信息。这有助于确保在转换和操作值时进行正确的类型检查。
+
+3. **GObject 集成**：`GTypeCValue` 是 GObject 类型系统的一部分，通常与 GObject 的属性系统一起使用。它可以用于获取和设置 GObject 的属性值。
+
+使用 `GTypeCValue` 通常涉及以下操作：
+
+1. 创建 `GTypeCValue` 对象，并为其分配适当的内存。
+
+2. 设置或获取值：使用函数如 `g_value_init`、`g_value_set_int`、`g_value_get_double` 等来设置或获取值。
+
+3. 类型转换：将值从一个类型转换为另一个类型。
+
+4. 销毁：在不再需要时，应使用 `g_value_unset` 或 `g_value_reset` 等函数来释放 `GTypeCValue` 对象的资源。
+
+`GTypeCValue` 主要用于 GObject 的属性操作和信号处理，以确保正确的类型转换和数据交换。这在图形用户界面开发和多媒体处理等领域非常有用。
+
+总之，`GTypeCValue` 是 GLib/GObject 中的一个数据结构，用于表示 C 值的通用容器，用于处理不同数据类型的值。它是 GObject 类型系统的一部分，用于属性操作和信号处理。
+
+# GTypeInterface
+
+`GTypeInterface` 是 GLib/GObject 库中的一个重要概念，
+
+用于实现接口（interface）和多继承。
+
+它是 GObject 类型系统的一部分，
+
+用于创建可共享的接口和允许多个类实现这些接口，==从而实现多继承的一种机制。==
+
+以下是关于 `GTypeInterface` 的一些关键概念：
+
+1. **接口（Interface）**：接口是一种抽象规范，定义了一组方法或函数的签名，但没有提供具体的实现。接口允许多个类共享相同的方法规范，从而实现一种形式的多继承。在 GObject 类型系统中，接口是由 `GTypeInterface` 表示的。
+
+2. **多继承**：多继承是一种编程范例，允许一个类继承多个父类的属性和行为。==由于 C 语言不直接支持多继承，因此 GObject 类型系统使用接口和 `GTypeInterface` 来实现这种机制。==
+
+3. **`GTypeInterface` 结构**：`GTypeInterface` 结构用于表示接口，它包含了一组函数指针，这些函数指针定义了接口的方法。不同的类可以实现相同的接口，以共享相同的方法规范。
+
+4. **接口实现**：类可以实现一个或多个接口，从而获得接口定义的方法。这使得类可以共享多个接口的行为，而不必继承多个父类。
+
+5. **多态性**：接口和多继承机制使得对象能够以多态的方式调用方法，即在运行时根据对象的实际类型调用适当的方法。
+
+在 GObject 类型系统中，`GTypeInterface` 是实现多继承和接口的关键机制之一。它使得开发者能够创建可重用的接口，并使多个类实现这些接口，以共享方法规范和行为。这对于构建复杂的对象层次结构和促进代码重用非常有用。
+
+总之，`GTypeInterface` 是 GLib/GObject 类型系统中的一部分，用于实现接口和多继承的机制，以支持面向对象编程的灵活性和代码重用。
+
+# g_param_spec_enum
+
+`g_param_spec_enum` 是 GLib 库中的一个函数，
+
+用于创建 GObject 参数规范，
+
+这些参数可以用于描述枚举类型的属性。
+
+
+
+在使用 `g_param_spec_enum` 时，
+
+你可以定义一个参数规范，
+
+用于描述一个 GObject 属性，该属性的值是一个枚举类型的成员。
+
+这对于表示某种状态或选项的属性非常有用。
+
+
+
+以下是 `g_param_spec_enum` 的一些重要参数和特性：
+
+1. **名字和详细描述**：你可以指定参数的名字和详细描述，以便更好地理解参数的用途。
+
+2. **枚举类型**：通过提供一个枚举类型的 `GType`（GObject 类型），你可以指定此参数允许的枚举类型。
+
+3. **默认值**：你可以定义参数的默认值，它将在创建对象时设置为参数的初始值。
+
+4. **标志**：可以设置参数的各种标志，例如是否可读、可写、是否为类属性等。
+
+5. **校验函数**：你可以指定一个自定义校验函数，用于检查用户提供的值是否有效。
+
+使用 `g_param_spec_enum` 创建参数规范的示例：
+
+```c
+GParamSpec *param_spec;
+GType enum_type = MY_ENUM_TYPE;  // 用你自己的枚举类型替换 MY_ENUM_TYPE
+
+param_spec = g_param_spec_enum("my-enum-property",  // 参数名
+                              "My Enum Property",   // 参数描述
+                              "Description of my enum property", // 详细描述
+                              enum_type,            // 枚举类型
+                              MY_ENUM_DEFAULT,      // 默认值
+                              G_PARAM_READWRITE);   // 可读可写标志
+```
+
+这将创建一个参数规范，用于描述一个名为 "my-enum-property" 的属性，其值是指定枚举类型 `enum_type` 的成员之一。该属性可以读取和写入，并具有默认值 `MY_ENUM_DEFAULT`。
+
+一旦创建了参数规范，它可以用于创建对象的属性，使你能够设置和检索枚举类型的值。
+
+总之，`g_param_spec_enum` 是 GLib 库中用于创建 GObject 参数规范的函数，用于描述枚举类型属性的规范。这对于创建具有不同状态和选项的对象属性非常有用。
+
+# g_signal_new
+
+`g_signal_new` 是 GLib/GObject 库中的一个函数，
+
+用于创建新的 GObject 信号（Signal）。 
+
+GObject 信号是一种机制，
+
+==用于在对象之间传递事件和通知，使对象能够响应和处理事件。==
+
+以下是 `g_signal_new` 函数的一些关键参数和特性：
+
+1. **信号名（Signal Name）**：你需要指定一个唯一的信号名称，以便在后续代码中引用该信号。
+
+2. **信号类型（Signal Type）**：你需要指定信号的数据类型。这表示信号可以传递的数据类型。
+
+3. **标志（Flags）**：可以设置各种标志，如是否是详细信号、是否是用户驱动信号等。
+
+4. **类（Class）**：你需要指定将该信号附加到的 GObject 类。
+
+5. **紧密度（Closures）**：你可以定义信号的紧密度，用于确定信号的执行顺序。紧密度越高的信号将在紧密度较低的信号之前执行。
+
+6. **函数指针（Handler Function）**：你需要指定一个函数指针，用于处理信号。这个函数将在信号触发时执行。
+
+7. **用户数据（User Data）**：你可以传递用户自定义数据给信号处理函数，以便在信号处理中使用。
+
+使用 `g_signal_new` 函数通常涉及以下操作：
+
+1. 创建一个新的信号，其中包括指定的信号名称、信号类型、类等。
+
+2. 指定信号处理函数，这是一个用户编写的函数，用于处理信号触发时的操作。
+
+3. 可选地指定信号的标志、紧密度和用户数据。
+
+4. 将新信号附加到 GObject 类中，使该类的对象能够连接和处理该信号。
+
+一旦信号创建并附加到类中，类的对象可以使用 `g_signal_connect` 来连接信号并注册信号处理函数，以响应信号的触发。
+
+总之，`g_signal_new` 是 GLib/GObject 中的一个函数，用于创建新的 GObject 信号，这是一种机制，用于在对象之间传递事件和通知。通过创建和连接信号，你可以实现对象之间的协作和通信。
+
+# gobject类的`_init和_class_init`在什么时候被调用
+
+在 GObject 类的生命周期中，`_init` 和 `_class_init` 方法都有特定的时机被调用：
+
+1. **_class_init 方法**：`_class_init` 方法是在一个类（Class）第一次被创建时调用。这个方法通常在类初始化时执行，一般只执行一次，用于初始化类级别的属性、信号和方法。在 GObject 类的继承体系中，父类的 `_class_init` 方法通常在子类的 `_class_init` 方法之前调用，以确保父类的初始化操作完成。
+
+2. **_init 方法**：`_init` 方法是在每个对象（Instance）创建时调用。每次创建一个类的对象时，都会执行对象的 `_init` 方法。这个方法通常用于初始化对象特定的属性。因此，每个对象都有自己的 `_init` 方法的实例。通常情况下，`_init` 方法在构造函数内部被调用。
+
+下面是一些简单示例来说明这两个方法的调用时机：
+
+```c
+// _class_init 方法示例
+static void my_object_class_init(MyObjectClass *klass) {
+    GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+
+    gobject_class->finalize = my_object_finalize;
+    gobject_class->my_class_member = 42;
+    // 更多类级别的初始化操作
+}
+
+// _init 方法示例
+static void my_object_init(MyObject *object) {
+    // 初始化对象级别的属性
+    object->my_instance_member = 0;
+}
+```
+
+在上面的示例中，`_class_init` 方法用于初始化类级别的属性，如类成员变量和方法。而 `_init` 方法用于初始化对象特定的属性，如对象的实例成员变量。在实际使用中，这两个方法通常用于确保类和对象都正确初始化，以使 GObject 类能够正常工作。
+
+总之，`_class_init` 方法在类首次被创建时调用，用于初始化类级别的属性，而 `_init` 方法在每个对象创建时调用，用于初始化对象特定的属性。这两个方法在 GObject 类的生命周期中具有不同的作用和调用时机。
+
+以gstbasesrc的为例：
+
+这个get_type函数里，就注册了这个信息。
+
+```
+GType
+gst_base_src_get_type (void)
+{
+  static volatile gsize base_src_type = 0;
+
+  if (g_once_init_enter (&base_src_type)) {
+    GType _type;
+    static const GTypeInfo base_src_info = {
+      sizeof (GstBaseSrcClass),
+      NULL,
+      NULL,
+      (GClassInitFunc) gst_base_src_class_init,
+      NULL,
+      NULL,
+      sizeof (GstBaseSrc),
+      0,
+      (GInstanceInitFunc) gst_base_src_init,
+    };
+
+    _type = g_type_register_static (GST_TYPE_ELEMENT,
+        "GstBaseSrc", &base_src_info, G_TYPE_FLAG_ABSTRACT);
+
+    private_offset =
+        g_type_add_instance_private (_type, sizeof (GstBaseSrcPrivate));
+
+    g_once_init_leave (&base_src_type, _type);
+  }
+  return base_src_type;
+}
 ```
 
 

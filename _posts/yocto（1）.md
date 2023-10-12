@@ -259,7 +259,58 @@ https://zhuanlan.zhihu.com/p/111688338
 
 仅后缀不同（例如formfactor_0.0.bb和 formfactor_0.0.bbappend）。
 
+# 常用命令
 
+Yocto Project 是一个强大的嵌入式 Linux 构建系统，它有很多命令和工具，用于构建和管理嵌入式 Linux 发行版。以下是一些常用的 Yocto 命令：
+
+1. **初始化构建环境：**
+
+   - `source oe-init-build-env`：进入构建目录并设置构建环境。
+   
+2. **构建软件包和映像：**
+
+   - `bitbake <recipe>`：构建指定的软件包或映像。
+   
+3. **清理构建目录：**
+
+   - `bitbake -c clean <recipe>`：清理指定软件包的构建文件。
+   - `bitbake -c cleansstate <recipe>`：清理指定软件包的 sstate 缓存。
+   - `bitbake -c cleanall <recipe>`：清理指定软件包的构建文件和 sstate 缓存。
+
+4. **构建整个发行版：**
+
+   - `bitbake <image>`：构建整个 Linux 发行版映像。
+   
+5. **查看可用的软件包和映像：**
+
+   - `bitbake-layers show-recipes`：显示可用的软件包和配方。
+   - `bitbake-layers show-recipes -i`：显示已安装的软件包和配方。
+
+6. **查看构建日志：**
+
+   - `less <log_file>`：查看构建日志文件。
+   
+7. **查看软件包信息：**
+
+   - `bitbake -e <recipe>`：显示指定软件包的环境变量和配置。
+   
+8. **清理整个构建目录：**
+
+   - `bitbake -c cleanall <recipe>`：清理整个构建目录，包括构建文件和 sstate 缓存。
+
+9. **更新 sstate 缓存：**
+
+   - `bitbake -c sstate_update <recipe>`：更新 sstate 缓存，以便在多个构建中共享构建结果。
+
+10. **运行软件包测试：**
+
+    - `bitbake -c test <recipe>`：运行软件包的测试。
+
+11. **导出构建结果：**
+
+    - `bitbake -c populate_sdk <recipe>`：导出 SDK（Software Development Kit）以供开发人员使用。
+
+这些命令是 Yocto Project 中的一些常用工具，用于构建、管理和定制嵌入式 Linux 发行版。根据您的项目需求，还有其他 Yocto 命令和工具可供使用。
 
 # av400
 
@@ -2905,7 +2956,7 @@ https://jumpnowtek.com/yocto/Using-your-build-workstation-as-a-remote-package-re
 
 https://wiki.phytec.com/pages/viewpage.action?pageId=128713168
 
-# 运行商业license软件的加入
+# 允许商业license软件的加入
 
 只需要在local.conf里加上：
 

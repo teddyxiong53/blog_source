@@ -8,7 +8,7 @@ tags:
 
 
 
-#编译定制的qemu
+# 编译定制的qemu
 
 1、下载qemu源代码。
 

@@ -5,7 +5,7 @@ tags:
 	- gstreamer
 ---
 
-1
+--
 
 什么是appsrc？作用是什么？主要在什么情况下使用？
 

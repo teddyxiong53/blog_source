@@ -43,6 +43,88 @@ printk使用时需要注意的：
 
 2、内核在切换模式的时候，不保存处理器的浮点状态，因此printk并不支持浮点数计算。
 
+# 动态打印
+
+## Dynamic Debug
+
+如果/proc/dynamic_debug/control这个文件节点存在，说明打开了dynamic debug。
+
+否则没有打开。
+
+我当前的代码：
+
+```
+# CONFIG_DYNAMIC_DEBUG is not set
+# CONFIG_DYNAMIC_DEBUG_CORE is not set
+```
+
+
+
+注意这个功能需要内核开启 CONFIG_DEBUG_FS，然后再开启 CONFIG_DYNAMIC_DEBUG 这两个选项。
+
+请参考以下文档：
+
+https://www.kernel.org/doc/html/latest/admin-guide/dynamic-debug-howto.html
+
+https://lwn.net/Articles/434833/
+
+在内核的代码中，有类似以下代码的形式：
+
+```
+dev_dbg(&client->dev, ``"probing for EDT FT5x06 I2C\n"``);
+```
+
+这种，还有
+
+- pr_debug()
+- dev_dbg() 
+
+都可以动态使能，可以选择性的使能以下情况：
+
+- 源文件名
+- 函数名
+- 行号
+- 模块名称
+- 打印语句的字符串
+
+这些信息可以通过一个文件来查询（如果dynamic_debug这个文件夹不存在，则需要使能 CONFIG_DYNAMIC_DEBUG），不需要都去查源代码，如：
+
+
+
+通过bootloader传递给kernel的启动参数来动态打开调试。
+
+```
+setenv mmcargs setenv 'bootargs console=${console},${baudrate} root=${mmcroot} dyndbg="\\"file mxsfb_sii902x.c +p"\\"'
+```
+
+dyndbg这个参数。
+
+也可以在kernel shell来修改。
+
+```
+echo "func omap_i2c_xfer_msg +p" > /sys/kernel/debug/dynamic_debug/control
+```
+
+这里比较推荐前两种方法，在启用后，可以通过下面的指令来查询：
+
+```
+cat /sys/kernel/debug/dynamic_debug/control | grep keyword
+before:
+drivers/i2c/busses/i2c-imx.c:896 [i2c_imx]i2c_imx_xfer =_ "<%s>\012"
+after:
+drivers/i2c/busses/i2c-imx.c:896 [i2c_imx]i2c_imx_xfer =p "<%s>\012"
+```
+
+注意其中 “=_” 变为 "=p"，说明改打印信息已开启。
+
+
+
+参考资料
+
+1、
+
+https://wiki.phytec.com/pages/viewpage.action?pageId=132776352
+
 # oops
 
 oops是内核通知用户有错误发生的最常用的方式。

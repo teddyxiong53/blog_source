@@ -82,6 +82,25 @@ agetty 是一个用于终端登录的程序，它在 Linux 系统中提供了终
 
 agetty 通过这种逻辑实现了终端登录功能，允许用户通过终端设备与系统进行交互。它是 Linux 系统中提供登录服务的关键组件之一，负责验证用户身份并提供登录会话。
 
+
+
+## getty的等价逻辑
+
+从busybox的getty的usage注释里可以看到：
+
+```
+//config:	this script approximates getty:
+//config:
+//config:	exec </dev/$1 >/dev/$1 2>&1 || exit 1
+//config:	reset
+//config:	stty sane; stty ispeed 38400; stty ospeed 38400
+//config:	printf "%s login: " "`hostname`"
+//config:	read -r login
+//config:	exec /bin/login "$login"
+```
+
+
+
 # 参考资料
 
 1、

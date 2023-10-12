@@ -947,6 +947,55 @@ https://blog.csdn.net/weixin_40026797/article/details/124831631
 
 # demos分析
 
+# 重载机制
+
+这个就相当于c++的重载机制。
+
+```
+  if (widget->vt && widget->vt->invalidate) {
+    return widget->vt->invalidate(widget, r);
+  } else {
+    return widget_invalidate_default(widget, r);
+  }
+```
+
+# 工厂模式
+
+看到代码里大量使用了工厂模式。看看具体是怎么做的。
+
+```
+  data_writer_factory_set(data_writer_factory_create());
+  data_reader_factory_set(data_reader_factory_create());
+  data_writer_factory_register(data_writer_factory(), "file", data_writer_file_create);
+  data_reader_factory_register(data_reader_factory(), "file", data_reader_file_create);
+```
+
+就以这个作为分析例子。
+
+就看file reader的情况。
+
+`data_reader_factory_create`里面就是malloc一个`data_reader_factory_t`结构体。
+
+然后init一下，init里做的就是create一个darray动态数组（大小还给的是空）。
+
+
+
+`data_reader_factory_set`这个函数就很简单，把create的指针保存到`s_data_reader_factory`。
+
+`data_reader_factory(),`这个函数就是直接返回`s_data_reader_factory`。
+
+`data_reader_factory_register`
+
+`data_reader_file_create`这个create函数被注册进去。
+
+这里注册倒是很简单，后面怎么查找和使用的呢？
+
+`data_reader_factory_create_reader` 这样创建一个reader，然后使用。
+
+`data_reader_read`主要使用这个接口。
+
+使用reader比较多的就是conf这个模块。读取配置文件。
+
 
 
 # 参考资料
