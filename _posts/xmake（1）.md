@@ -676,3 +676,11 @@ XMAKE_RCFILES           Set the runtime configuration files.
 ```
 Invoke-Expression (Invoke-Webrequest 'https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.ps1' -UseBasicParsing).Content
 ```
+
+# 文章
+
+https://www.zhihu.com/question/56634628/answer/2366534212
+
+https://zhuanlan.zhihu.com/p/655334316
+
+xmake插件，配合clangd代码补全，开发起来非常方便。

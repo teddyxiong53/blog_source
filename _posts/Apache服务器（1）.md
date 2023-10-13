@@ -7,9 +7,9 @@ tags:
 
 
 
-1
+--
 
-## 修改根目录
+# 修改根目录
 
 因为默认是指向了/var/www/html，这个目录修改不方便，所以希望指向我的开发目录。
 
@@ -51,7 +51,7 @@ sudo /etc/init.d/apache2 restart
 
 
 
-参考资料
+# 参考资料
 
 1、Ubuntu Apache 根目录的更改方法
 

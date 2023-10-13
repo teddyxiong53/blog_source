@@ -306,7 +306,136 @@ CC="musl-gcc -static" ./configure --prefix=$HOME/musl && make
 
 ## 使用musl库编译交叉编译器
 
+# libc.h
 
+```
+struct __libc {
+	int can_do_threads;
+	int threaded;
+	int secure;
+	volatile int threads_minus_1;
+	size_t *auxv;
+	struct tls_module *tls_head;
+	size_t tls_size, tls_align, tls_cnt;
+	size_t page_size;
+	struct __locale_struct global_locale;
+};
+```
+
+```
+hidden void __init_libc(char **, char *);
+hidden void __init_tls(size_t *);
+hidden void __init_ssp(void *);
+hidden void __libc_start_init(void);
+hidden void __funcs_on_exit(void);
+hidden void __funcs_on_quick_exit(void);
+hidden void __libc_exit_fini(void);
+hidden void __fork_handler(int);
+```
+
+`src\env\__libc_start_main.c`
+
+# musl和glibc比较
+
+开源的libc的历史很长，这里就不说了。
+
+大约在20余年前，有人对当时的libc5的架构不满意，
+
+在此基础上翻新设计了架构更好、可移植更好、性能更好、不依赖特定OS的libc6。
+
+libc6后来被GNU项目接受，被称为glibc。
+
+不过debian发行版还是喜欢其原来的名字libc6做包名。
+
+而libc5如今还是广泛用于BSD等系统中。
+
+
+
+性能上musl比glibc差多少呢？
+
+恐怕不会有人给你确切答案。
+
+从感觉上说，glibc应该比musl快一些，
+
+毕竟经过20多年的持续优化，不是其它项目一朝一夕能追上的。
+
+但是要说快多少，恐怕也不会很明显，不会有压倒性优势。
+
+libc的代码相比其它上层复杂项目，
+
+比如浏览器或图形系统，还是相对简单的，层次少，也不需要复杂的架构。
+
+已知的热点，比如memory相关模块，都是需要汇编优化，这点musl有差距，
+
+毕竟没有公司持续投钱，用爱发电，开发效率还是低。
+
+相比android/bionic，有公司持续投入，很快就追上来。
+
+至于对于系统调用的封装，就这么点层次，谁也不会比谁快到哪里去。
+
+
+
+musl相比glibc，最大的问题就是兼容性问题了。
+
+musl号称严格遵循各种国际标准进行开发。
+
+glibc从来就不这么宣扬自己，因为GNU自成一派。
+
+于是在二十多年的发展中，glibc添加了很多自有的独特的特性，
+
+相类似的，gcc也是如此，
+
+然后无数的开源应用软件有意无意的也使用了这些特性，
+
+也就是说开源软件大多无意识地绑定了gcc/glibc，
+
+反正二十多年来大家都这么用，也用得挺好的。
+
+后来者，如llvm/clang，就得为此添加不少gcc的特性，
+
+linux也绑定不少gcc特性，
+
+clang和linux两者要做不少修改才能编译通过。
+
+musl同样也是有这个问题，看[https://alpinelinux.org/](https://link.zhihu.com/?target=https%3A//alpinelinux.org/)里面的软件包里的补丁，
+
+就知道要维护一个完全符合国际标准的应用软件需要做哪些修改了。
+
+
+
+
+
+
+
+https://www.zhihu.com/question/550951106/answer/2653996968
+
+# 鸿蒙支持musl
+
+
+
+https://zhuanlan.zhihu.com/p/461208555
+
+# musl的堆利用技巧
+
+最近比赛出的musl题型的越来越多，
+
+不得不学习一波musl的堆利用来应对今后的比赛。
+
+这里要讲的是musl1.22版本的利用，
+
+因为网上可以找到很多审计源码的文章，
+
+所以这篇文章是通过一道题目来debug去学习堆的利用技巧，
+
+这里用到的是2021第五空间线上赛的notegame题目。
+
+
+
+https://zhuanlan.zhihu.com/p/468332990
+
+# musl堆代码分析
+
+https://zhuanlan.zhihu.com/p/583188846
 
 # 参考资料
 

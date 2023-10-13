@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 看buildroot编译的第二个package就是ccache。了解一下。
 

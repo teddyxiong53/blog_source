@@ -10,7 +10,7 @@ tags:
 
 这个不是按章节分析的。是根据我碰到的疑问点来分析。
 
-##override assistant具体内涵
+# override assistant具体内涵
 
 意思是让Alexa覆盖手机的默认语音助手。
 

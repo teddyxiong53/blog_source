@@ -1478,6 +1478,10 @@ GStreamer 是一个用于构建多媒体应用程序和流媒体处理的开源�
 
 总之，`GstEventType` 是 GStreamer 多媒体处理框架中的一个枚举类型，用于表示不同类型的事件，这些事件允许控制和协商多媒体数据流的处理和行为。
 
+# ppt
+
+https://zhuanlan.zhihu.com/p/613658022
+
 # 参考资料
 
 1、GStreamer基础教程01——Hello World

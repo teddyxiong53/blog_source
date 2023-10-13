@@ -214,7 +214,7 @@ overwrite="false" 是否覆盖。默认是不覆盖的。
 
 移动文件或者目录。跟copy差不多。
 
-##filelist
+## filelist
 
 表示一个文件列表。
 
@@ -250,7 +250,7 @@ refid
 
 
 
-参考资料
+# 参考资料
 
 1、ubuntu中ANT的安装和配置
 

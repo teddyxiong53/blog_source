@@ -5,7 +5,7 @@ tags:
 	- Linux
 ---
 
-1
+--
 
 觉得有必要把awk这个命令仔细学习一下，因为经常有一些小的字符处理需求。
 
@@ -23,7 +23,7 @@ awk [选项] -f scriptfile -v var=value file
 
 -f后面跟一个脚本文件。
 
-var=value表示给变量幅值。
+var=value表示给变量赋值。
 
 file表示要处理的目标文件。
 
