@@ -103,7 +103,7 @@ chkspeed
 
 这个是用下载的方式进行测速的。
 
-#post方式
+# post方式
 
 看看post方式跟httpbin.org交互的情况。
 
@@ -253,7 +253,72 @@ CURLFORM_COPYCONTENTS
 	
 ```
 
+# 基本示例分析
 
+libcurl是一个C语言库，用于进行网络数据传输，支持多种协议，如HTTP、HTTPS、FTP、SCP、SFTP等。开发者可以使用libcurl在其应用程序中实现网络通信，从而实现下载、上传和其他网络数据传输操作。以下是关于libcurl开发的一般步骤：
+
+1. **安装libcurl**：
+   在开始使用libcurl之前，你需要确保在你的系统上安装了libcurl库。你可以从libcurl的官方网站（https://curl.se/download.html）下载最新版本的源代码，并根据文档中的指南进行编译和安装。
+
+2. **包含头文件**：
+   在你的C或C++代码中包含libcurl的头文件，通常是 `curl/curl.h`。这些头文件包含了libcurl的函数和数据结构的声明。
+
+   ```c
+   #include <curl/curl.h>
+   ```
+
+3. **初始化libcurl**：
+   在你的应用程序中，需要调用`curl_global_init`来初始化libcurl。这通常在应用程序的启动部分执行一次。
+
+   ```c
+   CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT);
+   if (res != CURLE_OK) {
+       fprintf(stderr, "curl_global_init() failed: %s\n", curl_easy_strerror(res));
+       return 1;
+   }
+   ```
+
+4. **创建CURL句柄**：
+   在使用libcurl进行网络请求之前，需要创建一个CURL句柄，该句柄用于配置和执行请求。
+
+   ```c
+   CURL *curl = curl_easy_init();
+   if (!curl) {
+       fprintf(stderr, "Failed to create CURL handle\n");
+       return 1;
+   }
+   ```
+
+5. **配置请求**：
+   使用`curl_easy_setopt`函数来配置CURL句柄以定义你的请求，包括URL、请求方法、请求头、请求体等。
+
+   ```c
+   curl_easy_setopt(curl, CURLOPT_URL, "https://example.com/api/resource");
+   curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L); // 使用GET方法
+   ```
+
+6. **执行请求**：
+   使用`curl_easy_perform`函数来执行网络请求。
+
+   ```c
+   CURLcode res = curl_easy_perform(curl);
+   if (res != CURLE_OK) {
+       fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+   }
+   ```
+
+7. **处理响应**：
+   一旦请求完成，你可以使用libcurl提供的函数来处理响应数据，包括响应头和响应体。
+
+8. **清理资源**：
+   最后，需要清理CURL句柄和全局curl环境。
+
+   ```c
+   curl_easy_cleanup(curl);
+   curl_global_cleanup();
+   ```
+
+这只是一个简单的libcurl开发示例，libcurl提供了更多的选项和功能，可以根据具体的需求来进行配置。你可以参考libcurl的文档和示例代码来进一步了解其功能和用法。
 
 
 
