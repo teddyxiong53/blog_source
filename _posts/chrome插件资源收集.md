@@ -8,7 +8,7 @@ tags:
 
 
 
-#github教程
+# github教程
 
 多种基本插件写法
 
@@ -28,9 +28,11 @@ https://github.com/Ovilia/handian-chrome-extension
 
 
 
-#网站
+# 网站
 
-crxdoc-zh.appspot.com
+https://crxdoc-zh.appspot.com
+
+
 
 中文文档网站
 

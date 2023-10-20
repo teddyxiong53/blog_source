@@ -22,9 +22,7 @@ https://segmentfault.com/a/1190000006173864
 
 看看怎么使用。
 
-看了一下，没有太多资料。这个不是一个认真的项目。算了。还是换成libuv。
-
-还是可以的。实际上，libev是对libevent的改进。
+实际上，libev是对libevent的改进。
 
 nodejs最开始用的也是libev。只是为了更好的通用性，自己开发了libuv。
 
@@ -567,6 +565,12 @@ The libev manual does not say that after a fork an event loop will be stopped. A
 这个是epoll等底层决定的。
 
 https://stackoverflow.com/questions/35604292/what-happend-if-i-didnt-call-ev-loop-fork-in-the-child
+
+# ANFD 
+
+ANFD 是一个结构体类型的名称，它代表着 "Active Node for File Descriptor"，
+
+这个是问gpt得到的。我觉得解释合理。
 
 # 参考资料
 

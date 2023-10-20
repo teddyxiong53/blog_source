@@ -7,6 +7,34 @@ tags:
 
 --
 
+# 简介
+
+`WebAssembly` 是基于[栈式虚拟机](https://www.zhihu.com/search?q=栈式虚拟机&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A1961085507})的二进制指令集，可以作为编程语言的编译目标，能够部署在 `web` [客户端](https://www.zhihu.com/search?q=客户端&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A1961085507})和服务端的应用中。
+
+首先 `WebAssembly` 是由 `Web` 和 `Assembly` 两个词构成，其中 `Web` 表明它一定和前端有关。`Assembly` 的意思是汇编，汇编对应机器码，而机器码和 `CPU` 的指令集有关，接下来补一下相关的知识。
+
+
+
+上边的格式属于 「[S- 表达式](https://www.zhihu.com/search?q=S- 表达式&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A1961085507})」， `Lisp` 语言就是采用的这种表达式，每条语句都是先执行最里边括号的表达式然后依次展开。
+
+
+
+由于当前 `Wasm` 标准下，`Wasm` 模块不能直接操纵 `dom` 元素，所以 `WebAssembly` 主要应用在了一些计算密集型的场景下，视频的解码编码、图像处理、涉及到复杂计算的算法、[加密算法](https://www.zhihu.com/search?q=加密算法&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A1961085507})等等。
+
+
+
+值得一提的是因为 wasm 有些底层，所以一般还是写高级语言来生成 wasm 比较合适，这样一来就可以把更多精力放在代码的逻辑上而不需要关注 wasm 怎么和宿主环境进行互相的函数调用，还有内存管理的各种细节之类的，
+
+
+
+
+
+参考资料
+
+1、
+
+https://www.zhihu.com/question/304577684/answer/1961085507
+
 # emscripten
 
 简单说，就是把c/c++程序编译为js文件。
@@ -53,9 +81,27 @@ WebAssembly（简称 wasm）是一种开放标准的二进制指令集，旨在�
 
 总的来说，WebAssembly 具有广泛的应用领域，可以用于改善 web 应用程序的性能、提供跨平台的解决方案、支持复杂的计算任务以及创建各种类型的交互性 web 内容。随着 wasm 生态系统的不断发展，它将在更多领域得到应用。
 
+# wasm3
+
+这个库，我看到txiki.js用到了。
+
+https://github.com/wasm3/wasm3
+
+先研究一下这个库的基本用法。
+
+看看可以用来做什么。
+
+快速的 WebAssembly 解释器和最通用的 WASM 运行时。
+
+# pywasm3
+
+https://github.com/wasm3/pywasm3
 
 
-参考资料
+
+https://github.com/alvarowolfx/wasm-arduino-wifi
+
+# 参考资料
 
 1、
 
