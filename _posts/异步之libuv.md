@@ -5,7 +5,9 @@ tags:
 	- 异步
 ---
 
+--
 
+# 简介
 
 libuv是一个高性能的、事件驱动的io库。
 
@@ -45,9 +47,19 @@ int main(int argc, char const *argv[])
 
 你需要一个EventLoop的时候。
 
+# 代码分析
+
+```
+UV_LOOP_PRIVATE_FIELDS
+```
+
+这样来把私有成员来隐藏。也是一个不错的手段。
 
 
-参考资料
+
+
+
+# 参考资料
 
 1、Basics of libuv
 
