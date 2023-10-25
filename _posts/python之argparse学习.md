@@ -5,6 +5,7 @@ tags:
 	- python
 ---
 
+--
 
 argparse是作为optparse的替代品，在Python2.7引入进来的。
 
@@ -32,6 +33,7 @@ optional arguments:
 
 默认都是带了一个`-h`参数的。
 现在我们加一个参数进来，代码改成下面这样：
+
 ```
 #!/usr/bin/env python
 import  argparse
@@ -197,3 +199,51 @@ pi@raspberrypi:~/work/test/py-test$
 
 可以看到，参数里的`-`被转成了下划线。
 
+# action有哪些值，代表什么含义
+
+在`argparse`库中，`action`参数用于指定命令行选项的动作。以下是`argparse`中常用的几种`action`值及其含义：
+
+- `'store'`（默认值）：将命令行参数的值存储到对应的属性中。例如，`parser.add_argument("--name")`将命令行参数的值存储到`args.name`属性中。
+
+- `'store_const'`：将指定的常量值存储到属性中。常量值通过`const`参数指定。例如，`parser.add_argument("--verbose", action="store_const", const=True)`将将`True`存储到`args.verbose`属性中。
+
+- `'store_true'`：将`True`存储到属性中。通常用于表示开关选项，如果在命令行中使用了该选项，则将`True`存储到对应的属性中。
+
+- `'store_false'`：将`False`存储到属性中。通常用于表示开关选项，如果在命令行中使用了该选项，则将`False`存储到对应的属性中。
+
+- `'append'`：将多个命令行参数的值追加到列表中。例如，`parser.add_argument("--file", action="append")`将多个`--file`选项的值存储到`args.file`列表中。
+
+- `'append_const'`：将指定的常量值追加到列表中。常量值通过`const`参数指定。
+
+- `'count'`：统计命令行选项出现的次数，并将次数存储到属性中。例如，`parser.add_argument("--verbose", action="count")`将统计`--verbose`选项出现的次数，并将次数存储到`args.verbose`属性中。
+
+- `'help'`：打印帮助信息并退出程序。当用户在命令行中使用帮助选项（如`-h`或`--help`）时，`argparse`会自动执行该动作。
+
+这些是一些常见的`action`值，用于定义选项的行为。通过选择适当的`action`值，你可以根据自己的需求来处理命令行参数，并将其存储到相应的属性中。
+
+# 参数组（Argument Group）
+
+这段代码使用`argparse.ArgumentParser`对象的`add_argument_group`方法创建了一个参数组（Argument Group）。
+
+下面是对该代码的解释：
+
+```python
+group = parser.add_argument_group('http arguments', 'Extra arguments when set --http')
+```
+
+这行代码创建了一个名为`http arguments`的参数组，并将其赋值给变量`group`。让我们逐个解释参数的含义：
+
+- `'http arguments'`：这是参数组的标题（Title），用于标识参数组的名称或主题。在这个例子中，参数组的标题是`http arguments`。
+
+- `'Extra arguments when set --http'`：这是参数组的描述（Description），用于提供有关参数组的额外信息。在这个例子中，描述是`Extra arguments when set --http`，说明当设置了`--http`选项时，这个参数组包含一些额外的参数。
+
+通过使用参数组，你可以将相关的命令行选项组织在一起，并在帮助信息中以更清晰的方式呈现。参数组可以用于将一组相关的选项分组显示，并提供额外的描述信息，以帮助用户理解这些选项的用途和关系。
+
+在创建参数组后，你可以使用`add_argument`方法向该参数组中添加具体的命令行选项。例如：
+
+```python
+group.add_argument("--url", help="URL for HTTP connection")
+group.add_argument("--timeout", type=int, help="Timeout value for HTTP requests")
+```
+
+以上代码将`--url`和`--timeout`选项添加到名为`http arguments`的参数组中。这样，这些选项将与该参数组相关联，并在帮助信息中以参数组的形式显示出来。

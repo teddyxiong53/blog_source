@@ -6,7 +6,7 @@ tags:
 
 ---
 
-
+--
 
 tornado是一个Python写的web框架。字面意思是龙卷风。
 
@@ -17,6 +17,215 @@ tornado是一个Python写的web框架。字面意思是龙卷风。
 它的原理是使用了非阻塞方式和epoll。
 
 每秒可以处理数以千计的连接。
+
+# 简介
+
+Tornado 是一个 Python Web 框架和异步网络库，
+
+最初由 FriendFeed 开发。
+
+通过使用非阻塞网络 I/O，Tornado 可以扩展到数万个开放连接，
+
+这使其成为长轮询、WebSocket 和其他需要与每个用户建立长期连接的应用程序的理想选择。
+
+
+
+Tornado 与大多数 Python Web 框架不同。
+
+它不基于 WSGI，
+
+**并且通常每个进程仅使用一个线程运行。**
+
+有关 Tornado 异步编程方法的更多信息，请参阅用户指南。
+
+虽然tornado.wsgi模块中提供了对WSGI的一些支持，
+
+但这不是开发的重点，
+
+大多数应用程序应该编写为直接使用Tornado自己的接口（例如tornado.web），
+
+而不是使用WSGI。
+
+
+
+一般来说，Tornado 代码不是线程安全的。 
+
+Tornado 中唯一可以从其他线程安全调用的方法是 IOLoop.add_callback。
+
+您还可以使用 IOLoop.run_in_executor 在另一个线程上异步运行阻塞函数，
+
+但请注意，传递给 run_in_executor 的函数应避免引用任何 Tornado 对象。 
+
+run_in_executor 是与阻塞代码交互的推荐方式。
+
+
+
+Tornado 与标准库 asyncio 模块集成，
+
+并共享相同的事件循环（自 Tornado 5.0 起默认）。
+
+一般来说，设计用于 asyncio 的库可以与 Tornado 自由混合。
+
+
+
+大致可分为三个主要组成部分：
+
+- 一个 Web 框架（包括 RequestHandler，它被子类化以创建 Web 应用程序，以及各种支持类）。
+- HTTP 的客户端和服务器端实现（HTTPServer 和 AsyncHTTPClient）。
+- 一个异步网络库，包括类 IOLoop 和 IOStream，它们充当 HTTP 组件的构建块，也可用于实现其他协议。
+
+Tornado Web 框架和 HTTP 服务器一起提供了 WSGI 的全栈替代方案。
+
+虽然可以使用 Tornado HTTP 服务器作为其他 WSGI 框架 (WSGIContainer) 的容器，
+
+但这种组合有局限性，
+
+要充分利用 Tornado，
+
+**您需要同时使用 Tornado 的 Web 框架和 HTTP 服务器。**
+
+
+
+实时 Web 功能需要每个用户有一个长期处于空闲状态的连接。
+
+在传统的同步 Web 服务器中，这意味着为每个用户分配一个线程，这可能非常昂贵。
+
+为了最大限度地降低并发连接的成本，
+
+Tornado 使用单线程事件循环。
+
+**这意味着所有应用程序代码都应该以异步和非阻塞为目标，**
+
+**因为一次只能有一个操作处于活动状态。**
+
+异步和非阻塞这两个术语密切相关，并且经常互换使用，但它们并不完全相同。
+
+
+
+当函数在返回之前等待某些事情发生时，它就会阻塞。
+
+一个函数可能会因多种原因而阻塞：
+
+网络 I/O、磁盘 I/O、互斥体等。
+
+事实上，每个函数在运行和使用 CPU 时至少会阻塞一点（举一个极端的例子，它演示了为什么 CPU 阻塞必须像其他类型的阻塞一样严肃对待，**请考虑像 bcrypt 这样的密码散列函数，它在设计上使用数百毫秒的 CPU 时间，远远超过典型的网络或磁盘访问**）。
+
+函数可以在某些方面是阻塞的，而在其他方面可以是非阻塞的。
+
+在 Tornado 的上下文中，我们通常在网络 I/O 的上下文中讨论阻塞，尽管各种阻塞都将被最小化。
+
+
+
+异步函数在完成之前返回，并且通常会导致在触发应用程序中的某些未来操作之前在后台发生一些工作（与正常的同步函数相反，后者在返回之前完成它们要做的所有事情）。
+
+异步接口有多种风格：
+
+- 回调参数
+- 返回占位符（Future、Promise、Deferred）
+- 传送到队列
+- 回调注册表（例如 POSIX 信号）
+
+无论使用哪种类型的接口，
+
+根据定义，异步函数与其调用者的交互方式都不同。
+
+没有免费的方法可以以对其调用者透明的方式使同步函数异步
+
+（像 gevent 这样的系统使用轻量级线程来提供与异步系统相当的性能，但它们实际上并不使事情异步）。
+
+Tornado 中的异步操作通常返回占位符对象（Futures），
+
+但一些低级组件（例如使用回调的 IOLoop）除外。
+
+Future通常通过await 或yield 关键字转换为结果。
+
+
+
+同步函数举例：
+
+```
+from tornado.httpclient import HTTPClient
+
+def synchronous_fetch(url):
+    http_client = HTTPClient()
+    response = http_client.fetch(url)
+    return response.body
+```
+
+实现相同功能的异步实现：
+
+```
+from tornado.httpclient import AsyncHTTPClient
+
+async def asynchronous_fetch(url):
+    http_client = AsyncHTTPClient()
+    response = await http_client.fetch(url)
+    return response.body
+```
+
+使用协程可以做的任何事情都可以通过传递回调对象来完成，
+
+但是协程提供了重要的简化，
+
+让您可以按照与同步时相同的方式组织代码。
+
+这对于错误处理尤其重要，
+
+因为 try/ except 块按照您在协程中的预期工作，而这很难通过回调实现。
+
+本指南的下一部分将深入讨论协程。
+
+
+
+协程是在 Tornado 中编写异步代码的推荐方法。
+
+协程使用 Python wait 关键字来挂起和恢复执行，
+
+而不是回调链（gevent 等框架中的协作轻量级线程有时也称为协程，但在 Tornado 中，所有协程都使用显式上下文切换并称为异步函数） 。
+
+**协程几乎与同步代码一样简单，**
+
+**但无需消耗线程。**
+
+它们还通过减少可能发生上下文切换的位置数量，使并发性更容易推理。
+
+
+
+Python 3.5 引入了 async 和await 关键字（使用这些关键字的函数也称为“原生协程”）。
+
+为了与旧版本的Python兼容，您可以使用tornado.gen.coroutine装饰器来使用“装饰”或“基于产量”的协程。
+
+只要有可能，本机协程是推荐的形式。
+
+仅当需要与旧版本的 Python 兼容时才使用修饰协程。 Tornado 文档中的示例通常会使用本机形式。
+
+
+
+Tornado 的tornado.queues 模块（以及 asyncio 中非常相似的 Queue 类）为协程实现了异步生产者/消费者模式，
+
+类似于 Python 标准库的队列模块为线程实现的模式。
+
+产生 Queue.get 的协程会暂停，
+
+直到队列中有一个项目。
+
+如果队列设置了最大大小，则生成 Queue.put 的协程将暂停，直到有空间容纳另一个项目。
+
+队列维护未完成任务的计数，从零开始。 put 增加计数； task_done 会减少它。
+
+
+
+在此处的网络蜘蛛示例中，队列开始时仅包含 base_url。
+
+当worker获取页面时，它会解析链接并将新链接放入队列中，
+
+然后调用 task_done 将计数器递减一次。
+
+最终，worker 获取了一个其 URL 之前都已经见过的页面，并且队列中也没有剩余的工作。
+
+因此，该worker对 task_done 的调用会将计数器递减至零。正在等待加入的主协程已取消暂停并完成。
+
+
 
 # 基本例子
 
