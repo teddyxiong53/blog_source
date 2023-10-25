@@ -36,5 +36,9 @@ xmind这个软件也是基于electron写的。
 
 
 
+electron 应用开发优秀实践
 
+这篇文章挺好的。
+
+https://zhuanlan.zhihu.com/p/549734690
 

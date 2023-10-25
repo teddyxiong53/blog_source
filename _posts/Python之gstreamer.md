@@ -6,6 +6,98 @@ tags:
 
 ---
 
+--
+
+# 官方例子
+
+## HelloWorld
+
+```python
+import sys
+import gi
+
+gi.require_version("GLib", "2.0")
+gi.require_version("GObject", "2.0")
+gi.require_version("Gst", "1.0")
+
+from gi.repository import Gst, GObject, GLib
+
+pipeline = None
+bus = None
+message =None
+
+Gst.init(sys.argv[1:])
+
+pipeline = Gst.parse_launch(
+    "playbin uri=https://gstreamer.freedesktop.org/data/media/sintel_trailer-480p.webm"
+)
+
+pipeline.set_state(Gst.State.PLAYING)
+bus = pipeline.get_bus()
+
+msg = bus.timed_pop_filtered(
+    Gst.CLOCK_TIME_NONE,
+    Gst.MessageType.ERROR | Gst.MessageType.EOS
+)
+pipeline.set_state(Gst.State.NULL)
+
+```
+
+## 概念
+
+```
+import sys
+import gi
+import logging
+gi.require_version("GLib", "2.0")
+gi.require_version("GObject", "2.0")
+gi.require_version("Gst", "1.0")
+
+from gi.repository import Gst, GObject, GLib
+
+logger = logging.getLogger(__name__)
+
+Gst.init(sys.argv[1:])
+
+source = Gst.ElementFactory.make("videotestsrc", "source")
+sink = Gst.ElementFactory.make("autovideosink", "sink")
+
+pipeline = Gst.Pipeline.new("test-pipeline")
+
+if not pipeline or not source or not sink:
+    logger.error("make not ok")
+    sys.exit(1)
+
+pipeline.add(source, sink)
+if not source.link(sink):
+    sys.exit(1)
+
+source.props.pattern = 0
+
+ret = pipeline.set_state(Gst.State.PLAYING)
+if ret == Gst.StateChangeReturn.FAILURE:
+    sys.exit(1)
+
+bus = pipeline.get_bus()
+msg = bus.timed_pop_filtered(Gst.CLOCK_TIME_NONE, Gst.MessageType.ERROR |
+                             Gst.MessageType.EOS)
+
+if msg:
+    if msg.type == Gst.MessageType.ERROR:
+        err, debug_info = msg.parse_error()
+    elif msg.type == Gst.MessageType.EOS:
+        logger.info("eos")
+    else:
+        logger.error("unexpected message")
+
+pipeline.set_state(Gst.State.NULL)
+
+```
+
+## 动态pipeline
+
+这个没有给python版本的例子。
+
 
 
 # playbin

@@ -101,6 +101,36 @@ https://github.com/wasm3/pywasm3
 
 https://github.com/alvarowolfx/wasm-arduino-wifi
 
+
+
+# 缓存wasm到本地
+
+
+
+参考资料
+
+1、将ffmpeg.wasm文件缓存到浏览器indexedDB，方便快速调用
+
+https://zhuanlan.zhihu.com/p/431440059
+
+
+
+
+
+但是随着 WasmEdge 等引擎支持 QuickJS 的解释器，
+
+JavaScript 逐渐变成了 WebAssembly 平台之上的最流行的编程语言。
+
+这里除了有 JavaScript 语言用户比较多的因素，
+
+同时 JavaScript 的单线程模型也非常契合 WebAssembly 的单线程模型。
+
+JavaScript 和 WebAssembly 无限套娃的事情真在切实发生，同时 JavaScript 也失去了浏览器中的霸主地位降级为普通公民。
+
+
+
+https://zhuanlan.zhihu.com/p/635473856
+
 # 参考资料
 
 1、

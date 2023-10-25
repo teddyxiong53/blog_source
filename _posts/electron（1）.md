@@ -25,6 +25,32 @@ https://github.com/hokein/electron-sample-apps
 
 这个下面有不少的例子。我们看HelloWorld的。
 
+# 介绍
+
+Electron是一个开源的桌面应用程序开发框架，
+
+它允许开发者使用Web技术（如HTML、CSS和JavaScript）构建跨平台的桌面应用程序。
+
+以下是Electron框架的简要介绍：
+
+1. **跨平台支持：** Electron使开发者能够构建跨平台的桌面应用程序，可以运行在Windows、macOS和Linux操作系统上。开发者只需编写一次代码，就可以在多个平台上部署应用程序。
+
+2. **基于Web技术：** Electron应用程序的用户界面使用Web技术构建，主要是HTML、CSS和JavaScript。这意味着前端开发者可以使用他们熟悉的技能来构建桌面应用程序。
+
+3. **Chromium内核：** Electron应用程序的渲染引擎基于Chromium，这是Google Chrome浏览器的开源版本。这意味着应用程序可以充分利用Chromium的先进的Web渲染能力，并保持与Web标准的兼容性。
+
+4. **Node.js集成：** Electron集成了Node.js，这意味着开发者可以使用JavaScript编写应用程序的后端逻辑。这种前后端一体化的开发方式使开发人员能够轻松地与操作系统进行交互、访问本地文件系统和执行系统级任务。
+
+5. **强大的生态系统：** Electron具有丰富的第三方库和插件，可以帮助开发者扩展应用程序的功能，包括窗口管理、自动更新、访问硬件设备等。
+
+6. **自动更新和部署：** Electron允许开发者轻松实现应用程序的自动更新，以确保用户始终使用最新版本。此外，开发者可以使用各种工具将应用程序部署到不同的应用商店和分发渠道。
+
+7. **开源和活跃的社区：** Electron是一个开源项目，拥有庞大的社区支持。这意味着开发者可以获得广泛的文档、教程和支持，以解决问题和改进应用程序。
+
+8. **用例广泛：** Electron已经被用于构建各种类型的应用程序，包括文本编辑器、聊天客户端、开发工具、音视频播放器、桌面游戏等。
+
+总的来说，Electron是一个强大的桌面应用程序开发框架，使开发者能够使用Web技术构建跨平台的应用程序，同时获得访问操作系统和硬件的能力。这使得它成为许多开发者和公司的首选选择，用于快速构建桌面应用程序。
+
 # HelloWorld
 
 可以看到下面有3个文件。
@@ -94,6 +120,47 @@ electron的版本发布非常频繁。
 然后看一个实用的例子。
 
 https://electronjs.org/apps/simplenote
+
+## chromium的多进程结构介绍
+
+Chromium是一个开源的Web浏览器项目，
+
+而Google Chrome则是基于Chromium开发的一个流行的Web浏览器。
+
+Chromium采用了多进程的架构，这种架构有助于提高浏览器的性能、稳定性和安全性。
+
+下面是Chromium的多进程结构的简要介绍：
+
+1. 主进程（Main Process）：
+   - **主进程是Chromium浏览器的控制中心。**
+   - 它负责启动和管理浏览器窗口，以及处理用户界面元素，如地址栏、书签和扩展。
+   - **主进程也负责协调其他进程的工作**，包括渲染进程、插件进程和GPU进程。
+
+2. 渲染进程（Renderer Process）：
+   - **每个标签页或窗口都在单独的渲染进程中运行。**
+   - 渲染进程负责加载和渲染网页内容，执行JavaScript代码，处理HTML和CSS等。
+   - 这种隔离的方式有助于防止一个网页崩溃影响整个浏览器，提高了浏览器的稳定性。
+
+3. GPU进程（GPU Process）：
+   - GPU进程负责处理与图形相关的任务，如绘制网页中的图形和视频。
+   - 这有助于加速页面渲染，尤其是在需要使用硬件加速的情况下。
+   - 使用独立的GPU进程可以提高性能和安全性，因为GPU进程与渲染进程和主进程隔离开。
+
+4. 插件进程（Plugin Process）：
+   - 插件进程是用于运行浏览器插件（如Adobe Flash Player或PDF查看器）的独立进程。
+   - 这有助于防止插件崩溃或导致浏览器的崩溃，保持浏览器的稳定性。
+
+5. 媒体进程（Media Process）：
+   - 媒体进程用于处理音频和视频播放。
+   - 这有助于隔离媒体播放的相关任务，提高了媒体播放的性能和稳定性。
+
+Chromium的多进程结构带来了一些显著的优点，
+
+包括更好的性能、更好的安全性和更好的稳定性。
+
+每个进程都在自己的沙盒中运行，从而限制了恶意网页或插件对整个浏览器系统的访问。
+
+此外，即使一个进程崩溃，其他进程仍然可以正常工作，使浏览器保持可用状态。这种多进程结构已经成为现代Web浏览器的标准，用于提供更好的用户体验。
 
 
 
@@ -209,7 +276,7 @@ Electron 的主进程是一个拥有着完全操作系统访问权限的 Node.js
 
 
 
-为了将 Electron 的不同类型的进程桥接在一起，我们需要使用被称为 **预加载** 的特殊脚本。
+==为了将 Electron 的不同类型的进程桥接在一起，我们需要使用被称为 **预加载** 的特殊脚本。==
 
 
 
@@ -447,6 +514,101 @@ https://www.electronjs.org/apps/silex
 https://www.electronjs.org/apps/bootstrap-studio
 
 我的总体感受就是，还是笔记类的居多。
+
+
+
+参考资料
+
+1、
+
+https://www.zhihu.com/question/281593001/answer/2676366761
+
+# Electron Fiddle 介绍
+
+Electron Fiddle 是一个用于创建、编辑和调试 Electron 应用程序的开发工具。它提供了一个交互式的开发环境，让开发人员能够快速地构建和测试 Electron 应用，而无需设置繁杂的开发环境。以下是 Electron Fiddle 的一些关键特点和介绍：
+
+1. Electron 开发环境：Electron Fiddle 提供了一个完整的 Electron 开发环境，包括 Electron 运行时和调试工具，使开发人员能够轻松地构建和调试桌面应用程序。
+
+2. 交互式编辑器：Electron Fiddle 包含一个交互式的代码编辑器，让你能够编辑主进程和渲染进程代码，并实时查看应用程序的变化。这有助于快速迭代和调试。
+
+3. 集成的调试器：Electron Fiddle 集成了 Chrome 开发者工具，你可以使用它来调试你的 Electron 应用程序。你可以查看控制台输出、检查 DOM 元素和分析性能。
+
+4. 模板和示例：Electron Fiddle 包括一些常见的 Electron 应用程序模板和示例，帮助你入门和了解如何构建不同类型的应用。
+
+5. 快速预览和分享：你可以轻松地预览你的 Electron 应用程序，并分享它们的代码和运行时环境，以便与团队成员或社区进行协作或寻求帮助。
+
+6. 插件支持：Electron Fiddle 支持插件，这意味着你可以扩展其功能，以满足你的特定需求。
+
+总的来说，Electron Fiddle 是一个方便的工具，特别适用于快速原型设计和学习 Electron 开发。它可以减少开发过程中的繁琐配置，让你专注于构建应用程序的功能和界面。
+
+
+
+# quickstart模板
+
+https://github.com/electron/electron-quick-start
+
+
+
+#  ipcRenderer 和 ipcMain 模块
+
+`ipcRenderer` 和 `ipcMain` 是 Electron 框架中的两个核心模块，用于实现主进程（Main Process）和渲染进程（Renderer Process）之间的进程间通信（IPC，Inter-Process Communication）。这种通信机制使得主进程和渲染进程能够相互发送消息和数据，以便协作和执行各种任务。以下是它们的主要作用和用法：
+
+1. **ipcMain**:
+
+   - `ipcMain` 是 Electron 主进程中的模块，负责监听和处理来自渲染进程的 IPC 事件。
+   - 使用 `ipcMain`，你可以注册事件处理程序，用于处理从渲染进程发送来的消息或事件。
+   - 主要用途包括响应渲染进程请求、执行文件系统或底层操作等需要在主进程中执行的任务。
+   - 示例代码：
+
+     ```javascript
+     const { ipcMain } = require('electron');
+
+     ipcMain.on('message-from-renderer', (event, arg) => {
+       console.log(arg); // 打印渲染进程发送的数据
+       event.reply('reply-to-renderer', 'Message received in the main process.'); // 回复渲染进程
+     });
+     ```
+
+2. **ipcRenderer**:
+
+   - `ipcRenderer` 是 Electron 渲染进程中的模块，负责向主进程发送 IPC 事件，并处理主进程的响应。
+   - 使用 `ipcRenderer`，你可以向主进程发送消息或请求，并监听主进程发送回来的响应。
+   - 主要用途包括向主进程请求数据、执行主进程中的任务以获取结果等。
+   - 示例代码：
+
+     ```javascript
+     const { ipcRenderer } = require('electron');
+
+     ipcRenderer.send('message-from-renderer', 'Hello from the renderer process.');
+
+     ipcRenderer.on('reply-to-renderer', (event, arg) => {
+       console.log(arg); // 打印主进程回复的数据
+     });
+     ```
+
+通过 `ipcMain` 和 `ipcRenderer`，你可以建立强大的通信桥梁，使主进程和渲染进程之间能够协作，共享数据和执行不同的任务。这种通信方式在 Electron 应用程序中非常常见，例如用于将用户界面中的操作传递到主进程执行特定任务，或从主进程检索数据并在渲染进程中呈现。
+
+# electron架构
+
+![img](images/random_name/v2-f85361afb9a037b24b279c9a87d6635e_720w.webp)
+
+![img](images/random_name/v2-57957775a6b2bfe55dd9b2f273923308_720w.webp)
+
+
+
+https://zhuanlan.zhihu.com/p/549734690
+
+# 经验
+
+
+
+https://zhuanlan.zhihu.com/p/420238372
+
+# 学习总结
+
+就用fiddler来做。下载后不用安装，直接打开就可以了。
+
+
 
 # 参考资料
 
