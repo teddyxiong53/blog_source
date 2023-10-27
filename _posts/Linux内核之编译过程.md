@@ -6,9 +6,17 @@ tags:
 
 ---
 
-1
+--
 
-**vmlinux**是可引导的、压缩的内核。“vm”代表“Virtual Memory”。Linux 支持虚拟内存，不像老的操作系统比如DOS有640KB内存的限制。Linux能够使用硬盘空间作为虚拟内存，因此得名“vm”。它是elf格式的文件， 编译内核首先生成的是vmlinux，其它的文件都是基于此生成的。
+**vmlinux**是可引导的、压缩的内核。
+
+“vm”代表“Virtual Memory”。
+
+Linux 支持虚拟内存，不像老的操作系统比如DOS有640KB内存的限制。
+
+Linux能够使用硬盘空间作为虚拟内存，因此得名“vm”。
+
+它是elf格式的文件， 编译内核首先生成的是vmlinux，其它的文件都是基于此生成的。
 
 **Image**是vmlinux经过OBJCOPY后生成的**纯二进制映像文件**
 

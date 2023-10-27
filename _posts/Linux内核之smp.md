@@ -6,7 +6,7 @@ tags:
 typora-root-url: ..\
 ---
 
-
+--
 
 smp是对称多处理器的意思。
 

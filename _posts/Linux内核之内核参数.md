@@ -5,7 +5,7 @@ tags:
 	- Linux
 ---
 
-1
+--
 
 Linux内核参数是在Linux内核中由宏__setup定义的一系列参数。
 

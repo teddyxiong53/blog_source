@@ -20,4 +20,3 @@ http://blog.chinaunix.net/uid-20801390-id-1839286.html
 
 也就是说，这个down_interruptible的等待，可以被用户取消掉。
 
-虽然这个代码写在

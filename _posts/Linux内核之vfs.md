@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 VFS背后的核心idea是引入了通用文件模型（common file model），该模型其实就是Unix原生文件系统的一个镜像（这样可以在Unix原生文件系统了具有最小的开销，最高的性能）。
 
@@ -114,7 +114,17 @@ vfs里理由4个主要的对象类型：
 
 目录项跟目录不是一回事。
 
+## 目录项跟目录是一个东西吗
 
+目录项（directory entry）和目录（directory）不是完全相同的东西，但它们之间有密切的关系。
+
+1. **目录项（directory entry）**：目录项是文件系统中的一个基本概念，它表示文件或子目录在目录中的记录或条目。每个文件或子目录都对应一个目录项，其中包含了文件或子目录的名称以及指向相应数据块或inode的引用。目录项的存在允许操作系统或文件系统查找和管理文件和子目录。
+
+2. **目录（directory）**：**目录是一个特殊的文件，用于存储目录项。**目录是一种文件，其中包含了一个或多个目录项，每个目录项对应一个文件或子目录。目录的主要功能是将文件和子目录组织在一个层次结构中，以便用户和操作系统可以查找和访问它们。
+
+在大多数文件系统中，目录实际上也是一种特殊的文件，它包含了一系列目录项。这些目录项列出了目录中包含的文件和子目录的名称和引用。因此，目录是目录项的容器，它们共同组成了文件系统中的文件和目录的结构。
+
+目录项充当文件系统中文件和子目录的入口点，它们指向实际的文件数据或inode。目录是组织这些目录项的容器。因此，虽然目录项和目录不是同一概念，但它们是密切相关的，通常是一起使用的，以组织和管理文件系统中的文件和目录。
 
 # 超级块对象
 
@@ -393,7 +403,37 @@ struct file_operations
 
 结论：你一般实现unlocked_ioctl就好了。
 
+## unlocked_ioctl ioctl compat_ioctl 之间的关系
 
+`unlocked_ioctl`，`ioctl` 和 `compat_ioctl` 是 Linux 内核中用于处理 I/O 控制操作（ioctl）的函数。它们之间的关系如下：
+
+1. **ioctl**：`ioctl` 是 Linux 内核中的一个系统调用，用于执行设备驱动程序中定义的各种 I/O 控制操作。`ioctl` 函数的签名通常如下：
+
+   ```c
+   int ioctl(int fd, unsigned int request, ...);
+   ```
+
+   这个函数接受三个参数：文件描述符 `fd`，请求码 `request` 和可选的参数。 `request` 参数用于指定要执行的具体 I/O 控制操作，而可选的参数是与请求相关的数据。
+
+2. **unlocked_ioctl**：`unlocked_ioctl` 是内核中用于处理 ioctl 操作的函数指针。它用于实际执行 I/O 控制操作。`unlocked_ioctl` 函数有以下签名：
+
+   ```c
+   long (*unlocked_ioctl) (struct file *filp, unsigned int cmd, unsigned long arg);
+   ```
+
+   这个函数接受三个参数：`struct file *filp`，`unsigned int cmd` 和 `unsigned long arg`。`filp` 是文件操作的结构，`cmd` 是 I/O 控制操作的请求码，`arg` 是与请求相关的参数。
+
+   `unlocked_ioctl` 通常由设备驱动程序的开发者实现，以定义如何处理特定设备上的 ioctl 请求。
+
+3. **compat_ioctl**：`compat_ioctl` 函数是在 32 位应用程序运行在 64 位内核上时使用的。它用于处理来自 32 位应用程序的 ioctl 请求，以确保与 32 位应用程序的兼容性。`compat_ioctl` 函数与 `unlocked_ioctl` 具有相同的签名，但它被设计为处理来自 32 位应用程序的请求。
+
+   ```c
+   long (*compat_ioctl) (struct file *filp, unsigned int cmd, unsigned long arg);
+   ```
+
+   `compat_ioctl` 通常在内核中与 `unlocked_ioctl` 一起使用，以处理来自 32 位应用程序的 ioctl 请求。
+
+总结：`ioctl` 是用户空间应用程序和内核之间进行 I/O 控制操作的接口，而 `unlocked_ioctl` 和 `compat_ioctl` 是内核中用于处理 ioctl 请求的函数，它们实际执行 I/O 控制操作，`compat_ioctl` 主要用于确保 32 位应用程序与 64 位内核的兼容性。
 
 # 和文件系统相关的结构体
 
@@ -425,7 +465,7 @@ struct file_operations
 
 下面分析procfs、sysfs、ramfs。以及fat。还有devpts。
 
-#procfs
+# procfs
 
 初始化入口是proc_root_init();。这个函数在fs/proc/root.c里。
 

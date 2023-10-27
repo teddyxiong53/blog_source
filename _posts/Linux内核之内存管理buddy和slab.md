@@ -3,10 +3,10 @@ title: Linux内核之内存管理buddy和slab
 date: 2018-03-18 13:57:09
 tags:
 	- Linux
-typora-root-url: ..\
+
 ---
 
-
+--
 
 讨论buddy（伙伴系统）和slab之前，我们想要理解内存碎片的概念。
 
@@ -39,7 +39,7 @@ strurct zone {
 }
 ```
 
-![Linux内核之内存管理buddy和slab](/images/Linux内核之内存管理buddy和slab-图1.png)
+![Linux内核之内存管理buddy和slab](../images/Linux内核之内存管理buddy和slab-图1.png)
 
 
 
@@ -114,7 +114,7 @@ slab分配器是基于对象进行管理的。
 
 为什么用最近的这个？因为这样cache命中的概率是最高的。
 
-![](./images/slab层级关系.webp)
+![](../images/slab层级关系.webp)
 
 所有的kmem_cache，都串在一个链表上，叫cache_chain。
 

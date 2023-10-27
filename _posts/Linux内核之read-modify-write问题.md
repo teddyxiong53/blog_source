@@ -5,7 +5,7 @@ tags:
 	- Linux
 ---
 
-1
+--
 
 read-modify-write的问题本质上是一个保持对内存read和write访问的原子性的问题。
 

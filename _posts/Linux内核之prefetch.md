@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 看内核2.6.35版本的代码，看到list_for_each_entry宏里面，用到一个叫prefetch的宏。
 
