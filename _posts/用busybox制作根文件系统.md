@@ -4,6 +4,8 @@ date: 2016-12-12 23:51:15
 tags:
 	- busybox
 ---
+--
+
 前面我们用qemu制作了一个最简单的linux系统，但是文件系统其实并不够完善，所以现在把完整的busybox根文件系统做一遍。
 
 # 1. 编译
@@ -16,6 +18,7 @@ O表示指定输出路径。
 我们先就用这个`make ARCH=arm CROSS_COMPILE=arm-linux-guneabihf-`编译。
 然后用`make ARCH=arm CROSS_COMPILE=arm-linux-guneabihf- install`来产生一个根文件的基本框架。
 这条命令在当前目录下的_install目录下生成文件系统目录。
+
 ```
 teddy@teddy-ubuntu:~/work/qemu/busybox/busybox-1.25.1/_install$ ls -l
 总用量 12
@@ -39,6 +42,7 @@ linuxrc这个是软连接，连接到/bin/busybox。
 在rootfs目录下新建etc、dev、lib、tmp、var目录。
 var目录下新建run和log目录。
 现在的目录结构如下：
+
 ```
 teddy@teddy-ubuntu:~/work/qemu/rootfs$ tree -d
 .
@@ -57,6 +61,7 @@ teddy@teddy-ubuntu:~/work/qemu/rootfs$ tree -d
 ## 2.2 拷贝必要的配置文件
 busybox给了一个examples目录，下面的bootfloppy是我们可以参考的。
 我们把下面的etc目录内容整个拷贝到我们新建的etc目录下。
+
 ```
 teddy@teddy-ubuntu:~/work/qemu/rootfs$ cp ../busybox/busybox-1.25.1/examples/bootfloppy/etc/* etc/ -rf
 teddy@teddy-ubuntu:~/work/qemu/rootfs/etc$ tree

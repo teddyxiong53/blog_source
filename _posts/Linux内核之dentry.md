@@ -6,7 +6,7 @@ tags:
 typora-root-url: ..\
 ---
 
-
+--
 
 在进程中，如何描述一个文件呢？用dentry和inode。
 

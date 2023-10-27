@@ -5,7 +5,7 @@ tags:
 	- kernel
 ---
 
-
+--
 
 在看某个板子的适配文件中，有init_machine这样一个函数指针。
 

@@ -177,7 +177,7 @@ Distributor通过processor source ID、中断ID和target processor ID来唯一�
 
 
 
-参考资料
+# 参考资料
 
 1、Linux 中断(irq)控制器以及device tree设置
 

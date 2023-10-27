@@ -64,7 +64,19 @@ root::0:0:root:/:/bin/sh
 
 
 
-bash进程来源于login进程，login进程来源于getty进程或者telnetd进程，从上图中可以看到，bash进程在启动之后，首先加载一系列的配置，最后阶段就readloop，循环等待/dev/tty是否有读数据，也就是看下终端是否有输入的命令。如果有输入就通过flex bison来解析数据，然后看下是否要去fork子进程去执行任务。
+bash进程来源于login进程，
+
+login进程来源于getty进程或者telnetd进程，
+
+从上图中可以看到，
+
+bash进程在启动之后，首先加载一系列的配置，最后阶段就readloop，
+
+循环等待/dev/tty是否有读数据，
+
+也就是看下终端是否有输入的命令。
+
+如果有输入就通过flex bison来解析数据，然后看下是否要去fork子进程去执行任务。
 
  bash进程会把当前的终端和fork出来的子进程做一下关联，这个过程就是进程组获得了控制终端的过程。
 
