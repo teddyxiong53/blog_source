@@ -8,6 +8,102 @@ tags:
 
 --
 
+# 简介
+
+DBus（Desktop Bus）是一个用于进程间通信（IPC）的消息总线协议，
+
+主要用于Linux和UNIX系统。
+
+它允许不同进程之间相互通信，以实现各种任务，
+
+如共享数据、调用方法、通知事件等。
+
+DBus是一个类似于中间件的机制，用于简化不同应用程序和组件之间的通信，从而促进系统中的集成和协作。
+
+以下是DBus的一些主要特点和组成部分：
+
+1. **总线系统**：DBus通过在系统中创建一个总线，允许不同应用程序和进程在该总线上进行通信。这个总线通常被称为"session bus"（会话总线）或"system bus"（系统总线），分别用于用户会话和系统级通信。
+
+2. **消息传递**：DBus基于消息传递的方式工作，进程可以通过总线发送和接收消息。这些消息通常包括方法调用、信号通知和属性更改等。
+
+3. **对象和接口**：==DBus消息传递是基于对象和接口的。每个对象都有一个唯一的对象路径，而每个接口定义了对象可以提供的一组方法和信号==。这种结构有助于组织和描述系统中的功能和服务。
+
+4. **权限和安全性**：DBus提供了一种权限管理机制，允许您定义哪些应用程序和进程可以连接到总线，以及哪些操作它们可以执行。这有助于确保系统的安全性。
+
+5. **语言绑定**：DBus支持多种编程语言，因此应用程序可以使用不同的编程语言来访问DBus总线。有许多不同语言的DBus库和绑定可供开发人员使用。
+
+DBus在Linux桌面环境中广泛使用，例如，它用于与桌面环境（如GNOME和KDE）中的组件通信，以及在Linux系统中与硬件设备进行通信。DBus还在很多服务中使用，以便不同的进程能够协同工作，提供更强大的功能和用户体验。
+
+# dbus的优点和缺点
+
+DBus是一个强大的进程间通信（IPC）机制，但它也有一些优点和缺点。
+
+**优点：**
+
+1. **标准化通信：** DBus提供了一种标准化的通信机制，使不同应用程序之间的通信更容易。这促进了应用程序的集成和协作。
+
+2. **简化通信：** DBus简化了进程之间的通信，因为它抽象了复杂的通信细节。开发人员可以专注于定义对象、接口和方法，而无需担心底层通信机制。
+
+3. **安全性：** DBus提供了一套权限控制机制，可以限制哪些应用程序可以连接到总线，以及执行哪些操作。这有助于确保系统的安全性。
+
+4. **支持多种语言：** DBus支持多种编程语言，因此应用程序可以使用不同的编程语言来访问总线，这使得开发更加灵活。
+
+5. **事件通知：** DBus允许应用程序发送和接收事件通知，这在处理异步事件和触发响应方面非常有用。
+
+**缺点：**
+
+1. **性能开销：** DBus的消息传递机制引入了一定的性能开销，因为消息需要进行序列化和反序列化。这可能在某些高性能应用程序中成为一个瓶颈。
+
+2. **复杂性：** 对于初学者来说，DBus的概念可能有点复杂，因为它引入了对象、接口、方法等抽象层次。这可能增加了学习曲线。
+
+3. **单点故障：** 如果DBus总线出现故障，可能会影响与总线连接的所有应用程序。这使得DBus成为潜在的单点故障。
+
+4. **不适用于跨网络通信：** DBus主要设计用于本地进程间通信，不适用于跨网络通信。如果需要在不同计算机之间进行通信，需要使用其他协议，如RPC（远程过程调用）。
+
+总的来说，DBus是一个非常有用的工具，用于在Linux和UNIX系统中实现进程间通信，但开发人员需要权衡其优点和缺点，并根据特定的用例来决定是否使用它。
+
+# dbus有没有现代化的替代方案
+
+虽然DBus在Linux和UNIX系统中仍然广泛使用，但也有一些现代化的替代方案，它们旨在解决一些DBus的限制和问题，特别是在高性能、跨平台和分布式系统方面。以下是一些现代化的替代方案：
+
+1. **gRPC：** gRPC是一个高性能的远程过程调用（RPC）框架，由Google开发。它支持多种编程语言，包括C++, Python, Go, Java等，以及多种平台，包括Linux、Windows和移动设备。gRPC使用HTTP/2协议进行通信，具有强大的性能和功能，适用于跨网络通信和微服务架构。
+
+2. **NATS：** NATS是一个轻量级和高性能的消息传递系统，专注于云原生应用和微服务。它支持发布/订阅、请求/响应和点对点通信模式，适用于分布式系统的事件驱动通信。
+
+3. **ZeroMQ（ZMQ）：** ZeroMQ是一个异步消息库，提供了多种通信模式，包括请求/响应、发布/订阅和流式数据传输。它非常轻量级且易于集成到各种编程语言中。
+
+4. **WebSocket：** WebSocket是一种协议，用于在Web应用程序中进行实时双向通信。虽然它主要用于Web开发，但也可以在其他应用程序中使用，特别是需要实时通信的情况。
+
+5. **RabbitMQ：** RabbitMQ是一个消息队列中间件，支持多种通信模式，包括消息队列、发布/订阅和请求/响应。它用于分布式系统和微服务通信。
+
+这些替代方案通常更适用于特定的使用案例和需求，因此在选择替代方案时，需要考虑您的具体应用程序和环境。DBus仍然在许多桌面Linux系统和特定的应用程序中广泛使用，但在大规模、高性能或分布式系统中，可能需要考虑更现代的IPC或通信机制。
+
+# dbus 相关概念解释
+
+DBus（Desktop Bus）涉及许多重要的概念，以下是一些关键的DBus相关概念的解释：
+
+1. **总线（Bus）：** DBus中的总线是一种通信通道，用于连接应用程序和进程。有两种主要类型的总线：会话总线（session bus）和系统总线（system bus）。会话总线用于用户会话内的通信，而系统总线用于系统级通信。
+
+2. **对象（Object）：** 在DBus中，==对象代表一个实体或资源，==它可以具有唯一的对象路径，用于标识该对象。对象通常是某个应用程序或组件的一部分，其他应用程序可以通过对象路径来访问对象的功能。
+
+3. **接口（Interface）：** ==每个DBus对象都可以实现一个或多个接口==，接口定义了对象提供的一组方法、信号和属性。接口有助于组织和描述对象的功能。
+
+4. **方法（Method）：** 方法是DBus对象上可以调用的函数，用于执行特定的操作。当一个应用程序或进程需要与对象交互时，它可以通过DBus调用对象的方法。
+
+5. **信号（Signal）：** 信号是DBus对象发出的事件通知。其他应用程序可以注册对某个对象上的特定信号感兴趣，以便在事件发生时接收通知。
+
+6. **属性（Property）：** 属性是DBus对象上的数据字段，它们可以被读取或写入。属性允许应用程序查询和修改对象的状态。
+
+7. **代理（Proxy）：** ==代理是DBus客户端应用程序中的组件，用于与DBus服务通信。==代理提供了访问DBus对象和接口的高级API，使应用程序更容易使用DBus。
+
+8. **服务（Service）：** 服务是提供DBus对象的实体，它通常对应于一个应用程序或组件。服务通过总线向其他应用程序提供功能。
+
+9. **连接（Connection）：** 连接表示应用程序或进程与DBus总线之间的通信通道。每个应用程序通常与DBus总线建立一个连接，用于发送和接收消息。
+
+10. **权限（Permissions）：** DBus提供了一种权限管理机制，允许定义哪些应用程序可以连接到总线，以及哪些操作它们可以执行。这有助于确保系统的安全性。
+
+这些概念共同构成了DBus的核心，允许应用程序和进程在Linux和UNIX系统中进行进程间通信，并实现各种功能和协作。通过了解这些概念，开发人员可以更好地使用和理解DBus。
+
 # 替代方案
 
 谷歌搜索dbus alternatives
@@ -214,6 +310,41 @@ D-Bus（Desktop Bus）作为一种进程间通信机制，确实具有一定的�
 请注意，生成的代码可能需要根据您的具体需求进行进一步的修改和定制。另外，这些工具通常与特定的开发框架或库相关联，例如 GLib 或 libdbus，因此您需要确保在使用这些工具之前正确设置和配置相关的开发环境。
 
 建议查阅相关工具的官方文档以获取更详细的使用说明和示例。
+
+# dbus常用api说明
+
+DBus提供了一系列用于在应用程序中与DBus总线通信的API。这些API通常由DBus库提供，可以在多种编程语言中使用。以下是一些常用的DBus API和它们的简要说明：
+
+1. **D-Bus C API：**
+   - **dbus_connection_open()：** 用于打开与DBus总线的连接。
+   - **dbus_bus_get()：** 获取指定类型的DBus总线连接，例如系统总线或会话总线。
+   - **dbus_message_new_method_call()：** 创建一个用于发送方法调用的DBus消息。
+   - **dbus_message_append_args()：** 向DBus消息添加参数。
+   - **dbus_connection_send()：** 发送DBus消息到总线上。
+   - **dbus_connection_add_filter()：** 添加消息过滤器，以接收来自总线的特定消息。
+   - **dbus_message_iter_get_basic()：** 从DBus消息中获取参数值。
+   - **dbus_error_init()：** 初始化DBus错误对象。
+   - **dbus_pending_call_set_notify()：** 设置用于异步方法调用的回调函数。
+   - **dbus_connection_flush()：** 刷新连接中的消息队列。
+
+2. **D-Bus Python API（PyDBus）：**
+   - **dbus.Interface()：** 创建DBus接口对象以与服务通信。
+   - **dbus.SessionBus() 和 dbus.SystemBus()：** 获取会话总线和系统总线连接对象。
+   - **DBusException类：** 用于处理DBus错误和异常。
+   - **add_signal_receiver()：** 注册用于接收信号的回调函数。
+   - **call_blocking()：** 同步方式调用DBus方法。
+   - **call_async()：** 异步方式调用DBus方法。
+
+3. **Glib D-Bus API（GLib-DBus）：**
+   - **g_bus_get()：** 获取与DBus总线的连接。
+   - **g_dbus_connection_register_object()：** 在连接上注册一个对象以提供服务。
+   - **g_dbus_proxy_new_for_name()：** 创建与特定服务的代理对象。
+   - **g_dbus_method_invocation_return_error()：** 返回一个错误消息。
+   - **g_dbus_signal_info_get()：** 获取信号的信息。
+   - **g_dbus_proxy_call()：** 异步方式调用代理对象上的方法。
+   - **g_dbus_proxy_connect_signal()：** 连接信号处理函数以接收信号。
+
+这些API可以根据使用的编程语言和库进行调用，以便在应用程序中与DBus总线通信。它们允许应用程序创建DBus连接、发送和接收消息、调用方法、接收信号等，以实现进程间通信和与服务的交互。不同的语言和库可能提供略有不同的API，但通常会提供与上述类似的功能。
 
 # 概念理解
 
@@ -554,9 +685,89 @@ https://www.landley.net/kdocs/ols/2006/ols2006v1-pages-421-426.pdf
 
 https://www.linumiz.com/bluetooth-list-available-controllers-using-dbus/
 
+### dbus-send 常用命令
 
+`dbus-send` 是一个用于在Linux上通过命令行发送DBus消息的实用工具。它允许您与DBus服务进行交互，发送方法调用、触发信号和查询属性。以下是一些常用的 `dbus-send` 命令示例：
+
+1. **发送方法调用**：
+   
+   ```bash
+   dbus-send --session --dest=org.example.MyService --type=method_call --print-reply /org/example/MyObject org.example.MyInterface.MyMethod string:"Hello, D-Bus!"
+   ```
+
+   这个命令将向 `org.example.MyService` 服务的 `/org/example/MyObject` 对象发送名为 `org.example.MyInterface.MyMethod` 的方法调用，传递一个字符串参数 "Hello, D-Bus!"。
+
+2. **触发信号**：
+
+   ```bash
+   dbus-send --session --dest=org.example.MyService --type=signal /org/example/MyObject org.example.MyInterface.MySignal string:"Signal Data"
+   ```
+
+   这个命令将向 `org.example.MyService` 服务的 `/org/example/MyObject` 对象发送名为 `org.example.MyInterface.MySignal` 的信号，传递一个字符串参数 "Signal Data"。
+
+3. **查询属性**：
+
+   ```bash
+   dbus-send --session --dest=org.example.MyService --type=method_call --print-reply /org/example/MyObject org.freedesktop.DBus.Properties.Get string:"org.example.MyInterface" string:"MyProperty"
+   ```
+
+   这个命令将向 `org.example.MyService` 服务的 `/org/example/MyObject` 对象发送一个方法调用，查询 `org.example.MyInterface` 接口的 `MyProperty` 属性。
+
+4. **发送自定义DBus消息**：
+
+   ```bash
+   dbus-send --session --type=method_call --print-reply --dest=org.example.MyService /org/example/MyObject org.freedesktop.DBus.Introspectable.Introspect
+   ```
+
+   这个命令将向 `org.example.MyService` 服务的 `/org/example/MyObject` 对象发送 `org.freedesktop.DBus.Introspectable.Introspect` 方法调用，以获取有关该对象的详细信息，通常用于探索服务的功能。
+
+5. **指定接口、对象和方法的类型**：
+
+   ```bash
+   dbus-send --session --dest=org.example.MyService --type=signal /org/example/MyObject org.example.MyInterface.MySignal string:"Signal Data" --print-reply
+   ```
+
+   通过 `--type=signal` 和 `--type=method_call`，您可以指定消息类型，以及使用 `--print-reply` 输出响应。
+
+这些示例演示了如何使用 `dbus-send` 命令来与DBus服务进行交互，发送方法调用、触发信号、查询属性以及发送自定义DBus消息。您可以根据您的具体用例和服务的要求来构建相应的命令。确保替换示例中的服务、对象、接口、方法和参数等信息以适应您的情况。
 
 ## dbus-launch
+
+
+
+==`dbus-launch` 命令用于启动一个新的D-Bus会话总线，为当前用户的会话提供通信渠道。==
+
+一般情况下，您可以在终端中简单地运行 `dbus-launch` 命令，它会启动一个D-Bus会话总线，并设置相应的环境变量。以下是一些示例和说明：
+
+1. **基本用法**：
+
+   ```bash
+   dbus-launch
+   ```
+
+   这将启动一个新的D-Bus会话总线，并显示相关的环境变量信息。您可以将这些环境变量导出到当前会话，以便其他应用程序可以连接到新的D-Bus会话总线。
+
+2. ==**将环境变量导出到当前会话**：==
+
+   ```bash
+   eval $(dbus-launch)
+   ```
+
+   这将在当前会话中导出由 `dbus-launch` 创建的环境变量，以便其他应用程序可以连接到新的D-Bus会话总线。
+
+3. **使用新的D-Bus会话总线启动应用程序**：
+
+   您可以使用 `dbus-launch` 命令启动应用程序，以确保它们可以连接到新的D-Bus会话总线。例如：
+
+   ```bash
+   dbus-launch gnome-terminal
+   ```
+
+   这将在新的终端中启动 `gnome-terminal` 应用程序，并确保它连接到新的D-Bus会话总线。
+
+`dbus-launch` 是一种方便的方法，用于确保应用程序能够在用户会话中使用D-Bus进行通信。在某些情况下，可能需要手动设置D-Bus环境变量，但 `dbus-launch` 简化了这个过程。注意，这个命令通常在Linux桌面环境中使用，以确保应用程序正确连接到D-Bus总线。
+
+
 
 ```
 / # dbus-launch
@@ -697,6 +908,64 @@ https://www.freedesktop.org/software/gstreamer-sdk/data/docs/latest/gio/ch30s05.
 
 GDBus和glib-dbus都是由GNU组织开发的。GDBus可以认为是glib-dbus的升级版，其编程过程比起glib-dbus来要简单得多。
 
+
+
+`glib-dbus` 和 `GDBus` 都是用于在GNOME应用程序中与DBus通信的库，但它们有不同的起源和版本。下面是它们之间的主要区别：
+
+1. **起源和历史**：
+   - `glib-dbus`：`glib-dbus` 是早期版本的DBus库，最初是作为GLib库的一部分提供的。它为GLib应用程序提供了DBus通信的功能。
+   - `GDBus`：`GDBus` 是GNOME 3之后引入的DBus库，是一个单独的库，不再作为GLib的一部分。它被设计为更现代、更强大的DBus库，以满足GNOME 3及其应用程序的需求。
+
+2. **特性和性能**：
+   - `glib-dbus`：`glib-dbus` 相对较旧，功能较少，性能可能较低。它主要用于实现基本的DBus通信功能。
+   - `GDBus`：`GDBus` 是一个更现代的库，具有更多的功能和性能优化。它支持异步操作、线程安全性和更多DBus特性。
+
+3. **GLib依赖性**：
+   - `glib-dbus`：`glib-dbus` 是GLib的一部分，因此在使用时需要依赖整个GLib库。
+   - `GDBus`：`GDBus` 是一个独立的库，不需要依赖GLib。这使得它更容易与其他库和应用程序集成，而无需引入整个GLib。
+
+4. **API差异**：
+   - `glib-dbus` 和 `GDBus` 具有不同的API，尽管它们都用于DBus通信。因此，将从一个库迁移到另一个库可能需要进行一些代码更改。
+
+总之，`GDBus` 是GNOME 3之后推出的现代DBus库，它提供更多的功能、更好的性能和更灵活的使用方式。如果您正在开发GNOME 3及更高版本的应用程序，==通常建议使用 `GDBus` 来获得更好的性能和功能==。然而，如果您维护早期的GNOME应用程序，可能会使用 `glib-dbus`。选择哪个库取决于您的项目需求和所支持的GNOME版本。
+
+## gdbus的常用api
+
+`GDBus` 是一个用于DBus通信的现代库，提供了一系列API，用于在GNOME应用程序中与DBus服务进行交互。以下是一些常用的 `GDBus` API，这些API可用于实现DBus客户端应用程序：
+
+1. **连接和会话总线操作**：
+   - `g_bus_get()`：获取到会话总线或系统总线的连接。
+   - `g_bus_own_name()`：用于向DBus总线注册自己的名字（服务名称）。
+   - `g_bus_unown_name()`：取消注册已拥有的名字。
+   - `g_bus_watch_name()`：监视某个名字（服务名称）的状态变化。
+
+2. **代理对象**：
+   - `g_dbus_proxy_new()`：创建一个DBus代理对象，用于与特定的DBus服务通信。
+   - `g_dbus_proxy_call()`：用于调用DBus代理对象上的方法。
+   - `g_dbus_proxy_set_default_timeout()`：设置方法调用的默认超时时间。
+   - `g_dbus_proxy_get_cached_property()`：获取代理对象的缓存属性。
+
+3. **连接对象**：
+   - `g_dbus_connection_get_unique_name()`：获取连接的唯一名称。
+   - `g_dbus_connection_send_message_with_reply()`：发送消息并等待回复。
+   - `g_dbus_connection_signal_subscribe()`：订阅DBus信号。
+
+4. **消息操作**：
+   - `g_dbus_message_new_method_call()`：创建方法调用消息。
+   - `g_dbus_message_new_signal()`：创建信号消息。
+   - `g_dbus_message_get_args()`：从消息中获取参数。
+   - `g_dbus_message_to_blob()`：将消息转换为二进制数据。
+   - `g_dbus_message_new_method_error()`：创建方法错误消息。
+
+5. **异步操作**：
+   - `g_dbus_proxy_call()` 和 `g_dbus_connection_send_message_with_reply()` 等函数支持异步调用方法，以避免阻塞应用程序的主线程。
+
+6. **信号处理**：
+   - `g_signal_connect()`：用于连接信号处理函数以响应DBus信号的到达。
+   - `g_signal_handler_disconnect()`：用于断开信号处理函数的连接。
+
+这些API允许您在GNOME应用程序中轻松实现DBus通信，包括与服务进行交互、调用方法、接收信号、查询属性等。使用这些API，您可以构建强大的DBus客户端应用程序，与其他应用程序和服务进行通信，以实现各种功能和协作。根据您的具体需求，您可以使用适当的API来执行相应的操作。
+
 # python例子
 
 ```
@@ -761,9 +1030,9 @@ dbus易于使用，因为它使用了消息的机制，而不是字节流的机�
 
 有message protocol和message bus这2个概念。
 
-system bus，在嵌入式里适合用。
+==system bus，在嵌入式里适合用。==
 
-session bus，这个主要是为gnome和KDE这样的桌面环境用的。
+==session bus，这个主要是为gnome和KDE这样的桌面环境用的。==
 
 dbus并不打算成为一个通用的ipc框架，所以它去掉了很多不必要的功能。
 
@@ -788,6 +1057,36 @@ dbus有一个类型系统。
 序列化，叫编码。
 
 反序列化，叫反编组。
+
+
+
+D-Bus具有自己的数据类型系统，它定义了消息中传输的数据的基本类型。这些类型用于在不同进程之间传递参数、返回值、信号和属性的值。以下是D-Bus的一些基本数据类型：
+
+1. **基本类型**：
+   - `byte`：8位有符号整数。
+   - `boolean`：布尔值，可以是真（1）或假（0）。
+   - `int16`：16位有符号整数。
+   - `uint16`：16位无符号整数。
+   - `int32`：32位有符号整数。
+   - `uint32`：32位无符号整数。
+   - `int64`：64位有符号整数。
+   - `uint64`：64位无符号整数。
+   - `double`：双精度浮点数。
+   - `string`：UTF-8编码的字符串。
+   - `object path`：用于表示D-Bus对象的路径。
+
+2. **复杂类型**：
+   - `array`：数组，可以包含相同类型的元素。例如，`ai` 表示32位整数的数组。
+   - `struct`：结构，可以包含多个不同类型的成员。例如，`(is)` 表示一个包含一个整数和一个字符串的结构。
+   - `variant`：变体，可以包含任何其他D-Bus类型的值。
+   - `dictionary`：字典，键值对集合，用于表示关联数组。例如，`a{ss}` 表示从字符串到字符串的字典。
+
+3. **特殊类型**：
+   - `unix file descriptor`：用于传输Unix文件描述符（文件句柄）。
+   - `signature`：表示D-Bus消息的签名，描述消息参数的类型。
+   - `object path`：用于表示D-Bus对象路径。
+
+这些基本数据类型和复杂类型允许D-Bus消息在不同的进程之间传输各种数据，从简单的整数和字符串到复杂的结构和字典。通过这些类型系统，D-Bus提供了一种通用的方式来实现进程间通信，使不同应用程序能够相互通信并交换数据。在使用D-Bus时，了解和使用正确的数据类型是非常重要的，以确保消息的正确传递和解释。
 
 ### 基本类型
 

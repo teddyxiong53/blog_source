@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 对于初级开发者来说launcher可能还有些陌生，它俗称“HomeScreen”
 
