@@ -6783,6 +6783,319 @@ Sstate是一种缓存机制，它可以存储已经构建过的文件、中间�
 
 Sstate是Yocto构建系统的一个重要特性，它有助于减少构建时间，特别是在重复构建相同软件包或相同配置时。
 
+# 每个目录下都生成的单独的recipe-sysroot目录不是很占用空间吗？为什么这样设计？
+
+Yocto Project 中的 "recipe-sysroot" 目录的设计是为了确保不同的 recipe 可以拥有独立的构建环境，从而防止彼此之间相互干扰，确保构建的隔离性。尽管 "recipe-sysroot" 目录可能占用一定的磁盘空间，但它带来了以下好处：
+
+1. 隔离性：不同的 recipe 可能需要不同版本或不同配置的构建工具和依赖库。通过为每个 recipe 创建独立的 "recipe-sysroot" 目录，可以确保这些依赖不会相互干扰。
+
+2. 可重现性：构建的隔离性有助于确保构建过程的可重现性。这对于软件包管理和系统部署非常重要。
+
+3. 简化配置：这种设计简化了配置管理，因为每个 recipe 可以明确指定它所需的构建工具和依赖库版本，而无需担心其他 recipe 的影响。
+
+虽然 "recipe-sysroot" 目录可能占用一些磁盘空间，但这是以提供更可靠和可维护的构建系统为代价的。可以通过适当管理磁盘空间来减小这种占用，例如定期清理不再需要的构建目录。
+
+
+
+# externalsrc的方式的仓库不要生成oe-works和oe-log的目录
+
+在 Yocto Project 中，`externalsrc` 的方式通常用于从外部源代码仓库（例如 Git 或 tarball）中获取源代码。如果生成了 `oe-works` 和 `oe-log` 目录，通常这是由 BitBake 中的 `devtool` 工具所导致的，用于在开发新的 Yocto 层、新的 recipe 或进行包的修改时跟踪操作。
+
+如果您希望避免生成这些目录，可以按照以下步骤操作：
+
+1. 在执行 `devtool` 命令时，使用 `--no-oe` 参数。这将阻止 `devtool` 在源代码目录中生成 `oe-works` 和 `oe-log` 目录。
+
+   ```bash
+   devtool modify <recipe-name> --no-oe
+   ```
+
+2. 如果已经生成了 `oe-works` 和 `oe-log` 目录，您可以手动删除它们。请确保不再需要这些目录之后再进行删除，以免丢失任何重要的操作历史。
+
+3. 使用 `devtool` 来管理您的修改，并避免手动在源代码目录中操作。`devtool` 可以帮助您跟踪和应用您的修改，而不会生成额外的文件。
+
+遵循这些步骤可以帮助您在 `externalsrc` 仓库中更好地管理源代码，而无需生成额外的工作目录。
+
+# DEFAULT_PREFERENCE 
+
+在 Yocto 中，`DEFAULT_PREFERENCE` 是一个用于设置软件包的默认偏好级别的变量。
+
+偏好级别（Preference）是一种标识不同软件包版本的方式，
+
+具有更高偏好级别的软件包版本将被选择用于构建。
+
+通常，==如果存在多个版本的软件包，Yocto 会根据一系列规则来选择使用哪个版本。==这些规则可以包括：
+
+1. 依赖关系：如果其他软件包依赖于特定版本的软件包，那么该版本的偏好级别可能会更高。
+
+2. 用户指定：如果开发人员明确指定了要使用的软件包版本，将优先选择这些版本。
+
+3. 默认偏好级别：`DEFAULT_PREFERENCE` 用于设置软件包的默认偏好级别，即使没有其他特定的规则或依赖关系。
+
+默认情况下，`DEFAULT_PREFERENCE` 的值为 "0"，表示默认偏好级别。
+
+==如果您将 `DEFAULT_PREFERENCE` 设置为 "-1"，那么软件包将具有较低的偏好级别，==
+
+这意味着其他具有更高偏好级别的软件包版本可能会被选择用于构建。
+
+这个变量通常用于控制软件包版本的优先级。如果您需要强制选择特定版本的软件包，最好使用其他方法，如 `PREFERRED_VERSION` 变量，而不仅仅依赖于 `DEFAULT_PREFERENCE`。
+
+# 300页pdf 梳理
+
+## 变量
+
+* 使用变量来保存配置信息。 
+* 变量都是大写的。
+* 变量的值都是字符串。
+* 为了便于配置，变量可以prepend、append、remove，还可以进行条件计算。
+* 在conf文件里的变量，是全局的。
+* 在bb、bbapend、bbclass里的变量，是local的。
+* 最高优先级的文件是build/local.conf文件里的变量，覆盖了其他的同名变量。
+* 不要在local.conf里进行变量的+=等行为。
+* overrides行为的格式是：`<VARIABLE>:<override> = "some_value"`
+* 可以给变量后面跟着`:MACHINE_NAME`来只对特定的machine生效。本质也是一个override机制。
+* 
+
+![image-20231103164659766](images/random_name/image-20231103164659766.png)
+
+## package变种
+
+* 多个package提供同一个功能，例如dropbear和openssh都是提供ssh功能。
+* yocto使用virtual package机制来处理这种情况。
+* 这种package之间的互斥的。
+
+常见的virtual package有这些：
+
+```
+virtual/bootloader
+virtual/kernel
+virtual/libc
+virtual/xserver
+```
+
+virtual package靠PREFERRED_PROVIDER 来选择：
+
+```
+PREFERRED_PROVIDER_virtual/kernel ?= "linux-meson"
+```
+
+## 版本选择
+
+* 默认是选择更高的版本。但是如果DEFAULT_PREFERENCE = "-1"，那么优先选择较低的版本。
+* 可以通过PREFERRED_VERSION来指定版本。
+
+```
+PREFERRED_VERSION_linux-yocto = "5.14%"
+```
+
+## 选择要install的package
+
+* 在开发调试阶段，直接添加package是很方便的，不用去修改recipe文件。
+* 就是靠给IMAGE_INSTALL添加内容。
+
+## bitbake的使用
+
+* bitbake xx， bitbake xx-native。
+
+```
+bitbake -c listtasks virtual/kernel
+bitbake -c menuconfig virtual/kernel
+
+# 强制编译dropbear，执行它所有的task
+bitbake -f dropbare
+
+# 下载image需要的所有的内容
+bitbake --runall=fetch core-image-minimal
+```
+
+## shared state cached管理
+
+* bitbake把task的output存放带shared state 里。
+* 用来加快构建过程。
+* 这个目录随着时间增加会越来越大。你可以这样来清理老的数据。
+
+```
+poky/scripts/sstate-cache-management.sh -y -d --cache-dir=build/sstate-cache
+```
+
+## recipe
+
+* recipe文件的格式是：`<application-name>_<version>.bb`
+* recipe的输出是一组二进制package。包括：xx,  xx-doc, xx-dbg 等等。
+
+recipe可以使用的自动变量：
+
+```
+BPN  这个就是名字，从recipe文件的名字提取而来。是basic package name的意思。
+PN  在BPN的基础上加前缀或者后缀。前缀可以是：nativesdk-,后缀可以是：-native
+PV  package version，也是从recipe文件名里提取。
+BP  等于BP-PV
+```
+
+一个recipe文件可以看成3个部分：
+
+```
+header部分：提供的是what/who
+source部分：提供的是where
+task部分：提供的是how
+```
+
+## FILESPATH
+
+FILESPATH的值的组成：
+
+```
+基本部分：
+	dir/BP
+	dir/BPN
+	dir/files
+	在FILESEXTRAPATHS里的（默认是空）
+	上面的dir表示的是recipe的bb文件所在的目录。
+	
+override部分：
+	在FILESOVERRIDES里的。
+	
+```
+
+## 写task
+
+task用shell语法。
+
+有这些自动变量：
+
+```
+WORKDIR   recipe所在目录
+S      source目录
+B       build目录
+D        dest目录
+```
+
+![image-20231103194808811](images/random_name/image-20231103194808811.png)
+
+## kernel相关
+
+kernel被分为几个package：
+
+```
+kernel
+kernel-base
+kernel-dev
+kernel-modules
+```
+
+统一提供virtual/kernel这个package。
+
+几个相关的变量：
+
+```
+KERNEL_IMAGETYPE:默认是zImage
+KERNEL_EXTRA_ARGS
+INITRAMFS_IMAGE
+```
+
+## autotools 
+
+```
+EXTRA_OECONF  传递额外的配置项
+EXTRA_OEMAKE  
+```
+
+## useradd
+
+* 用来向image里添加用户。
+* 这个很常用，很多服务需要特别的user，避免使用root。
+* 在do_install之前要把需要的user和group创建好。
+* 参数：
+
+```
+USERADD_PARAM  传递给useradd
+GROUPADD_PARAM 传递给groupadd
+```
+
+举例：
+
+```
+inherit useradd
+USERADD_PACKAGES = "${PN}"
+USERADD_PARAM = "-u 1000 -d /home/user0 -s /bin/bash user0"
+do_install() {
+install -m 644 file0 ${D}/home/user0/
+chown user0:user0 ${D}/home/user0/file0
+}
+```
+
+## bin_package类
+
+* 用来处理一些预编译的二进制文件的。
+* 禁用do_configure和do_compile。
+* 提供do_install。
+* 把LICENSE设置为CLOSED（闭源的）
+
+## 文件的包含
+
+* 使用BBPATH来作为搜索文件的路径搜索。
+* 3个关键字：require、inherit、include。
+
+## 调试recipe
+
+* 编译过程的log都有。
+
+* 使用bitbake -e查看需要的变量。
+
+* 使用devshell来debug编译过程的错误：
+
+  ```
+  bitbake -c devshell xxx
+  ```
+
+## 硬件配置文件
+
+* 一个machine对应一个配置文件。
+* 配置文件一般在meta-bsp-xx/conf/machine/目录下。
+* 配置文件的名字，跟MACHINE变量的值是一模一样的的。
+
+machine的配置一般包括：
+
+```
+TARGET_ARCH
+
+PREFERRED_PROVIDER_virtual/kernel
+
+MACHINE_FEATURES
+
+SERIAL_CONSOLES
+
+KERNEL_IMAGETYPE
+
+```
+
+## image
+
+* image是toplevel的recipe。
+* image也是一个recipe，继承了core-image。
+
+image相关的自动变量：
+
+```
+IMAGE_BASENAME：默认是PN
+IMAGE_INSTALL 安装到image里的package列表。
+IMAGE_ROOTFS_SIZE
+IMAGE_FEATURES
+IMAGE_FSTYPE
+IMAGE_LINGUAS
+IMAGE_PKGTYPE
+IMAGE_POSTPROCESS_COMMANDS
+EXTRA_IMAGEDEPENDS
+
+```
+
+## package group
+
+package group是把一组package通过功能分组。或者其他依据进行分组。
+
+package group被image 的recipe使用。把一组package安装到image里。
+
+
+
 # 参考资料
 
 1、
