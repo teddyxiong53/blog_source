@@ -8,6 +8,52 @@ tags:
 
 --
 
+# 简介
+
+swupdate（Software Update）是一个用于Linux系统的开源工具，它专门设计用于执行OTA（Over-The-Air）固件升级。它旨在简化嵌入式系统的固件升级流程，并==提供了一种可配置和灵活的方式来管理==和应用升级。以下是关于swupdate的一些重要信息：
+
+1. **OTA升级支持：** swupdate专注于实现OTA升级，这意味着您可以通过网络或其他适当的通信渠道远程更新嵌入式Linux系统的固件，而无需物理访问设备。
+
+2. **配置文件驱动：** ==swupdate的配置文件非常重要，它们定义了升级过程中的行为。==这允许开发人员根据其特定需求进行自定义配置。配置文件包含升级源、目标设备、升级包和升级操作的信息。
+
+3. **支持多种升级源：** swupdate可以从多种来源获取升级包，包括本地文件、HTTP服务器、FTP服务器、USB设备等。这种多样性有助于满足不同的应用场景。
+
+4. **安全性：** swupdate关注升级的安全性。==它支持签名验证，以确保只有合法的升级包被应用到设备上==，从而减少潜在的安全风险。
+
+5. **插件体系结构：** swupdate具有插件体系结构，允许用户自定义处理升级包和升级操作。这使得可以根据需要添加新的功能或操作。
+
+6. **日志和反馈：** swupdate记录详细的日志信息，以帮助跟踪和排查升级问题。它还提供了反馈机制，可以将升级的状态和结果通知给相关方。
+
+7. **社区支持：** swupdate是一个开源项目，拥有活跃的社区，因此您可以获得广泛的支持和文档资源。
+
+总之，swupdate是一个强大的工具，可帮助嵌入式Linux系统开发人员实现OTA固件升级。它提供了配置灵活性、多种升级源支持、安全性以及可扩展性等关键功能，使其适用于各种嵌入式系统的固件升级需求。
+
+
+
+# swupdate发展历史
+
+swupdate的发展历史可以追溯到其最早的版本，然后不断演进和改进以适应不断变化的需求和技术。以下是swupdate的主要发展历史里程碑：
+
+1. **起初版本：** swupdate的早期版本出现在嵌入式Linux社区，最早的版本可能是一个简单的OTA升级工具，用于处理基本的固件更新。这些早期版本通常包含有限的功能和配置选项。
+
+2. **增强功能和插件体系结构：** 随着时间的推移，swupdate不断增加新的功能和改进。==一个重要的里程碑是引入了插件体系结构==，允许用户自定义升级操作和处理程序。这大大增加了工具的灵活性。
+
+3. **安全性改进：** 随着对嵌入式系统安全性的日益关注，swupdate也增加了对固件升级安全性的支持。这包括签名验证和其他安全增强功能，以确保只有受信任的升级包能够应用到系统中。
+
+4. **多种升级源支持：** swupdate逐渐增加了对不同升级源的支持，包括本地文件、HTTP服务器、FTP服务器、USB设备等。这使得工具适用于更广泛的应用场景。
+
+5. **日志和反馈：** 更多的日志和反馈机制被引入，以帮助开发人员更容易地跟踪和解决升级问题。
+
+6. **社区支持：** swupdate成为了一个活跃的开源项目，拥有一个积极的社区，使得工具得以不断改进和维护。社区支持为用户提供了广泛的资源和技术支持。
+
+swupdate的发展历史是一个持续演进的过程，以满足不断变化的嵌入式Linux固件升级需求。它已经成为一个强大的工具，广泛用于嵌入式系统和物联网（IoT）应用中，帮助开发人员实现远程和安全的固件升级。如有特定版本或更详细的发展历史信息需求，请查看swupdate的官方文档或参与社区讨论以获取更多信息。
+
+
+
+
+
+# 说明
+
 主要两种机制：
 
 AB系统
@@ -1045,7 +1091,90 @@ $(eval $(kconfig-package))
 
 amlogic做的修改也是不少的。有5个patch。
 
+Makefile里：
 
+```
+objs-y		:= core handlers
+libs-y		:= corelib ipc mongoose parser suricatta bootloader libsparse
+shareds-y	:= bindings
+tools-y		:= tools
+```
+
+## swupdate.h
+
+```
+主要结构体：
+struct swupdate_global_cfg
+struct swupdate_cfg 
+	包含了global_cfg
+主要函数：
+get_swupdate_cfg
+```
+
+
+
+# swupdate的 raw和flash有什么区别
+
+在 swupdate 中，"raw" 和 "flash" 都是升级源（upgrade source）的类型，它们用于指定从哪里获取固件升级包。虽然它们都用于获取升级包，但它们之间有一些区别：
+
+1. **"raw" 升级源：**
+   - "raw" 升级源表示您从本地文件系统或远程服务器获取升级包。
+   - 您可以指定升级包的路径或 URL，以便 swupdate 从该位置下载升级包。
+   - 这通常用于获取以原始二进制格式存储的升级包，它们可以是特定的固件映像或数据文件。
+
+2. **"flash" 升级源：**
+   - "flash" 升级源表示您从设备的闪存（flash）存储获取升级包。
+   - 您可以指定 UBI 卷、MTD 设备或其他闪存设备，以便 swupdate 从其中获取升级包。
+   - 这通常用于嵌入式系统，其中升级包存储在设备的闪存中，而不是从外部源下载。
+
+总的来说，区别在于 "raw" 升级源用于从外部位置获取升级包（如文件系统或远程服务器），而 "flash" 升级源用于从设备自身的闪存存储中获取升级包。选择使用哪种升级源取决于具体的应用场景和系统配置。如果您的升级包存储在设备内部的闪存中，您可能会使用 "flash" 升级源。如果升级包存储在外部服务器或文件系统中，您可以使用 "raw" 升级源。
+
+
+
+简单来说，就是nand用flash的，emmc用raw的（raw是默认的，不用写type）。
+
+# 一篇好文
+
+若使用原生的swupdate，则调用：
+
+```text
+当前处于A系统：
+
+swupdate -i /mnt/UDISK/<board>.swu -e stable,now_A_next_B
+
+当前处于B系统：
+
+swupdate -i /mnt/UDISK/<board>.swu -e stable,now_B_next_A
+```
+
+
+
+
+
+https://zhuanlan.zhihu.com/p/610030348
+
+# 签名
+
+```
+openssl dgst -sha256 -sign swupdate-priv.pem sw-description > sw-description.sig
+```
+
+这2个文件都要放到swu文件里的：
+
+```
+[TRACE] : SWUPDATE running :  [extract_sw_description] : Found file:
+        filename sw-description
+        size 882
+        checksum 0xe90f VERIFIED
+[TRACE] : SWUPDATE running :  [extract_sw_description] : Found file:
+        filename sw-description.sig
+        size 64
+        checksum 0x1f48 VERIFIED
+```
+
+
+
+https://sbabic.github.io/swupdate/signed_images.html
 
 # 参考资料
 
