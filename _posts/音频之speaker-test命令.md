@@ -7,7 +7,7 @@ tags:
 
 
 
-
+--
 
 这个也是alsa utils的一个。
 
@@ -166,3 +166,53 @@ speaker-test -t pink -c 8 -s 7
 speaker-test -t wav -c 8
 ```
 
+# 测试命令大全
+
+speaker-test是一个用于测试音频输出设备（如扬声器）的命令行工具。下面是一些speaker-test的常用测试命令的示例，以尽可能全面地展示其功能：
+
+1. 测试默认声道和采样率：
+   ````
+   speaker-test -t wav
+   ```
+
+2. 测试指定声道和采样率：
+   ````
+   speaker-test -c 2 -r 48000
+   ```
+
+3. 测试指定声道、采样率和持续时间：
+   ````
+   speaker-test -c 6 -r 44100 -l 10
+   ```
+
+4. 测试左声道：
+   ````
+   speaker-test -c 1 -l 1 -twav -lwav/left.wav
+   ```
+
+5. 测试右声道：
+   ````
+   speaker-test -c 1 -l 1 -twav -rwav/right.wav
+   ```
+
+6. 测试立体声：
+   ````
+   speaker-test -c 2 -l 1 -twav -lwav/left.wav -rwav/right.wav
+   ```
+
+7. 测试环绕声（5.1声道）：
+   ````
+   speaker-test -c 6 -l 1 -twav -cwav/front_left.wav -lwav/front_right.wav -rwav/rear_right.wav -lwav/rear_left.wav -swav/center.wav -swav/lfe.wav
+   ```
+
+8. 测试指定设备编号：
+   ````
+   speaker-test -D sysdefault:CARD=1
+   ```
+
+9. 测试指定设备名称：
+   ````
+   speaker-test -D hw:0,0
+   ```
+
+这些命令示例可以帮助您进行不同设置和配置的音频输出设备测试。请注意，具体命令可能因系统配置和硬件支持而有所变化，请根据您的实际环境和需求进行相应的调整。

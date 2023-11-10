@@ -333,6 +333,12 @@ enum {
 	snd_rawmidi_info_t *rawmidiinfo;
 ```
 
+## latency.c
+
+看看这个latency测试做了什么。
+
+
+
 # async机制分析
 
 是靠sigio来做的。
@@ -342,6 +348,127 @@ enum {
 这个库似乎不错。
 
 https://github.com/takaswie/alsa-ioctl-test
+
+# alsalisp
+
+lisp 和 alsa lisp 的区别
+
+Alsa lisp 只是用一些简单的内在函数实现了 lisp 的基本语法。
+
+但它不支持宏语法，太复杂了。
+
+除了简单的语法之外，alsa lisp 还实现了自己特殊的内部函数来调用 alsa-lib 本机函数。 
+
+alsa相关的内在函数包括：
+
+```
+static const struct intrinsic snd_intrinsics[] = {
+        { "Acall", F_acall },
+        { "Aerror", F_aerror },
+        { "Ahandle", F_ahandle },
+        { "Aresult", F_ahandle },
+        { "Asnderr", F_snderr },
+        { "Asyserr", F_syserr }
+    };
+```
+
+
+
+
+
+https://medium.com/@zpcat/alsa-lisp-in-alsa-lib-eb2fd497ecb3
+
+# aserver.c
+
+`aserver.c` 是 ALSA（Advanced Linux Sound Architecture）项目中的一个文件，它是 ALSA 库的一部分。该文件实现了 ALSA 的音频服务器（Audio Server）功能。
+
+音频服务器是 ALSA 中的一个重要组件，它提供了音频设备的管理和控制。aserver.c 文件包含了音频服务器的实现代码，其中包括与音频设备的连接、音频数据的传输、音频流的处理等功能。
+
+通过音频服务器，应用程序可以与音频设备进行交互，实现音频的输入和输出。它提供了一个统一的接口，使应用程序能够以统一的方式访问不同的音频设备，包括声卡、虚拟音频设备等。
+
+具体来说，aserver.c 文件可能包含了以下功能的实现：
+
+1. 设备管理：与音频设备的连接和初始化，包括打开设备、设置采样率、通道数等。
+
+2. 数据传输：音频数据的读取和写入，包括从应用程序读取音频数据并发送到音频设备，或从音频设备读取音频数据并传递给应用程序。
+
+3. 音频流处理：对音频流进行处理，例如音频格式转换、音频效果处理、混音等。
+
+4. 控制和同步：提供控制音频服务器的接口，例如启动、停止、暂停音频流，以及同步音频流的时钟等。
+
+需要注意的是，aserver.c 只是 ALSA 音频服务器的一部分，整个 ALSA 项目包含了更多的组件和文件，用于提供全面的音频处理和音频设备管理功能。
+
+## aserver过时了吗
+
+根据我所了解的信息，`aserver` 在 ALSA 项目中已经过时了。在较新版本的 ALSA 中，`aserver` 不再被广泛使用或推荐作为音频服务器的实现。
+
+替代 `aserver` 的是 PulseAudio，它是一个现代的音频服务器系统，提供了更强大和灵活的音频管理和处理功能。PulseAudio 在大多数 Linux 发行版中成为默认的音频服务器。它提供了高级的音频路由、音量控制、设备管理、混音以及网络音频功能等。
+
+PulseAudio 具有更好的多应用程序支持、音频设备切换的灵活性以及更好的音频处理和混音能力。它还提供了强大的插件架构，可以扩展和自定义其功能。
+
+虽然 `aserver` 过时了，但 ALSA 仍然是 Linux 和许多嵌入式系统上的音频架构的基础。应用程序可以直接使用 ALSA API 来与音频设备进行交互，而不必依赖于 `aserver`。
+
+如果您需要在 Linux 系统上进行音频处理或音频管理，推荐使用 PulseAudio 或其他现代的音频服务器来替代 `aserver`。
+
+# pcm_local.h
+
+
+
+# alsa的namehint是什么
+
+在ALSA（Advanced Linux Sound Architecture）中，==namehint是一种用于指定音频设备名称的机制。==它提供了==一种灵活的方式来标识和选择音频设备。==
+
+通常情况下，ALSA会根据配置文件和硬件信息自动分配设备名称，例如"hw:0"、"hw:1"等。然而，有时候这些默认的设备名称可能不够直观或不够具有描述性。
+
+==namehint允许用户为音频设备提供一个更具描述性的名称，以替代默认的设备名称。==这个名称可以是任意字符串，用于更好地标识和识别音频设备。例如，可以将namehint设置为"External USB Sound Card"，以更清晰地表示设备的身份和类型。
+
+使用namehint可以提高音频设备的可识别性和可用性。它可以在ALSA配置文件中进行设置，或者通过ALSA库的API进行动态设置。通过指定namehint，用户可以更方便地选择和操作音频设备，而不仅仅依赖于默认的设备名称。
+
+
+
+```
+# show all name hints also for definitions without hint {} section
+defaults.namehint.showall off
+# show just basic name hints
+defaults.namehint.basic on
+# show extended name hints
+defaults.namehint.extended off
+```
+
+这段代码片段是ALSA配置文件中的设置，用于控制在设备定义中显示和使用namehint的方式。
+
+- `defaults.namehint.showall off`：该设置指示ALSA不显示没有namehint的设备定义。也就是说，只有带有namehint的设备定义会被显示。
+
+- `defaults.namehint.basic on`：该设置指示ALSA显示基本的namehint。基本的namehint是指给设备定义提供的简单、常规的名称提示。
+
+- `defaults.namehint.extended off`：该设置指示ALSA不显示扩展的namehint。扩展的namehint是指给设备定义提供更详细、更具描述性的名称提示。
+
+通过这些设置，可以控制ALSA在设备定义中显示不同级别的namehint。可以根据实际需要，选择显示基本的名称提示还是更详细的名称提示。
+
+# snd_ctl和snd_hctl区别
+
+==h表示high level的意思。==
+
+snd_hctl包含了snd_ctl的指针，相当于它的子类。
+
+hclt的函数都是转而调用ctl的函数的。
+
+mixer里都是调用的hctl的接口。
+
+```
+snd_mixer_attach
+snd_hctl_open
+```
+
+# alsa mixer的simple_none.c和simple_abst.c 关系
+
+`simple_none.c`和`simple_abst.c`是ALSA库中用于混音器（mixer）抽象层的两个不同实现文件。
+
+`simple_none.c`是一个简单的混音器实现，它提供了最基本的混音器功能。它不依赖于任何特定的硬件或底层驱动程序，而是提供了一个虚拟的混音器接口，用于处理音频控制和调整音量等操作。这个实现适用于那些不需要硬件混音器支持的场景。
+
+另一方面，`simple_abst.c`是一个更复杂和抽象的混音器实现。它建立在`simple_none.c`的基础上，并提供了更多的功能和灵活性。它可以与不同类型的硬件混音器进行交互，包括硬件混音器的控制和配置。这个实现可以根据底层硬件的不同进行定制和扩展。
+
+总结起来，`simple_none.c`是一个简单的混音器实现，提供基本的混音器功能，而`simple_abst.c`是一个更复杂和抽象的混音器实现，提供更多的功能和与硬件混音器的交互。它们在ALSA库中属于混音器抽象层的不同实现文件，用于处理音频控制和调整音量等操作。
 
 # 参考资料
 

@@ -1097,6 +1097,71 @@ BitBake 的 `data_smart.py` 文件中的 `DataSmart` 类主要用于实现 BitBa
 
 总之，`DataSmart` 类的设计思想主要是关于提高 BitBake 构建系统的效率、性能和智能性，以确保构建任务能够更快速和可靠地完成。这有助于嵌入式系统和嵌入式 Linux 发行版的构建过程。如果您需要更详细的信息，您可能需要查看 BitBake 的源代码和文档来了解更多关于 `DataSmart` 类的具体实现和用途。
 
+
+
+smart_dict 是 BitBake 的一个特定功能，==用于管理和操作 BitBake 中的元数据信息。==
+
+在 BitBake 中，==元数据通常以类似于字典的数据结构进行表示，==
+
+其中包含有关软件包、任务、依赖关系等的信息。
+
+smart_dict 是 BitBake 用于处理这些元数据的一种内部数据结构。
+
+以下是一些有关 smart_dict 的要点：
+
+1. 数据结构：smart_dict 是一种字典结构，允许存储键值对。在 BitBake 中，这些键值对通常用于描述任务、变量和元数据信息。
+
+2. 类型：==smart_dict 具有多个不同的类型，包括任务数据字典（TaskDataDict）、变量数据字典（VarDataDict）等。每种类型都用于存储不同类型的信息。==
+
+3. 任务数据字典（TaskDataDict）：这种类型的 smart_dict 用于存储任务（Task）的信息，如任务的依赖关系、输入文件、输出文件等。这对于构建系统中的任务管理非常重要。
+
+4. 变量数据字典（VarDataDict）：这种类型的 smart_dict 用于存储变量（Variable）的信息，包括变量的值、继承关系等。BitBake 中的变量在构建过程中具有关键作用。
+
+5. 使用方法：smart_dict 可以用于读取和设置元数据信息，通常通过 BitBake 中的 Python 函数和类进行操作。您可以使用普通字典的方式访问和操作其中的数据。
+
+6. 扩展性：smart_dict 具有一定的扩展性，允许 BitBake 用户定义自定义任务和变量，以适应特定项目的需求。
+
+总的来说，smart_dict 在 BitBake 中扮演着关键角色，用于管理元数据信息，包括任务、变量和其他构建相关信息。通过适当操作 smart_dict，您可以自定义和配置 BitBake 构建系统以满足项目的需求。要深入了解 smart_dict 的详细信息和操作方式，您可以参考 BitBake 的官方文档或相关教程。
+
+## `__setvar_keyword__ = [":append", ":prepend", ":remove"]`
+
+在 BitBake 构建系统中，`__setvar_keyword__` 是一个内部变量，用于定义 BitBake 中变量设置（Variable Set）的关键字。这些关键字用于更改或修改变量的值。根据您提供的定义，`__setvar_keyword__` 包含三个关键字：":append"、":prepend" 和 ":remove"。以下是它们的作用：
+
+1. `:append`：这个关键字用于将值追加到一个变量的末尾。如果你执行变量设置操作，如 `VAR = "value"`，然后使用 `:append` 操作，它将添加值到变量的末尾，而不是覆盖整个变量值。
+
+2. `:prepend`：与 `:append` 类似，但它将值添加到变量的开头。
+
+3. `:remove`：这个关键字用于从变量中删除指定的值。如果变量中包含多个值，`:remove` 将删除所有匹配的值。
+
+这些关键字通常在 BitBake 的 `.bb` 文件中使用，以定义变量的操作。例如：
+
+```python
+SOME_VARIABLE = "initial_value"
+SOME_VARIABLE[__setvar_keyword__] = ":append"
+SOME_VARIABLE += "new_value"
+```
+
+在上述示例中，`SOME_VARIABLE` 初始值为 "initial_value"，然后使用 `:append` 操作将 "new_value" 追加到变量的末尾，结果是 `SOME_VARIABLE` 现在包含 "initial_valuenew_value"。这些关键字使您能够更灵活地管理变量值，而不必覆盖整个值。
+
+## bitbake_renamed_vars
+
+`bitbake_renamed_vars` 是 BitBake 构建系统中的一个特定变量，用于管理已经重命名的变量。在 BitBake 中，变量名称可能会根据版本和最佳实践的变化而发生变化，==为了向后兼容性和平稳过渡，BitBake 允许在某个版本中为变量指定新名称，并在旧名称上添加别名。==
+
+`bitbake_renamed_vars` 变量的作用是跟踪这些变量的重命名信息，以确保在使用旧名称时，BitBake 仍然能够正确识别和处理这些变量，而不会导致错误。这对于项目的平稳升级和迁移非常重要。
+
+`bitbake_renamed_vars` 的值通常是一个字典，其中包含了被重命名的变量和它们的新名称的映射。例如：
+
+```python
+bitbake_renamed_vars = {
+    "OLD_VARIABLE_NAME": "NEW_VARIABLE_NAME",
+    "ANOTHER_OLD_VARIABLE": "ANOTHER_NEW_VARIABLE"
+}
+```
+
+在这个示例中，`OLD_VARIABLE_NAME` 被重命名为 `NEW_VARIABLE_NAME`，`ANOTHER_OLD_VARIABLE` 被重命名为 `ANOTHER_NEW_VARIABLE`。
+
+通过使用 `bitbake_renamed_vars`，BitBake 能够在处理脚本和 .bb 文件时检测到旧变量名，并将其转换为新名称，以确保构建系统的正常运行。这有助于简化项目升级的过程，因为旧的脚本和配置文件仍然可以使用，而不必立即修改以适应新的变量名称。这样，您可以逐步迁移到新的变量名称，而不会破坏旧的构建过程。
+
 # 参考资料
 
 1、bitbake 使用指南

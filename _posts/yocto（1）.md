@@ -1723,10 +1723,6 @@ EXTRA_IMAGE_FEATURES = "read-only-rootfs"
 
 
 
-注意与`FILES`差异，`FILES`是指明软件包内部哪些文件需要参与打包，
-
-而`IMAGE_INSTALL`是指明哪个软件包需要参与打包。
-
 
 
 这个文档不错。对于一些概念解释比较清楚。
@@ -1735,7 +1731,7 @@ https://www.icode9.com/content-4-1287459.html
 
 
 
-
+## `PACKAGE_INSTALL` 和 `IMAGE_INSTALL` 
 
 `PACKAGE_INSTALL` 和 `IMAGE_INSTALL` 是 Yocto Project 构建系统中用于管理软件包安装的变量，它们之间存在一些关系，但也有一些重要的区别。
 
@@ -2646,7 +2642,7 @@ do_compile                     Compiles the source in the compilation directory
 
 
 
-
+# phytec的confluence
 
 这个phytec对外可见的confluence，挺好的
 
@@ -6402,6 +6398,24 @@ Yocto 构建系统的 override 机制非常灵活，==允许您覆盖（override
 
 总之，Yocto 提供了广泛的 override 机制，使您能够根据项目需求定制构建过程中的各种配置和行为。这种灵活性使得 Yocto 极具适应性，可以用于构建各种不同类型的嵌入式 Linux 系统。
 
+
+
+这段注释解释了 BitBake 中变量覆盖（overrides）的处理方式。
+
+在 BitBake 中，覆盖是一种机制，允许您在不同条件下设置变量的值。
+
+根据注释中的说明，这里有一些关键概念：
+
+1. **覆盖处理顺序**：==覆盖是按照从左到右的顺序处理的，后面定义的覆盖会覆盖前面定义的覆盖。这意味着最后定义的覆盖具有最高的优先级。==
+
+2. **变量覆盖的例子**：在示例中，有一个变量 `<foo>:arm`，它会覆盖变量 `<foo>` 当 `${TARGET_ARCH}` 是 `arm` 时。同样，`<foo>:qemuarm` 会覆盖 `<foo>` 当 `${MACHINE}` 是 `'qemuarm'` 时。
+
+3. **多条件覆盖**：如果您使用组合，例如 `<foo>:qemuarm:arm`，那么 `<foo>:qemuarm:arm` 将覆盖 `<foo>:qemuarm`，然后 `<foo>` 将被 `<foo>:qemuarm:arm` 的值覆盖。
+
+4. ==**特殊覆盖**：最后，`<foo>:forcevariable` 覆盖任何标准变量，具有最高的优先级。==
+
+这种机制允许您根据不同条件设置变量的值，以适应不同的构建环境和需求。这对于在 Yocto 构建中配置和管理软件包非常有用，因为它允许您在不同的目标体系结构、机器类型或其他条件下自定义软件包的行为。
+
 # yocto libc-glibc 特性
 
 在 Yocto 中，`libc-glibc` 是指使用 GNU C 库（glibc）作为标准 C 库的特性。
@@ -6636,6 +6650,12 @@ UBI_VOLNAME = "rootfs"
 
 例如，通过设置 `R` 为 `IMAGE_ROOTFS`，您可以轻松地在构建过程中访问和操作生成的根文件系统，如创建镜像文件或将其安装到目标设备的存储介质中。
 
+## IMAGE_ROOTFS
+
+这个就相当于buildroot的target目录。表示跟板端基本一致的一个rootfs目录。
+
+可以对这个目录下的文件进行一些删除操作来减小镜像大小。
+
 
 
 # BB_HASHEXCLUDE_COMMON
@@ -6795,7 +6815,41 @@ Yocto Project 中的 "recipe-sysroot" 目录的设计是为了确保不同的 re
 
 虽然 "recipe-sysroot" 目录可能占用一些磁盘空间，但这是以提供更可靠和可维护的构建系统为代价的。可以通过适当管理磁盘空间来减小这种占用，例如定期清理不再需要的构建目录。
 
+# externalsrc
 
+`externalsrc.bbclass` 是 Yocto Project 提供的一个类，
+
+用于启用使用现有源代码树（通常是外部的）来构建软件，
+
+而不是使用常规的下载、解压缩和应用补丁的流程。
+
+这对于需要集成外部源代码树的软件包非常有用，以便在构建过程中使用现有的源代码。
+
+下面是如何使用 `externalsrc.bbclass` 的基本步骤：
+
+1. **在 `local.conf` 或 `.bb` 文件中包含 `externalsrc.bbclass`**：要使用 `externalsrc.bbclass`，您需要==将其添加到全局的 `INHERIT` 变量中，==以启用此类。在 `local.conf` 或特定 `.bb` 文件中，添加以下行：
+
+   ```bitbake
+   INHERIT += "externalsrc"
+   ```
+
+2. **设置 `EXTERNALSRC` 变量**：为了告诉 Yocto 使用哪个外部源代码树，您需要设置 `EXTERNALSRC` 变量，将其指向包含源代码的目录。这通常在 `.bb` 文件中进行设置，例如：
+
+   ```bitbake
+   EXTERNALSRC:pn-myrecipe = "/path/to/my/source/tree"
+   ```
+
+   ==其中 `myrecipe` 是您的软件包的名称，`pn-` 前缀是包名的推荐前缀，确保 `EXTERNALSRC` 变量与您的软件包关联。==
+
+3. **配置源和构建目录**：默认情况下，`externalsrc.bbclass` 将源代码放在 `S` 变量指定的目录中，而构建产物放在 `B` 变量指定的目录中。这使得源代码和构建产物分开，以避免混淆。如果情况需要，您可以通过设置 `EXTERNALSRC_BUILD` 变量来将构建目录设置为与源代码相同的目录。
+
+   ```bitbake
+   EXTERNALSRC_BUILD:pn-myrecipe = "/path/to/my/source/tree"
+   ```
+
+   这将使源和构建目录相同。
+
+通过执行上述步骤，您可以使用 `externalsrc.bbclass` 类在 Yocto 构建过程中使用外部源代码树构建软件包。这对于需要将外部代码集成到 Yocto 项目中的软件包非常有用。确保在设置 `EXTERNALSRC` 变量时，将其指向正确的源代码目录。
 
 # externalsrc的方式的仓库不要生成oe-works和oe-log的目录
 
@@ -7093,6 +7147,442 @@ EXTRA_IMAGEDEPENDS
 package group是把一组package通过功能分组。或者其他依据进行分组。
 
 package group被image 的recipe使用。把一组package安装到image里。
+
+
+
+# DISTRO_FEATURES和IMAGE_INSTALL的关系
+
+实现在编译镜像的时候自动编译hello。
+
+在machine对应的conf里加上：
+
+```
+DISTRO_FEATURES:append = " hello"
+```
+
+如果要编译时自动安装到image里，那么要在amlogic-yocto.bb文件里的IMAGE_INSTALL里加上：
+
+```
+IMAGE_INSTALL:append = " hello "
+```
+
+这就是区别和关系。
+
+除了在IMAGE_INSTALL里添加，还可以在`RDEPENDS_packagegroup-amlogic-baserootfs`添加。（推荐用这种方式）。
+
+# yocto怎样让系统可以同时运行32位和64位的可执行文件
+
+要使 Yocto 构建系统生成同时支持 32 位和 64 位可执行文件的系统，您可以使用 Yocto Project 中的 Multilib 特性。Multilib 允许您构建并运行多个不同 ABI（Application Binary Interface）的可执行文件，包括 32 位和 64 位。以下是实现这一目标的一般步骤：
+
+1. **配置 Multilib**：
+   在您的 `local.conf` 文件中配置 `MULTILIBS` 变量以启用 Multilib。您可以指定要构建的 ABI 和架构的组合。例如，以下是一个配置示例，以同时支持 32 位和 64 位 ARM 架构：
+
+   ```shell
+   MULTILIBS = "multilib:lib32"
+   DEFAULTTUNE_virtclass-multilib-lib32 = "armv7athf-neon"
+   require conf/multilib.conf
+   ```
+
+   上述配置启用了 `lib32` 的 Multilib，指定了默认的 32 位 ARM 架构。
+
+2. **配置软件包支持 Multilib**：
+   在您的 Yocto 构建中，确保要构建的软件包支持 Multilib。大多数 Yocto Project 自带的软件包已经支持 Multilib，但如果您使用了自定义软件包，可能需要进行适当的配置。
+
+3. **构建系统**：
+   运行 BitBake 命令以构建您的目标映像，同时构建 32 位和 64 位版本的可执行文件。
+
+4. **在运行时选择**：
+   在运行时，您可以选择要运行的可执行文件的 ABI。这通常涉及在目标设备上选择适当的环境变量或执行文件，以确保选择正确的 32 位或 64 位版本。
+
+请注意，支持 32 位和 64 位的 Multilib 需要适当的交叉编译工具链配置，以生成不同 ABI 的二进制文件。确保在 Yocto 构建系统中正确配置工具链以支持所需的 ABI。此外，还需要确保库文件和头文件正确分布，以使两种 ABI 的可执行文件都能够找到所需的依赖项。
+
+总之，通过使用 Yocto Project 中的 Multilib 特性，您可以使系统能够同时运行 32 位和 64 位的可执行文件，为多架构的嵌入式系统提供了灵活性。
+
+## poky\meta\conf\multilib.conf
+
+```
+MULTILIB_GLOBAL_VARIANTS ?= "lib32 lib64 libx32"
+
+```
+
+
+
+构建系统提供了构建具有不同目标优化或架构格式的库并将它们组合成一个系统映像的能力。
+
+您可以根据特定用例的需要将映像中的不同二进制文件链接到不同的库。此功能称为“Multilib”。
+
+一个例子是，您的系统大部分是使用 32 位库以 32 位模式编译的，
+
+但您有一些大型的东西，例如数据库引擎，它需要是 64 位应用程序并使用 64 位库。 
+
+==Multilib 允许您充分利用 32 位和 64 位库。==
+
+虽然 Multilib 功能最常用于 32 位和 64 位差异，但构建系统使用的方法有利于不同的目标优化。
+
+您可以编译一些二进制文件以使用一组库，而编译其他二进制文件以使用另一组库。
+
+这些库在架构、编译器选项或其他优化方面可能有所不同。
+
+一个例子：
+
+```
+MACHINE = "qemux86-64"
+require conf/multilib.conf
+MULTILIBS = "multilib:lib32"
+DEFAULTTUNE:virtclass-multilib-lib32 = "x86"
+```
+
+
+
+```
+SUMMARY = "An example of a multilib image"
+#
+# This example includes a lib32 version of bash into an otherwise standard
+# sato image. It assumes a "lib32" multilib has been enabled in the user's
+# configuration (see the example conf files for examples of this.)
+#
+
+# First include a base image to base things off
+require recipes-graphics/images/core-image-weston.bb
+
+# Now add the multilib packages we want to install
+IMAGE_INSTALL += "lib32-bash"
+```
+
+## poky\meta\classes\multilib.bbclass
+
+
+
+# image_types.bbclass
+
+这个就是配置不同的文件系统类型的。
+
+相当于buildroot的fs目录下的行为。
+
+那怎么打包cpio和squashfs的？
+
+# 打包配置文件在哪里
+
+aml-comp\prebuilt\hosttools\aml-image-packer\a5
+
+这个目录下。
+
+# yocto使用外部工具链toolchain应该怎么配置
+
+在 Yocto Project 中使用外部工具链（external toolchain）是为了交叉编译嵌入式系统的软件时，使用预先构建的交叉编译工具链而不是 Yocto 默认提供的工具链。这在某些情况下非常有用，特别是当您需要与特定的硬件或操作系统版本进行交叉编译时。
+
+以下是配置 Yocto Project 以使用外部工具链的一興步骤：
+
+1. **获取或构建外部工具链**：
+   首先，您需要获取或构建适合您的目标架构和操作系统的外部工具链。这通常由外部供应商或项目提供。确保工具链的路径、名称和版本是清楚的。
+
+2. **定义外部工具链路径**：
+   在您的 Yocto 项目的配置文件（通常是 `local.conf`）中，您需要定义外部工具链的路径。可以使用 `EXTERNAL_TOOLCHAIN` 变量来指定工具链的路径，例如：
+
+   ```shell
+   EXTERNAL_TOOLCHAIN = "/path/to/your/toolchain"
+   ```
+
+   这会告诉 Yocto 使用指定路径的工具链进行交叉编译。
+
+3. **选择目标架构和 ABI**：
+   在配置文件中，您需要定义要交叉编译的目标架构和 ABI。这通常是使用 `TARGET_ARCH` 和 `TUNE_FEATURES` 变量完成的。例如，如果您的工具链是针对 ARM 架构的，您可以设置如下：
+
+   ```shell
+   TARGET_ARCH = "arm"
+   TUNE_FEATURES = "armv7a"
+   ```
+
+4. **重新构建**：
+   这时，您需要重新构建您的 Yocto 项目。确保运行 `bitbake` 命令以重新构建您的目标映像，以便使用外部工具链进行交叉编译。
+
+5. **验证工具链的配置**：
+   在构建期间，确保 Yocto 使用了指定的外部工具链。查看构建日志和输出以确保交叉编译使用了正确的工具链。
+
+配置 Yocto 以使用外部工具链需要谨慎配置和测试，以确保交叉编译的正确性和可靠性。根据外部工具链的具体要求，您可能需要进行更多的配置步骤。
+
+
+
+
+
+您可能希望使用外部工具链作为开发的一部分。如果是这种情况，您需要完成的基本步骤如下：
+
+了解已安装的工具链所在的位置。对于需要构建外部工具链的情况，您需要采取单独的步骤来构建和安装工具链。
+
+==确保通过 BBLAYERS 变量将包含工具链的层添加到 bblayers.conf 文件中。==
+
+将 local.conf 文件中的 EXTERNAL_TOOLCHAIN 变量设置为安装工具链的位置。
+
+工具链配置非常灵活且可定制。
+
+它主要由 TCMODE 变量控制。
+
+此变量控制要包含源目录中的 meta/conf/distro/include 目录中的 tcmode-*.inc 文件。
+
+TCMODE 的默认值为“default”，它告诉 OpenEmbedded 构建系统使用其内部构建的工具链（即 tcmode-default.inc）。
+
+然而，其他模式也被接受。
+
+特别地，“external-*”指的是外部工具链。 
+
+Mentor Graphics Sourcery G++ 工具链就是一个例子。
+
+对该工具链的支持位于 https://github.com/MentorEmbedded/meta-sourcery/ 的单独元源层中。
+
+有关如何使用该层的详细信息，请参阅其 README 文件。
+
+==外部工具链层的另一个例子是支持ARM发布的GNU工具链的meta-arm-toolchain。==
+
+您可以通过阅读 Yocto 项目参考手册的变量术语表中有关 TCMODE 变量的信息来找到更多信息。
+
+
+
+对于所有嵌入式 Linux 开发人员来说，交叉编译工具链是基本工具集的一部分，
+
+因为它们允许为特定的 CPU 架构构建代码并进行调试。
+
+==直到几年前，CodeSourcery 还在为各种架构提供大量高质量的预编译工具链，但已逐渐停止这样做。==（因为被商业公司收购了）
+
+ ==Linaro 提供了一些免费的工具链，但仅针对 ARM 和 AArch64。== 
+
+==kernel.org 有一套适用于更广泛架构的预构建工具链，但它们是裸机工具链（无法构建 Linux 用户空间程序）并且很少更新。==
+
+为了填补这一空白，Bootlin 很高兴向嵌入式 Linux 社区宣布推出新服务：toolchains.bootlin.com。
+
+该网站提供了大量交叉编译工具链，可用于多种体系结构和多种变体。该工具链基于 gcc、binutils 和 gdb 的经典组合以及 C 库。目前我们总共提供了 138 个工具链，涵盖了以下多种组合：
+
+- 架构：AArch64（小端和大端）、ARC、ARM（小端和大端、ARMv5、ARMv6、ARMv7）、Blackfin、m68k（Coldfire 和 68k）、Microblaze（小端和大端）、MIPS32 和 MIPS64（小端和大端） endian，具有各种指令集变体）、NIOS2、OpenRISC、PowerPC 和 PowerPC64、SuperH、Sparc 和 Sparc64、x86 和 x86-64、Xtensa
+- C 库：GNU C 库、uClibc-ng 和 musl
+- 版本：对于每种组合，我们提供了一个稳定版本，该版本使用稍旧但更成熟的 gcc、binutils 和 gdb 版本，并且我们提供了具有最新版本的 gcc、binutils 和 gdb 的前沿版本。
+
+
+
+这些工具链是使用 Buildroot 构建的，但可用于任何目的：构建 Linux 内核或引导加载程序，作为您最喜欢的嵌入式 Linux 构建系统的预构建工具链等。这些工具链以 tarball 形式提供，以及许可信息和有关如何在需要时重建工具链的说明。
+
+## tcmode-default.inc
+
+poky\meta\conf\distro\include\tcmode-default.inc
+
+
+
+## 配置外部工具链的意义
+
+在某些场景下，yocto有需要配置下外部工具链的需求，但是很少。我们通常编译还是使用OE或者linaro提供的编译链即可。例如以下情景可以考虑外部工具链：
+
+1）减少编译时间，==编译链的编译和生成可以说是最耗时的==，使用外部（预制）的工具链，对于单个模块可以减少70%左右的编译时间，对于image也能减少50%的编译时间。但是对于减少编译时间的话，更好的方式是使用cache机制，这个后面有机会进行介绍。
+2）此外就是某些模块使用默认的工具链，它不符合格式要求。例如我们一个uboot或者是别的引导image需要一个64位的，但是我们这个kernel是32位的，虽然这种情况很少，但是，当我们想要编出指定指定架构的模块时，可以使用一个对应的外部工具链
+3）或者说某些模块默认的工具链编译有错，例如一个QT模块，它有对应的工具链要求。也就是编译要求器，那我们就找个外部的即可。
+其实针对单个模块编译时，外部工具链能做的事，我们都可以用SDK更方便的代替，==如果是单个模块的编译需求时，更推荐使用SDK！。==
+
+## TCMODE和EXTERNAL_TOOLCHAIN的配置
+
+设置TCMODE，为外部source。配置EXTERNAL_TOOLCHAIN为外部工具链的路径
+
+```
+TCMODE ?= "external-sourcery"
+EXTERNAL_TOOLCHAIN = "下载的工具链目录"
+```
+
+==其中TCMODE会自动进行很多处理，被别的地方所调用。==
+
+同时也会去检查EXTERNAL_TOOLCHAIN的配置是否准确。
+
+## 配置初始化脚本
+
+当配置好上述后，[编译过程](https://so.csdn.net/so/search?q=编译过程&spm=1001.2101.3001.7020)中如果有别的环境变量配置项，需要手动执行的话，可以使用个初始化脚本，类似oe-init。
+
+```powershell
+EXTERNAL_TOOLCHAIN_SETUP_SCRIPT = "XXX/setup"
+```
+
+其中TCMODE会自动进行很多处理，被别的地方所调用。同时也会去检查EXTERNAL_TOOLCHAIN的配置是否准确。
+
+其中setup的脚本，可以是根据编译错误进行的fix操作。
+
+```powershell
+export TARGET_PREFIX = aarch64-none-linux-gnu-
+```
+
+启动编译后，如果配置的外部工具链生效，对应的Build Configuration的输出中就包含了相应的配置，也可以对编译出来的产物file查看。
+
+## 使用clang
+
+https://github.com/kraj/meta-clang/issues/335
+
+## nxp的一个问题
+
+deb的不支持multilib。
+
+rpm的支持multilib。
+
+https://community.nxp.com/t5/i-MX-Processors/Adding-multilib-in-Yocto-5-4-24-for-iMX8MMini-EVK/m-p/1232903
+
+## 参考资料
+
+1、
+
+https://stackoverflow.com/questions/62517431/how-to-use-external-toolchain-with-yocto
+
+2、
+
+https://docs.yoctoproject.org/dev-manual/external-toolchain.html#optionally-using-an-external-toolchain
+
+3、这个pdf文档不错。讲到多种工具链的情况。
+
+https://elinux.org/images/c/c8/ExternalToolchainsInYocto.pdf
+
+4、
+
+https://bootlin.com/blog/free-and-ready-to-use-cross-compilation-toolchains/
+
+5、
+
+https://elinux.org/Toolchains
+
+6、
+
+https://blog.csdn.net/weixin_42352795/article/details/131505860
+
+7、这篇文章很好。
+
+https://www.yoedistro.org/posts/2020-04-09_64-bit-kernels-with-32-bit-userspace/
+
+# HOST_PREFIX
+
+HOST_PREFIX="aarch64-poky-linux-"
+
+# yoe distro
+
+这个是一个基于yocto的发行版。
+
+文档写得好。
+
+https://github.com/YoeDistro/yoe-distro/tree/master/docs#yoe-documentation
+
+## multilib可以有很多
+
+https://elinux.org/images/e/e6/ELC-Yocto-Crosstool-ng.pdf
+
+```
+MULTILIBS += "multilib:libmble”
+MULTILIBS += "multilib:libmbbs”
+MULTILIBS += "multilib:libmbp”
+...
+MULTILIBS += "multilib:libmblem64bspmfpd”
+
+
+22 multilibs defined
+¬ armrm, armv5tesoftfp, armv5tehard, armnofp, armv7nofp, armv7fpsoftfp, armv7fphard, armv6mnofp,
+armv7mnofp, armv7emnofp, armv7emfpsoftfp, armv7emfphard, armv7emdpsoftfp, armv7emdphard,
+armv8mbasenofp, armv8mmainnofp, armv8mmainfpsoftfp, armv8mmainfphard, armv8mmaindpsoftfp,
+armv8mmaindphard
+```
+
+https://github.com/Xilinx/meta-xilinx/blob/rel-v2020.1/meta-xilinx-bsp/conf/machine/microblaze-tc.conf
+
+# rdk使用yocto
+
+https://wiki.rdkcentral.com/display/RDK/64+bit+kernel+migration+for+Rpi3+using+linux+kernel+5.10.31
+
+# work-shared
+
+`work-shared` 是 Yocto Project 构建系统中的一个特性，用于实现在多个不同的目标设备之间共享构建输出（work directory）。这有助于提高构建效率，减少不同目标设备之间重复的构建工作。
+
+通常情况下，Yocto Project 会为每个目标设备（例如不同的硬件平台）生成独立的构建目录，以确保构建输出和工具链与特定设备相关。这意味着对于每个目标设备，Yocto 会重新构建相同的软件包，这会浪费时间和资源。
+
+使用 `work-shared` 特性，您可以配置 Yocto 以共享某些构建输出和工具链，从而避免不必要的重复构建。这可以通过以下步骤实现：
+
+1. **配置 `work-shared` 特性**：在您的 Yocto 项目配置中，设置 `INHERIT += "work-shared"`。这将启用 `work-shared` 特性。
+
+2. **定义共享目标设备**：在配置文件中，使用 `WORK_SHARED` 变量来指定哪些目标设备可以共享构建输出。例如，可以将其设置为 `WORK_SHARED = "1"` 来启用工具链和构建输出的共享。
+
+3. **重新构建**：运行 BitBake 命令来重新构建项目。BitBake 将使用 `work-shared` 特性来共享构建输出，减少不必要的重复构建。
+
+请注意，使用 `work-shared` 特性需要谨慎配置，因为共享构建输出可能会引入潜在的依赖和冲突。确保在配置中正确指定哪些目标设备可以共享构建输出，以避免问题。
+
+`work-shared` 特性有助于提高构建效率，特别是在需要支持多个目标设备的项目中，它可以减少构建时间和资源消耗。
+
+# 目录B的展开过程
+
+bitbake-getvar -r audioservice B
+
+用这个命令来查看audioservice这个recipe里的B这个变量的展开过程是：
+
+```
+# $B [4 operations]
+#   set /mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/code/poky/meta/conf/bitbake.conf:406
+#     "${S}"
+#   set /mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/code/poky/meta/conf/documentation.conf:78
+#     [doc] "The Build Directory. The OpenEmbedded build system places generated objects into the Build Directory during a recipe's build process."
+#   set /mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/code/poky/meta/classes/autotools.bbclass:254
+#     "${WORKDIR}/build"
+#   set externalsrc.bbclass:63 [__anon_147__mnt_fileroot_hanliang_xiong_work_a113x2_yocto_code_code_poky_meta_classes_externalsrc_bbclass]
+#     "${WORKDIR}/${BPN}-${PV}"
+# pre-expansion value:
+#   "${WORKDIR}/${BPN}-${PV}"
+```
+
+首先是来自于bitbake.conf里的：
+
+```
+S = "${WORKDIR}/${BP}"
+B = "${S}"
+```
+
+然后在documentation.conf里得到了doc属性。
+
+然后在autotools.bbclass得到了新的值：${WORKDIR}/build
+
+最后在externalsrc.bbclass里得到新的值：`"${WORKDIR}/${BPN}-${PV}"`
+
+```
+        externalsrcbuild = d.getVar('EXTERNALSRC_BUILD') #这个没有设置。
+        d.setVar('S', externalsrc)
+        if externalsrcbuild:
+            d.setVar('B', externalsrcbuild)
+        else:
+            d.setVar('B', '${WORKDIR}/${BPN}-${PV}')
+```
+
+# bitbake-getvar
+
+
+
+# toaster-eventreplay
+
+"toaster-eventreplay" 是 Yocto Project 中一个==用于回放构建事件的工具==。Yocto Project 是一个用于嵌入式 Linux 系统开发的工具集，它允许您构建自定义 Linux 发行版和根文件系统，其中包括许多构建任务和事件。
+
+"toaster-eventreplay" 工具的主要作用是重新执行以前 Yocto 项目构建的事件。这对于分析构建过程、复现构建问题、调试构建错误以及构建验证非常有用。以下是一些关于 "toaster-eventreplay" 工具的要点：
+
+1. **构建事件回放**："toaster-eventreplay" 允许您重新执行以前的构建事件。这包括构建任务、配置更改、软件包安装等事件。
+
+2. **事件历史**：工具可以加载以前构建的事件历史记录，以便您可以选择特定事件进行回放。
+
+3. **分析构建问题**：通过回放构建事件，您可以更容易地分析构建问题，定位错误或不一致之处，并更好地理解构建系统的工作方式。
+
+4. **复现构建**：如果您在过去的构建中遇到问题，通过回放构建事件，您可以复现相同的构建过程，以便更深入地调查问题。
+
+5. **构建验证**："toaster-eventreplay" 也可用于构建验证。您可以验证新的构建配置是否与以前的构建相同，或者检查构建是否按预期执行。
+
+==这个工具通常与 Yocto Project 的 Toaster 界面结合使用，Toaster 是 Yocto Project 的图形用户界面（GUI），用于监视和管理构建任务。== "toaster-eventreplay" 可以帮助您更好地理解 Toaster 的操作，并实现构建的可重现性。
+
+要详细了解如何使用 "toaster-eventreplay" 工具以及与 Yocto Project 的集成，请参考 Yocto Project 的官方文档或相关资源。
+
+# conf的全局性和bb的局部性如何体现
+
+```
+ bitbake-getvar -r amlogic-sbr-yocto IMAGECLASS
+```
+
+在bb里的变量，必须指定-r才能查询到。
+
+而conf里的变量，直接：
+
+```
+bitbake-getvar IMAGE_INSTALL
+```
+
+就可以查询到。
 
 
 

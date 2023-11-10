@@ -5,7 +5,7 @@ tags:
 	- Linux
 ---
 
-1
+--
 
 性能优化的理论
 
@@ -45,8 +45,12 @@ dev_dbg
 
 
 
-参考资料
+# 参考资料
 
 1、如何打开pr_debug调试信息
 
 <https://blog.csdn.net/kunkliu/article/details/78063179>
+
+2、Dynamic Tracing Tools on ARM/AArch64 platform Updates and Challenges
+
+http://events17.linuxfoundation.org/sites/events/files/slides/ELC_2017_NA_dynamic_tracing_tools_on_arm_aarch64_platform.pdf
