@@ -177,7 +177,7 @@ libmedia.so在aosp-rpi3\frameworks\av\media\libmedia
 
 # 音频子系统系列文章
 
-## （01）音频基础知识
+## 音频基础知识
 
 ![img](../images/playopenwrt_pic/20200413105421830.png)
 

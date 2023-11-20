@@ -149,9 +149,19 @@ PulseAudio是用于[Linux](https://so.csdn.net/so/search?from=pc_blog_highlight&
 
 # client.conf
 
+# 命令
+
+## pactl
+
+| 命令                     | 说明           |
+| ------------------------ | -------------- |
+| pactl list modules short | 列出安装的模块 |
+|                          |                |
+|                          |                |
 
 
-# pacmd
+
+## pacmd
 
 这个是在运行时动态调整pulseaudio的配置。
 
@@ -316,7 +326,218 @@ https://www.jianshu.com/p/f55e7634140b
 
 volume功能简单直观。适合作为分析的切入点。
 
+# 简介
 
+PulseAudio是一种开源的音频服务器系统，旨在提供强大而灵活的音频管理功能。
+
+它最初由Lennart Poettering和其他开发者开发，
+
+作为Linux和其他类Unix系统上的默认音频架构。
+
+PulseAudio的设计目标是处理多种音频任务，
+
+包括音频播放、录制、混合和路由。
+
+它提供了一个高级的音频系统，允许多个应用程序同时访问音频设备，并对音频进行实时处理。
+
+以下是PulseAudio的一些主要特点：
+
+1. **软件混音和路由**：PulseAudio允许多个应用程序同时播放和录制音频，它可以混合这些音频流并将它们路由到适当的输出设备。
+
+2. **网络透明性**：PulseAudio支持音频通过网络进行传输，这意味着您可以在本地计算机上播放远程计算机的音频，或者将音频从一个设备传输到另一个设备。
+
+3. **模块化架构**：PulseAudio的架构是模块化的，允许用户根据需要加载和卸载不同的模块，以扩展其功能。
+
+4. **音频效果处理**：PulseAudio支持实时音频效果处理，例如均衡器、回声消除和压缩器等。
+
+5. **支持插件和扩展**：PulseAudio提供了各种插件和扩展，可以与其他音频系统（如ALSA和OSS）以及各种音频设备进行集成。
+
+总体而言，PulseAudio提供了一个强大的音频管理框架，使用户能够更好地控制和处理音频。它在许多Linux发行版和其他类Unix系统中得到广泛使用，并逐渐成为标准的音频解决方案。
+
+# 发展历史
+
+PulseAudio的发展历史可以追溯到2004年，
+
+当时它作为一个名为"Polypaudio"的项目启动。
+
+Polypaudio最初是为了解决Linux系统中音频管理的一些问题而创建的，
+
+比如应用程序之间的音频冲突、音频设备的独占性以及音频延迟等。
+
+
+
+随着时间的推移，Polypaudio逐渐发展成为PulseAudio，并在2007年正式更名为PulseAudio。
+
+该项目得到了广泛的关注和采用，并成为许多Linux发行版的默认音频架构，如Ubuntu、Fedora和Debian等。
+
+
+
+==PulseAudio的发展受益于其灵活的架构和功能扩展性，==
+
+允许开发者和社区为其添加新的功能和模块。
+
+==它逐渐成为许多桌面环境的首选音频解决方案==，如GNOME和KDE等。
+
+
+
+然而，在早期版本中，PulseAudio也面临了一些挑战和争议。一些用户报告了与特定硬件和应用程序的兼容性问题，并指出了一些性能和稳定性方面的困扰。然而，随着时间的推移，PulseAudio团队通过更新和改进不断解决了这些问题，并逐渐提升了其可靠性和功能性。
+
+
+
+目前，PulseAudio仍然是许多Linux发行版的默认音频系统，并且在Linux桌面和嵌入式系统上广泛使用。它继续发展和演进，为用户提供更好的音频管理和处理功能。
+
+# arch wiki的内容
+
+默认情况下，PulseAudio 配置为自动检测所有声卡并对其进行管理。
+
+它控制所有检测到的ALSA设备，并将所有音频流重定向到自身，
+
+使PulseAudio守护程序成为中央配置点。
+
+守护程序应该基本上是开箱即用的，只需要一些小的调整。
+
+
+
+虽然PulseAudio通常开箱即用，只需要最少的配置，
+
+但高级用户可以通过更改默认配置文件以禁用模块或从头开始编写自己的模块来更改守护程序的几乎每个方面。
+
+
+
+PulseAudio作为服务器守护程序运行，
+
+可以使用客户端/服务器体系结构在系统范围内运行或基于每个用户运行。
+
+
+
+守护程序本身除了提供 API 和主机动态加载的模块之外，没有模块，什么都不做。
+
+音频路由和处理任务都由各种模块处理，
+
+包括PulseAudio的原生协议本身（由[module-native-protocol-unix](https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/User/Modules/#index22h3)提供）。
+
+
+
+客户端通过许多协议模块之一到达服务器，
+
+这些模块将接受来自外部源的音频，通过PulseAudio路由它，并最终让它通过最后的其他模块出去。
+
+
+
+输出模块不必是实际的声音输出：它可以将流转储到文件中，将其流式传输到[Icecast](https://wiki.archlinuxcn.org/wzh/index.php?title=Icecast&action=edit&redlink=1)等广播服务器，甚至只是丢弃它。
+
+
+
+您可以在[Pulseaudio Loadable Modules](https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/User/Modules/)模块上找到所有可用模块的详细列表。
+
+
+
+要启用它们，您只需向 `~/.config/pulse/default.pa` 中添加一行 `load-module *module-name-from-list*` 即可。
+
+
+
+参考资料
+
+1、
+
+https://wiki.archlinuxcn.org/wiki/PulseAudio
+
+
+
+# 竞争者PipeWire
+
+PulseAudio与新出现的[PipeWire](https://zh.wikipedia.org/wiki/PipeWire)竞争，后者提供了一个兼容PulseAudio的服务组件（称为pipewire-pulse），PipeWire现在被许多Linux发行版默认采用以替换PulseAudio，包括[Fedora Linux](https://zh.wikipedia.org/wiki/Fedora_Linux)、[Ubuntu](https://zh.wikipedia.org/wiki/Ubuntu)和[Debian](https://zh.wikipedia.org/wiki/Debian)[[5\]](https://zh.wikipedia.org/wiki/PulseAudio#cite_note-5)[[6\]](https://zh.wikipedia.org/wiki/PulseAudio#cite_note-6)[[7\]](https://zh.wikipedia.org/wiki/PulseAudio#cite_note-7)。
+
+
+
+开发版本的最新每日构建（代号为“Kinetic Kudu”）使用 Pipewire 代替了开箱即用的 Pulseaudio，
+
+无需解决方法。 
+
+Ubuntu 上次对其音频堆栈进行重大更改（恰如其分地）是在最后一个以“K”命名的版本 Ubuntu 9.10“Karmic Koala”中。
+
+
+
+Ubuntu 在采用下一代声音服务器技术方面落后于其发行版竞争对手。 
+
+PipeWire 的起源可以追溯到 2015 年。
+
+该技术最初被构想为“用于视频的 PulseAudio”，但后来扩展到包括音频流。 
+
+==Fedora 在 2021 年默认采用了该技术，其他桌面 Linux 发行版很快也纷纷效仿。==
+
+从技术上讲，Ubuntu 已经包含了 PipeWire。 
+
+Ubuntu 22.04 LTS 附带在默认映像上安装了 PipeWire 和 PulseAudio。
+
+然而，前一个堆栈仅用于视频（主要是为了 Wayland 兼容性），而后者仍然负责音频职责。
+
+
+
+除了“较新”且正在积极开发之外，PipeWire 还为 Ubuntu 桌面带来了许多好处。
+
+据报道，这种实现的错误更少，硬件兼容性更好，CPU 使用率更低，代码库更现代。
+
+
+
+许多 Linux 用户表示，与 PulseAudio 相比，现代蓝牙音频设备（例如 Apple Air Pods）在使用 PipeWire 时往往会“正常工作”。
+
+
+
+目前尚不清楚 WirePlumber（PipeWire 的流行会话和策略管理器）是否也会进入 Ubuntu，但由于 PipeWire 独立运行并不是严格必要的，因此这只是一个小细节。更新：WirePlumber 现已上线！
+
+
+
+https://www.omgubuntu.co.uk/2022/05/ubuntu-22-10-makes-pipewire-default
+
+# 模块有哪些
+
+
+
+https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/User/Modules/
+
+# 模块编写
+
+要编写一个模块，你必须得实现下面两个函数
+
+```
+int pa_init(pa_module* m);
+
+void pa_done(pa_module* m);
+```
+
+看函数名称就可以知道
+
+pa_init是在做初始化的工作，这个函数在load-module的时候被调用。
+
+pa_done做一些资源释放的工作，在module被卸载的时候调用。
+
+
+https://blog.csdn.net/cgipro/article/details/5703963
+
+# 设计与实现
+
+## 对象系统
+
+| 对象      | 说明                                                         |
+| --------- | ------------------------------------------------------------ |
+| pa_object | 基础类。<br />refcnt。<br />free函数。<br />char *的类型<br />类型匹配函数。就这些东西。 |
+|           | 配套的函数：<br />pa_object_new<br />pa_object_free<br />pa_object_ref<br />pa_object_unref<br />PA_DECLARE_PUBLIC_CLASS<br />PA_DEFINE_PUBLIC_CLASS<br />PA_DEFINE_PRIVATE_CLASS |
+|           |                                                              |
+
+https://www.jianshu.com/p/f55e7634140b
+
+# 用户手册
+
+https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/User/
+
+# 开发手册
+
+
+
+https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/Developer/
+
+https://freedesktop.org/software/pulseaudio/doxygen/
 
 # 参考资料
 

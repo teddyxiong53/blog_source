@@ -114,6 +114,54 @@ non_pic_object='func.o'
 
 
 
+# 简介
+
+Libtool 是 Autotools 工具集中的一部分，==它专注于处理共享库的创建和使用，==
+
+以确保在不同平台上都能够正确地构建和使用共享库。
+
+Libtool 的目标是提供一个一致的接口，隐藏了不同系统之间共享库的实现差异。
+
+以下是 Libtool 的一些主要功能和概念：
+
+1. **共享库创建：** Libtool 通过提供 `libtool` 命令行工具来简化共享库的创建。通过使用 Libtool，开发者可以更容易地在不同的平台上构建共享库，而不必担心平台特定的差异。
+
+2. **隐藏平台差异：** Libtool 尝试屏蔽不同平台对共享库的实现细节。这样，开发者可以在不同的操作系统上使用相似的构建过程，而无需关心底层系统的细节。
+
+3. **版本控制：** Libtool 允许开发者对共享库进行版本控制，以便更好地管理库的演变和向后兼容性。这通过 `--version-info` 选项来实现，该选项指定库的版本号。
+
+4. **可移植性：** Libtool 的设计旨在提高共享库在不同系统上的可移植性。通过 Libtool，开发者可以更容易地在不同的操作系统上共享库，并确保这些库在运行时能够正确链接。
+
+5. **动态加载模块支持：** Libtool 支持动态加载模块，使得应用程序能够在运行时加载共享库。
+
+使用 Libtool 的一般流程如下：
+
+1. ==在 `configure.ac` 文件中使用 `AC_PROG_LIBTOOL` 宏来启用 Libtool 的支持。==
+
+   ```shell
+   # 文件名: configure.ac
+
+   AC_PROG_LIBTOOL
+   ```
+
+2. 在 `Makefile.am` 文件中使用 `lib_LIBRARIES` 变量来指定要构建的共享库。
+
+   ```make
+   # 文件名: Makefile.am
+
+   lib_LIBRARIES = libmylibrary.la
+
+   libmylibrary_la_SOURCES = mysource.c
+   ```
+
+3. 运行 `autoreconf --force --install` 来更新 Autotools 文件。
+
+4. 运行 `configure` 脚本。
+
+5. 运行 `make` 来构建项目。
+
+Libtool 使得创建和使用共享库的过程更加简单和可移植，为开发者提供了在多个平台上构建库的一致性接口。
+
 # 参考资料
 
 1、libtool简介

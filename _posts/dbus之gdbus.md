@@ -72,6 +72,74 @@ gdbus call --session \
 
 
 
+
+
+# 概念差异
+
+D-Bus 的核心概念在 dbus-glib 和 GDBus 中以非常相似的方式建模。
+
+两者都有表示连接、代理和方法调用的对象。
+
+但也有一些重要的区别：
+
+dbus-glib 使用 libdbus 参考实现，而 GDBus 则没有。
+
+相反，它依赖 GIO 流作为传输层，并有自己的 D-Bus 连接设置和身份验证实现。
+
+==除了使用流作为传输之外，避免使用 libdbus 还可以让 GDBus 避免一些棘手的多线程问题。==
+
+dbus-glib 使用 GObject 类型系统作为方法参数和返回值，包括自行开发的容器专门化机制。 
+
+==GDBus 依赖于 GVariant 类型系统，==该系统专门设计用于匹配 D-Bus 类型。
+
+dbus-glib 仅建模 D-Bus 接口，不提供任何对象类型。 
+
+GDBus 对 D-Bus 接口（通过 GDBusInterface、GDBusProxy 和 GDBusInterfaceSkeleton 类型）和对象（通过 GDBusObject、GDBusObjectSkeleton 和 GDBusObjectProxy 类型）进行建模。
+
+GDBus 包含对 org.freedesktop.DBus.Properties（通过 GDBusProxy 类型）和 org.freedesktop.DBus.ObjectManager D-Bus 接口的本机支持，而 dbus-glib 则不支持。
+
+
+
+在 dbus-glib 中导出对象的典型方法包括使用 dbus-binding-tool 从 XML 自省数据生成粘合代码。 
+
+GDBus 提供了一个名为 gdbus-codegen 的类似工具，它也可以生成 Docbook D-Bus 接口文档。
+
+
+
+dbus-glib 不提供任何用于拥有和监视总线名称的便捷 API，GDBus 提供了 g_bus_own_name() 和 g_bus_watch_name() 系列便捷函数。
+
+
+
+GDBus 提供了 API 来解析、生成和使用 Introspection XML，而 dbus-glib 则没有。
+
+GTestDBus 提供 API 来创建隔离的单元测试
+
+
+
+# api对比
+
+dbus-glib，以dbus为核心。函数和类型以dbus为前缀。
+
+GDBus，以glib为核心。函数和列席以GDBus为前缀。
+
+| dbus-glib             | GDBus                                   |
+| --------------------- | --------------------------------------- |
+| DBusConnection        | GDBusConnection                         |
+| DBusProxy             | GDBusProxy                              |
+| DBusGObject           | GDBusInterfaceSkeleton   GDBusInterface |
+| DBusGMethodInvocation | GDBusGMethodInvocation                  |
+
+其他的函数就不列举了。
+
+以GDBus的为主。
+
+参考资料
+
+1、参考这篇文章写基本的框架就好了。
+
+https://docs.gtk.org/gio/migrating-gdbus.html
+
+
 # bluez里的gdbus
 
 这个是bluez封装的一个小的dbus库。只有几个文件。

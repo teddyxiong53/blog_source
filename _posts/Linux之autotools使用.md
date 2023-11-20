@@ -33,6 +33,300 @@ autoconf这个工具就是用来帮我们生成configure文件的。
 2. 接着运行./configure进行配置生成makefile文件，譬如enbale/disbale一些特性，设置交叉编译平台（例如--host=linux-mips），设置编译安装目录（例如--prefix=path_to_your_build_directory）具体可以查看help信息；
 3. 执行make && make install。
 
+# 简介
+
+Autotools 是一组用于简化跨平台软件开发的工具，包括 Autoconf、Automake 和 Libtool。这些工具协同工作，使得在不同的操作系统和环境中能够更容易地配置、编译和安装软件。
+
+以下是每个工具的简要介绍：
+
+1. **Autoconf:**
+   - **作用：** 用于生成配置脚本，即 `configure` 脚本。
+   - **工作原理：** Autoconf 通过检查系统的特性，例如文件系统结构、编译器等，生成一个用于配置软件的脚本。这个脚本会根据主机环境生成适当的 Makefile。
+
+2. **Automake:**
+   - **作用：** 用于生成 Makefile.in 文件。
+   - **工作原理：** Automake 通过读取 Makefile.am 文件，并根据一些规则生成标准的 Makefile.in 文件。这样，开发者可以使用更高级别的抽象描述项目的结构，而不必亲自编写复杂的 Makefile。
+
+3. **Libtool:**
+   - **作用：** 提供了在不同平台上构建共享库的一致性。
+   - **工作原理：** Libtool 通过隐藏不同平台上共享库的实现细节，使得开发者可以更方便地创建可移植的共享库。它还处理一些平台特定的问题，使得共享库在不同系统上都能够正常工作。
+
+使用 Autotools 的一般工作流程如下：
+
+1. **创建 configure.ac 文件：** 这是 Autoconf 的配置文件，其中包含了检测系统特性的脚本。
+
+2. **创建 Makefile.am 文件：** 这是 Automake 的输入文件，用于描述项目的源文件、头文件、库等。
+
+3. ==**运行 autoreconf：** 这个命令会调用 Autoconf、Automake 和其他一些工具，生成 configure 脚本和 Makefile.in 文件。==
+
+4. **运行 configure 脚本：** 这个脚本根据系统的特性生成 Makefile 文件。
+
+5. **运行 make：** 使用生成的 Makefile 文件进行编译。
+
+6. **运行 make install：** 将编译好的软件安装到系统中。
+
+总的来说，Autotools 提供了一个标准的、可移植的构建系统，使得开发者能够更容易地在不同平台上分发和构建他们的软件。
+
+# autotools发展历史
+
+Autotools 的发展历史可以追溯到上个世纪末和本世纪初。以下是 Autotools 的主要发展阶段：
+
+1. **Autoconf 的诞生（1991年）：**
+   - **Autoconf 作者：** David MacKenzie 和 Ian Lance Taylor。
+   - **动机：** 在不同的 UNIX 系统上构建软件变得非常困难，因为每个系统都有不同的特性和配置方式。Autoconf 的目标是创建一个能够检测系统特性并生成相应配置的工具。
+
+2. **Automake 的引入（1994年）：**
+   - **Automake 作者：** Tom Tromey。
+   - **动机：** Autoconf 解决了配置问题，但仍然需要手动编写复杂的 Makefile 文件。Automake 的目标是简化 Makefile 的创建，使得开发者能够更容易地描述项目的结构。
+
+3. **Libtool 的加入（1996年）：**
+   - **Libtool 作者：** Gordon Matzigkeit。
+   - **动机：** 构建共享库在不同的系统上有很多问题，Libtool 的目标是提供一个一致的接口，使得共享库的创建和使用更加可移植。
+
+4. **Autotools 统一体系（1999年）：**
+   - **GNU Build System：** Autoconf、Automake 和 Libtool 逐渐成为一个被称为 GNU Build System 的整体。这个系统提供了一个一致的、可移植的构建环境，允许开发者在不同的平台上构建和分发他们的软件。
+
+5. **维护和改进（2000年至今）：**
+   - 从2000年开始，Autotools 进入了不断维护和改进的阶段。社区持续关注新的软件工程实践和需求，对 Autotools 进行更新以适应新的环境和项目结构。
+
+6. **新的替代方案的涌现（近年来）：**
+   - 随着时间的推移，一些新的构建系统和工具逐渐崭露头角，尤其是像 CMake、Meson 等。这些工具提供了一些现代化的特性，以及更简单、更易读的配置文件。尽管如此，Autotools 仍然在许多项目中广泛使用，特别是在那些历史悠久的项目中。
+
+虽然 Autotools 在一些方面可能显得繁琐，但它仍然是许多开源项目中常见的构建系统之一，尤其是对于需要跨平台支持的项目。
+
+# 使用autotools搭建构建系统的过程举例说明
+
+搭建一个使用 Autotools 构建系统的过程涉及创建 Autoconf (`configure.ac`) 和 Automake (`Makefile.am`) 文件，并运行相应的 Autotools 工具以生成配置和构建脚本。下面是一个简单的示例，假设你有一个包含源代码的项目目录，我们称之为 `my_project`：
+
+1. **创建 `configure.ac` 文件：**
+
+   ```bash
+   # 文件名: configure.ac
+
+   AC_INIT([my_project], [1.0], [you@example.com])
+   AM_INIT_AUTOMAKE
+
+   # Checks for programs.
+   AC_PROG_CC
+
+   # Checks for libraries.
+
+   # Checks for header files.
+
+   # Checks for typedefs, structures, and compiler characteristics.
+
+   # Checks for library functions.
+
+   AC_CONFIG_FILES([Makefile])
+   AC_OUTPUT
+   ```
+
+   这是一个简单的 `configure.ac` 文件。`AC_INIT` 定义了项目的基本信息，`AM_INIT_AUTOMAKE` 初始化 Automake。`AC_PROG_CC` 检查 C 编译器。这里是一个简化的例子，实际上你可能需要添加更多的配置检查。
+
+2. **创建 `Makefile.am` 文件：**
+
+   ```make
+   # 文件名: Makefile.am
+
+   bin_PROGRAMS = my_program
+   my_program_SOURCES = main.c util.c
+   ```
+
+   这是一个简单的 `Makefile.am` 文件。`bin_PROGRAMS` 指定了要构建的可执行文件名，`my_program_SOURCES` 则列出了源文件。
+
+3. **运行 Autotools 工具：**
+
+   在项目目录下，运行以下命令：
+
+   ```bash
+   autoreconf --install
+   ```
+
+   ==这会调用 Autotools 工具链，生成 `configure` 脚本和必要的文件。==
+
+4. **运行 `configure` 脚本：**
+
+   ```bash
+   ./configure
+   ```
+
+   这个脚本会根据系统特性生成 Makefile 文件。
+
+5. **运行构建命令：**
+
+   ```bash
+   make
+   ```
+
+   这会使用生成的 Makefile 编译和构建项目。
+
+6. **运行生成的可执行文件：**
+
+   ```bash
+   ./my_program
+   ```
+
+   这样就完成了构建和运行过程。
+
+这只是一个简单的示例，实际的项目可能需要更多的配置和文件。但是，Autotools 的强大之处在于它可以根据你的需求进行高度定制，以适应不同的项目结构和依赖关系。通过逐步添加配置和调整 `configure.ac` 和 `Makefile.am` 文件，你可以建立一个灵活、可移植的构建系统。
+
+# Makefile.am语法说明
+
+`Makefile.am` 是 Automake 工具使用的文件，用于描述软件项目的构建过程。
+
+==它包含了一系列规则和变量，用于指导 Automake 如何生成 Makefile 文件。==
+
+以下是 `Makefile.am` 文件的主要语法和一些常见元素：
+
+1. **基本结构：**
+   ```make
+   # 文件名: Makefile.am
+
+   # 定义要构建的程序或库
+   bin_PROGRAMS = my_program
+
+   # 指定源文件
+   my_program_SOURCES = main.c util.c
+   ```
+
+2. **变量定义：**
+   - `bin_PROGRAMS`：指定要构建的可执行文件的名称。
+   - `my_program_SOURCES`：指定构建可执行文件所需的源文件。
+
+3. **通配符：**
+   
+- `*_SOURCES` 等变量支持通配符，比如 `*.c` 可以匹配所有以 `.c` 结尾的文件。
+   
+4. **目录结构：**
+   
+   ```make
+# 文件名: Makefile.am
+   
+   # 指定源文件所在的子目录
+subdir = src
+   
+   # 递归进入子目录
+   SUBDIRS = lib
+```
+   
+   - `subdir`：指定当前目录下源文件的子目录。
+- `SUBDIRS`：指定需要递归构建的子目录。
+   
+5. **变量赋值：**
+   
+   ```make
+# 文件名: Makefile.am
+   
+   # 变量赋值
+   CFLAGS = -Wall -O2
+```
+   
+- 在 `Makefile.am` 中，你可以直接为 Makefile 中的变量赋值，比如 `CFLAGS` 用于指定编译器选项。
+   
+6. **条件语句：**
+   
+   ```make
+# 文件名: Makefile.am
+   
+   # 条件语句
+   if DEBUG
+   CFLAGS = -g
+   endif
+```
+   
+- 可以使用条件语句来根据不同的情况定义变量。
+   
+7. **目标规则：**
+   ```make
+   # 文件名: Makefile.am
+
+   # 自定义目标规则
+   install-data-local:
+       mkdir -p $(DESTDIR)/etc
+       cp config/my_config_file $(DESTDIR)/etc
+   ```
+
+   - 你可以定义自己的目标规则，这对于一些特殊的安装需求非常有用。
+
+8. **使用额外的 Automake 功能：**
+   ```make
+   # 文件名: Makefile.am
+
+   # 使用 Automake 提供的功能
+   AUTOMAKE_OPTIONS = foreign
+   ```
+
+   - `AUTOMAKE_OPTIONS` 变量允许你启用或禁用一些 Automake 的功能。==`foreign` 选项通常用于非 GNU 项目。==
+
+这只是 `Makefile.am` 文件的一些基本语法，实际上，你可以根据项目的需求添加更多的规则和变量。请查阅 Automake 的文档以获取更详细的信息和更高级的用法。
+
+# Makefile.am有哪些关键字是保留的
+
+在 `Makefile.am` 文件中，有一些关键字和变量是由 Automake 和 Autoconf 等 Autotools 工具使用的，它们具有特殊的含义，不能随意更改。以下是一些常见的保留关键字和变量：
+
+1. **Automake 预定义变量：**
+   - `bin_PROGRAMS`：指定要构建的可执行文件的名称。
+   - `lib_LIBRARIES`：指定要构建的静态库的名称。
+   - `noinst_PROGRAMS`：指定不会被安装的可执行文件。
+   - `noinst_LIBRARIES`：指定不会被安装的静态库。
+   - `SUBDIRS`：指定需要递归构建的子目录。
+
+2. **Automake 选项：**
+   - `AUTOMAKE_OPTIONS`：用于启用或禁用 Automake 的一些功能。例如，`foreign` 选项用于非 GNU 项目。
+
+3. **Automake 目标规则：**
+   - `install-exec-local`：用于定义安装可执行文件的规则。
+   - `install-data-local`：用于定义安装数据文件的规则。
+
+4. **Automake 默认变量：**
+   - `$(srcdir)`：源代码目录的路径。
+   - `$(top_srcdir)`：顶层源代码目录的路径。
+   - `$(builddir)`：构建目录的路径。
+   - `$(top_builddir)`：顶层构建目录的路径。
+
+5. **Autoconf 变量：**
+   - `ACLOCAL_AMFLAGS`：包含 Automake 搜索宏定义的标志。
+
+在编写 `Makefile.am` 文件时，最好避免使用这些保留关键字和变量的名称，以免与 Autotools 工具链的预定义行为发生冲突。如果你有自定义的变量或规则，最好使用具有唯一性的名称，以避免命名冲突。
+
+
+
+# EXTRA_LTLIBRARIES = libcontrol.la  这里extra怎么理解？
+
+alsa-lib里的src\control\Makefile.am，有这样的：
+
+```
+EXTRA_LTLIBRARIES = libcontrol.la
+```
+
+在 Automake 的 `Makefile.am` 文件中，
+
+==`EXTRA_LTLIBRARIES` 是一个特殊的变量，用于定义额外的共享库。==
+
+在这个上下文中，"extra" 表示这是一个额外的库，与其他可能在 `lib_LIBRARIES` 中定义的库不同。
+
+具体来说：
+
+- `lib_LIBRARIES` 通常用于定义主要的共享库，这是你项目中主要提供的库。
+
+- `EXTRA_LTLIBRARIES` 用于定义项目中的其他共享库，可能是一些附加的、可选的、或者用于特定功能的库。
+
+举例说明，假设你的项目有一个主要的共享库 `libmain.la`，但还有一个可选的附加库 `libcontrol.la`，你可以使用如下方式：
+
+```make
+# 文件名: Makefile.am
+
+lib_LIBRARIES = libmain.la
+EXTRA_LTLIBRARIES = libcontrol.la
+
+libmain_la_SOURCES = main.c util.c
+libcontrol_la_SOURCES = control.c
+```
+
+在这个例子中，`libmain.la` 是主要的共享库，而 `libcontrol.la` 是一个额外的共享库。`libcontrol.la` 不是必须的，==可能是根据一些条件来决定是否构建它。==
+
+总体而言，`EXTRA_LTLIBRARIES` 提供了一种在 `Makefile.am` 文件中明确指定其他共享库的机制，使得构建系统更加灵活和可配置。
+
 # 资料
 
 这个有个简单手册。

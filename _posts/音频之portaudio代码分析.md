@@ -122,13 +122,102 @@ src/hostapi/alsa/pa_linux_alsa.c分析
 Pa_SetStreamFinishedCallback( stream, &StreamFinished );
 ```
 
+# 接口分析
+
+就看portaudio.h里的内容。
+
+## 函数
+
+| 函数                       | 说明                                                         |
+| -------------------------- | ------------------------------------------------------------ |
+| Pa_Initialize              | 在使用PortAudio之前调用此函数。这个函数初始化内部数据结构并准备底层宿主api供使用。除了Pa_GetVersion()， Pa_GetVersionText()，Pa_GetErrorText()，这个函数必须在使用其他函数之前调用 |
+| Pa_Terminate               |                                                              |
+| Pa_GetDeviceCount          |                                                              |
+| Pa_GetDefaultInputDevice   |                                                              |
+| Pa_GetDefaultOutputDevice  |                                                              |
+| Pa_GetDeviceInfo           |                                                              |
+| Pa_IsFormatSupported       |                                                              |
+| PaStreamCallback           | 回调函数类型。                                               |
+| Pa_OpenStream              |                                                              |
+| Pa_OpenDefaultStream       |                                                              |
+| Pa_CloseStream             |                                                              |
+| Pa_StartStream             |                                                              |
+| Pa_StopStream              |                                                              |
+| Pa_AbortStream             |                                                              |
+| Pa_IsStreamStopped         |                                                              |
+| Pa_IsStreamActive          |                                                              |
+| Pa_GetStreamInfo           |                                                              |
+| Pa_GetStreamTime           |                                                              |
+| Pa_ReadStream              |                                                              |
+| Pa_WriteStream             |                                                              |
+| Pa_GetStreamReadAvailable  |                                                              |
+| Pa_GetStreamWriteAvailable |                                                              |
+| Pa_GetSampleSize           |                                                              |
+| Pa_Sleep                   |                                                              |
+
+## 数据类型
 
 
-pyaudio
+
+| 类型                     | 说明                                                         |
+| ------------------------ | ------------------------------------------------------------ |
+| PaErrorCode              | 错误码枚举。0表示正常，错误从-10000开始。                    |
+| PaDeviceIndex            | int                                                          |
+| PaHostApiIndex           | int                                                          |
+| PaHostApiTypeId          | 枚举。                                                       |
+| PaHostApiInfo            |                                                              |
+| PaHostErrorInfo          |                                                              |
+| PaTime                   | double类型                                                   |
+| PaSampleFormat           | ulong类型                                                    |
+| PaDeviceInfo             |                                                              |
+| PaStreamParameters       |                                                              |
+| PaStream                 | void类型，用指针方式使用。                                   |
+| PaStreamFlags            | ulong类型                                                    |
+| PaStreamCallbackTimeInfo |                                                              |
+| PaStreamCallbackResult   | 枚举，3个值：<br />0：continue。<br />1：complete<br />2：abort |
+| PaStreamCallback         | 回调函数类型。                                               |
+| PaStreamFinishedCallback | 回调函数类型。                                               |
+| PaStreamInfo             |                                                              |
 
 
 
-参考资料
+# hostapi的概念
+
+是host机器支持的音频框架api的意思。
+
+支持这些api：
+
+```
+typedef enum PaHostApiTypeId
+{
+    paInDevelopment=0, /* use while developing support for a new host API */
+    paDirectSound=1,
+    paMME=2,
+    paASIO=3,
+    paSoundManager=4,
+    paCoreAudio=5,
+    paOSS=7,
+    paALSA=8,
+    paAL=9,
+    paBeOS=10,
+    paWDMKS=11,
+    paJACK=12,
+    paWASAPI=13,
+    paAudioScienceHPI=14
+} PaHostApiTypeId;
+```
+
+例如alsa、oss、jack这些linux上常见的api接口。
+
+我们只需要关注alsa的就行了。
+
+
+
+# pyaudio
+
+
+
+# 参考资料
 
 1、官网教程
 

@@ -453,12 +453,32 @@ snd_hctl包含了snd_ctl的指针，相当于它的子类。
 
 hclt的函数都是转而调用ctl的函数的。
 
-mixer里都是调用的hctl的接口。
+==mixer里都是调用的hctl的接口。==
 
 ```
-snd_mixer_attach
-snd_hctl_open
+所以api层次是这样：
+	我们使用mixer接口。
+	mixer接口调用hctl接口。
+	hctl接口调用clt接口。
+	我们只需要关注mixer接口就可以了。
 ```
+
+
+
+```
+snd_mixer_selem_register
+	snd_mixer_simple_none_register
+		这个对应的simple_none.c，编译了的。
+		simple_abst.c 这个是默认没有编译的。
+		
+```
+
+```
+simple.c 这个是接口层
+	simple_none.c 这个是实现层。
+```
+
+
 
 # alsa mixer的simple_none.c和simple_abst.c 关系
 
@@ -469,6 +489,187 @@ snd_hctl_open
 另一方面，`simple_abst.c`是一个更复杂和抽象的混音器实现。它建立在`simple_none.c`的基础上，并提供了更多的功能和灵活性。它可以与不同类型的硬件混音器进行交互，包括硬件混音器的控制和配置。这个实现可以根据底层硬件的不同进行定制和扩展。
 
 总结起来，`simple_none.c`是一个简单的混音器实现，提供基本的混音器功能，而`simple_abst.c`是一个更复杂和抽象的混音器实现，提供更多的功能和与硬件混音器的交互。它们在ALSA库中属于混音器抽象层的不同实现文件，用于处理音频控制和调整音量等操作。
+
+# alsa use case说明
+
+ALSA（Advanced Linux Sound Architecture）中的 "use case" 表示一种特定的音频应用场景或用途，
+
+其中定义了声卡和音频硬件的配置以满足该场景的需求。
+
+使用案例通常包括特定的音频输入输出设置、采样率、通道数等参数，
+
+以确保在特定的使用环境中获得最佳的音频性能。
+
+在 ALSA 中，使用案例的定义涉及到配置音频通道、混音设置、音频输入输出设备的连接等。
+
+通过指定使用案例，用户或应用程序可以告诉 ALSA 如何配置声卡以满足其特定的音频需求。
+
+以下是一个典型的 ALSA 使用案例的配置示例：
+
+```c
+#include <alsa/asoundlib.h>
+
+int main() {
+    snd_pcm_t *handle;
+    snd_pcm_hw_params_t *params;
+    const char *device = "default";
+
+    // 打开 PCM 设备
+    snd_pcm_open(&handle, device, SND_PCM_STREAM_PLAYBACK, 0);
+
+    // 初始化硬件参数
+    snd_pcm_hw_params_alloca(&params);
+    snd_pcm_hw_params_any(handle, params);
+
+    // 设置使用案例的参数，例如采样率、通道数等
+    snd_pcm_hw_params_set_access(handle, params, SND_PCM_ACCESS_RW_INTERLEAVED);
+    snd_pcm_hw_params_set_format(handle, params, SND_PCM_FORMAT_S16_LE);
+    snd_pcm_hw_params_set_channels(handle, params, 2);
+    unsigned int rate = 44100;
+    snd_pcm_hw_params_set_rate_near(handle, params, &rate, 0);
+
+    // 应用参数到 PCM 设备
+    snd_pcm_hw_params(handle, params);
+
+    // ... 其他操作
+
+    // 关闭 PCM 设备
+    snd_pcm_close(handle);
+
+    return 0;
+}
+```
+
+在这个例子中，`snd_pcm_hw_params_set_format`、`snd_pcm_hw_params_set_channels` 和 `snd_pcm_hw_params_set_rate_near` 等函数设置了音频硬件的参数，以适应特定的使用案例（在这里是播放音频）。实际上，根据不同的使用案例，你可能需要调整这些参数以满足具体的需求。
+
+使用案例的概念允许 ALSA 灵活地适应各种音频需求，例如音频播放、录制、VoIP 通信等。
+
+==在 ALSA 中，你可以通过配置不同的使用案例来实现这些不同的音频应用场景。==
+
+## ucm
+
+alsaucm（ALSA 用例管理器）是一个使用 ALSA 用例接口的程序命令行。
+
+在复杂的声卡上，设置音频路由并不简单，
+
+混音器设置可以彼此冲突，导致声卡根本无法工作。
+
+ALSA 用例管理器是一种用于控制复杂音频硬件的机制
+
+在硬件配置和有意义的用例之间建立关系
+
+最终用户可以与之联系。
+
+用例管理器还可用于在必要时在用例之间切换一致的方式。
+
+
+
+代码在alsa-utils的alsaucm\usecase.c
+
+## 命令用法
+
+`alsaucm` 是 ALSA（Advanced Linux Sound Architecture）工具中的一个用于管理使用案例（use case）的命令行工具。它允许用户配置和管理不同的音频使用场景，例如播放音频、录制音频等。以下是一些基本的用法示例：
+
+1. **列出支持的使用案例：**
+   ```bash
+   alsaucm -c <card-id> list
+   ```
+   这将列出指定声卡 (`<card-id>`) 上支持的所有使用案例。
+
+2. **选择使用案例：**
+   
+   ```bash
+   alsaucm -c <card-id> set <use-case>
+   ```
+这将设置指定声卡 (`<card-id>`) 的当前使用案例为 `<use-case>`。
+   
+3. **列出当前使用案例的状态：**
+   ```bash
+   alsaucm -c <card-id> status
+   ```
+   这将显示指定声卡 (`<card-id>`) 上当前使用案例的状态信息。
+
+4. **启动/停止使用案例：**
+   
+   ```bash
+   alsaucm -c <card-id> start
+   alsaucm -c <card-id> stop
+   ```
+   这将启动或停止指定声卡 (`<card-id>`) 上当前使用案例。
+
+请注意，`<card-id>` 是你的声卡的编号，你可以通过 `aplay -l` 或 `arecord -l` 命令来查看。
+
+下面是一个使用案例的完整示例：
+
+```bash
+# 列出支持的使用案例
+alsaucm -c 0 list
+
+# 设置使用案例为播放音频
+alsaucm -c 0 set Playback
+
+# 查看当前使用案例状态
+alsaucm -c 0 status
+
+# 启动使用案例
+alsaucm -c 0 start
+```
+
+请根据你的实际需求和声卡配置，使用 `alsaucm` 工具进行相应的配置。确保你在使用该工具时了解你的声卡支持的使用案例和相应的配置选项。
+
+
+
+https://manpages.ubuntu.com/manpages/focal/en/man1/alsaucm.1.html
+
+# output的层次关系
+
+可以看到也是有一个类的继承关系的。
+
+面向接口编程的观念也是有的。
+
+snd_output 这个是接口层。
+
+它有2个实现的子类。
+
+```
+snd_output_stdio
+snd_output_buffer
+```
+
+接口使用的数据结构是抽象的snd_output_t。
+
+```
+struct _snd_output {
+	snd_output_type_t type;
+	const snd_output_ops_t *ops;
+	void *private_data;
+};
+```
+
+
+
+snd_output的接口有：
+
+| 接口              | 说明 |
+| ----------------- | ---- |
+| snd_output_close  |      |
+| snd_output_printf |      |
+| snd_output_puts   |      |
+| snd_output_putc   |      |
+| snd_output_flush  |      |
+
+open有所不同：
+
+```
+snd_output_stdio_open
+
+snd_output_stdio_attach
+	这个不用open，直接把一个现成的FILE *指针跟output关联起来。
+
+snd_output_buffer_open这个不用attach。
+```
+
+
 
 # 参考资料
 

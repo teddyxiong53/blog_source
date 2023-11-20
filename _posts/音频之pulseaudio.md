@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 看设备信息，看到PulseAudio Sound Server。这个究竟是什么？
 
@@ -32,15 +32,15 @@ default
 
 
 
-简单说，pulseaudio是为了解决alsa存在的混音能力不足而出现的。
+==简单说，pulseaudio是为了解决alsa存在的混音能力不足而出现的。==
 
 整体解决方案是：
 
-pulseaudio作为一个守护进程，独占声卡。
+==pulseaudio作为一个守护进程，独占声卡。==
 
 其他程序要发声，就发消息给pulseaudio进程。
 
-在Android里，使用了AudioFlinger来替代pulseaudio的功能。
+==在Android里，使用了AudioFlinger来替代pulseaudio的功能。==
 
 启动：
 
@@ -68,7 +68,7 @@ pacmd
 
 
 
-参考资料
+# 参考资料
 
 1、What Is PulseAudio?
 

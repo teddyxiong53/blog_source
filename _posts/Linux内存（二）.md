@@ -55,7 +55,7 @@ pkmap、modules属于用户空间。
 
 # vmalloc空间
 
-vmalloc用来给vmalloc、ipremap分配内存。
+vmalloc用来给vmalloc、ioremap分配内存。
 
 vmalloc空间的确定方法很简单：
 
