@@ -80,7 +80,13 @@ USB Audio Class（UAC）的发展历史可以追溯到USB音频设备的出现�
 
 # xmos方案
 
+XMOS 成立于2005年，主要设计用于物联网领域的高性能芯片，这些芯片可植入家用电器或是个人消费电子设备中。
 
+市面上同类型的芯片产品并不少见，但 XMOS 处理器凭借着多核微控制器技术：**xCore**，该特性集 MCU、FPGA 和 DSP 特点于一身，在多种处理器中脱颖而出！
+
+XMOS 这种特性带来的改变是，**以往一些需要采用 MCU、DSP 和低端 FPGA 三颗芯片的方案，现在只用一个 XMOS 就能全部完成。**
+
+![img](images/random_name/v2-a64673eaf9115a8fac56a0370258ec58_720w.webp)
 
 https://zhuanlan.zhihu.com/p/497360366
 
@@ -89,6 +95,74 @@ https://zhuanlan.zhihu.com/p/497360366
 
 
 https://www.cnblogs.com/wen123456/p/14281917.html
+
+# UAC1.0和UAC2.0区别
+
+传统3.5mm模拟耳机逐步被USB数字耳机代替。采用USB协议进行音频播放使用USB Audio Class协议(简称[UAC](https://www.usbzh.com/article/detail-80.html)).
+
+[UAC](https://www.usbzh.com/article/detail-80.html)2.0由于支持USB High Speed，从而天生带有高带宽、低延时的优势。这些优势转化为对于Hi-Resolution Auido的支持。
+
+[UAC](https://www.usbzh.com/article/detail-80.html)1.0最高只支持到双声道192Khz 16b的音源：(2 x 192 x 16) / 1024 = 6Mb = 6Mb/8 = 0.75MB
+
+UAC2.0可以最高支持15声道384Khz 32b的音源：(15 x 384K x 32) /1024 = 180Mb = 18Mb/8 = 3MB
+
+
+
+https://www.usbzh.com/article/detail-902.html
+
+
+
+# UAC麦克风同步传输的URB分析
+
+在[UAC](https://www.usbzh.com/article/detail-80.html)音频规范中，数据的传输不像UVC摄像头那样，既支持[同步传输](https://www.usbzh.com/article/detail-118.html)，也支持[批量传输](https://www.usbzh.com/article/detail-40.html)，
+
+而是只支持同步传输。
+
+所以[UAC](https://www.usbzh.com/article/detail-80.html)音频设备的数据端点都是同步端点。
+
+
+
+USB总线比较复杂，并不是为音频传输特别设置的传输方式。
+
+一个控制器通常需要对应多个设备，PC也有很多任务，其传输延迟会相对不那么稳定。
+
+
+
+参考资料
+
+1、
+
+https://www.usbzh.com/article/detail-664.html
+
+# UAC耳机扬声器音频写PCM数据的三种方式
+
+[UAC](https://www.usbzh.com/article/detail-80.html)耳机扬声器音频PCM数据有三种方式，分别为：
+
+- 异步传输 Asynchronous
+- [同步传输](https://www.usbzh.com/article/detail-118.html) synchronous
+- 自适应传输 adaptive。
+
+## [UAC](https://www.usbzh.com/article/detail-80.html)音频数据[同步传输](https://www.usbzh.com/article/detail-118.html)
+
+[同步传输](https://www.usbzh.com/article/detail-118.html)是三种方式中最低质量的，所以也是使用于一搬的普通产品中。同步传输时只要主机发送数据，设备端都会接收数据。==但由于两个时钟之间的误差，长时间工作会现音质下降的问题==。如破音，杂音等。不过一般人是听不出来的。哈哈
+
+## 自适应传输 adaptive
+
+自适应是设备不断调整其时钟的地方，以便它可以在发送数据时接受从计算机发送的数据。设备时钟的不断适应意味着设备中没有连续、准确的主时钟，这会导致音频流中的抖动。
+
+## 异步传输 Asynchronous
+
+这是最复杂的实现，但它是对其他类型的巨大改进。这是因为它要求数据包按照自己的时钟时序及时发送，从而提供最低的抖动和迄今为止最好的声音质量。
+
+
+
+# UAC2驱动分析
+
+UAC协议有UAC1.0和UAC2.0。UAC2.0协议相比UAC1.0协议，提供了更多的功能，支持更高的带宽，拥有更低的延迟。Linux内核中包含了UAC1.0和UAC2.0驱动，分别在f_uac1.c和f_uac2.c文件中实现。下面将以UAC2驱动为例，具体分析USB设备驱动的初始化、描述符配置、数据传输过程等。
+
+
+
+https://blog.csdn.net/u011037593/article/details/121458492
 
 # 参考资料
 

@@ -18,6 +18,10 @@ LDD3是基于linux2.6的。比较老了。有人移植了相关例程到linux新
 
 https://github.com/martinezjavier/ldd3
 
+这个是在线书籍。
+
+http://www.deansys.com/doc/ldd3/index.html
+
 在ubuntu20.04上测试。插入会失败。
 
 看dmesg。

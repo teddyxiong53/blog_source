@@ -64,10 +64,13 @@ arm-linux-gnueabihf-gcc
 
 
 
+# -march=armv8.2-a
 
+https://gcc.gnu.org/onlinedocs/gcc-9.1.0/gcc/AArch64-Options.html
 
-参考资料
+# 参考资料
 
 1、交叉编译器的命名规则及详细解释
 
 https://blog.csdn.net/LEON1741/article/details/81537529
+

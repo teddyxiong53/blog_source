@@ -1733,29 +1733,29 @@ https://www.icode9.com/content-4-1287459.html
 
 ## `PACKAGE_INSTALL` 和 `IMAGE_INSTALL` 
 
-`PACKAGE_INSTALL` 和 `IMAGE_INSTALL` 是 Yocto Project 构建系统中用于管理软件包安装的变量，它们之间存在一些关系，但也有一些重要的区别。
+通过bitbake-getvar查看到的变量推导过程，看到doc信息里写的是：
 
-1. **PACKAGE_INSTALL**：
-   - `PACKAGE_INSTALL` 是一个 BitBake 类的变量，==通常在配方（recipe）文件中使用。==
-   - 该变量用于指定要将哪些软件包包含在构建过程中的软件包列表中。这些软件包通常是目标设备上的软件包。
-   - `PACKAGE_INSTALL` 变量定义了配方所依赖的软件包，这些软件包将被安装到目标设备上。
-   - 该变量用于构建目标设备上的软件包集合，而不是生成镜像文件。
+```
+# $PACKAGE_INSTALL [4 operations]
+#   set /mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/code/poky/meta/conf/documentation.conf:315
+#     [doc] "List of the packages to be installed into the image. The variable is generally not user-defined and uses IMAGE_INSTALL as part of the list."
+```
 
-2. **IMAGE_INSTALL**：
-   - `IMAGE_INSTALL` 是一个 BitBake 类的变量，==通常在镜像配方文件中使用。==
-   - 该变量用于指定将包含在生成的镜像文件中的软件包列表。这些软件包通常是用于构建目标设备的根文件系统（rootfs）。
-   - `IMAGE_INSTALL` 变量定义了生成的镜像文件中包含的软件包，这些软件包将成为生成的镜像的一部分。
-   - 该变量用于定义生成的镜像文件的内容，以及要在镜像中包含的软件包。
+意思是：
 
-关系和区别：
+PACKAGE_INSTALL这个变量，用户一般不修改。
 
-- `PACKAGE_INSTALL` 和 `IMAGE_INSTALL` ==都用于管理软件包，但它们分别用于不同的上下文。==`PACKAGE_INSTALL` 用于构建目标设备上的软件包集合，而 `IMAGE_INSTALL` 用于定义生成的镜像文件的内容。
+PACKAGE_INSTALL包含了IMAGE_INSTALL的内容。
 
-- `PACKAGE_INSTALL` 可以在配方文件中指定，以确定配方的构建过程中需要的软件包，而 `IMAGE_INSTALL` 通常在镜像配方文件中指定，以确定生成的镜像文件的内容。
+用户只需要修改IMAGE_INSTALL的内容。
 
-- `PACKAGE_INSTALL` 用于处理软件包的依赖关系和构建过程，而 `IMAGE_INSTALL` 用于定义生成的镜像的内容，包括软件包、配置文件和其他文件。
+PACKAGE_INSTALL的值是：
 
-总之，`PACKAGE_INSTALL` 和 `IMAGE_INSTALL` 是 Yocto Project 构建系统中用于管理软件包的变量，它们用于不同的上下文和目的。`PACKAGE_INSTALL` 用于构建目标设备上的软件包集合，而 `IMAGE_INSTALL` 用于定义生成的镜像文件的内容。它们在构建过程中具有不同的作用和用途。
+```
+"${IMAGE_INSTALL} ${ROOTFS_BOOTSTRAP_INSTALL} ${FEATURE_INSTALL}"
+```
+
+
 
 # 创建initramfs
 
@@ -7584,7 +7584,60 @@ bitbake-getvar IMAGE_INSTALL
 
 就可以查询到。
 
+# image的bb文件，怎样跟machine的conf文件关联起来的？
 
+不用关联，在setenv.sh的时候，conf的东西就生成并输出到环境变量了。
+bitbake针对image的bb文件。会用到某些环境变量。
+
+# core-image说明
+
+在Yocto项目中，`core-image`是一个特定类型的镜像，用于构建基本的根文件系统。这个镜像是一个通用的、最小化的嵌入式Linux发行版，旨在提供一个简单的、可定制的基础，以便在嵌入式设备上运行。
+
+`core-image`通常包含了一些基本的组件，比如：
+
+1. **基本文件系统结构**：包括目录结构、文件和文件权限等。
+2. **基础软件包**：例如核心的系统工具、系统库和必要的运行时组件。
+3. **网络支持**：通常包括网络配置工具和基本的网络驱动程序，以便设备能够连接网络。
+
+`core-image`本身是一个示例镜像，它的内容和功能是可以根据项目需求和配置进行定制的。Yocto提供了一种强大的机制，使开发者能够自定义构建过程，根据特定的硬件需求和应用程序要求定制`core-image`。
+
+不同的`core-image`可能会针对特定的应用场景或硬件配置进行优化，例如：
+
+- **core-image-minimal**：非常精简的镜像，只包含最基本的系统组件。
+- **core-image-base**：包含了一些更多基础软件包和设备驱动程序，以支持更广泛的应用场景。
+- **core-image-full-cmdline**：更完整的镜像，可能包含了更多的工具和功能，适用于开发和调试。
+
+总的来说，`core-image`是Yocto项目中一个基础且灵活的构建块，允许开发者根据特定需求构建自定义的嵌入式Linux发行版。
+
+# pkg_postrm
+
+```
+pkg_postrm:${PN} () {
+  if [ -f "${sysconfdir}/dropbear/dropbear_rsa_host_key" ]; then
+        rm ${sysconfdir}/dropbear/dropbear_rsa_host_key
+  fi
+  if [ -f "${sysconfdir}/dropbear/dropbear_dss_host_key" ]; then
+        rm ${sysconfdir}/dropbear/dropbear_dss_host_key
+  fi
+}
+```
+
+这段代码出现在一个 Yocto/BitBake 的 recipe 文件中，
+
+==它定义了软件包卸载（post-remove）时的操作。==
+
+具体来说，这段代码定义了在卸载软件包时要执行的操作。让我解释一下它的含义：
+
+- `pkg_postrm:${PN} () {`：这是一个 shell 函数，`${PN}` 代表软件包的名称（Package Name），在软件包被移除时（post-remove）会执行这个函数。
+- `if [ -f "${sysconfdir}/dropbear/dropbear_rsa_host_key" ]; then`：这是一个条件语句，检查文件 `${sysconfdir}/dropbear/dropbear_rsa_host_key` 是否存在。
+- `rm ${sysconfdir}/dropbear/dropbear_rsa_host_key`：如果条件语句满足（文件存在），则执行删除操作，删除 `${sysconfdir}/dropbear/dropbear_rsa_host_key` 文件。
+- 同样的逻辑适用于第二个文件 `${sysconfdir}/dropbear/dropbear_dss_host_key`，如果存在的话，也会被删除。
+
+这段代码的作用是在软件包被移除时（卸载时），检查系统中是否存在这两个文件（`dropbear_rsa_host_key` 和 `dropbear_dss_host_key`），如果存在则将其删除。
+
+==通常这种操作用于清理软件包在系统中留下的特定文件或目录，==
+
+以确保在卸载软件包时系统的状态能够得到正确的维护和清理。
 
 # 参考资料
 

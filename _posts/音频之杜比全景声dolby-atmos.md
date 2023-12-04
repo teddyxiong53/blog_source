@@ -226,6 +226,177 @@ Dolby Digital+(DDP/DD5.1/AC3/EAC3) 音轨多见于Amazon、Netflix等在线流�
 
 
 
+# 无法解码TRUEHD的功放是否能保留其中ATMOS信息？
+
+如果功放只能解码EAC3，那么接收到TrueHD音轨的时候，音响也无法发出声音。
+
+在dts里，无损的dts-hd ma是向下兼容的。音轨里带了dts5.1 core的内核。
+
+所以当功放无法解码dts-hd ma的时候，会向下降级为dts 5.1来播放。
+
+而dolby不一样，EAC3、AC3、TrueHD是并列的关系的，不是从属关系。
+
+TrueHD不会被降级为EAC3、AC3来进行播放。
+
+![img](images/random_name/v2-0d4f28367a40611241392742e7d991aa_720w.webp)
+
+杜比很擅长与利用原有技术推陈出新，例如全景声就是DDP、TrueHD和LPCM叠加对象元数据（meta）实现的。
+
+当功放不支持全景声，但是支持truehd解码的时候，
+
+收到truehd的全景声音轨时，会把meta data丢掉，只播放truehd音轨。
+
+在实际使用中，就是天空声道没有了。
+
+
+
+https://www.zhihu.com/question/463187296/answer/2955481702
+
+# 2023年「全景声」回音壁超级购买指南（三星/索尼/普乐之声/BOSE篇）
+
+上篇主要是三星/索尼/普乐之声/BOSE这四个品牌，下篇则是JBL/飞利浦/TCL/LG/天龙篇：
+
+跟传统实体家庭影院不同的是，**回音壁具有非常明显的电视属性**。
+
+**挑选回音壁（条形音响）的三大要点：解码、声道、无线环绕。**
+
+**解码：**条形音响在喇叭尺寸和材质上已经做了很多妥协了，所以解码这块不能再省。一般都要选择市面上所有音频格式通吃的，如果现在买，那么基于TrueHD编码的Dolby ATMOS和DTS:X次时代音轨一定要支持；
+
+**声道：**声道越多，声音包围感更足，环绕效果越好；
+
+**无线环绕：**早期的条形音响环绕声靠的是虚拟和反射，这也是回音壁这个名字的由来，因为对听音环境墙壁反射要求很高，所以在客厅反射效果不佳。现在的条形音响一般都会配无线环绕音响，环绕效果有质的提升。
+
+![img](images/random_name/v2-477f3f9960be23ae52b4540c6ecb61b2_720w.webp)
+
+
+
+# 高清电影文件名中的“DTS-HD.MA.TrueHD.HDR.SDR.”是什么意思？
+
+![img](images/random_name/v2-b0bb23d3b3f2173ebd4c06ac30572fb4_720w.webp)
+
+其中跟音频和视频相关的信息如下：
+
+## 1、分辨率
+
+目前我们能看到的==一般只有1080P和2160P两种，分别对应HD和4K UHD==。如果你现在正在使用4K电视，推荐首选2160P；
+
+不过要注意的是，部分老电影，例如星爷的《功夫》，还有《无间道》三部曲目前没有出UHD 4K蓝光碟，所以网上资源基本都是1080P；
+
+## 2、电影来源
+
+目前常见的有3种，WEB-DL、[BluRay-REMUX](https://www.zhihu.com/search?q=BluRay-REMUX&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A2652047155})、BDRIP。
+
+WEB-DL应该是现在最常见的，片源来迪士尼、HBO-MAX等海外流媒体平台，最高码率可达17Mb左右，一部2小时的电影体积在15GB以上，音轨则以杜比全景声为主（ddp内核）；
+
+BluRay-REMUX是以蓝光碟片源，去掉蓝光碟内不需要的花絮和音轨压制而成，一般来说对片源和主要音轨没有压制，所以整体码率可达80Mb左右，内涵的音轨也是无损次世代环绕。
+
+而BD-RIP就是蓝光压制，这个情况就比较多了。根据压制组的特色，码率从几兆到几十兆都有，大家可以根据电影文件大小来判断。
+
+作者：仙鱼
+链接：https://www.zhihu.com/question/490532118/answer/2652047155
+来源：知乎
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
+## 3、音频编码
+
+音频编码常见的有DDP 5.1、DDP 5.1(Atmos)、dd5.1、dts5.1、dts-hdma、dtsX、AAC等等。
+
+### 3.1 AAC/FLAC/LPCM
+
+AAC编码一般都为立体声（也有部分含多声道），码率从128Kbps到640kbps不等，一般来说看到AAC就说明这部片子视频和音频码率都比较低。
+
+在有些片子上，我们还能看到FLAC音轨。FLAC格式在音乐中使用比较多，码率在800Kb左右，播放器解码后其实就是PCM格式；
+
+另外，还会见到LPCM格式，无损的多声道PCM格式，基本上是原汁原味的。
+
+### 3.2 DD 5.1
+
+dd 5.1是最基础的Dolby digital 5.1环绕声，一般都是比较老的片子上才会使用；
+
+### 3.3 DDP 5.1(ATMOS)
+
+ddp 5.1的全称为Dolby Digital Plus。经常与WEB-DL同时出现，因为海外流媒体平台的杜比全景声都采用ddp 5.1内核，码率一般为640Kb或者是768Kb，如果你有全景声功放或者回音壁的话，已经可以体验全景声效果了。
+
+这里需要注意下，如果电影文件名里ddp 5.1后还跟着atmos，那么肯定支持杜比全景声；如果仅有ddp 5.1，那么可能支持全景声，也可能不支持。
+
+### 3.4 TrueHD
+
+[杜比TrueHD](https://www.zhihu.com/search?q=杜比TrueHD&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A2652047155})是无损次世代音轨，码率较高，所以只会出现在蓝光资源中。因为无损格式的杜比全景声使用TrueHD内核，所以当文件名中只有TrueHD时，可能可以点亮全景声，也可能只是传统的无损环绕声；
+
+### 3.5 dts家族
+
+dts因为码率较高，所以也没有流媒体片源会采用（索尼Bravia Core除外），dts片源都是DVD或者蓝光碟片源。
+
+[dts 5.1](https://www.zhihu.com/search?q=dts 5.1&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A2652047155})为最基础的5.1环绕声，码率固定为1536Kb；
+
+[dts-HDMA](https://www.zhihu.com/search?q=dts-HDMA&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A2652047155})为dts版本的无损次世代音轨，最高码率可到37Mb；
+
+dtsX为dts版本的全景声，中文名叫做临镜音，内核是dts-hdma音轨，所以码率一般都非常高。
+
+# 全景声测试资源
+
+
+
+https://zhuanlan.zhihu.com/p/424772851
+
+
+
+# 次世代音轨介绍
+
+次世代音轨是专为高清光盘媒体所开发的==下一代无损压缩技术==，
+
+包括LPCM(无损压缩)、
+
+杜比数字Plus(Dolby Digital Plus 有损压缩，简称DDP)、
+
+杜比TrueHD(Dolby TrueHD 无损压缩)、
+
+DTS-HD High resolution(有损压缩)、
+
+DTS-HD Master Audio(无损压缩)。
+
+普通音轨和次世代音轨相比就像256kbps码率的mp3和无损ape相比一样，音质差距十分明显。
+
+“次世代”音频均支持分离式7.1声道，
+
+各声道单独编码，
+
+可以充分发挥7.1音响系统的功能，声音的环绕效果和定位更为精准。
+
+下载到的资源文件名包含DTS-HD、LPCM、DD+、TrueHD的都是次世代音轨。
+
+一般次世代音轨都是源码输出给功放解码。
+
+
+
+什么是源码输出?
+
+播放器将未解码的Dolby TrueHD和DTS-HD Master Audio音频信号传输给具备解码能力的功放解码，次世代播放机音频信号—（HDMI线）—次世代功放解码—（喇叭线）—音箱。
+
+解码输出就是将Dolby TrueHD和DTS-HD Master Audio信号先转换为LPCM音轨后传输到功放中，播放器转换次世代音频信号为LPCM—（光纤或同轴）—AV功放—（喇叭线）—音箱。
+
+
+
+http://www.kodiplayer.cn/media/3041.html
+
+# Kodi怎样才能观看杜比视界电影？
+
+杜比视界英文名：Dolby Vision，
+
+是美国杜比实验室推出的影像画质技术，
+
+==通过提升亮度、扩展动态范围来提升影像效果。==
+
+它不是开放的标准，需要使用它必须交付一定的版权费用。
+
+杜比视界要求必须使用宽色域 Rec.2020 色彩空间， SMPTE ST 2084（PQ）图像传输功能，采用 12bit 色深。
+
+杜比视界是目前最先进的HDR技术，它可以提升视频信号保真度，从而让图像的无论从亮度、色彩还是对比度角度看都非常逼真。
+
+想要观看杜比视界需要支持杜比视界的电视、播放机、片源，缺一不可。
+
+
+
 
 
 # 参考资料
