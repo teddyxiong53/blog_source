@@ -1,5 +1,5 @@
 ---
-title: googletest学习
+title: gtest学习
 date: 2023-02-28 13:59:25
 tags:
 	- 单元测试
@@ -57,3 +57,74 @@ Google Test（简称gtest）是一个流行的C++单元测试框架，用于编�
 
 以上是gtest的基本使用方法。除了基本的断言之外，gtest还提供了丰富的断言和测试工具，用于更详细和复杂的测试需求。可以参考gtest的文档和示例代码，深入了解更多高级用法和技巧。
 
+# gpt给的另外一个例子
+
+谷歌的 Google Test（简称 gtest）是一个 C++ 的单元测试框架，可以帮助开发者编写和运行测试代码。以下是一个简单的示例，展示了如何使用 gtest 进行测试：
+
+假设你有一个名为 `MathFunctions` 的头文件 `math_functions.h` 和相应的源文件 `math_functions.cpp`，其中有一个函数 `int Factorial(int n)` 计算阶乘。
+
+```cpp
+// math_functions.h
+
+#ifndef MATH_FUNCTIONS_H
+#define MATH_FUNCTIONS_H
+
+int Factorial(int n);
+
+#endif  // MATH_FUNCTIONS_H
+```
+
+```cpp
+// math_functions.cpp
+
+#include "math_functions.h"
+
+int Factorial(int n) {
+    return (n <= 1) ? 1 : n * Factorial(n - 1);
+}
+```
+
+现在，我们想用 gtest 编写测试来验证 `Factorial` 函数的行为。这里是测试文件 `math_test.cpp`：
+
+```cpp
+#include "gtest/gtest.h"
+#include "math_functions.h"
+
+// 测试 Factorial 函数
+TEST(FactorialTest, HandlesZeroInput) {
+    EXPECT_EQ(Factorial(0), 1);
+}
+
+TEST(FactorialTest, HandlesPositiveInput) {
+    EXPECT_EQ(Factorial(1), 1);
+    EXPECT_EQ(Factorial(2), 2);
+    EXPECT_EQ(Factorial(5), 120);
+    EXPECT_EQ(Factorial(10), 3628800);
+}
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+```
+
+以上代码中，我们使用 `TEST()` 宏定义了两个测试用例，分别验证了 `Factorial` 函数对零和正整数的输入的行为。`EXPECT_EQ` 是 gtest 提供的一个断言，用于检查预期值和实际值是否相等。
+
+为了运行这些测试，你需要下载 gtest 框架并链接到你的项目中。假设你已经将 gtest 源码放置在你的项目目录下的 `gtest` 文件夹中，并使用 CMake 构建项目。你可以添加类似以下的 CMake 配置：
+
+```cmake
+cmake_minimum_required(VERSION 3.0)
+project(MathFunctionsTest)
+
+# 添加 gtest 子目录
+add_subdirectory(gtest)
+
+# 添加测试文件
+add_executable(MathFunctionsTest math_test.cpp)
+target_link_libraries(MathFunctionsTest PRIVATE gtest gtest_main)
+
+# 包含项目源文件和头文件
+include_directories(${CMAKE_SOURCE_DIR})
+```
+
+然后，在命令行中执行测试程序 `MathFunctionsTest`，你应该能看到测试用例的运行结果。

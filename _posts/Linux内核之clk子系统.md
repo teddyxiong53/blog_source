@@ -484,7 +484,9 @@ audio locker就是用来解决这个问题的。
 
 基本原理就是检测clock的差别，然后软件纠正。
 
+# 基于rk3399分析clk子系统
 
+https://blog.csdn.net/weixin_43644245/article/details/122203512
 
 # 参考资料
 

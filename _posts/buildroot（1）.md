@@ -3031,7 +3031,15 @@ endif
 FS_DIR = $(BUILD_DIR)/buildroot-fs
 ```
 
+# alsa-lib-clean-for-rebuild 
 
+```
+alsa-lib-clean-for-rebuild     
+alsa-lib-clean-for-reconfigure 
+alsa-lib-clean-for-reinstall  
+```
+
+这个倒有几个不同的clean。
 
 # 参考资料
 

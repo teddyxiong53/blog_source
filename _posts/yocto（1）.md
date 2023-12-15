@@ -288,9 +288,8 @@ Yocto Project 是一个强大的嵌入式 Linux 构建系统，它有很多命�
    - `source oe-init-build-env`：进入构建目录并设置构建环境。
    
 2. **构建软件包和映像：**
-
-   - `bitbake <recipe>`：构建指定的软件包或映像。
-   
+- `bitbake <recipe>`：构建指定的软件包或映像。
+  
 3. **清理构建目录：**
 
    - `bitbake -c clean <recipe>`：清理指定软件包的构建文件。
@@ -302,10 +301,9 @@ Yocto Project 是一个强大的嵌入式 Linux 构建系统，它有很多命�
    - `bitbake <image>`：构建整个 Linux 发行版映像。
    
 5. **查看可用的软件包和映像：**
-
-   - `bitbake-layers show-recipes`：显示可用的软件包和配方。
+- `bitbake-layers show-recipes`：显示可用的软件包和配方。
    - `bitbake-layers show-recipes -i`：显示已安装的软件包和配方。
-
+   
 6. **查看构建日志：**
 
    - `less <log_file>`：查看构建日志文件。
@@ -483,6 +481,12 @@ ABC = “${@bb.utils.contains('val', 1', 'true', 'false ', d)}"
 
 val = 1 则 ABC 赋值 true，否则 ABC 赋值 false
 ```
+
+# bitbake 一个recipe的步骤流程
+
+![在这里插入图片描述](images/random_name/8a9baf18340f45eb9bf94ec81b3de0ee.png)
+
+https://blog.csdn.net/zz2633105/article/details/122336873
 
 
 
@@ -4224,7 +4228,7 @@ xx-locale
 xx
 ```
 
-do_package 这个task会遍历PACKAGES变量里的值。
+**do_package 这个task会遍历PACKAGES变量里的值。**
 
 同时使用FILES变量的值来把文件放到对应的package里。
 
@@ -4253,11 +4257,65 @@ do_print_info() {
 aml-halaudio-src aml-halaudio-dbg aml-halaudio-staticdev aml-halaudio-dev aml-halaudio-doc aml-halaudio-locale aml-halaudio
 ```
 
+kirkstone版本之后，bitbake-getvar可以查看：
+
+```
+bitbake-getvar -r procrank PACKAGES
+```
+
 
 
 https://stackoverflow.com/questions/46878640/is-there-a-way-to-check-the-exact-list-of-packages-that-will-be-installed-in-the
 
+# **FILES**
 
+**FILES**: 这个部分告诉 Yocto 构建系统要安装哪些文件到目标设备上。`FILES` 变量通常用于指定需要安装到目标设备的文件列表。
+
+```
+FILES:${PN} = "${sysconfdir}/init.d ${sysconfdir}/asound.conf"
+```
+
+
+
+这段语句告诉 Yocto 在构建和部署软件包时，将软件包中的 `init.d` 目录和 `asound.conf` 文件安装到目标设备的 `/etc` 目录下，这些文件是软件包运行所需的配置文件或脚本。
+
+# CONFFILES
+
+```
+CONFFILES:${PN} = "${sysconfdir}/asound.conf"
+```
+
+
+
+这个设置告诉 Yocto 构建系统，在安装 `${PN}` 软件包时，`asound.conf` 文件将==被视为配置文件，可能需要特殊的安装和处理方式，==例如，在更新软件包时，需要保留用户自定义的配置。
+
+# pkg_postinst
+
+```
+pkg_postinst:${PN}() {
+	if test -z "$D"
+	then
+		if test -x ${sbindir}/alsactl
+		then
+			${sbindir}/alsactl -g -f ${localstatedir}/lib/alsa/asound.state restore
+		fi
+	fi
+}
+```
+
+
+
+这段代码是一个 `pkg_postinst` 脚本，用于在软件包安装后执行特定的操作。让我解释一下其中的内容：
+
+- **`pkg_postinst:${PN}()`**: 这是一个包后安装脚本，用于在软件包安装后执行指定的操作。`${PN}` 是当前软件包的名称，这个脚本会在安装这个软件包后执行。
+
+- **`if test -z "$D"`**: 这是一个条件语句，检查变量 `$D` 是否为空。在 Yocto 中，`$D` 是一个构建系统变量，指向一个临时的安装目录，通常用于在构建软件包时进行临时安装。这里的条件语句检查是否当前不是在 `$D` 目录下执行脚本。
+
+- **`if test -x ${sbindir}/alsactl`**: 这是另一个条件语句，检查是否存在 `${sbindir}/alsactl` 可执行文件。`${sbindir}` 通常是系统二进制文件目录，这里检查是否存在 `alsactl` 可执行文件。
+
+- **`${sbindir}/alsactl -g -f ${localstatedir}/lib/alsa/asound.state restore`**: 如果上述两个条件都满足，则会执行这条命令。它运行了 `alsactl` 工具，可能用于在安装软件包后恢复 ALSA（Advanced Linux Sound Architecture）的状态。`-g` 参数表示以全局模式执行，`-f` 参数指定了一个文件路径，`restore` 是 `alsactl` 命令的一个参数，可能用于恢复 ALSA 的状态。
+
+这段代码的作用是在软件包安装后，如果当前不是在临时安装目录下，并且系统中存在 `alsactl` 可执行文件，则运行 `alsactl` 命令，可能用于恢复 ALSA 的状态。
 
 # bb文件里增加环境变量
 
@@ -4481,7 +4539,7 @@ https://blog.csdn.net/faihung/article/details/82713816
 
 这个跟TARGET_ARCH是一样的，都是aarch64 。
 
-总的来说，在yocto里，host和target，都是target。
+==总的来说，在yocto里，host和target，都是target。==
 
 而native才是编译机器。native和build又基本都是指编译机器。
 
@@ -5201,7 +5259,46 @@ FILES_lib${BPN} = "${libdir}/lib*${SOLIBS}"
 
 https://stackoverflow.com/questions/56914301/how-to-deploy-files-to-boot-partition-with-yocto
 
-# WIC
+# WIC镜像
+
+## 简介
+
+Wic 是 Yocto 工具链中的一个工具，用于创建和管理可写磁盘镜像。它提供了一种灵活的方式来定义、配置和生成多种类型的磁盘镜像，这些镜像可以用于嵌入式系统、虚拟机、物联网设备等各种用途。
+
+### Wic 主要功能：
+
+1. **创建可写磁盘镜像：** Wic 可以创建各种类型的磁盘镜像，包括基于硬盘、SD 卡、USB 设备等的镜像。这些镜像通常用于部署嵌入式系统或设备。
+
+2. **支持多种格式：** Wic 支持多种磁盘镜像格式，如 .wic、.wic.gz、.hddimg 等，以适应不同环境和需求。
+
+3. **定义和配置：** 用户可以通过配置文件定义和配置镜像的内容和特性。这包括文件系统、分区、启动设置、镜像类型等。
+
+4. **自定义功能：** Wic 允许用户添加自定义的脚本和后处理命令，以实现定制化的镜像生成流程。
+
+5. **可扩展性：** 可以通过扩展 Wic 插件来支持更多的镜像类型和特性，以满足不同项目的需求。
+
+### Wic 使用场景：
+
+- **嵌入式系统部署：** 用于创建部署到嵌入式设备的完整磁盘镜像，包括文件系统、引导程序、内核等。
+  
+- **虚拟机镜像：** 生成用于虚拟化环境（如 QEMU、VirtualBox 等）的磁盘镜像。
+
+- **定制化镜像生成：** 可以根据特定项目需求生成定制化的镜像，添加特定的软件包、配置或脚本等。
+
+总的来说，Wic 是一个强大的工具，用于定义、配置和生成各种类型的磁盘镜像。它为开发人员和系统集成人员提供了灵活、可定制的镜像生成方式，适用于多种嵌入式和嵌入式 Linux 系统的部署需求。
+
+## 怎样编译生成wic镜像
+
+在 `conf/local.conf` 或 `conf/<your_image>.conf` 中定义 Wic 镜像的配置。使用类似以下的配置：
+
+```
+bashCopy code
+IMAGE_FSTYPES = "wic wic.gz hddimg"
+```
+
+在配置中定义所需的分区、文件系统和其他相关参数。
+
+
 
 参考资料
 
@@ -6374,6 +6471,18 @@ EXCLUDE_FROM_WORLD = "1"
 
 这个变量通常在软件包的 `.bb` 文件中设置，以控制软件包使用哪个类。如果不设置 `CLASSOVERRIDE`，则软件包将使用默认类来构建和配置。
 
+## CLASSOVERRIDE = "class-cross"
+
+在 Yocto 中，`CLASSOVERRIDE` 是一个变量，用于指定对 BitBake 类进行覆盖（override）的操作。这个变量允许你为特定的类应用覆盖操作，以修改或扩展类的行为。
+
+在这个例子中，`CLASSOVERRIDE = "class-cross"` 可能是在告诉 Yocto 在交叉编译类（cross class）上进行覆盖。交叉编译类通常用于定义交叉编译环境下的构建行为和设置。
+
+通过使用 `CLASSOVERRIDE` 变量，你可以为特定的类应用额外的设置、调整默认行为或者添加额外的功能，以满足定制化的需求或者对构建流程进行特定的修改。
+
+例如，假设你希望在交叉编译环境中对某些类的行为进行修改，你可以设置 `CLASSOVERRIDE` 为 `"class-cross"`，然后在相应的配置文件中对这些类进行调整或覆盖，以适应交叉编译环境下的特殊要求。
+
+这个设置可以在定制 Yocto 构建系统时非常有用，允许你针对特定的类应用定制化的设置和修改，以满足特定的构建需求。
+
 # yocto的override机制，有哪些东西可以被override
 
 Yocto 构建系统的 override 机制非常灵活，==允许您覆盖（override）几乎所有层面的配置和行为==。以下是一些常见的可以被 override 的内容：
@@ -7148,6 +7257,25 @@ package group是把一组package通过功能分组。或者其他依据进行分
 
 package group被image 的recipe使用。把一组package安装到image里。
 
+对应的bb文件有哪些：
+
+```
+./meta/recipes-core/packagegroups
+./meta/recipes-graphics/packagegroups
+./meta/recipes-sato/packagegroups
+./meta/recipes-extended/packagegroups
+```
+
+### packagegroup.bbclass 分析
+
+默认情况下，只有packagegroup包本身在PACKAGES中。
+
+-dbg和-dev口味由下面的anonfunc处理。
+
+这意味着packagegroup食谱用于构建多个packagegroup
+
+packages必须在继承了packagegroup.bbclass之后修改*PACKAGES*。
+
 
 
 # DISTRO_FEATURES和IMAGE_INSTALL的关系
@@ -7638,6 +7766,842 @@ pkg_postrm:${PN} () {
 ==通常这种操作用于清理软件包在系统中留下的特定文件或目录，==
 
 以确保在卸载软件包时系统的状态能够得到正确的维护和清理。
+
+# S/B/D这3个目录
+
+
+
+在 Yocto 中，S/B/D 这三个目录是用于构建软件包的不同阶段所使用的目录。
+
+1. **S（Source）目录**：通常表示源代码目录，用于存放原始的软件包源代码。这个目录是只读的，BitBake 在构建之前会从这里复制源代码到临时的构建目录（B 目录）进行后续的构建过程。S 目录的位置由 SRC_URI 变量指定，其中包含了下载或提取源码的 URL。
+
+2. **B（Build）目录**：表示构建目录，用于进行软件包的构建过程。BitBake 在构建过程中会在 B 目录下创建临时目录并执行编译、链接和其他构建任务。这个目录是可以写入的，通常包含了编译所需的 Makefile、编译中间文件、构建的二进制文件等。构建完成后，生成的文件会被收集到一个临时的临时安装目录（D 目录）。
+
+3. **D（Destination）目录**：也称为临时安装目录，用于模拟软件包被安装到系统中的目录结构。在构建阶段完成后，BitBake 会将软件包中的文件安装到 D 目录中，以便稍后打包或生成镜像。这个目录通常包含了软件包被安装到系统中的结构，例如 bin、lib、etc 等目录。它并不是最终安装到目标设备上的实际目录，而是用于生成软件包镜像的临时目录。
+
+这三个目录在 Yocto 构建过程中扮演了不同的角色，帮助管理不同阶段所需的文件和构建过程中的临时文件。对于开发者来说，了解这些目录有助于理解软件包的构建过程和如何管理生成的文件。
+
+我的hello-world.bb文件：
+
+```
+SUMMARY = "Hello World Demo"
+DESCRIPTION = "A simple demo recipe to compile and run a C++ program"
+
+LICENSE = "MIT"
+LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
+
+SRC_URI = "file://src"
+
+CXXFLAGS:append = " -I${WORKDIR} -I${WORKDIR}/src"
+
+do_compile() {
+    ${CXX} ${CXXFLAGS} -o hello_world ${WORKDIR}/src/hello_world.cpp ${WORKDIR}/src/config.cpp ${WORKDIR}/src/api.c
+}
+
+do_install() {
+    install -d ${D}${bindir}
+    # install -m 0755 ${WORKDIR}/hello_world ${D}${bindir}
+}
+
+# FILES:${PN} += "${bindir}/hello_world"
+
+```
+
+目录层次是：
+
+```
+hello-world/
+├── files
+│   └── src
+│       └── hello_world.cpp
+└── hello-world.bb
+```
+
+
+
+我以我自己加的hello-world这个包为例进行分析。
+
+通过bitbake-getvar来查看：
+
+```
+#
+# $S [2 operations]
+#   set /mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/code/poky/meta/conf/bitbake.conf:405
+#     "${WORKDIR}/${BP}"
+#   set /mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/code/poky/meta/conf/documentation.conf:368
+#     [doc] "The location in the Build Directory where unpacked package source code resides."
+# pre-expansion value:
+#   "${WORKDIR}/${BP}"
+S="/mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/code/build-av400/tmp/work/armv8a-poky-linux/hello-world/1.0-r0/hello-world-1.0"
+```
+
+那么S就是在build目录下的。
+
+B是同一个目录。
+
+```
+B="/mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/code/build-av400/tmp/work/armv8a-poky-linux/hello-world/1.0-r0/hello-world-1.0"
+```
+
+看看D：bitbake-getvar -r hello-world D
+
+```
+D="/mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/code/build-av400/tmp/work/armv8a-poky-linux/hello-world/1.0-r0/image"
+```
+
+D就是B下面的image目录。
+
+还有一个WORKDIR
+
+```
+WORKDIR="/mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/code/build-av400/tmp/work/armv8a-poky-linux/hello-world/1.0-r0"
+```
+
+# DEFAULTTUNE
+
+在Yocto中，`DEFAULTTUNE`是一个在`conf/local.conf`文件中设置的变量，用于指定所需的处理器架构和特定的优化参数。
+
+它决定了将要构建的软件包、内核和其他组件的默认目标架构和优化设置。
+
+对于64位内核和32位应用的混合模式，你需要根据你的处理器架构设置正确的`DEFAULTTUNE`值。以下是一些常见的处理器架构和相应的`DEFAULTTUNE`值示例：
+
+- 对于 ARM 处理器架构:
+  ```bash
+  DEFAULTTUNE = "cortexa53"  # 64位ARM内核，32位应用程序
+  ```
+
+- 对于 x86 处理器架构:
+  ```bash
+  DEFAULTTUNE = "corei7-64"  # 64位内核和应用程序
+  ```
+
+确保选择的`DEFAULTTUNE`值支持你的处理器并且符合你的需求，以确保构建的Yocto镜像能够正确运行。
+
+你可以查阅Yocto文档或者处理器文档，以获取关于支持的处理器架构和相应`DEFAULTTUNE`值的更多信息。
+
+# NON_MULTILIB_RECIPES
+
+在 Yocto 中，`NON_MULTILIB_RECIPES` 是一个变量，用于指定哪些软件包的 recipe 不会被构建为多架构（multilib）的版本。
+
+Multilib 是一种允许在同一系统上同时支持多个架构的机制。有些软件包可能会针对不同的架构提供不同的编译版本，例如同时提供 32 位和 64 位的版本。==然而，并非所有软件包都需要或适合构建成多架构版本。==
+
+`NON_MULTILIB_RECIPES` 变量允许你指定哪些软件包的 recipe 不应该被构建成多架构版本。比如，如果你确定某个软件包不需要多架构支持，你可以将其列入 `NON_MULTILIB_RECIPES`，以避免 Yocto 尝试构建多架构的版本。
+
+示例：
+
+```bash
+NON_MULTILIB_RECIPES += "package-name"
+```
+
+其中 `package-name` 是不需要构建成多架构版本的软件包名称。
+
+这个设置可以有助于简化构建流程，尤其是当某些软件包不需要多架构支持时。
+
+```
+NON_MULTILIB_RECIPES = "grub grub-efi make-mod-scripts ovmf u-boot"
+```
+
+可以看到uboot明确被指定为不适合multilib版本。
+
+# source-date-epoch
+
+看注释是写的：
+
+```
+##################################################################
+# Reproducibility
+##################################################################
+
+SDE_DIR = "${WORKDIR}/source-date-epoch"
+SDE_FILE = "${SDE_DIR}/__source_date_epoch.txt"
+SDE_DEPLOYDIR = "${WORKDIR}/deploy-source-date-epoch"
+
+```
+
+所以这个是跟buildroot里那个reproducable一样的特性。是为了调试bug来增加的特性。
+
+保证每次编译的二进制都是一样的。
+
+
+
+# poky\meta\conf\machine\include\README
+
+这个文档对tune相关的变量进行了说明。
+
+| 变量                | 说明                                              |
+| ------------------- | ------------------------------------------------- |
+| AVAILTUNES          | 所有的tune变量。从armv4到armv8-crypto，有几十种。 |
+| DEFAULTTUNE         | 我的当前是armv8a-crc                              |
+| TUNEVALID           | 当前是None                                        |
+| TUNECONFLICTS       |                                                   |
+| TUNE_FEATURES       |                                                   |
+| ABIEXTENSION        |                                                   |
+| TUNE_CCARGS         | -march=armv8-a+crc -mbranch-protection=standard   |
+| TUNE_ARCH           | aarch64                                           |
+| TUNE_PKGARCH        | armv8a                                            |
+| PACKAGE_EXTRA_ARCHS | aarch64 armv8a armv8a-crc                         |
+| TARGET_FPU          |                                                   |
+| BASE_LIB            |                                                   |
+
+# USE_NLS = "no"
+
+在 Yocto 中，`USE_NLS = "no"` 是一个配置选项，用于禁用国际化支持（NLS，即 National Language Support）。
+
+当设置 `USE_NLS = "no"` 时，这表示你希望构建的系统镜像不包含国际化支持。国际化支持通常用于使软件能够适应多种语言和地区的需求，包括翻译文本、日期格式、货币符号等。
+
+禁用国际化支持有时可以减小生成的系统镜像的大小，并且可能有助于提高系统性能，特别是当你的应用场景中并不需要多语言支持时。
+
+这个设置适用于定制化构建，当你确定系统中不需要或不打算提供多语言支持时，可以将 `USE_NLS` 设置为 `"no"`，以便在构建过程中禁用国际化支持。
+
+# do_build和do_compile的关系
+
+在 Yocto 构建系统中，`do_compile` 和 `do_build` 是构建过程中的两个重要任务。
+
+- **do_compile**：
+  `do_compile` 是 Yocto 构建系统中的一个任务，用于执行源代码的编译操作。这个任务通常用于将源代码转换为目标平台的可执行文件或者库文件。它主要负责编译源代码、生成目标文件，并将其转换为可执行程序或库的中间步骤。
+
+- **do_build**：
+  `do_build` 是一个更加通用的任务，在 Yocto 中有着更广泛的含义。它可能涵盖多个构建阶段，不仅仅限于编译过程。`do_build` 任务涵盖了构建软件包的整个过程，包括配置、编译、安装以及其他可能的构建步骤。它更像是一个整体的构建过程，可能包含了多个子任务，其中 `do_compile` 可能是其中的一个阶段。
+
+一般而言，在 Yocto 的构建中，`do_build` 是一个更大的构建任务，而 `do_compile` 则是其中的一个特定阶段。`do_build` 可能涵盖了从源代码到最终目标文件生成的整个流程，而 `do_compile` 更专注于编译这个特定的步骤。
+
+在任务依赖关系上，`do_build` 可以包含多个子任务，其中一个可能是 `do_compile`。这样 `do_build` 可能在适当的时候调用 `do_compile`，以确保在整个构建过程中完成了源代码的编译。
+
+# do_image_qa
+
+`do_image_qa` 是 Yocto 构建系统中的一个任务，用于执行镜像质量评估（QA，Quality Assurance）相关的操作。
+
+这个任务通常在构建镜像的最后阶段执行，它会对生成的镜像进行各种测试和检查，以确保镜像的质量、完整性和可用性。这些测试可能包括各种方面，比如镜像的完整性检查、文件系统的一致性、启动过程的测试、软件包的正确性等。
+
+==`do_image_qa` 可能会执行一系列测试、脚本或工具，用于验证生成的镜像是否符合预期的标准或规范。==它是确保生成的系统镜像质量和可用性的关键步骤之一。
+
+在执行这个任务时，可以根据特定的需求或标准定义不同的测试用例，以确保生成的镜像满足特定的质量标准或要求。这些测试可以是预定义的或定制的，以适应特定场景下的需求。
+
+总的来说，`do_image_qa` 是一个用于镜像质量保证的任务，它执行一系列测试和检查，以确保生成的系统镜像达到了预期的质量和可用性标准。
+
+# do_populate_lic
+
+`do_populate_lic` 是 Yocto 构建系统中的一个任务，负责处理软件许可证相关的操作。
+
+这个任务在构建过程的最后阶段执行，其主要目的是收集并安装软件包的许可证信息。在 Yocto 构建系统中，每个软件包都有其自己的许可证，这些许可证信息需要被正确地管理和记录。
+
+`do_populate_lic` 任务会收集每个软件包的许可证信息，并将其安装到相应的目录中。这些信息可能包括软件的许可证文本、许可证类型、版权信息等。
+
+这个任务的执行是为了确保生成的镜像中包含了正确的许可证信息，以便在使用或分发软件时遵守相关的许可证要求。这对于确保软件合规性非常重要，特别是在商业产品或涉及到对外发布的软件中。
+
+总的来说，`do_populate_lic` 任务的作用是收集和安装软件包的许可证信息，以确保生成的镜像包含了正确的许可证，满足软件的合规性要求。
+
+# **do_prepare_recipe_sysroot**
+
+ 网上大多资料都简要带过这个任务，未能讲明白这个任务是做什么的，但想要了解yocto的配方文件共享机制就必须弄明白这个任务是做什么的！
+
+ do_prepare_recipe_sysroot与do_populate_sysroot是staging.bbclass类中关键任务，
+
+用于共享配方之间成果物！
+
+抛出一个问题思考一下，如果一个配方B需要使用配方A的成果物怎么办（比如头文件、动态/静态链接库、配置文件）？
+
+yocto为了解决这种问题，提供了一套配方成果物共享机制，该机制分为两阶段：
+
+第一阶段在A配方构建时完成。
+
+A配方在构建时，需要在do_install 任务中将需要共享的文件安装至`${D}目录，后续执行的do_populate_sysroot任务将自动拷贝${D}目录下部分子目录到${SYSROOT_DESTDIR}，而${SYSROOT_DESTDIR}目录最终会放置到共享区（默认为build/tmp/sysroots-components）暂存，其他配方构建时就可以从共享区拷贝。`
+
+ 那么，${D}目录下哪些子目录会被自动拷贝？
+
+自动拷贝的目录由三个变量指定，
+
+分别为SYSROOT_DIRS（目标设备需要保存的子目录）、
+
+SYSROOT_DIRS_BLACKLIST（目标设备不需要保存的子目录）、
+
+SYSROOT_DIRS_NATIVE（本机设备需要保存的目录），
+
+以SYSROOT_DIRS变量为例，其默认值为：
+
+```
+SYSROOT_DIRS = " \
+         ${includedir} \
+         ${libdir} \
+         ${base_libdir} \
+         ${nonarch_base_libdir} \
+         ${datadir} \
+     "
+
+```
+
+如果需要添加其他额外保存的目录，可以在配方文件中增加`SYSROOT_DIRS += “YYY”`。
+
+第二阶段在B配方构建时完成。
+
+B配方中添加DEPENDS += "A"，便可使用A配方的成果物了。
+
+bitbake执行构建任务时会保证B配方的do_prepare_recipe_sysroot任务执行前，
+
+A配方的成果物已位于build/tmp/sysroots-components中。
+
+ do_prepare_recipe_sysroot任务会在${WORKDIR}目录中创建两个sysroot目录并填充（所有依赖拷贝到其中），
+
+这两个目录名分别为"recipe-sysroot"和"recipe-sysroot-native"（本机），
+
+其中"recipe-sysroot"给目标设备使用，A配方生成的成果物就在里面，
+
+另一个"recipe-sysroot-native"是给本机设备使用的。
+
+
+
+https://blog.csdn.net/zz2633105/article/details/122336873
+
+
+
+# work-shared
+
+这个子目录和work类似， 但是针对共享的软件包，例如内核的源码就放在这里面。
+
+# Weston Wayland compositor
+
+Weston 是一个以 Wayland 协议为基础的参考实现的 Wayland 显示服务器（compositor）。它是作为 Wayland 基础设施的一部分开发的，为构建图形化用户界面（GUI）提供了必要的基础支持。
+
+作为一个 Wayland compositor，Weston 提供了对 Wayland 协议的实现，允许应用程序通过 Wayland 协议与图形硬件和显示系统进行通信。它提供了基本的窗口管理、渲染和显示功能，允许客户端应用程序创建窗口并与用户进行交互。
+
+Weston 的设计是模块化的，它包含多个插件和模块，使得它可以支持不同的功能和扩展，例如支持不同的渲染器、输入设备、窗口管理器等。
+
+作为 Wayland 的参考实现，Weston 在开发和测试 Wayland 协议和功能时发挥了重要作用。它也作为基础设施，为构建基于 Wayland 的图形桌面环境提供了一个可用的起点。
+
+总的来说，Weston 是一个用于 Wayland 的参考 compositor，提供了基本的显示和窗口管理功能，用于构建支持 Wayland 协议的图形化用户界面。
+
+## weston 和x11比较
+
+Weston 和 X11 是两种不同的显示架构和协议，各自具有不同的特点和优势：
+
+### Weston（Wayland）
+
+1. **现代性和安全性：** Weston 基于 Wayland 协议，被设计为更现代、更简洁、更安全的显示服务器。Wayland 设计目标是提供更好的性能和安全性，以及更直接的图形处理方式。
+  
+2. **更简洁的设计：** Weston 的设计更为简洁，以模块化的方式实现不同的功能。它的核心设计着重于显示、窗口管理和输入事件处理。
+
+3. **直接的渲染：** Wayland 提供了直接的图形渲染路径，客户端程序可以直接与显示服务器交互，避免了额外的复杂性和延迟。
+
+4. **更适合嵌入式和移动设备：** Wayland 和 Weston 的设计更适用于嵌入式系统和移动设备，对资源的消耗相对较低。
+
+### X11
+
+1. **成熟和广泛应用：** X11 是一个非常成熟且广泛使用的显示服务器协议，已经存在了几十年，并且被广泛支持和应用于桌面环境和应用程序中。
+
+2. **兼容性：** X11 兼容性较强，可以运行许多传统的 X 应用程序，这些应用程序可能尚未迁移到 Wayland 上。
+
+3. **多样的特性和功能：** X11 提供了许多丰富的功能和特性，例如复杂的窗口管理、远程显示能力（例如 SSH X11 转发）等。
+
+4. **传统的客户端-服务器模型：** X11 使用传统的客户端-服务器模型，在客户端和服务器之间有一个中间层，这可能导致一些性能和延迟上的损失。
+
+### 结论
+
+Weston 和 X11 针对不同的应用场景和需求提供了不同的解决方案。Weston 更适合于现代的、轻量级的、面向移动和嵌入式设备的场景，而 X11 则在传统的桌面环境和应用程序中依然有着广泛的应用。选择使用哪种取决于特定的使用场景、需求和对现有应用程序的兼容性要求。
+
+# x11-sato     
+
+`x11-sato` 是一个针对嵌入式设备和移动设备的桌面环境。它是由 ==OpenedHand 公司开发的 Sato 项目==的一部分。
+
+Sato 是一个专注于嵌入式和移动设备的图形用户界面（GUI）环境，旨在提供一个简洁、易于使用的桌面体验。
+
+它的设计着重于适应小型屏幕和触摸屏设备，以及资源受限的嵌入式系统。
+
+`x11-sato` 提供了一个基于 X11 显示服务器的 Sato 环境。
+
+它包括了 Sato 桌面环境所需的窗口管理器、面板、应用程序启动器等组件。
+
+Sato 的设计强调简单性和易用性，并尽可能避免过多的复杂性和资源消耗。
+
+这个桌面环境针对嵌入式系统和移动设备进行了优化，旨在为这些设备提供一个用户友好的图形界面。它的特点包括适应小屏幕、触摸屏支持以及针对资源受限设备的优化。
+
+# eclipse-debug
+
+`eclipse-debug` 是 Eclipse 集成开发环境（IDE）中用于支持远程调试的组件。
+
+远程调试允许开发人员在远程计算机上运行代码，并在本地的 Eclipse IDE 中对其进行调试。`eclipse-debug` 提供了一组工具和功能，使开发人员能够连接到远程计算机上正在运行的应用程序，对其进行调试和监视。
+
+这个组件通常包括插件或工具，可以与不同的调试代理或调试服务器通信，允许在远程计算机上设置断点、监视变量、单步执行代码以及获取堆栈跟踪等操作。
+
+Eclipse 作为一个功能强大的开发环境，提供了丰富的插件和工具，其中包括用于调试的插件。`eclipse-debug` 可能是其中的一部分，专门用于支持远程调试，使开发人员能够更轻松地远程调试他们的应用程序。
+
+# tools-profile
+
+`tools-profile` 通常指的是一组用于分析和优化软件性能的工具集合。
+
+在软件开发过程中，性能分析工具被用来检测和诊断代码中的性能问题，以便优化和改进程序的执行效率。这些工具可以提供关于代码执行、资源利用情况、函数调用耗时等方面的数据和指标，帮助开发人员理解和改善软件的性能。
+
+通常，`tools-profile` 可能包括以下类型的工具：
+
+1. **性能分析器（Profiling Tools）：** 这些工具可以帮助开发人员收集程序在运行时的性能数据，例如执行时间、内存使用情况、函数调用图等。
+
+2. **跟踪器（Tracing Tools）：** 跟踪工具用于监视程序的执行轨迹，追踪函数调用、系统调用、事件发生等，以便分析程序的行为和性能瓶颈。
+
+3. **调试器（Debugging Tools）：** 调试工具可以帮助开发人员分析和修复代码中的 bug 和问题，尽管调试器通常更专注于错误的排查，但在性能优化方面也有帮助。
+
+4. **性能可视化工具（Performance Visualization Tools）：** 这类工具提供图形化界面来呈现性能数据，使开发人员能够更直观地理解程序的性能状况。
+
+这些工具在软件开发中非常有价值，因为它们帮助开发人员深入了解程序在运行时的性能特征，从而更好地优化和改进代码。通过 `tools-profile`，开发人员可以识别性能瓶颈，改善程序的执行效率，并最终提供更好的用户体验。
+
+# dev-pkgs    
+
+`dev-pkgs` 是一个 Yocto 中的组件，它代表了包含在根文件系统中的所有已安装软件包的开发包（development packages）。这些开发包通常包含用于开发的头文件、库文件、静态库以及其他开发所需的资源和工具。
+
+这些开发包是用于在目标设备上进行应用程序开发和编译的重要组成部分。它们提供了必要的开发工具，以便开发人员能够编译、调试和优化针对已安装软件包的应用程序。
+
+具体来说，`dev-pkgs` 包含了以下内容：
+
+- **头文件（Headers）：** 这些文件包含了函数、数据结构和常量的声明，允许开发人员在应用程序中引用库或框架提供的功能。
+
+- **库文件和静态库（Library Files and Static Libraries）：** 包含链接库（shared libraries）和静态库（static libraries），用于链接应用程序的可执行文件。
+
+- **其他开发所需资源（Other Development Resources）：** 可能还包括其他开发所需的资源，如示例代码、文档、调试符号文件等。
+
+这些开发包对于在目标设备上进行应用程序开发和调试非常重要。它们提供了与已安装软件包进行交互和开发所需的工具和资源，让开发人员能够更方便地编写、构建和优化针对这些软件包的应用程序。
+
+# ptest-pkgs 
+
+`ptest-pkgs` 是指 Yocto 构建系统中的一组 ptest（Package Tests）测试包。这些测试包通常是针对启用了 ptest 功能的配方（recipes）生成的。
+
+==在 Yocto 中，`ptest` 是一种用于软件包测试的特殊机制。==它允许开发人员编写针对已构建软件包的测试套件，这些测试可以在目标设备上运行。
+
+`ptest-pkgs` 包含了这些针对已构建软件包的测试套件。这些测试套件是与软件包一起构建的，允许在目标设备上进行针对性能、功能或集成的测试。
+
+这些 ptest 测试包可能包括了：
+
+- **ptest 测试套件：** 包含了针对软件包的各种测试用例，这些测试用例可以验证软件包的功能、性能和稳定性。
+
+- **测试运行环境和工具：** 可能包含在目标设备上运行这些 ptest 测试所需的运行环境和测试工具。
+
+ptest-pkgs 对于开发人员和测试人员非常有用，因为它们允许对已构建的软件包进行详细的测试。这些测试可以帮助发现潜在的问题或 bug，并确保软件包在部署到实际设备上之前具有良好的质量和稳定性。
+
+# stateless-rootfs   
+
+`stateless-rootfs` 是 Yocto 构建系统中的一个组件，
+
+==它描述了一个状态无关的根文件系统。==
+
+这种根文件系统的特点是它并不包含在构建时就被 `systemctl-native`（systemd 控制器）所运行，而是在运行时由 systemd 动态填充。
+
+在这种情况下，根文件系统并不包含完整的 systemd 服务，因此不是在构建过程中由 `systemctl-native` 运行，也没有在构建时静态地将 systemd 服务和单元加载到文件系统中。
+
+相反，这种根文件系统是在运行时由 systemd 动态地填充和管理。
+
+这种状态无关的根文件系统设计==旨在提供更灵活、轻量和动态的文件系统。==
+
+在运行时由 systemd 动态填充可以使系统更容易地适应变化，并根据需要加载所需的服务和单元，而不必静态地将所有内容加载到文件系统中。
+
+这种方式可以更好地适应特定的应用场景，尤其是在嵌入式系统或对资源消耗有严格要求的环境中，允许动态地管理文件系统内容。
+
+# package.bbclass 作用
+
+`package.bbclass` 是 Yocto 中的一个 BitBake 类（bbclass），用于构建和生成软件包（packages）。这个类定义了一系列函数和规则，用于描述如何构建和打包源代码，生成最终的软件包文件。
+
+`package.bbclass` 的主要作用包括以下几点：
+
+1. **软件包生成：** 提供了==构建和打包软件包所需的通用规则和函数==。它定义了如何从源代码生成目标软件包，并提供了打包、安装和部署软件包的通用方法。
+
+2. **安装规则定义：** 包含了安装软件包到目标位置所需的规则和指令。这些规则指定了如何将编译后的文件安装到目标根文件系统中。
+
+3. **软件包元数据配置：** 通过提供软件包的元数据配置，如名称、版本、依赖关系等，使得 BitBake 能够了解和管理软件包的信息。
+
+4. **提供打包命令和函数：** 定义了用于创建软件包的命令和函数，例如 `do_package`，它负责将已编译的文件打包成最终的软件包。
+
+总的来说，`package.bbclass` 提供了一个框架和规范，用于创建和管理软件包。它定义了 BitBake 如何构建、打包和安装软件包，使得开发人员可以方便地创建并集成软件包到他们的 Yocto 构建中。
+
+# openwrt的包管理和yocto的包管理对比
+
+OpenWrt 和 Yocto 是两种针对嵌入式系统的不同构建框架，它们在包管理上有着一些不同的特点和方法。
+
+### OpenWrt 的包管理：
+
+1. **Opkg 包管理器：** OpenWrt 使用 Opkg 这个轻量级的包管理器，它专门设计用于嵌入式系统。Opkg 是一个简单、快速的包管理器，用于安装、更新和管理软件包。它支持对系统进行轻量级的软件包管理，方便在嵌入式系统上安装和更新软件。
+
+2. **软件包源管理：** OpenWrt 提供了一系列的软件包源，这些源包含了各种软件包的源代码和元信息。用户可以通过配置软件包源来获取和安装所需的软件包。
+
+3. **易用性和适用性：** Opkg 提供了一套简单易用的命令行接口，使得用户能够方便地搜索、安装、删除软件包，并对系统进行管理。它适用于较小的存储空间和资源有限的嵌入式设备。
+
+### Yocto 的包管理：
+
+1. **BitBake 和 Poky 构建系统：** Yocto 使用 BitBake 构建系统来管理软件包的构建和集成。BitBake 是一个强大的构建引擎，它支持定义和管理软件包的构建规则和元数据，以及构建整个 Linux 发行版。
+
+2. **Poky 软件仓库：** Yocto 提供了一个名为 Poky 的软件仓库，其中包含了大量的软件包和组件。用户可以根据需要选择并集成这些软件包到他们的 Yocto 构建中。
+
+3. **灵活性和定制性：** Yocto 提供了更高度的灵活性和定制性，允许用户根据项目需求定制构建，包括特定的软件包选择、构建选项、内核配置等。它适用于对系统有更高定制要求的场景。
+
+4. **生成完整的发行版镜像：** Yocto 可以生成完整的 Linux 发行版镜像，包括根文件系统、内核、启动加载程序等。它更适合构建完整的嵌入式 Linux 发行版。
+
+总的来说，OpenWrt 和 Yocto 都提供了用于构建嵌入式系统的包管理工具，但在适用场景、灵活性和定制性等方面有所不同。OpenWrt 更适合轻量级、易用性强的嵌入式系统，而 Yocto 则更适用于需要高度定制和完整发行版镜像的场景。
+
+
+
+# overlayfs.bbclass作用
+
+`overlayfs.bbclass` 是 Yocto 构建系统中的一个 BitBake 类（bbclass），用于支持 OverlayFS（联合文件系统）功能。
+
+### `overlayfs.bbclass` 的主要作用包括以下几点：
+
+1. **OverlayFS 支持：** 它提供了在 Yocto 构建中支持 OverlayFS 功能的方法和规则。OverlayFS 是 Linux 内核提供的一种文件系统，允许将多个文件系统挂载到同一个目录下，并将它们以层叠方式合并，形成一个联合的文件系统。
+
+2. **镜像构建：** `overlayfs.bbclass` 允许在 Yocto 构建中使用 OverlayFS 来构建镜像。这种方法可以方便地将不同的文件系统层叠在一起，形成一个整合的、包含多个层的文件系统。
+
+3. **定制化文件系统：** 使用 OverlayFS，可以将基础文件系统和定制化文件系统进行层叠合并，使得在一个目录下同时存在基础系统和定制化系统所提供的文件和配置。
+
+4. **灵活性和定制性：** OverlayFS 提供了一种灵活的方法来管理文件系统层，使得用户可以在构建时定制化文件系统，添加特定的文件、配置和修改。
+
+通过使用 `overlayfs.bbclass`，Yocto 用户可以利用 OverlayFS 功能轻松管理和定制化文件系统，从而实现更加灵活、定制化的镜像构建。
+
+
+
+https://elinux.org/images/6/6c/OverlayFS_in_Yocto._Vyacheslav_Yurkov.pdf
+
+# sstate-cache-management.sh
+
+`sstate-cache-management.sh` 是 Yocto 构建系统中的一个脚本，用于管理和维护 sstate 缓存（shared state 缓存）的工具。
+
+### sstate-cache 是什么？
+
+sstate 缓存是 Yocto 构建系统中的一种机制，用于缓存构建过程中生成的中间结果、编译输出和其他可重复利用的构建产物。这些产物包括已编译的目标文件、工具链编译器生成的文件、共享对象（shared objects）等。
+
+### `sstate-cache-management.sh` 的作用：
+
+1. **缓存维护：** 这个脚本提供了一些命令和功能，用于 sstate 缓存的维护和管理。它可以执行清理、检查、删除等操作，帮助管理 sstate 缓存的大小和内容。
+
+2. **命令选项：** 这个脚本提供了不同的命令选项，允许用户执行不同的操作，如清理不再需要的 sstate 缓存、列出缓存中的内容、查找和删除特定的 sstate 缓存等。
+
+3. **高级操作：** 它还可能包含一些高级操作，如针对特定情况的修复功能、检查缓存完整性等，用于确保 sstate 缓存的正确性和稳定性。
+
+### 使用示例：
+
+```bash
+sstate-cache-management.sh list # 列出 sstate 缓存中的内容
+sstate-cache-management.sh clean # 清理不再需要的 sstate 缓存
+sstate-cache-management.sh find-dupes # 查找重复的 sstate 缓存项
+```
+
+总的来说，`sstate-cache-management.sh` 是一个用于管理和维护 Yocto 构建系统中 sstate 缓存的实用工具，允许用户执行各种操作来管理缓存的内容和大小。
+
+# LICENSE_FLAGS_ACCEPTED 
+
+这个配置使用了 Yocto 中的 `LICENSE_FLAGS_ACCEPTED` 变量，用于指定对特定软件包的授权标志（license flags）。每个授权标志代表了软件包所需的授权许可或许可类型。在这个配置中，`LICENSE_FLAGS_ACCEPTED` 指定了接受的许可标志，允许使用具有特定许可的软件包。
+
+对于你提供的示例配置：
+
+- `synaptics-killswitch`：接受使用 Synaptics Killswitch 软件包的许可。
+
+- `nonfree_chexquest3` 和 `nonfree_chexquest-galactic-conflict`：接受使用非自由许可的 Chex Quest 3 和 Chex Quest Galactic Conflict 软件包的许可。
+
+通过将这些许可标志添加到 `LICENSE_FLAGS_ACCEPTED` 变量中，Yocto 构建系统将会在构建过程中接受具有这些特定许可的软件包，使得可以构建包含这些软件包的映像或发行版。
+
+# WSK_FILE
+
+`WKS_FILE` 是 Yocto 中一个用于定义镜像创建过程的配置文件（.wks 文件）路径的变量。它指定了用于创建特定类型的镜像的配置文件。
+
+### WKS 文件的作用：
+
+- **定义镜像配置：** WKS 文件包含了创建镜像所需的配置信息，如分区布局、文件系统类型、启动加载程序设置等。
+
+- **描述镜像类型：** 每个 .wks 文件通常对应一个特定类型的镜像，例如硬盘镜像、SD 卡镜像等。
+
+### `WKS_FILE` 变量的使用：
+
+在 Yocto 构建过程中，通过设置 `WKS_FILE` 变量，告知构建系统要使用哪个 .wks 文件来创建特定类型的镜像。
+
+示例用法：
+
+```bash
+WKS_FILE = "path/to/your/image.wks"
+```
+
+在这个示例中，`path/to/your/image.wks` 是实际的 .wks 文件的路径，它包含了创建指定类型镜像的配置信息。
+
+通过设置 `WKS_FILE` 变量，你可以根据需要选择并指定用于创建特定类型镜像的 .wks 配置文件，从而定制和构建符合特定需求的镜像。
+
+# meta-elm-binary
+
+`meta-elm-binary` 是一个 Yocto Project 中的 Layer，它是针对嵌入式 Linux 系统的一个扩展层，用于支持 Elm 编程语言的交叉编译和集成到 Yocto 构建中。
+
+### 主要功能和作用：
+
+1. **Elm 编程语言支持：** 提供了对 Elm 编程语言的支持，包括编译器、工具链以及运行时环境的交叉编译和集成。
+
+2. **构建应用程序：** 允许在 Yocto 构建系统中构建 Elm 编写的应用程序，将其集成到嵌入式 Linux 系统中。
+
+3. **扩展 Layer：** `meta-elm-binary` 是 Yocto Project 的一个 Layer，通过引入这个 Layer，可以扩展 Yocto 构建系统的功能，使其能够支持 Elm 编程语言的集成。
+
+4. **定制化和配置：** 提供了配置和定制选项，允许根据特定需求调整 Elm 编译器、应用程序构建流程等。
+
+### 注意事项：
+
+- 使用 `meta-elm-binary` 需要理解 Elm 编程语言以及与 Yocto 构建系统的集成方式，以便正确配置和使用该层。
+
+- 在集成 Elm 应用程序时，需要确保 Yocto 构建系统中包含了所需的依赖项、工具链和编译器，以便顺利进行交叉编译和集成。
+
+如果你在 Yocto 构建中使用 Elm 编程语言，`meta-elm-binary` 可能会是一个有用的扩展层，它提供了集成 Elm 程序到嵌入式 Linux 系统中的支持和工具。
+
+# BBFILES_DYNAMIC
+
+`BBFILES_DYNAMIC` 是 Yocto 中一个重要的变量，用于动态指定额外的 BitBake 构建文件。它允许用户动态地向 BitBake 构建系统添加额外的文件，这些文件可以包含额外的类、配置或其它相关内容。
+
+### 主要作用：
+
+1. **动态添加构建文件：** `BBFILES_DYNAMIC` 变量允许用户在构建过程中动态地向 BitBake 构建系统添加文件。这些文件可以包含类似于 `.bb`、`.bbappend` 或其它相关文件的内容。
+
+2. **扩展构建系统：** 通过使用 `BBFILES_DYNAMIC`，用户可以在构建过程中根据特定需求灵活地添加额外的构建文件，以扩展构建系统的功能和配置。
+
+### 使用示例：
+
+```bash
+BBFILES_DYNAMIC += "/path/to/your/dynamic/files/*.bb"
+```
+
+在这个示例中，`/path/to/your/dynamic/files/*.bb` 是指向一个目录或通配符的路径，指定了额外的 BitBake 构建文件。BitBake 将会在构建过程中动态地加载这些文件，并将它们纳入到构建系统中。
+
+### 注意事项：
+
+- 动态添加构建文件可能会增加构建系统的复杂性和维护难度。确保动态添加的文件与项目需求相符，避免引入不必要的混乱或错误。
+
+- 正确配置 `BBFILES_DYNAMIC` 变量需要了解 BitBake 构建系统的工作原理和文件加载机制，以避免构建过程中的问题或冲突。
+
+`BBFILES_DYNAMIC` 是一个强大的工具，允许在构建过程中动态地添加额外的构建文件，提供了灵活性和定制性，适用于特定需求下对构建系统进行扩展和定制。
+
+# EGLFS
+
+EGLFS（EGL Fullscreen）是 Qt 框架中的一个平台插件，用于在嵌入式系统中==实现全屏显示和图形渲染==。
+
+### 主要特点和作用：
+
+1. **全屏显示：** EGLFS 旨在提供全屏显示的功能，适用于嵌入式系统和嵌入式设备的图形界面应用。它能够充分利用嵌入式设备的屏幕资源，实现全屏显示。
+
+2. **图形渲染：** EGLFS 提供了 OpenGL ES 的支持，使得 Qt 应用程序能够利用 GPU 进行图形渲染，从而提高图形界面的性能和流畅度。
+
+3. **无窗口系统：** EGLFS 是为嵌入式系统设计的，==它通常不需要窗口管理器（Window Manager），因为它直接在屏幕上绘制，并管理整个屏幕。==
+
+4. **硬件加速：** 通过使用 OpenGL ES 和 GPU 加速，EGLFS 可以实现硬件加速的图形渲染，提高图形界面的性能。
+
+5. **支持触摸屏等输入设备：** EGLFS 支持各种输入设备，如触摸屏、键盘等，以便在嵌入式系统上构建具有交互性的图形界面。
+
+### 注意事项：
+
+- EGLFS 是 Qt 框架的一个特定平台插件，要使用它需要 Qt 应用程序适配该插件。需要确保 Qt 版本支持 EGLFS，并且正确配置和编译 Qt 应用程序以使用 EGLFS 插件。
+
+- 对于不同的嵌入式平台和设备，可能需要特定的配置和调整才能正确地使用 EGLFS 插件，并确保图形界面正常工作。
+
+总体来说，EGLFS 是 Qt 框架中用于嵌入式系统全屏显示和图形渲染的一个重要平台插件，它为嵌入式设备提供了高性能和流畅的图形界面显示功能。
+
+# PREMIRRORS
+
+`PREMIRRORS` 是 Yocto 构建系统中一个重要的变量，用于定义软件包下载镜像的预镜像（premirror）设置。它允许用户在构建过程中使用预定义的镜像源来下载所需的软件包。
+
+### 主要作用：
+
+1. **镜像源定义：** `PREMIRRORS` 变量允许用户定义一个或多个预镜像源（premirrors），这些源包含软件包下载的 URL 信息。
+
+2. **优先级设置：** 这些预镜像源可以设置优先级，用于确定 Yocto 构建系统在下载软件包时首选的镜像源。
+
+### 使用示例：
+
+```bash
+PREMIRRORS_prepend = "\
+    ftp://.*.com.* http://downloads.example.com/mirrors/ \n \
+    http://downloads.openembedded.org.* http://downloads.example.org/oe/ \n \
+"
+```
+
+在这个示例中，`PREMIRRORS` 设置了两个预镜像源。第一个镜像源匹配了 `ftp://.*.com.*` 的下载地址，并将其重定向到 `http://downloads.example.com/mirrors/`；第二个镜像源匹配了 `http://downloads.openembedded.org.*` 的下载地址，并将其重定向到 `http://downloads.example.org/oe/`。
+
+### 注意事项：
+
+- `PREMIRRORS` 变量的配置需要符合正则表达式的语法，并确保定义的镜像源可以正确匹配到软件包的下载地址。
+
+- 确保定义的预镜像源的优先级设置合理，以确保 Yocto 构建系统在下载软件包时能够优先使用预定义的镜像源。
+
+`PREMIRRORS` 是一个在 Yocto 构建系统中用于配置软件包下载镜像的重要变量，它允许用户定义和设置预镜像源，以便在构建过程中下载软件包时使用这些预定义的镜像源。
+
+# BB_GENERATE_MIRROR_TARBALLS
+
+`BB_GENERATE_MIRROR_TARBALLS` 是 Yocto 构建系统中一个用于控制是否生成镜像源 tarball 的变量。
+
+### 主要作用：
+
+- **镜像源 tarball 生成：** 这个变量用于控制是否在构建过程中生成 tarball 文件，其中包含了构建时下载的源代码 tarball 的副本。
+
+- **提高构建速度：** 生成镜像源 tarball 可以提高构建的速度。如果设置为 `1`，则会在构建时从已下载的源文件创建 tarball，如果未设置或设置为 `0`，则不会生成镜像源 tarball。
+
+### 使用示例：
+
+```bash
+BB_GENERATE_MIRROR_TARBALLS = "1"
+```
+
+在这个示例中，`BB_GENERATE_MIRROR_TARBALLS` 被设置为 `1`，表示在构建过程中生成镜像源 tarball。
+
+### 注意事项：
+
+- 当构建需要在多台机器上执行时，生成镜像源 tarball 可以帮助加速构建流程，因为它可以避免每台机器都需要下载相同的源代码。
+
+- 生成镜像源 tarball 可能会占用磁盘空间，特别是当构建多个不同版本或不同配置时，需谨慎使用。
+
+- 如果设置为 `1`，确保构建机器有足够的空间存储生成的镜像源 tarball。
+
+`BB_GENERATE_MIRROR_TARBALLS` 是一个控制 Yocto 构建系统是否生成镜像源 tarball 的变量，它可以在多机构建环境中加速构建过程，但需要注意磁盘空间的使用。
+
+
+
+# BB_SIGNATURE_HANDLER
+
+`BB_SIGNATURE_HANDLER` 是 Yocto 构建系统中一个重要的变量，用于定义构建签名（signature）处理程序的类型。
+
+### 主要作用：
+
+- **签名处理程序类型：** `BB_SIGNATURE_HANDLER` 变量用于指定构建系统中使用的签名处理程序的类型。签名用于确保构建的软件包的完整性和安全性。
+
+- **签名类型和方法：** 这个变量允许用户选择不同的签名处理程序，可以是默认的 `OEBasicHash`，也可以是其他自定义的签名处理程序。
+
+### 使用示例：
+
+```bash
+BB_SIGNATURE_HANDLER = "OEBasicHash"
+```
+
+在这个示例中，`BB_SIGNATURE_HANDLER` 被设置为使用默认的 `OEBasicHash` 签名处理程序。
+
+### 注意事项：
+
+- Yocto 构建系统支持多种签名处理程序，可以根据实际需求选择合适的签名处理程序。不同的签名处理程序可能有不同的特性和优缺点。
+
+- 设置 `BB_SIGNATURE_HANDLER` 变量需要了解 Yocto 构建系统中签名处理的机制和不同签名处理程序的特性。
+
+`BB_SIGNATURE_HANDLER` 是用于定义 Yocto 构建系统中构建签名处理程序的变量，允许用户选择适当的签名处理程序以确保构建软件包的完整性和安全性。
+
+# OEEquivHash和OEBasicHash的区别
+
+`OEEquivHash` 和 `OEBasicHash` 都是 Yocto 构建系统中的签名处理器，用于验证软件包和任务签名的完整性。它们的区别在于其工作原理和签名验证的方式。
+
+### OEEquivHash：
+
+- **特点：** `OEEquivHash` 是一种基于等价哈希的签名处理器，它不仅会验证文件的哈希值，还会验证文件的大小和元数据等其他属性。==它更加严格，验证的条件更多。==
+
+- **验证方式：** `OEEquivHash` 通过比较任务的输入和输出文件的哈希值、文件大小以及元数据等信息来验证任务的完整性。
+
+### OEBasicHash：
+
+- **特点：** `OEBasicHash` 是一种基本的哈希签名处理器，==只会验证文件的哈希值，而不考虑其他属性。==
+
+- **验证方式：** `OEBasicHash` 只通过比较任务的输入和输出文件的哈希值来验证任务的完整性。
+
+### 区别：
+
+- **验证级别不同：** 主要区别在于验证的严格程度和考虑的属性。`OEEquivHash` 更为严格，考虑了更多文件属性进行验证，而 `OEBasicHash` 则只验证文件的哈希值。
+
+- **应用场景不同：** `OEEquivHash` 适用于对软件包和任务进行更严格的验证，而 `OEBasicHash` 更适用于基本的验证需求。
+
+选择使用哪种签名处理器取决于安全性和验证的要求。一般情况下，如果需要更严格的验证和更全面的文件属性验证，可以选择 `OEEquivHash`，而对于基本的验证需求，可以使用 `OEBasicHash`。
+
+# BB_HASHSERVE
+
+`BB_HASHSERVE` 是 Yocto 构建系统中一个变量，用于控制是否启用哈希服务（hash server）功能。
+
+### 主要作用：
+
+- **哈希服务功能：** `BB_HASHSERVE` 变量用于控制构建系统是否启用哈希服务功能。哈希服务是一种机制，可以加速多用户和多机器构建环境中的构建过程。
+
+- **哈希共享和缓存：** 当启用哈希服务时，构建系统会将已计算的哈希值缓存并共享给其他构建环境中的机器，从而避免重复计算哈希值，提高构建效率。
+
+### 使用示例：
+
+```bash
+BB_HASHSERVE = "1"
+```
+
+在这个示例中，`BB_HASHSERVE` 被设置为启用哈希服务功能。
+
+### 注意事项：
+
+- 启用哈希服务可以加速构建过程，特别是在多机器或多用户构建环境中，因为它可以减少重复计算哈希值的时间。
+
+- 如果构建环境只有单个机器或不需要哈希共享和加速功能，可以将 `BB_HASHSERVE` 设置为不启用，以避免不必要的复杂性。
+
+`BB_HASHSERVE` 是用于控制 Yocto 构建系统中哈希服务功能的变量，它可以在多机器构建环境中加速构建过程，但需要注意适用场景和环境需求。
+
+# BB_GIT_SHALLOW
+
+`BB_GIT_SHALLOW` 是 Yocto 构建系统中一个变量，用于控制在使用 Git 作为版本控制系统时克隆仓库时是否使用浅克隆（shallow clone）。
+
+### 主要作用：
+
+- **浅克隆功能：** `BB_GIT_SHALLOW` 变量用于控制 Git 仓库的克隆方式。如果设置为 `1`，则会进行浅克隆，只克隆部分历史记录，而不是完整地克隆整个历史记录。
+
+- **减少下载时间和磁盘空间：** 浅克隆可以减少下载的数据量和所占用的磁盘空间，因为它只会下载最近的提交记录，而不是整个历史记录。
+
+### 使用示例：
+
+```bash
+BB_GIT_SHALLOW = "1"
+```
+
+在这个示例中，`BB_GIT_SHALLOW` 被设置为启用浅克隆。
+
+### 注意事项：
+
+- 浅克隆可以节省下载时间和磁盘空间，但在需要完整历史记录的情况下可能会有限制，因为它只包含最近的提交记录。
+
+- 如果需要完整的历史记录，或者需要检出特定的历史版本信息，浅克隆可能不适用，因为它可能无法获取完整的历史记录。
+
+`BB_GIT_SHALLOW` 是 Yocto 构建系统中用于控制 Git 仓库克隆方式的变量，它可以在需要节省下载时间和磁盘空间的情况下启用浅克隆。
+
+# poky\bitbake\doc\bitbake-user-manual\bitbake-user-manual-ref-variables.rst
+
+这里罗列了所有的变量。
+
+可以一个个看一下。
+
+对应的在线文档是这里：
+
+https://docs.yoctoproject.org/bitbake/2.6/bitbake-user-manual/bitbake-user-manual-ref-variables.html
+
+# libhello和sayhello这2个recipe的完整过程图
+
+https://docs.yoctoproject.org/dev/_images/bitbake_tasks_map.svg
+
+# setscene 这个任务怎么理解
+
+`setscene` 是 Yocto 构建系统中的一个任务标识符，用于表示构建过程中的一个特殊任务。==这个任务是为了生成或收集用于后续任务的元数据或信息。==
+
+### 主要作用：
+
+- **元数据生成或收集：** `setscene` 任务旨在生成或收集构建过程中的元数据或信息，以便后续任务可以使用这些数据进行构建或执行其他操作。
+
+- **构建环境准备：** 它可能涉及预处理文件、生成索引或元数据、收集构建信息等，为接下来的任务做好准备。
+
+### 示例理解：
+
+在 Yocto 构建系统中，通常任务是有依赖关系的。`setscene` 可能在依赖于它的其他任务执行前，先准备好环境或收集必要的元数据。例如，为了构建一个软件包，可能需要在 `do_compile` 之前先执行 `setscene` 任务来收集构建所需的信息或文件。
+
+### 注意事项：
+
+- `setscene` 任务不是直接用于构建软件包，而是为了辅助构建过程中的其他任务提供所需的信息或准备环境。
+
+- 这个任务通常由构建系统自动执行，并且大部分时间我们不需要直接干预它。
+
+`setscene` 任务在 Yocto 构建系统中是一个特殊的标识符，用于生成或收集构建过程中的元数据或信息，以便后续任务可以使用这些数据进行构建或执行其他操作。
+
+# data_smart
+
+`data_smart` 是 Yocto 中的一个类，用于管理和处理变量和数据。
+
+### 主要作用：
+
+- **智能数据处理：** `data_smart` 类负责管理变量和数据，提供智能处理能力，例如合并、重写或覆盖数据。
+
+- **变量管理：** 它能够处理 BitBake 构建系统中的变量，包括解析和处理这些变量的操作。
+
+### 注意事项：
+
+- `data_smart` 类在 Yocto 构建系统中是一个核心组件，它对变量和数据的管理和处理非常重要。
+
+- 这个类通常在 BitBake 内部使用，用于管理构建过程中的变量和数据，确保变量的正确性和一致性。
+
+`data_smart` 是 Yocto 构建系统中的一个类，用于管理和处理变量和数据，确保这些数据在构建过程中能够被正确地解析和处理。
 
 # 参考资料
 

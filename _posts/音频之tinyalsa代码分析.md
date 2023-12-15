@@ -579,6 +579,14 @@ snd_ctl_open(&handle, "hw:CARD=0", 0)
 
 https://blog.csdn.net/myzhzygh/article/details/8468210
 
+在命名上：
+
+| 代码         | 说明             |
+| ------------ | ---------------- |
+| linux 内核里 | snd_xx           |
+| alsalib      | snd_pcm_xx       |
+| tinyalsa     | pcm_xx、mixer_xx |
+
 
 
 # pcm_params结构体
@@ -600,6 +608,20 @@ https://blog.csdn.net/hhx123456798/article/details/123605555
 
 
 https://blog.csdn.net/hhx123456798/category_11616057.html
+
+# 一篇好文章
+
+这篇文章很好。
+
+https://zhuanlan.zhihu.com/p/537562136
+
+基于tinyalsa分析了完整的调用栈。
+
+这种分析方法跟我的习惯很像，但是做得很完整，值得我去学习。
+
+# 另外一篇好文章
+
+https://www.cnblogs.com/wolfcs/p/17757779.html
 
 # 参考资料
 

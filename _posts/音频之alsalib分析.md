@@ -337,6 +337,98 @@ enum {
 
 看看这个latency测试做了什么。
 
+运行，不用任何参数就可以运行。
+
+默认的播放和录音设备都是hw:0,1 
+
+
+
+```
+# ./latency 
+Scheduler set to Round Robin with priority 99...
+Playback device is hw:0,0
+Capture device is hw:0,0
+Parameters are 22050Hz, S16_LE, 2 channels, non-blocking mode
+Poll mode: no
+Loop limit is 661500 frames, minimum latency = 64, maximum latency = 4096
+[ 1436.018134@2]  audio_ddr_mngr: frddrs[0] registered by device fe330000.audiobus:tdm@0
+[ 1436.020639@2]  master_mode(0), binv(1), finv(1) out_skew(3), in_skew(3)
+[ 1436.020981@2]  master_mode(0), binv(1), finv(1) out_skew(3), in_skew(3)
+[ 1436.021635@2]  asoc-aml-card auge_sound: tdm prepare capture
+Hardware PCM card 0 'AML-AUGESOUND' de[ 1436.022860@2]  asoc-aml-card auge_sound: TDM[0] Capture enable
+vice 0 subdevice 0
+Its setup is:
+  stream       : PLAYBACK
+  access       : RW_INTERLEAVED
+  format       : S16_LE
+  subformat    : STD
+  channels     : 2
+  rate         : 22050
+  exact rate   : 22050 (22050/1)
+  msbits       : 16
+  buffer_size  : 64
+  period_size  : 32
+  period_time  : 1451
+  tstamp_mode  : NONE
+  tstamp_type  : MONOTONIC
+  period_step  : 1
+  avail_min    : 32
+  period_event : 0
+  start_threshold  : 2147483647
+  stop_threshold   : 64
+  silence_threshold: 0
+  silence_size : 0
+  boundary     : 1073741824
+  appl_ptr     : 0
+  hw_ptr       : 0
+Hardware PCM card 0 'AML-AUGESOUND' device 0 subdevice 0
+Its setup is:
+  stream       : CAPTURE
+  access       : RW_INTERLEAVED
+  format       : S16_LE
+  subformat    : STD
+  channels     : 2
+  rate         : 22050
+  exact rate   : 22050 (22050/1)
+  msbits       : 16
+  buffer_size  : 64
+  period_size  : 32
+  period_time  : 1451
+  tstamp_mode  : NONE
+  tstamp_type  : MONOTONIC
+  period_step  : 1
+  avail_min    : 32
+  period_event : 0
+  start_threshold  : 2147483647
+  stop_threshold   : 64
+  silence_threshold: 0
+  silence_size : 0
+  boundary     : 1073741824
+  appl_ptr     : 0
+  hw_ptr       : 0
+Trying latency 64 frames, 2902.494us, 2.902494ms (344.5312Hz)
+[ 1437.656587@2]  sched: RT throttling activated
+[ 1437.705841@0]  RT throttling on cpu:2 rt_time:951ms, curr:swapper/2/0 prio:120 sum_runtime:0ms
+[ 1438.705842@0]  RT throttling on cpu:2 rt_time:950ms, curr:swapper/2/0 prio:120 sum_runtime:0ms
+[ 1439.705829@0]  RT throttling on cpu:2 rt_time:953ms, curr:swapper/2/0 prio:120 sum_runtime:0ms
+[ 1440.705832@0]  RT throttling on cpu:2 rt_time:952ms, curr:swapper/2/0 prio:120 sum_runtime:0ms
+[ 1441.705853@0]  RT throttling on cpu:2 rt_time:952ms, curr:swapper/2/0 prio:120 sum_runtime:0ms
+```
+
+看代码里有这个：
+
+```
+snd_pcm_link(chandle, phandle)
+```
+
+snd_pcm_link的作用是什么？
+
+把2个pcm连接起来。
+
+可以调用到snd_pcm_hw_link
+
+最后是调用SNDRV_PCM_IOCTL_LINK。
+
 
 
 # async机制分析
@@ -669,7 +761,170 @@ snd_output_stdio_attach
 snd_output_buffer_open这个不用attach。
 ```
 
+# snd_pcm_ops_t 和snd_pcm_fast_ops_t的关系
 
+ `snd_pcm_fast_ops_t` 则是 `snd_pcm_ops_t` 的一种优化版本，旨在提高 PCM 设备操作的效率。
+
+它包含了一组更快速、经过优化的函数指针，用于更快地执行音频设备的操作。
+
+这些函数指针可能使用了一些技巧或者更高效的方法来完成相同的任务，从而提升了音频数据的处理速度。
+
+# BUILD_PCM_PLUGIN_MMAP_EMUL
+
+`BUILD_PCM_PLUGIN_MMAP_EMUL` 是 ALSA 库的一个编译选项，用于构建 PCM 插件的内存映射（mmap）模拟支持。
+
+==在某些情况下，音频设备可能不支持真正的内存映射方式（mmap），而是通过模拟实现来提供对这种功能的支持。==这种情况下，可以使用 `BUILD_PCM_PLUGIN_MMAP_EMUL` 选项进行编译，以构建 ALSA PCM 插件的模拟内存映射支持。
+
+该选项的启用可能会使 ALSA 库在运行时提供对那些并不实际支持 mmap 的设备提供某种模拟方式，让它们也能够使用 mmap 相关的功能，尽管实际上这只是一种模拟而非硬件级别的内存映射支持。
+
+在编译 ALSA 库时启用 `BUILD_PCM_PLUGIN_MMAP_EMUL` 选项可以帮助处理一些特定设备不支持 mmap 的情况，使得这些设备也能够利用 ALSA 提供的 mmap 相关的特性和功能。
+
+# alsa配置文件里的type plug和其他的插件有什么区别
+
+在 ALSA 的配置文件中，`type plug` 是一个特殊的 PCM 类型，用于创建一个 PCM 转发（PCM forwarding）或者转换（PCM conversion）的插件。
+
+与其他插件相比，`type plug` 允许你创建一个虚拟的 PCM 设备，对输入或输出的音频数据进行处理，然后将其传递到另一个 PCM 设备。
+
+区别在于：
+
+1. **转发和转换功能**：`type plug` 允许你创建一个中间层的 PCM 设备，可以将其配置为转发输入数据到输出设备，或者在中间进行特定的音频格式转换、采样率转换等处理。
+
+2. **灵活性**：`type plug` 插件非常灵活，它可以用于许多不同的转换和处理场景。你可以配置它来适应不同的音频设备和需求，进行格式转换、通道映射、音频数据处理等操作。
+
+3. **其他插件功能**：相比之下，其他插件可能有着特定的功能和目的。例如，`type hw` 用于直接连接到硬件设备，`type asym` 用于管理多个输入输出设备等。==而 `type plug` 则更像是一个通用的处理器，可以根据配置对音频数据进行处理和转发。==
+
+总体来说，`type plug` 提供了更多的灵活性，允许对音频数据进行中间处理并将其发送到其他 PCM 设备。这种特性使其在需要音频转换或中间层处理时非常有用。
+
+# pcm_multi.c这个的作用是什么
+
+`pcm_multi.c` 是 ALSA 源代码中的一个文件，用于实现 ALSA PCM（脉冲编码调制）设备的多路复用功能。该文件主要包含了用于创建和管理多路复用 PCM 设备的相关代码。
+
+在 ALSA 中，多路复用 PCM 设备允许多个客户端应用程序同时访问同一个 PCM 设备，实现了多个客户端同时使用音频设备的功能。这对于一些场景，比如需要多个应用同时播放音频或进行音频录制时非常有用。
+
+`pcm_multi.c` 文件中的代码实现了管理多个客户端对同一个 PCM 设备的访问，包括对音频数据的路由、同步、缓冲区管理等功能。它允许多个应用程序通过相同的 PCM 设备来传输音频数据，从而实现了音频设备的共享和多路复用。
+
+这种功能对于需要多个应用程序同时访问同一个音频设备的场景非常有用，比如音频会议、多媒体应用等。它确保了这些应用程序能够同时使用音频设备，而不会发生资源冲突或数据混乱。
+
+# struct snd_pcm_direct
+
+
+
+*Direct Stream Mixing*
+
+就是dmix。
+
+这里也有一个server的概念在的。
+
+snd_pcm_direct_server_create
+
+在snd_pcm_dmix_open里被调用。
+
+# SNDRV_PCM_IOCTL_DELAY
+
+`SNDRV_PCM_IOCTL_DELAY` 是 ALSA 中 PCM 设备相关的一个 ioctl 命令。它用于获取 PCM 设备的延迟信息。
+
+使用该 ioctl 命令，可以向 ALSA PCM 设备发送一个请求以获取当前音频流中的延迟。延迟信息对于需要实时音频处理的应用程序非常重要，例如需要音频和视频同步的多媒体应用程序等。
+
+这个 ioctl 命令需要通过调用 `ioctl()` 系统调用并传递相应的参数来使用。在 C 语言中的使用可能类似以下示例：
+
+```c
+#include <alsa/asoundlib.h>
+
+snd_pcm_t *pcm_handle; // 假设已经打开了 PCM 设备
+
+snd_pcm_sframes_t delay;
+if (ioctl(snd_pcm_file_descriptor(pcm_handle), SNDRV_PCM_IOCTL_DELAY, &delay) == 0) {
+    printf("PCM device delay: %lu frames\n", (unsigned long)delay);
+} else {
+    printf("Failed to get PCM device delay\n");
+}
+```
+
+这个 ioctl 命令通过将 `SNDRV_PCM_IOCTL_DELAY` 作为命令参数传递给 PCM 设备的文件描述符来获取当前的延迟值。`delay` 是一个返回参数，表示当前 PCM 设备中的延迟帧数。
+
+这个值对于确保音频和视频同步、实现低延迟音频处理以及确保实时应用程序的正确功能非常重要。
+
+## 这个延迟是怎么算出来的
+
+PCM 设备的延迟指的是在音频数据流中经过的时间或样本帧数量，通常用于描述数据在从应用程序发送到音频设备或从音频设备接收到应用程序之间的时间差。
+
+延迟的计算可以根据具体的应用场景和硬件设备的不同而有所不同。一般来说，有两种类型的延迟：
+
+1. **输入延迟（Capture Delay）**：指的是从音频输入设备捕获数据到应用程序处理数据之间的时间差。
+   
+2. **输出延迟（Playback Delay）**：指的是从应用程序发送数据到音频输出设备播放之间的时间差。
+
+对于 ALSA 中的 PCM 设备，可以通过 `SNDRV_PCM_IOCTL_DELAY` ioctl 命令来获取当前 PCM 设备的延迟信息。这个延迟通常以采样帧数的形式表示，表示在数据流中经过的采样帧数量。
+
+这个延迟值的计算可能涉及多个因素，包括：
+
+- **硬件缓冲区**：音频设备通常有自己的缓冲区用于数据的传输和处理。延迟值可以受到这些缓冲区的大小和设备内部处理的影响。
+
+- **数据处理时间**：数据在应用程序和设备之间的传输和处理所需的时间。这包括数据在缓冲区中等待、处理器的处理时间等等。
+
+- **硬件时钟**：硬件时钟的精确性和同步性对延迟的计算也有影响。
+
+延迟的准确计算可能是一个复杂的过程，取决于设备和应用程序的特性。`SNDRV_PCM_IOCTL_DELAY` 通过 ALSA 提供了一种获取延迟信息的方式，但延迟的实际计算可能还受到其他因素的影响，需要结合具体的设备和应用场景来理解和衡量延迟值。
+
+# buildroot默认没有编译alsalib的test
+
+需要在test/Makefile.am里加上：
+
+```
+bin_PROGRAMS = latency pcm
+```
+
+以及其他你需要编译的。这样默认make就会编译出来你要的测试程序。
+
+默认的check_PROGRAMS，需要make check才会生成。
+
+# alsa里的refine是什么概念
+
+在 ALSA 中，"refine" 是一个==用于优化和调整音频设备参数的概念==。
+
+在 ALSA 的 PCM 设备中，通常有一组硬件参数（hardware parameters），比如采样率、通道数、数据格式等等。
+
+这些参数需要在应用程序与音频设备之间进行匹配和协商，以确保数据能够正确地传输和处理。
+
+"Refine" 在 ALSA 中的上下文中表示对这些硬件参数进行优化和调整的过程。这包括但不限于：
+
+- **参数匹配和协商**：将应用程序的参数与音频设备的参数进行匹配和协商，选择最合适的参数配置。
+
+- **参数修正和补充**：在参数不匹配或不完整的情况下，根据设备的特性和应用程序的需求对参数进行修正和补充，以确保数据传输的准确性和稳定性。
+
+- **设备能力检测**：检测音频设备的能力和特性，以确定设备支持的最佳参数范围，并尝试调整应用程序的参数以适应设备的能力。
+
+"Refine" 的过程可以发生在 PCM 设备的准备阶段，例如在打开 PCM 设备之后，应用程序可能需要对设备的参数进行优化和调整，以确保音频数据的正常传输和处理。
+
+## 用实际的数字来举例
+
+好的，让我们假设有一个 PCM 设备，支持的参数为：
+
+- 采样率：8000 Hz、16000 Hz、32000 Hz、44100 Hz、48000 Hz
+- 通道数：1（单声道）或 2（立体声）
+- 数据格式：16 位 Little-Endian
+
+现在你有一个音频文件，它的参数为：
+
+- 采样率：44100 Hz
+- 通道数：2（立体声）
+- 数据格式：16 位 Little-Endian
+
+你的应用程序需要将这个音频文件播放到 PCM 设备上。在这个情况下可能会进行的 "refine" 过程如下：
+
+1. **打开 PCM 设备**：使用 ALSA API 打开 PCM 设备。
+
+2. **设置设备参数**：设置 PCM 设备的参数为：
+
+   - 采样率：44100 Hz
+   - 通道数：2（立体声）
+   - 数据格式：16 位 Little-Endian
+
+3. **参数优化**：检查设备能否完全支持这些参数。假设设备支持全部参数，则无需额外的参数修正。
+
+4. **数据传输**：开始将音频文件数据传输到 PCM 设备。由于参数完全匹配，音频文件的数据可以直接传输到设备，保证音频的播放。
+
+在这个例子中，"refine" 过程主要涉及设置 PCM 设备的参数，并确保这些参数与音频文件的参数相匹配，以确保音频文件能够在 PCM 设备上正确播放。
 
 # 参考资料
 

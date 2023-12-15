@@ -539,6 +539,10 @@ https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/Developer/
 
 https://freedesktop.org/software/pulseaudio/doxygen/
 
+# 嵌入式使用pulseaudio
+
+https://blog.csdn.net/pengrui18/article/details/53747562
+
 # 参考资料
 
 1、

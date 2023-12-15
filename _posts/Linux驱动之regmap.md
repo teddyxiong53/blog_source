@@ -195,7 +195,9 @@ static int read_regs(uint8_t reg, uint8_t *pdata, int size)
 }
 ```
 
+# regmap的debugfs使用
 
+/sys/kernel/debug/regmap/3-001b
 
 # 参考资料
 
