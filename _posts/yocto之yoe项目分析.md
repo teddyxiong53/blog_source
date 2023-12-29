@@ -29,6 +29,23 @@ source envsetup.sh rpi4-64
 bitbake yoe-simple-image
 ```
 
+envsetup.sh的逻辑：
+
+
+
+| 步骤 | 说明                                                         |
+| ---- | ------------------------------------------------------------ |
+| 1    | 看是否存在local.sh文件，如果存在，source一下。<br />local.sh文件里是定义了MACHINE等变量。可以没有。 |
+| 2    | 把命令行参数的rpi4-64这个参数，赋值给PROJECT，然后export     |
+| 3    | MACHINE是通过从conf/projects/$PROJECT/config.conf里grep MACHINE变量的值来得到。<br />然后把MACHINE也export |
+| 4    | 然后各种输出目录                                             |
+| 5    | 添加一下路径到PATH里<br />poky/scripts<br />poky/bitbake/bin<br /><br />sysroots/`uname -m`/usr/bin |
+| 6    | 配置代理                                                     |
+| 7    | 如果有localconfig.sh文件，source一下。                       |
+|      |                                                              |
+
+
+
 ## 工具命令
 
 envsetup.sh向环境变量里导出了几个工具函数，可以很方便地使用，包括：
@@ -145,4 +162,48 @@ yoe.inc文件
 | SDKEXTPATH      |                                             |
 |                 |                                             |
 |                 |                                             |
+
+
+
+
+
+# 输出
+
+```
+Setting PROJECT=rpi4-64
+Setting MACHINE=raspberrypi4-64
+/mnt/fileroot/hanliang.xiong/work/yoe-study/yoe/conf/auto.conf has been updated
+```
+
+
+
+# yoe\conf\bblayers.conf内容：
+
+```
+require ${TOPDIR}/conf/projects/${PROJECT}/layers.conf
+```
+
+所以它是直接手动写死的，没有动态改。
+
+# conf\auto.conf
+
+里面是这些：
+
+```
+ACONF_VERSION = "1"
+
+# Where to store sources
+DL_DIR = "/mnt/fileroot/hanliang.xiong/work/yoe-study/yoe/downloads"
+
+# Where to save shared state
+SSTATE_DIR = "/mnt/fileroot/hanliang.xiong/work/yoe-study/yoe/build/sstate-cache"
+
+TMPDIR = "/mnt/fileroot/hanliang.xiong/work/yoe-study/yoe/build/tmp"
+
+# Go through the Firewall
+#HTTP_PROXY        = "http://:/"
+
+MACHINE ?= "raspberrypi4-64"
+
+```
 

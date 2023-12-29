@@ -511,6 +511,10 @@ IMAGE_FEATURES[validitems] += "debug-tweaks read-only-rootfs read-only-rootfs-de
 
 ```
 
+所以从这里可以看出image_features是比较固定的。
+
+一般不去修改他的内容。
+
 这是 Yocto Project 中 image 配置的一部分，其中定义了一些特性（features）以控制生成的 Linux 发行版镜像的行为和属性。以下是其中一些特性的简要解释：
 
 1. **debug-tweaks**: 启用调试相关的调整和功能，以便在开发过程中更轻松地进行故障排除。
@@ -604,7 +608,7 @@ PACKAGECONFIG[f1] = "--with-f1,--without-f1,build-deps-f1,rt-deps-f1"
 
 在一个recipe中, 如果f1属性使能, 则--with-f1, build-deps-f1就会应用于这个recipe,
 
-而如果f1属性被禁止, --without-f1 和 rt-deps-f1则会被应用.
+而如果f1属性被禁止, --without-f1 会被应用.
 
 
 
@@ -661,7 +665,7 @@ PACKAGECONFIG[foo] = "--enable-foo,--disable-foo,foo_depends,foo_runtime_depends
 
 ==--enable-foo：表示如果有foo的那么使能它==
 
-==--disable-foo:表示没有foo的情况下就不是能它==
+==--disable-foo:表示没有foo的情况下就不使能它==
 
 ==foo_depends： 表示如果有foo的情况下编译时的依赖。==
 
@@ -723,9 +727,28 @@ The following lists specific examples of virtual providers:
 
 
 
-某个开源组件下载失败或者速度较慢
+# 某个开源组件下载失败或者速度较慢
 
-​     可以把下载好的同版本组件放到DL_DIR指定目录下，然后复制一个*.done文件并改为对应名字即可
+可以把下载好的同版本组件放到DL_DIR指定目录下，然后复制一个*.done文件并改为对应名字即可
+
+# 一个recipe可以提供多个PROVIDER吗
+
+是的，一个 recipe 可以提供多个 PROVIDER。
+
+在 Yocto 中，一个 recipe 可以定义和提供多个功能或者虚拟包。
+
+通过在 recipe 中设置多个 `PROVIDES` 条目，您可以定义多个提供者。
+
+这样做的一个常见情况是为了确保一个软件包可以提供多个不同的功能，以满足不同软件包或组件的依赖关系。
+
+例如，一个 recipe 可能会定义如下的 `PROVIDES` 条目：
+
+```python
+PROVIDES += "virtual/aarch64-poky-linux-binutils"
+PROVIDES += "my-custom-functionality"
+```
+
+这样就同时提供了 `virtual/aarch64-poky-linux-binutils` 和 `my-custom-functionality` 两个功能。这些提供者可以满足其他软件包在构建时的依赖关系，使得这个软件包能够被其他组件所使用。
 
 # 官网示例教程
 
@@ -2298,6 +2321,8 @@ EXTRA_IMAGEDEPENDS += "u-boot"
 
 https://docs.yoctoproject.org/ref-manual/variables.html?highlight=target_prefix#term-TARGET_PREFIX
 
+指定工具链的前缀。
+
 **TARGET_PREFIX的值根据情况变化：**
 
 1、对于target的，值是TARGET_SYS
@@ -2332,6 +2357,20 @@ TARGET_ARCH在哪里被设置的？
 # deploy
 
 这个bbclass的作用是通过sstate来加速deploy的步骤。
+
+## do_deploy[stamp-extra-info] = "${MACHINE_ARCH}"
+
+这行代码是 Yocto 构建系统中一个 BitBake recipe 中的一个 task 或动作 (`do_deploy`) 的附加信息 (`stamp-extra-info`) 的设置。
+
+- `do_deploy` 是一个任务名称，它指代了构建系统中的一个步骤，通常用于将构建好的产物部署到指定位置或者执行一些额外的部署操作。
+
+- `[stamp-extra-info]` 表示这是针对任务执行过程中的附加信息。这个信息可能被用于在执行任务后产生的“标记”（stamp），这个标记可能会记录一些额外的信息或元数据。
+
+- `= "${MACHINE_ARCH}"` 设置了 `stamp-extra-info` 的值为 `${MACHINE_ARCH}`。`${MACHINE_ARCH}` 是 Yocto 中一个表示目标机器架构或体系结构的变量。它通常指示了正在构建的软件或镜像所针对的硬件体系结构，比如 x86、ARM 等。
+
+因此，这个设置的含义可能是在执行 `do_deploy` 这个任务后，在相关的标记（stamp）中记录了关于目标机器架构的信息，这可以在后续的构建步骤或流程中被参考或使用。
+
+
 
 # require、include、inherit的区别
 
@@ -2595,6 +2634,18 @@ INSANE_SKIP = "ldflags ldflagslibs"
 
 
 
+
+
+检查 .so 符号链接是否位于 -dev 包中，而不位于任何其他包中。
+
+一般来说，这些符号链接仅用于开发目的。
+
+因此，-dev 包是它们的正确位置。
+
+在极少数情况下，例如动态加载的模块，在主包中需要这些符号链接。
+
+
+
 https://blog.csdn.net/happybeginner/article/details/122339305
 
 https://blog.csdn.net/qq_15269787/article/details/119829987
@@ -2606,6 +2657,20 @@ https://blog.csdn.net/BGK112358/article/details/83827172
 这篇讲了常见问题的解决。
 
 https://blog.csdn.net/punmpkin/article/details/103135537
+
+## INSANE_SKIP:${PN} += "installed-vs-shipped"
+
+这个 Yocto 中的 INSANE_SKIP 参数通常用于告诉 Yocto 框架在检查软件包时跳过某些特定的问题或规则。
+
+在这种情况下，`INSANE_SKIP` 参数中的 `"installed-vs-shipped"` 规则是告诉 Yocto ==不要对比已安装文件与软件包中已包含的文件是否匹配。==
+
+这种情况可能会在开发或构建过程中出现，当 Yocto 发现已安装的文件与软件包中记录的文件不匹配时，可能会产生这个问题。
+
+有时这可能是因为软件包中的一些文件并未被正确安装，或者可能是由于其他问题导致的文件不匹配。
+
+使用 `INSANE_SKIP` 可能是一种绕过此类问题的方式，
+
+但需要注意的是，如果这个问题实际上与软件包的完整性或正确性有关，可能需要更仔细地检查和解决这个问题，而不是简单地跳过检查。
 
 # 工具链toolchain的生成
 
@@ -2877,6 +2942,50 @@ Yocto Project Devtool 是一个工具，用于简化嵌入式 Linux 软件开发
        └── devtoolsrcq0mulksg
    ```
    
+   argcv_git.bbappend的内容是：指定了externalsrc的信息。
+   
+   ```
+   inherit externalsrc
+   EXTERNALSRC = "/mnt/fileroot/hanliang.xiong/work/yocto-study/code/poky/build-arm64-ext-tc/workspace/sources/argcv"
+   EXTERNALSRC_BUILD = "/mnt/fileroot/hanliang.xiong/work/yocto-study/code/poky/build-arm64-ext-tc/workspace/sources/argcv"
+   ```
+   
+   recipe的内容是：
+   
+   ```
+   LICENSE = "MIT"
+   LIC_FILES_CHKSUM = "file://LICENSE;md5=09a1b191c4afac6965f59fed518b762d"
+   
+   SRC_URI = "git://github.com/teddyxiong53/argcv;protocol=https;branch=main"
+   
+   # Modify these as desired
+   PV = "1.0+git${SRCPV}"
+   SRCREV = "06affcc5156495b7558badf131d61adba68da98d"
+   
+   S = "${WORKDIR}/git"
+   
+   # NOTE: this is a Makefile-only piece of software, so we cannot generate much of the
+   # recipe automatically - you will need to examine the Makefile yourself and ensure
+   # that the appropriate arguments are passed in.
+   
+   do_configure () {
+   	# Specify any needed configure commands here
+   	:
+   }
+   
+   do_compile () {
+   	# You will almost certainly need to add additional arguments here
+   	oe_runmake
+   }
+   
+   do_install () {
+   	# NOTE: unable to determine what to put here - there is a Makefile but no
+   	# target named "install", so you will need to define this yourself
+   	:
+   }
+   
+   ```
+   
    
    
 2. **修改已存在的软件包**:
@@ -2900,19 +3009,15 @@ Yocto Project Devtool 是一个工具，用于简化嵌入式 Linux 软件开发
    ```
 用于重新构建软件包，包括修改后的软件包。这将使用 BitBake 构建过程重新构建软件包。
    
-5. **测试软件包**:
    
-   ```bash
-   devtool test <recipe-name>
-   ```
-用于测试软件包，包括运行自动化测试套件或手动测试。
    
 6. **将软件包从工程中移除**:
+   
    ```bash
    devtool remove <recipe-name>
    ```
-   用于从当前工程中移除软件包，同时删除相关的 BitBake 配方。
-
+用于从当前工程中移除软件包，同时删除相关的 BitBake 配方。
+   
 7. **查看工程中的软件包**:
    ```bash
    devtool list
@@ -2926,6 +3031,7 @@ Yocto Project Devtool 是一个工具，用于简化嵌入式 Linux 软件开发
    用于查看特定软件包的信息，包括 BitBake 配方的位置。
 
 9. **生成软件包的 README 文件**:
+   
    ```bash
    devtool finish <recipe-name>
    ```
@@ -3039,6 +3145,10 @@ https://blog.csdn.net/jiangwei0512/article/details/120407354
 
 
 https://blog.csdn.net/qq_34160841/article/details/107287365
+
+## devtool一篇pdf
+
+https://elinux.org/images/8/8f/003-1745-SLIDES-devtool.pdf
 
 # PREFERRED_VERSION
 
@@ -3269,7 +3379,21 @@ https://blog.csdn.net/hhs_1996/article/details/121316806
 
 # KERNEL_MODULE_AUTOLOAD
 
+列出启动期间需要自动加载的内核模块。
 
+该变量取代了已弃用的 module_autoload 变量。
+
+您可以在内核配方或树外内核模块配方（例如机器配置文件、分发配置文件、配方的附加文件或配方本身）可以识别的任何地方使用 KERNEL_MODULE_AUTOLOAD 变量）。
+
+指定如下：
+
+```
+KERNEL_MODULE_AUTOLOAD += "module_name1 module_name2 module_name3"
+```
+
+包含 KERNEL_MODULE_AUTOLOAD 会导致 OpenEmbedded 构建系统使用要在启动时自动加载的模块列表来填充 /etc/modules-load.d/modname.conf 文件。
+
+这些模块在文件中每行出现一个。
 
 # VOLATILE_BINDS
 
@@ -4465,6 +4589,12 @@ aarch64-poky-linux/aml-halaudio/git-r0/recipe-sysroot/usr/include
 
 
 
+从uboot的看看，这里放的sysroot-providers，表示了uboot这个package对外提供了什么功能。
+
+可以看到lib32-u-boot跟u-boot的内容一样，都是写了u-boot这个字符串。
+
+![image-20231226163358313](images/random_name/image-20231226163358313.png)
+
 # DISTRO_FEATURES_BACKFILL_CONSIDERED 
 
 1. Initialization Manager的选择
@@ -4540,6 +4670,14 @@ https://blog.csdn.net/faihung/article/details/82713816
 这个跟TARGET_ARCH是一样的，都是aarch64 。
 
 ==总的来说，在yocto里，host和target，都是target。==
+
+build的是x86_64。
+
+host是arm-poky-linux这样的。
+
+target是arm。
+
+大概是这样的关系。
 
 而native才是编译机器。native和build又基本都是指编译机器。
 
@@ -5165,13 +5303,23 @@ recipe里不要直接使用这个目录。拷贝行为都是自动的。
 
 # recipe-sysroot
 
-每个菜谱在其工作目录中都有两个sysroot，一个用于目标文件(recipe-sysroot)，一个用于构建主机的本地文件(recipesysroot-native).
+每个菜谱在其工作目录中都有两个sysroot，
+
+一个用于目标文件(recipe-sysroot)，
+
+一个用于构建主机的本地文件(recipesysroot-native).
 
 
 
 recipe不能直接填充sysroot目录
 
 应该在${D}目录中的do_install任务期间将文件安装到标准位置
+
+填充到recipe-root的，表示编译本package需要的依赖，sysroot-providers表示又哪些package来提供。
+
+
+
+![image-20231226163837223](images/random_name/image-20231226163837223.png)
 
 https://www.cnblogs.com/liushuhe1990/articles/12466137.html
 
@@ -5539,9 +5687,19 @@ IMAGE_LINGUAS = "en_US de_DE fr_FR"
 
 # PACKAGE_ARCH = "${MACHINE_ARCH}"
 
-在 Yocto Project 构建系统中，`PACKAGE_ARCH` 是一个变量，用于指定软件包的体系结构（architecture）。`MACHINE_ARCH` 通常是一个定义了目标设备架构的变量，而 `PACKAGE_ARCH` 可以设置为与目标设备架构相关的值，以确保构建的软件包与目标设备的架构匹配。
+在 Yocto Project 构建系统中，`PACKAGE_ARCH` 是一个变量，用于指定软件包的体系结构（architecture）。
 
-==通常情况下，`PACKAGE_ARCH` 变量被设置为`${MACHINE_ARCH}`，以确保软件包的架构与目标设备的架构一致==。这是因为 Yocto Project 构建系统支持交叉编译，可以构建适用于多种不同架构的软件包。因此，将 `PACKAGE_ARCH` 设置为 `${MACHINE_ARCH}` 是一种常见的做法，以确保生成的软件包与目标设备的架构兼容。
+`MACHINE_ARCH` 通常是一个定义了目标设备架构的变量，
+
+而 `PACKAGE_ARCH` 可以设置为与目标设备架构相关的值，以确保构建的软件包与目标设备的架构匹配。
+
+==通常情况下，`PACKAGE_ARCH` 变量被设置为`${MACHINE_ARCH}`，以确保软件包的架构与目标设备的架构一致==。
+
+这是因为 Yocto Project 构建系统支持交叉编译，可以构建适用于多种不同架构的软件包。
+
+因此，将 `PACKAGE_ARCH` 设置为 `${MACHINE_ARCH}` 是一种常见的做法，
+
+以确保生成的软件包与目标设备的架构兼容。
 
 例如，如果目标设备的架构是 ARM，那么在配方文件中通常会设置：
 
@@ -5552,6 +5710,18 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 这样，构建的软件包将会被编译为适用于 ARM 架构的二进制文件。
 
 通过设置 `PACKAGE_ARCH` 为 `${MACHINE_ARCH}`，可以确保生成的软件包与目标设备的硬件架构一致，从而避免架构不匹配的问题，这对于嵌入式系统的开发和部署非常重要。
+
+PACKAGE_ARCH的默认值是TUNE_PKGARCH，这个是在bitbake.conf里定义的。
+
+这样就可以针对架构进行调整。
+
+但是很多时候，会手动赋值为MACHINE_ARCH。
+
+至少对跟板端有关系的uboot、kernel、驱动，都会配置为MACHINE_ARCH。
+
+这样对应的包编译的目录就会在MACHINE-ARCH的目录下。而不是armv8这样的目录下面。
+
+
 
 # EXTRA_OEMAKE
 
@@ -5696,6 +5866,8 @@ EXTRA_OEMAKE = "CFLAGS='-O2 -Wall'"
 
 总之，冒号 `:` 在 Yocto Project 中用于定义和区分不同的 BitBake 类别、操作和变量，以实现更灵活和精确的控制和定制软件包的构建过程。
 
+
+
 # RPROVIDES:${PN}-dev = "alsa-dev"
 
 在 Yocto Project 的 BitBake 配方中，`RPROVIDES` 变量用于指定软件包提供的功能或库。
@@ -5748,6 +5920,17 @@ SRC_URI = "https://example.com/software.tar.gz \
 
 如果哈希值不匹配，BitBake 将引发错误，以防止使用损坏或被篡改的文件。这有助于确保软件包的可靠性和安全性。
 
+# SRC_URI的几种写法
+
+```
+从github下载，带上分支和提交号。可以直接在SRC_URI后面加上rev=xxx的方式来附加提交号。protocols可以写成git。
+SRC_URI = "git://github.com/csimmonds/procrank_linux.git;protocol=https;branch=master"
+SRCREV = "5aa6840b617ab2052c365c26b32ebc5fa96ad657"
+
+```
+
+
+
 # PACKAGES_DYNAMIC
 
 `PACKAGES_DYNAMIC` 是 Yocto Project BitBake 配方中的一个变量，
@@ -5780,6 +5963,26 @@ mydynamicpackage() {
 2. `mydynamicpackage()` 函数定义了如何生成软件包名称。在此示例中，如果某个条件（在这里是 `$SOMETHING` 的值等于 "something"）成立，那么该函数会返回软件包名称 "my-dynamic-package-name"。
 
 通过使用 `PACKAGES_DYNAMIC`，您可以在 BitBake 配方中定义动态生成软件包名称的规则，以适应不同的配置和需求。这对于自定义构建非常有用，因为它允许您根据条件生成特定的软件包，以满足项目的需求。
+
+
+
+看到kernel-dummy.bb里有这样的：
+
+```
+PACKAGES_DYNAMIC += "^kernel-module-.*"
+```
+
+PACKAGES_DYNAMIC具体表示什么呢？
+
+在 Yocto 的 `.bb` 文件中，`PACKAGES_DYNAMIC` 是一个==允许自动生成软件包名的变量。==
+
+当构建系统遇到类似于 `kernel-module-xxx` 的软件包名时，它会根据 `PACKAGES_DYNAMIC` 中的规则动态地生成软件包。
+
+`^kernel-module-.*` 是一个正则表达式模式。
+
+它告诉 Yocto 在构建过程中自动生成以 `kernel-module-` 开头的软件包名，`.*` 表示后面可以是任何字符。
+
+例如，如果你的 Yocto 环境中有多个内核模块需要打包，但是不希望手动列出每一个模块的软件包名，你可以使用这个 `PACKAGES_DYNAMIC` 变量来自动生成这些软件包名。这样在构建过程中，所有符合 `kernel-module-xxx` 格式的模块都会被打包成相应的软件包。
 
 # MLPREFIX
 
@@ -6576,6 +6779,20 @@ glibc 是 Linux 系统上最常见的标准 C 库，提供了许多用于编程�
 
 这个变量通常在 `local.conf` 或 `distro` 配置文件中设置，以控制软件包提供者的行为。如果您希望允许多个提供者提供相同功能，可以将其设置为 `libressl`。如果您希望严格控制提供者，可以将其设置为 `openssl`。这有助于确保构建系统的稳定性和可维护性。
 
+
+
+允许您抑制在构建两个提供相同输出的单独配方时引起的 BitBake 警告。
+
+当构建两个不同的配方（每个配方提供相同的输出）时，BitBake 通常会发出警告。这种情况通常是用户不想要的。
+
+然而，确实存在有意义的情况，特别是在 virtual/* 命名空间中。
+
+您可以使用此变量来抑制 BitBake 的警告。
+
+要使用该变量，请列出提供程序名称（例如配方名称、虚拟/内核等）。
+
+
+
 # yocto编译recipe文件时，怎样调试效率比较高，有什么技巧
 
 提高 Yocto 构建效率并调试 recipe 文件的关键技巧包括：
@@ -6801,15 +7018,21 @@ BB_HASHEXCLUDE_COMMON += "/path/to/excluded/file.txt"
 
 镜像清单通常以一种易于阅读和共享的格式显示，以便开发人员、测试人员和部署人员了解构建的内容。
 
-通过设置`IMAGE_MANIFEST`变量，您可以要求Yocto在构建过程中生成一个镜像清单文件，其中包含有关构建的详细信息。这个清单文件通常位于构建目录的子目录中，以供后续参考。示例用法如下：
+通过设置`IMAGE_MANIFEST`变量，您可以要求Yocto在构建过程中生成一个镜像清单文件，其中包含有关构建的详细信息。
 
-```bitbake
-IMAGE_MANIFEST = "1"
-```
+这个清单文件通常位于构建目录的子目录中，以供后续参考。
 
-此示例会告诉Yocto生成一个镜像清单。清单文件通常存储在`${DEPLOY_DIR_IMAGE}`目录下，并以`.manifest`文件扩展名结尾。例如，如果您的镜像名称是`my-image`, 则清单文件可能是`my-image.manifest`。
+清单文件通常存储在`${DEPLOY_DIR_IMAGE}`目录下，并以`.manifest`文件扩展名结尾。
 
-通过查看清单文件，您可以了解构建中包含的软件包、文件、版本信息等，这对于调试、验证和部署都非常有用。这有助于确保构建的一致性和可追溯性。
+例如，如果您的镜像名称是`my-image`, 则清单文件可能是`my-image.manifest`。
+
+通过查看清单文件，您可以了解构建中包含的软件包、文件、版本信息等，
+
+这对于调试、验证和部署都非常有用。
+
+这有助于确保构建的一致性和可追溯性。
+
+
 
 # image_types_wic
 
@@ -7270,11 +7493,51 @@ package group被image 的recipe使用。把一组package安装到image里。
 
 默认情况下，只有packagegroup包本身在PACKAGES中。
 
--dbg和-dev口味由下面的anonfunc处理。
+-dbg和-dev的由下面的anonfunc处理。
 
 这意味着packagegroup食谱用于构建多个packagegroup
 
 packages必须在继承了packagegroup.bbclass之后修改*PACKAGES*。
+
+
+
+在 Yocto 构建系统中，`packagegroup` 是一种元数据结构，==用于将一组相关软件包或组件组合在一起，方便地作为一个单元进行管理和安装。==
+
+`packagegroup` 通常用于以下情况：
+
+1. **功能组合：** 将相关联的软件包组合成一个单独的功能组，使得用户可以一次性安装所有相关的软件包，而不必一个个安装。
+
+2. **便捷性和管理：** 用于将一组常用的或相关联的软件包打包到一个单元中，以便更方便地管理和使用。比如，一个用于图形界面开发的 packagegroup 可能包含了多个用于 GUI 开发所需的软件包。
+
+3. **构建配置简化：** 可以在构建配置中一次性引入一个 packagegroup，而不必显式地列出每个单独的软件包，从而简化配置并确保一致性。
+
+一个 `packagegroup` 元数据文件通常定义了一组软件包的列表，这些软件包通常是相互关联或者用于完成一个特定功能。例如，`packagegroup-core-boot` 可能包含了构建一个基本的启动系统所需的核心软件包。
+
+在构建过程中，指定了一个 `packagegroup` 后，构建系统会安装该 `packagegroup` 中列出的所有软件包，使得开发者或用户可以方便地获得特定功能或应用所需的所有组件。
+
+# `packagegroup-core-boot` 包含了哪些
+
+`packagegroup-core-boot` 是 Yocto 构建系统中一个用于启动系统所需核心软件包的 packagegroup。它包含了构建一个基本启动系统所需的关键组件。由于 Yocto 的不同版本可能会有一些差异，以下列出的是一般情况下可能包含的软件包：
+
+1. **引导加载程序（Bootloader）：** 可能包含 GRUB、U-Boot 等引导加载程序的相关软件包。
+
+2. **内核（Kernel）：** 可能包含构建内核的相关软件包，包括内核源码、配置和构建工具。
+
+3. **根文件系统（Root File System）：** 可能包含用于构建基本根文件系统的组件或者相关软件包。
+
+4. **系统启动所需工具和配置文件：** 包含一些系统启动所需的工具或配置文件，用于确保系统能够正确启动。
+
+5. **其他基础工具和库：** 可能包含一些系统启动所需的基础工具和库文件，用于支持系统的基本功能。
+
+这些软件包通常是构建一个最小化启动系统所必需的关键组件。
+
+具体的软件包列表可能会因 Yocto 版本、配置和特定平台而有所不同。
+
+可以通过查看 Yocto 的官方文档或者具体版本的配置文件来获取确切的信息。
+
+
+
+poky\meta\recipes-core\packagegroups\packagegroup-base.bb
 
 
 
@@ -7879,13 +8142,27 @@ WORKDIR="/mnt/fileroot/hanliang.xiong/work/a113x2/yocto-code/code/build-av400/tm
 
 你可以查阅Yocto文档或者处理器文档，以获取关于支持的处理器架构和相应`DEFAULTTUNE`值的更多信息。
 
+
+
+OpenEmbedded 构建系统使用的默认 CPU 和应用程序二进制接口 (ABI) 调整（即“调整”）。 DEFAULTTUNE 帮助定义 TUNE_FEATURES。
+
+默认调谐由机器 (MACHINE) 隐式或显式设置。
+
+但是，您可以使用 AVAILTUNES 定义的可用曲调覆盖该设置。
+
 # NON_MULTILIB_RECIPES
 
 在 Yocto 中，`NON_MULTILIB_RECIPES` 是一个变量，用于指定哪些软件包的 recipe 不会被构建为多架构（multilib）的版本。
 
-Multilib 是一种允许在同一系统上同时支持多个架构的机制。有些软件包可能会针对不同的架构提供不同的编译版本，例如同时提供 32 位和 64 位的版本。==然而，并非所有软件包都需要或适合构建成多架构版本。==
+Multilib 是一种允许在同一系统上同时支持多个架构的机制。
 
-`NON_MULTILIB_RECIPES` 变量允许你指定哪些软件包的 recipe 不应该被构建成多架构版本。比如，如果你确定某个软件包不需要多架构支持，你可以将其列入 `NON_MULTILIB_RECIPES`，以避免 Yocto 尝试构建多架构的版本。
+有些软件包可能会针对不同的架构提供不同的编译版本，例如同时提供 32 位和 64 位的版本。
+
+==然而，并非所有软件包都需要或适合构建成多架构版本。==
+
+`NON_MULTILIB_RECIPES` 变量允许你指定哪些软件包的 recipe 不应该被构建成多架构版本。
+
+比如，如果你确定某个软件包不需要多架构支持，你可以将其列入 `NON_MULTILIB_RECIPES`，以避免 Yocto 尝试构建多架构的版本。
 
 示例：
 
@@ -7902,6 +8179,42 @@ NON_MULTILIB_RECIPES = "grub grub-efi make-mod-scripts ovmf u-boot"
 ```
 
 可以看到uboot明确被指定为不适合multilib版本。
+
+## NON_MULTILIB_RECIPES为什么不包含kernel呢？
+
+`NON_MULTILIB_RECIPES` 变量用于定义不需要以多库形式编译的软件包列表。
+
+==通常情况下，内核（kernel）的构建不属于标准的 Yocto 多库（Multilib）构建范畴。==
+
+Yocto 构建系统中的内核通常是单库构建，不需要在多个架构或库之间进行切换。
+
+因为内核是整个系统的核心部分，其构建方式和目标系统的架构直接相关。
+
+对于内核，通常不存在需要在不同架构之间切换或适配的情况，因此它不需要被列入到 `NON_MULTILIB_RECIPES` 变量中。
+
+总之，内核通常被视为单库构建的组件，它与多库构建的适用范畴有所不同，因此一般不包含在 `NON_MULTILIB_RECIPES` 变量所定义的不需要多库编译的软件包列表中。
+
+在代码里可以看到：
+
+```
+    if "virtual/kernel" in provides or \
+            bb.data.inherits_class('module-base', e.data) or \
+            bpn in non_ml_recipes:
+        raise bb.parse.SkipRecipe("We shouldn't have multilib variants for %s" % bpn)
+
+```
+
+
+
+## 那uboot为什么又属于NON_MULTILIB_RECIPES包含的范围呢？
+
+对于 u-boot，其通常也被视为单库构建的组件，类似于内核。u-boot 是引导加载程序，负责引导系统并初始化硬件，其构建方式和目标架构直接相关，通常不需要在多个架构或库之间进行切换。
+
+尽管 u-boot 可能具有一些适用于多种架构的通用性质，但在大多数情况下，它仍然以单库形式构建。
+
+这意味着它不需要被列入到 `MULTILIB_ALLOW_RECIPE` 变量或其他多库构建相关的设置中，因此被包含在 `NON_MULTILIB_RECIPES` 变量所定义的不需要多库编译的软件包列表中。
+
+
 
 # source-date-epoch
 
@@ -8602,6 +8915,1987 @@ https://docs.yoctoproject.org/dev/_images/bitbake_tasks_map.svg
 - 这个类通常在 BitBake 内部使用，用于管理构建过程中的变量和数据，确保变量的正确性和一致性。
 
 `data_smart` 是 Yocto 构建系统中的一个类，用于管理和处理变量和数据，确保这些数据在构建过程中能够被正确地解析和处理。
+
+# PACKAGE_BEFORE_PN
+
+`PACKAGE_BEFORE_PN` 是 Yocto Metadata 中的一个特殊变量，用于定义包在其他特定包之前的顺序。
+
+当需要控制生成的包的顺序时，可以使用这个变量。通过设置这个变量，可以确保某个包在另一个包之前被处理或安装。
+
+例如：
+
+```python
+PACKAGE_BEFORE_PN += "package-a package-b"
+```
+
+这会将 `package-a` 和 `package-b` 这两个包安装在其他包之前。
+
+==这样做通常用于解决包之间的依赖关系，确保特定的包在其他包之前被正确地处理或安装。==
+
+# SYSTEMD_PACKAGES
+
+`SYSTEMD_PACKAGES` 是 Yocto 构建系统中的一个变量，
+
+用于指定与 Systemd 服务相关联的软件包列表。
+
+在 Yocto 构建中，Systemd 是一个常用的初始化系统和系统管理守护程序，用于管理 Linux 系统中的进程和服务。
+
+`SYSTEMD_PACKAGES` 变量用于==指定哪些软件包与 Systemd 服务相关联。==
+
+例如，如果你有一些软件包与 Systemd 服务紧密相关，你可以将这些软件包列入 `SYSTEMD_PACKAGES` 变量，这样在构建根文件系统时，BitBake 将确保这些软件包正确地与 Systemd 集成。
+
+示例：
+
+```python
+SYSTEMD_PACKAGES = "my-service-package-a my-service-package-b"
+```
+
+这将告诉构建系统，在集成 Systemd 时，`my-service-package-a` 和 `my-service-package-b` 这两个软件包与 Systemd 服务相关联，需要被正确地集成和管理。
+
+# SYSTEMD_AUTO_ENABLE
+
+继承systemd类时，该变量指定SYSTEMD_SERVICE中指定的服务是否自动启动。
+
+默认情况下，该服务在启动时自动启动。默认设置在 systemd 类中，如下所示：
+
+# bitbake 对recipe名字和变量名字的对应转换逻辑是怎样的？
+
+在 BitBake 中，有一些规则用于处理 recipe 名称和变量名称的转换逻辑。
+
+1. **Recipe 名称转换：**
+   
+   - **文件名约定：** Recipe 文件的命名应遵循一定的约定，比如 `<recipe-name>_<version>.bb`。在这个约定中，`<recipe-name>` 通常是与 BitBake 变量中的名称相对应的部分。
+   
+   - **特殊字符替换：** ==Recipe 名称通常会将特殊字符转换为下划线 `_`。例如，如果变量中有连字符 `-`，它会被转换为下划线。==
+
+   - **小写转换：** Recipe 名称通常会被转换为小写，这是为了保持一致性和避免大小写问题。比如，`MyRecipe.bb` 可能会被解析为 `myrecipe`.
+
+2. **变量名称对应：**
+
+   - **变量命名惯例：** ==BitBake 中的变量名通常与 recipe 名称相关联，且使用全大写字母==，并用下划线分隔单词。例如，`SOME_VARIABLE_NAME`。
+   
+   - **根据 Recipe 名称自动生成变量：** 在 Recipe 文件中，有一些预定义的变量名，比如 `${PN}` 表示 Recipe 名称部分，`${PV}` 表示版本号部分。
+
+总的来说，BitBake 有一些约定和规则用于处理 Recipe 名称和变量名的转换，这些规则确保了一致性和易读性，同时方便了在不同部分之间的数据交换和处理。
+
+
+
+# poky\meta\classes\multilib_global.bbclass
+
+
+
+
+
+
+
+# tmp/qa.log
+
+Yocto通常会将构建期间的日志输出到`tmp`目录下。
+
+`tmp/qa.log`文件通常包含了在Yocto构建过程中运行的Quality Assurance（QA）工具的输出信息。
+
+这些工具用于检查生成的软件包是否符合一些规范或标准。
+
+`qa.log`文件可能包含各种类型的信息，
+
+比如静态代码分析、可用性检查、安全性检查等。
+
+它可以显示编译过程中遇到的问题、警告或错误，以及可能需要解决的建议。
+
+这个文件对于识别构建过程中的问题和改进软件包的质量非常有用。
+
+你可以查看这个文件以了解在构建过程中是否存在任何警告或错误，并据此采取相应的措施来改进软件包的质量。
+
+# OEINCLUDELOGS
+
+在Yocto构建过程中，可以使用`OEINCLUDELOGS`来控制构建过程中日志的保存。
+
+==这个变量用于指定哪些日志应该被保留。==
+
+它有三个主要的选项：
+
+- `oe-build`: 这个选项会保存构建时的日志信息，包括构建目录下的`temp/log.do_<taskname>`文件。
+- `oe-runqemu`: 这个选项保存QEMU运行时的日志信息。
+- `oe-run-native`: 这个选项保存本机（native）运行时的日志信息。
+
+通过设置`OEINCLUDELOGS`变量，你可以控制Yocto在构建时哪些类型的日志应该被保留，以便于调试和分析问题。
+
+# class-nativesdk
+
+在Yocto中，`class-nativesdk`是一种类（class），
+
+用于构建针对交叉编译工具链（Cross-Compilation Toolchain）的本机（native）工具链。
+
+这个类允许你构建一组本机工具，
+
+这些工具可以用于开发或构建软件包，这些软件包可能需要在主机开发系统上进行编译、链接或运行。
+
+通过使用`class-nativesdk`，你可以创建一个针对目标系统（target system）之外的本机工具链。
+
+这个工具链能够在主机开发系统上运行，
+
+但其生成的工具和库能够与目标系统兼容。
+
+这对于开发和测试阶段非常有用，
+
+因为它允许开发人员在主机系统上进行交叉编译并运行与目标系统相兼容的代码。
+
+这个类的使用方式类似于其他Yocto类，
+
+==你可以通过在`local.conf`或特定的Recipe中设置`INHERIT += "nativesdk"`来启用`class-nativesdk`。==
+
+这将为指定的软件包构建本机工具链，使你能够在开发系统上进行交叉编译。
+
+# yocto配置使用prebuilt的外部工具链
+
+您可能希望使用外部工具链作为开发的一部分。
+
+如果是这种情况，您需要完成的基本步骤如下：
+
+- 了解已安装的工具链所在的位置。对于需要构建外部工具链的情况，您需要采取单独的步骤来构建和安装工具链。
+- 确保通过 BBLAYERS 变量将包含工具链的层添加到 bblayers.conf 文件中。
+- 将 local.conf 文件中的 EXTERNAL_TOOLCHAIN 变量设置为安装工具链的位置。
+
+工具链配置非常灵活且可定制。
+
+它主要由 TCMODE 变量控制。
+
+此变量控制要包含源目录中的 meta/conf/distro/include 目录中的 tcmode-*.inc 文件。
+
+
+
+TCMODE 的默认值为“default”，
+
+它告诉 OpenEmbedded 构建系统使用其内部构建的工具链（即 tcmode-default.inc）。
+
+然而，其他模式也被接受。
+
+特别地，“external-*”指的是外部工具链。 
+
+Mentor Graphics Sourcery G++ 工具链就是一个例子。
+
+对该工具链的支持位于 https://github.com/MentorEmbedded/meta-sourcery/ 的单独元源层中。
+
+有关如何使用该层的详细信息，请参阅其 README 文件。
+
+外部工具链层的另一个例子是支持ARM发布的GNU工具链的meta-arm-toolchain。
+
+您可以通过阅读 Yocto 项目参考手册的变量术语表中有关 TCMODE 变量的信息来找到更多信息。
+
+## meta-sourcery 这个外部工具链用法
+
+依赖：
+
+* openembedded-core layer。
+* meta-external-toolchain layer
+* bitbake
+* 安装好的工具链文件。
+* 编译目录。
+
+用法：
+
+1、把meta-sourcery layer添加到你的BBLAYERS里去。确保这个在meta layer的前面。
+
+2、在conf/local.conf里添加：`EXTERNAL_TOOLCHAIN="/path/to/sourcery-g++-install"`
+
+3、如果external toolchain是用4.8版本的linux kernel或者更加新的linux kernel，那么在conf/local.conf里加上：`KERNEL_48_PATCH_REMOVE=""`
+
+https://docs.yoctoproject.org/dev/dev-manual/external-toolchain.html
+
+# IMAGE_OVERHEAD_FACTOR
+
+`IMAGE_OVERHEAD_FACTOR` 是 Yocto 中一个用于控制镜像大小计算的变量。
+
+这个变量用于指定生成镜像时额外空间因子的倍数，默认值为 1.0。
+
+在构建 Yocto 镜像时，Yocto 会计算所需的磁盘空间以及所生成镜像的大小。
+
+`IMAGE_OVERHEAD_FACTOR` 变量允许你指定一个额外的因子，用于考虑镜像生成过程中可能产生的一些额外空间需求，比如元数据、文件系统结构等。
+
+通过调整 `IMAGE_OVERHEAD_FACTOR`，你可以提前为镜像生成过程中可能的额外空间需求留出一些缓冲空间。
+
+这在构建镜像时有助于避免由于一些额外因素（如元数据、文件系统分配等）导致的空间不足问题。
+
+# DEFAULT_TASK_PROVIDER
+
+`DEFAULT_TASK_PROVIDER` 是一个 Yocto 变量，
+
+用于指定默认提供给任务（task）的提供者。
+
+在 Yocto 构建系统中，任务提供者用于执行特定任务的工具或软件包。
+
+通过设置 `DEFAULT_TASK_PROVIDER`，你可以指定在执行特定任务时，默认使用的提供者。
+
+这对于在有多个可选的提供者时选择默认的提供者非常有用。
+
+例如，假设有一个名为 `my-task` 的任务，并且有两个提供者：`provider-A` 和 `provider-B`。
+
+如果你希望在没有明确指定提供者的情况下，默认使用 `provider-A`，你可以这样设置 `DEFAULT_TASK_PROVIDER`：
+
+```bash
+DEFAULT_TASK_PROVIDER_my-task = "provider-A"
+```
+
+这样，在执行 `my-task` 任务时，如果没有显式指定提供者，Yocto 将默认使用 `provider-A`。这个变量允许你在有多个提供者的情况下控制默认的提供者选择，以满足你的构建需求。
+
+# FILES:${PN} = "/"
+
+在 Yocto 的 `.bb` 文件中，`FILES` 变量用于指定应该包含在生成的软件包中的文件或目录。`${PN}` 代表软件包名。
+
+==`FILES:${PN} = "/"` 这行代码的含义是将软件包中的所有文件都包含进去。==
+
+在这种情况下，`"/"` 表示根目录，意味着软件包将包含生成目标根目录下的所有文件和子目录。
+
+这行代码适用于将软件包中包含整个根文件系统或软件的所有文件。
+
+在某些情况下，特别是当你想要构建一个完整的文件系统镜像时，这种设置非常有用。
+
+但需要注意的是，在实际情况中，可能并不需要包含根目录下的所有文件，因为这样做可能会包含一些不必要或不相关的文件，从而增加软件包的大小。因此，在指定 `FILES` 变量时，应该仔细选择需要包含的文件和目录，以确保软件包中只包含必要的文件。
+
+# 哪些内容会被打包到ipk、deb等这种安装包里？
+
+安装包（如.ipk、.deb）会打包软件包的运行时文件、配置文件、库文件、可执行文件、文档等。这些文件和目录通常位于软件包安装目录的结构内。
+
+一般来说，一个安装包中可能包含以下内容：
+
+1. **可执行文件**：安装包中包含软件的可执行文件，这些文件是实际的程序或命令。
+
+2. **库文件**：软件包可能依赖的共享库文件，这些文件被程序调用并提供特定功能。
+
+3. **配置文件**：包括软件运行时所需的配置文件，用于配置软件的行为、选项或参数。
+
+4. **文档**：软件包可能包含相关的文档、说明文件或帮助文件，用于解释软件的使用方法、特性和限制。
+
+5. **资源文件**：这包括图像、音频、视频或其他用于程序运行的资源文件。
+
+6. **依赖项**：安装包可能包含软件运行所需的其他软件包或依赖项。
+
+7. **权限设置**：安装包可能包含一些文件系统的权限设置或其他安全相关的配置。
+
+这些内容构成了一个安装包的主要部分，它们被打包到压缩文件中，并在安装过程中根据定义解压到目标系统的对应位置。不同的包管理系统可能有不同的规范和要求，所以安装包的内容和结构可能会有所不同。
+
+## 怎么在bb文件里指定呢？
+
+在 Yocto 的 `.bb` 文件中，你可以使用一系列变量来指定将哪些文件打包到安装包中。主要的变量包括 `FILES`、`FILES_${PN}` 和 `FILES_${PN}-dev`。
+
+- **`FILES` 变量**：它用于指定通用的安装包内容。你可以在其中列出软件包中需要包含的文件和目录。例如：
+  
+  ```bash
+  FILES_${PN} += "/usr/bin/"
+  FILES_${PN} += "/etc/myconfig.conf"
+  ```
+
+- **`FILES_${PN}` 变量**：这是用于指定主程序包的文件和目录。`${PN}` 是软件包名的代号。你可以列出需要安装到主程序包的文件和目录。例如：
+
+  ```bash
+  FILES_${PN} += "/usr/bin/"
+  FILES_${PN} += "/etc/myconfig.conf"
+  ```
+
+- **`FILES_${PN}-dev` 变量**：这是用于指定开发包的文件和目录。如果软件包有一个开发包（包含头文件、库文件等用于开发的文件），你可以使用这个变量。例如：
+
+  ```bash
+  FILES_${PN}-dev += "/usr/include/"
+  FILES_${PN}-dev += "/usr/lib/*.so"
+  ```
+
+这些变量告诉 Yocto 构建系统哪些文件和目录应该被包含到生成的安装包中。通过在 `.bb` 文件中设置这些变量，你可以自定义软件包安装到目标系统时所包含的内容。
+
+
+
+# linux-dummy
+
+`linux-dummy` 并不是一个真正的 Linux 内核，而是一个虚拟的/虚拟的内核软件包或Recipe。在Yocto中，有时会使用这样的“dummy”软件包来进行构建或调试，以模拟或代替实际的软件包或组件。
+
+通常情况下，`linux-dummy` 软件包可能用于以下情形之一：
+
+1. **依赖项占位符**：有些软件包可能在构建时需要一个特定的依赖项，但是它们的确切依赖项可能在某些情况下无法确定。`linux-dummy` 可以作为一个占位符或替代品，以满足这些依赖关系。
+
+2. **调试和测试**：有时为了测试构建系统或调试构建流程，会使用虚拟的软件包。`linux-dummy` 可能用于这样的目的，作为一个占位符来填充某些依赖项，而不需要实际的内核。
+
+总体来说，`linux-dummy` 不是一个实际的Linux内核，而是在特定情况下用于模拟依赖项或作为调试工具的虚拟软件包。在实际应用中，它可能会被替换为真实的内核软件包。
+
+
+
+# COMPATIBLE_HOST 
+
+`COMPATIBLE_HOST` 是一个 Yocto 中用于指定兼容主机（Host）系统的变量。
+
+这个变量用于指定 Yocto 构建环境所兼容的主机系统类型或名称。
+
+`".*-linux"` 是一个正则表达式模式，它表示 Yocto 构建环境兼容以 `-linux` 结尾的主机系统名称。
+
+这意味着 Yocto 构建环境可以在符合该正则表达式的主机系统上运行。
+
+举个例子，如果你希望在所有的以 `-linux` 结尾的主机系统上运行 Yocto 构建，可以设置 `COMPATIBLE_HOST` 为 `".*-linux"`。这样 Yocto 将会在符合该模式的主机系统上运行。
+
+`COMPATIBLE_HOST` 的设定有助于确保 Yocto 构建系统在特定类型的主机上可以正确运行，并且兼容相应的主机系统环境。
+
+# kernel.bbclass
+
+对外提供：
+
+```
+PROVIDES += "virtual/kernel"
+```
+
+对外依赖了：
+
+```
+DEPENDS += "virtual/${TARGET_PREFIX}binutils virtual/${TARGET_PREFIX}gcc kmod-native bc-native bison-native"
+```
+
+
+
+# PACKAGE_WRITE_DEPS 
+
+`PACKAGE_WRITE_DEPS` 是 Yocto 中一个变量，用于指定一个或多个软件包构建过程中的依赖项。
+
+在这种情况下，`depmodwrapper-cross` 被添加到 `PACKAGE_WRITE_DEPS` 变量中。
+
+`depmodwrapper-cross` 是一个工具或软件包，用于生成模块依赖关系。
+
+将它添加到 `PACKAGE_WRITE_DEPS` 中意味着它在构建软件包时会被包含进来，作为构建过程中的一个依赖项。
+
+这个工具可能在构建内核模块时被使用，它有助于生成模块的依赖关系，使得内核模块能够在目标系统中正确加载并与其他模块正确交互。
+
+通过将 `depmodwrapper-cross` 添加到 `PACKAGE_WRITE_DEPS`，Yocto 确保在构建特定软件包时会包含这个依赖项，以确保构建过程中所需的依赖关系被正确处理。
+
+# depmodwrapper-cross 后面的cross表示什么
+
+在Yocto的上下文中，通常涉及到`-cross`的部分表示这是一个用于交叉编译环境的工具或软件包。交叉编译环境是指在一个操作系统（通常是主机系统）上为另一个目标系统（通常是嵌入式系统或其他架构）进行编译的情况。
+
+`depmodwrapper-cross` 中的 `-cross` 表示这个 `depmodwrapper` 工具或软件包是专门为交叉编译环境而设计或适配的版本。这个工具可能具有特定于目标架构或目标系统的功能或行为，并且能够与交叉编译工具链一起使用，以确保生成的代码、依赖项或输出能够正确地适用于目标系统。
+
+通常，Yocto会针对不同的目标架构或目标系统提供特定的工具或软件包，以确保在交叉编译环境中进行构建和开发时能够满足特定的需求和要求。因此，`-cross` 通常用于标识这些工具或软件包是为交叉编译环境而设计的版本。
+
+# 跟cross相对应的概念是什么？
+
+在交叉编译背景下，与 `-cross` 相对应的概念是本地编译（native compilation）或原生编译（native build）。
+
+- **本地编译（Native Compilation）**：指的是在与目标系统相同的架构和体系结构上进行编译。在本地编译环境中，编译器和工具链用于在相同的架构上构建代码。这种情况下，编译器和目标系统的架构是一致的，因此不需要交叉编译工具链。
+
+在本地编译环境中，编译器直接在同一架构上将源代码编译成可执行程序或库。这种方式下，编译过程更为直接，因为不涉及不同架构之间的交叉编译，因此更加简单和高效。
+
+相比之下，交叉编译是在不同于本地架构的系统上构建代码。这样的场景可能涉及嵌入式系统、移动设备等，需要将代码编译成能够在目标架构上运行的可执行文件或库。
+
+# STAGING_KERNEL_DIR
+
+在这里：
+
+```
+tmp/work-shared/xx/kernel-source
+```
+
+实际上是软链接到external的代码目录的。
+
+代码逻辑是这里实现的：
+
+```
+python do_symlink_kernsrc () {
+    s = d.getVar("S")
+    kernsrc = d.getVar("STAGING_KERNEL_DIR")
+    if s != kernsrc:
+        bb.utils.mkdirhier(kernsrc)
+        bb.utils.remove(kernsrc, recurse=True)
+        if s[-1] == '/':
+            # drop trailing slash, so that os.symlink(kernsrc, s) doesn't use s as
+            # directory name and fail
+            s = s[:-1]
+        if d.getVar("EXTERNALSRC"):
+            # With EXTERNALSRC S will not be wiped so we can symlink to it
+            os.symlink(s, kernsrc)
+```
+
+
+
+`STAGING_KERNEL_DIR` 是 Yocto 构建系统中用于==指定内核构建阶段目录的变量==。
+
+这个变量指定了构建内核时生成的临时目录。
+
+在构建内核时，内核源码和相关的编译生成文件会被放置在这个临时目录中，
+
+以便后续的处理步骤（如模块安装、镜像生成等）能够访问并使用这些文件。
+
+通常情况下，这个目录用于存放经过交叉编译生成的内核二进制文件、模块以及其他构建所需的中间文件。
+
+`STAGING_KERNEL_DIR` 的路径可以在 Yocto 的配置中设置，用于告知 Yocto 在哪里放置内核构建过程中的临时文件。
+
+通过设置这个变量，Yocto 可以管理内核构建过程中生成的文件，确保后续步骤能够访问和使用正确的内核文件和信息，以便生成最终的内核镜像或其他所需的输出。
+
+# STAGING_KERNEL_BUILDDIR
+
+在这里：
+
+poky\build-arm64\tmp\work-shared\qemuarm64\kernel-build-artifacts
+
+这个就是kernel编译时自动生成的那些头文件会在这里可以找到。
+
+跟STAGING_KERNEL_DIR并列的2个目录。
+
+# OE_TERMINAL_EXPORTS
+
+`OE_TERMINAL_EXPORTS` 是 Yocto 构建系统中的一个变量，用于指定在终端（Terminal）会话中导出的环境变量列表。
+
+这个变量允许你指定在终端会话中需要自动导出的环境变量，以便在 Yocto 构建环境中进行交互式工作时自动设置这些环境变量。
+
+例如，`OE_TERMINAL_EXPORTS` 可能包含一系列设置工具链路径、构建环境选项或其他相关变量的命令。这样，当你启动 Yocto 构建环境的终端会话时，这些环境变量会自动设置，方便你在该会话中进行构建工作。
+
+示例：
+```bash
+OE_TERMINAL_EXPORTS += "CC=/path/to/my/toolchain/bin/gcc"
+OE_TERMINAL_EXPORTS += "CXX=/path/to/my/toolchain/bin/g++"
+```
+
+这将导出 `CC` 和 `CXX` 环境变量，指定了编译器路径，以便在 Yocto 构建环境的终端会话中使用这些特定的工具链。
+
+# SRCTREECOVEREDTASKS
+
+`SRCTREECOVEREDTASKS` 是 Yocto 构建系统中的一个变量，
+
+用于定义哪些任务将导致源树（source tree）被覆盖或修改。
+
+在 Yocto 中，源树指的是构建所需的源代码树，可能是来自 Yocto 层、应用程序源代码等。当执行某些任务时，可能会修改这些源代码树。`SRCTREECOVEREDTASKS` 变量允许你指定哪些任务会对源代码树进行更改。
+
+这个变量通常在 Yocto 的 `.conf` 文件中设置。
+
+例如，你可以指定一些任务，比如 `do_configure`、`do_compile`、`do_install` 等，表示执行这些任务时会修改源代码树。
+
+这对于跟踪构建任务对源代码树的影响非常有用。
+
+示例：
+
+```bash
+SRCTREECOVEREDTASKS += "do_configure do_compile do_install"
+```
+
+这将告诉 Yocto 构建系统，在执行 `do_configure`、`do_compile` 和 `do_install` 这些任务时会修改源代码树。
+
+这样，系统可以更好地管理和跟踪哪些任务会影响到源代码树。
+
+# sysroots-components
+
+此目录是任务 do_prepare_recipe_sysroot 链接或复制到 DEPENDS 中列出的每个配方的配方特定 sysroot 的 sysroot 内容的位置。
+
+该目录的填充通过共享状态处理，
+
+而路径由 COMPONENTS_DIR 变量指定。
+
+除了一些异常情况外，sysroots-components 目录的处理应该是自动的，
+
+==并且配方不应直接引用 build/tmp/sysroots-components。==
+
+https://docs.yoctoproject.org/ref-manual/structure.html
+
+# 目录层次说明
+
+## oe-init-build-env
+
+该脚本设置 OpenEmbedded 构建环境。
+
+在 shell 中使用 source 命令运行此脚本会更改 PATH 并根据当前工作目录设置其他核心 BitBake 变量。在运行 BitBake 命令之前，您需要运行环境设置脚本。
+
+==该脚本使用脚本目录中的其他脚本来完成大部分工作。==
+
+当您运行此脚本时，您的 Yocto 项目环境将被设置，构建目录将被创建，
+
+您的工作目录将成为构建目录，
+
+并且会向您提供一些有关下一步操作的简单建议，包括一些可能目标的列表建造。这是一个例子：
+
+
+
+oe-init-build-env 脚本的默认输出来自conf-notes.txt 文件，
+
+该文件位于源目录中的meta-poky 目录中。
+
+如果您设计自定义发行版，则可以包含此配置文件的您自己的版本，以提及您的发行版定义的目标。
+
+有关详细信息，请参阅 Yocto 项目开发任务手册中的“创建自定义模板配置目录”部分。
+
+
+
+默认情况下，在不使用 Build Directory 参数的情况下运行此脚本会在当前工作目录中创建 build/ 目录。
+
+如果您在获取脚本时提供构建目录参数，
+
+则可以指示 OpenEmbedded 构建系统创建您选择的构建目录。
+
+例如，以下命令创建一个位于源目录之外的名为 mybuilds/ 的构建目录：
+
+```
+source oe-init-build-env ~/mybuilds
+```
+
+
+
+OpenEmbedded 构建系统使用模板配置文件，默认情况下可在源目录的 meta-poky/conf/templates/default 目录中找到这些文件。有关详细信息，请参阅 Yocto 项目开发任务手册中的“创建自定义模板配置目录”部分。
+
+
+
+OpenEmbedded 构建系统不支持包含空格的文件或目录名。
+
+如果您尝试从文件名或目录名中包含空格的源目录运行 oe-init-build-env 脚本，
+
+该脚本将返回错误，指示不存在此类文件或目录。
+
+确保使用名称中不含空格的源目录。
+
+## build/
+
+当您运行构建环境设置脚本 oe-init-build-env 时，OpenEmbedded 构建系统会创建构建目录。
+
+如果运行安装脚本时没有为构建目录指定特定名称，则该名称默认为 build/。
+
+对于后续的解析和处理，==可以通过 TOPDIR 变量获取 Build 目录的名称。==
+
+
+
+## build/conf/local.conf
+
+==此配置文件包含构建环境的所有本地用户配置。==
+
+ local.conf 文件包含有关各种配置选项的文档。
+
+==此处设置的任何变量都会覆盖环境中其他位置设置的任何变量，除非该变量在文件中硬编码（例如，使用“=”而不是“?=”）。==
+
+有些变量由于各种原因被硬编码，但这样的变量相对较少。
+
+**至少，您通常会编辑此文件以选择目标机器、您希望使用的包类型 (PACKAGE_CLASSES) 以及您希望访问下载文件的位置 (DL_DIR)。**
+
+如果启动构建时 local.conf 不存在，则当您获取顶级构建环境设置脚本 oe-init-build-env 时，OpenEmbedded 构建系统会从 local.conf.sample 中创建它。
+
+
+
+使用的源 local.conf.sample 文件取决于 TEMPLATECONF 脚本变量，
+
+当您从 Yocto 项目开发环境构建时，
+
+该变量默认为 meta-poky/conf/templates/default；
+
+当您从 Yocto 项目开发环境构建时，该变量默认为 meta/conf/templates/default。
+
+正在从 OpenEmbedded-Core 环境构建。
+
+由于脚本变量指向 local.conf.sample 文件的源，这意味着您可以通过在顶级构建环境设置脚本中设置变量来从任何层配置构建环境，如下所示：
+
+## build/conf/bblayers.conf
+
+该配置文件定义了层，这些层是 BitBake 遍历（或遍历）的目录树。 
+
+bblayers.conf 文件使用 BBLAYERS 变量来列出 BitBake 尝试查找的层。
+
+如果启动构建时 bblayers.conf 不存在，则当您获取顶级构建环境设置脚本（即 oe-init-build-env）时，OpenEmbedded 构建系统会从 bblayers.conf.sample 中创建它。
+
+
+
+与 local.conf 文件一样，
+
+使用的源 bblayers.conf.sample 文件取决于 TEMPLATECONF 脚本变量，
+
+当您从 Yocto 项目开发环境构建时，该变量默认为 meta-poky/conf/templates/default，并且默认为 meta-poky/conf/templates/default。 
+
+/conf/templates/default 当您从 OpenEmbedded-Core 环境构建时。由于脚本变量指向 bblayers.conf.sample 文件的源，这意味着您可以通过在顶级构建环境设置脚本中设置变量来从任何层进行构建，如下所示：
+
+一旦构建过程获取示例文件，它就会使用 sed 将最终的 ${OEROOT} 值替换为所有 ##OEROOT## 值。
+
+## build/downloads/
+
+此目录包含下载的上游源 tarball。您可以在多个构建中重复使用该目录或将目录移动到其他位置。您可以通过 DL_DIR 变量控制该目录的位置。
+
+## build/tmp
+
+OpenEmbedded 构建系统创建此目录并将其用于所有构建系统的输出。 TMPDIR 变量指向此目录。
+
+如果该目录不存在，BitBake 将创建该目录。作为最后的手段，要清理构建并从头开始（下载除外），您可以删除 tmp 目录中的所有内容或完全删除该目录。如果这样做，您还应该完全删除 build/sstate-cache 目录。
+
+
+
+##  build/tmp/cache/
+
+当 BitBake 解析元数据（配方和配置文件）时，它会将结果缓存在 build/tmp/cache/ 中，以加快未来的构建速度。结果按每台机器存储。
+
+在后续构建过程中，BitBake 会检查每个配方（例如，连同其中包含或附加的任何文件）以查看它们是否已被修改。
+
+例如，可以通过文件修改时间 (mtime) 更改和文件内容的散列来检测更改。
+
+如果没有检测到文件的更改，则重新使用存储在缓存中的解析结果。
+
+如果文件已更改，则会重新分析。
+
+## build/tmp/sysroots/
+
+以前版本的 OpenEmbedded 构建系统用于为每台计算机创建全局共享 sysroot 以及本机 sysroot。自 Yocto 项目 2.3 版本以来，特定配方的 WORKDIR 目录中存在 sysroot。因此，build/tmp/sysroots/ 目录未被使用。
+
+## build/tmp/work/
+
+此目录包含 BitBake 构建的包的==特定于体系结构的工作子目录==。
+
+所有任务都从适当的工作目录执行。
+
+例如，特定包的源代码在其自己的工作目录中进行解包、修补、配置和编译。
+
+在工作目录中，组织基于包组和版本，按照 WORKDIR 的定义为其编译源。
+
+
+
+值得考虑典型工作目录的结构。
+
+作为一个例子，考虑在 Yocto 项目中构建的机器 qemux86 上的 linux-yocto-kernel-3.0。
+
+对于这个包，创建了一个工作目录 tmp/work/qemux86-poky-linux/linux-yocto/3.0+git1+ ..... ，
+
+简称 WORKDIR。
+
+在此目录中，源代码被解压到 linux-qemux86-standard-build，然后通过 Quilt 进行修补。 （有关详细信息，请参阅 Yocto 项目开发任务手册中的“在工作流程中使用 Quilt”部分。）
+
+在 linux-qemux86-standard-build 目录中，标准 Quilt 目录 linux-3.0/patches 和 linux-3.0/.pc 是创建后，可以使用标准 Quilt 命令。
+
+WORKDIR 中还生成了其他目录。
+
+最重要的目录是 WORKDIR/temp/，`其中包含每个任务的日志文件 (log.do_*.pid) 并包含 BitBake 为每个任务运行的脚本 (run.do_*.pid)`。 
+
+WORKDIR/image/ 目录是“make install”放置其输出的位置，然后将其分割成 WORKDIR/packages-split/ 内的子包。
+
+## build/tmp/work/tunearch/recipename/version/
+
+tunearch就是我们看到的这些东西：
+
+```
+all-poky-linux  cortexa57-poky-linux  qemuarm64-poky-linux  x86_64-linux
+```
+
+配方工作目录 - ${WORKDIR}。
+
+如前面“build/tmp/sysroots/”部分所述，
+
+从 Yocto 项目 2.3 版本开始，
+
+OpenEmbedded 构建系统在其自己的工作目录（即 WORKDIR）中构建每个配方。
+
+工作目录的路径是使用给定构建的体系结构（例如 TUNE_PKGARCH、MACHINE_ARCH 或“allarch”）、配方名称和配方版本（即 PE:PV-PR）构建的。
+
+
+
+Here are key subdirectories within each recipe work directory:
+
+- `${WORKDIR}/temp`: 包含为此配方执行的每个任务的日志文件、每个已执行任务的“运行”文件（其中包含代码运行）以及 log.task_order 文件（其中列出了任务的执行顺序）。
+- `${WORKDIR}/image`: 包含 do_install 任务的输出，它对应于该任务中的 ${D} 变量。
+- `${WORKDIR}/pseudo`: 包含伪数据库和在配方的under pseudo执行的任何任务的日志。
+- `${WORKDIR}/sysroot-destdir`: 包含 do_populate_sysroot 任务的输出。
+- `${WORKDIR}/package`: 包含 do_package 任务的输出，然后将输出拆分为单独的包。
+- `${WORKDIR}/packages-split`: 包含 do_package 任务的输出（在输出被分割成单独的包之后）。该配方创建的每个单独的包都有子目录。
+- `${WORKDIR}/recipe-sysroot`: 一个目录，==其中填充了配方的目标依赖项。该目录看起来像目标文件系统，并且包含配方可能需要链接的库（例如 C 库）。==
+- `${WORKDIR}/recipe-sysroot-native`: 一个目录，其中填充了配方的本机依赖项。该目录包含配方需要构建的工具（例如编译器、Autoconf、libtool 等）。
+- `${WORKDIR}/build`: 此子目录仅适用于支持代码和输出分离的构建的配方。 OpenEmbedded 构建系统使用此目录作为单独的构建目录（即 ${B}）。
+
+## build/tmp/work-shared/
+
+为了提高效率，OpenEmbedded 构建系统创建并使用此目录来保存与其他配方共享工作目录的配方。
+
+==实际上，这仅用于 gcc 及其变体（例如 gcc-cross、libgcc、gcc-runtime 等）。==
+
+##  meta/conf/distro/
+
+该目录的内容控制任何特定于发行版的配置。
+
+对于 Yocto 项目，defaultsetup.conf 是这里的主文件。
+
+此目录包含此处配置的应用程序的版本和 SRCDATE 定义。
+
+替代配置的一个示例可能是 poky-bleeding.conf。
+
+虽然这个文件主要继承了Poky的配置。
+
+## meta/conf/machine-sdk/
+
+OpenEmbedded 构建系统在此目录中搜索与 SDKMACHINE 值对应的配置文件。
+
+默认情况下，32 位和 64 位 x86 文件随支持某些 SDK 主机的 Yocto 项目一起提供。
+
+但是，可以通过在另一层的此子目录中添加其他配置文件来将该支持扩展到其他 SDK 主机。
+
+## meta/site/
+
+该目录包含各种体系结构的缓存结果列表。
+
+由于某些“autoconf”测试结果无法在实际系统上运行，
+
+因此在交叉编译时无法确定这些测试结果，
+
+因此该目录中的信息将传递给各种体系结构的“autoconf”。
+
+# 变量的作用域
+
+虽然您可以在几乎任何上下文（例如 .conf、.bbclass、.inc 和 .bb 文件）中使用大多数变量，
+
+但某些变量通常与特定位置或上下文相关联。
+
+本章描述一些常见的关联。
+
+conf文件里的变量
+
+| 分类                     | 变量                                |
+| ------------------------ | ----------------------------------- |
+| distro相关的             | DISTRO                              |
+|                          | DISTRO_NAME                         |
+|                          | DISTRO_VERSION                      |
+|                          | MAINTAINER                          |
+|                          | PACKAGE_CLASSES                     |
+|                          | TARGET_OS                           |
+|                          | TARGET_FPU                          |
+|                          | TCMOD                               |
+|                          | TCLIBC                              |
+| machine相关的            | TARGET_ARCH                         |
+|                          | SERIAL_CONSOLES                     |
+|                          | PACKAGE_EXTRA_ARCHS                 |
+|                          | IMAGE_FSTYPES                       |
+|                          | MACHINE_FEATURES                    |
+|                          | MACHINE_EXTRA_RDEPENDS              |
+|                          | MACHINE_EXTRA_RRECOMMENDS           |
+|                          | MACHINE_ESSENTIAL_EXTRA_RDEPENDS    |
+|                          | MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS |
+| 在local.conf里配置的变量 | DISTRO                              |
+|                          | MACHINE                             |
+|                          | DL_DIR                              |
+|                          | BBFILES                             |
+|                          | EXTRA_IMAGE_FEATURES                |
+|                          | PACKAGE_CLASSES                     |
+|                          | BB_NUMBER_THREADS                   |
+|                          | BBINCLUDELOGS                       |
+|                          | ENABLE_BINARY_LOCALE_GENERATION     |
+
+bb文件里的变量
+
+| 分类         |                        |
+| ------------ | ---------------------- |
+| recipe需要的 | LICENSE                |
+|              | LIC_FILES_CHKSUM       |
+|              | SRC_URI                |
+| 依赖的       | DEPENDS                |
+|              | RDEPENDS               |
+|              | RRECOMMENDS            |
+|              | RCONFLICTS             |
+|              | RREPLACES              |
+| 路径相关的   | WORKDIR                |
+|              | S                      |
+|              | FILES                  |
+| extra的信息  | DEFAULT_PREFERENCE     |
+|              | EXTRA_OECMAKE          |
+|              | EXTRA_OECONF           |
+|              | EXTRA_OEMAKE           |
+|              | PACKAGECONFIG_CONFARGS |
+|              | PACKAGES               |
+
+https://docs.yoctoproject.org/ref-manual/varlocality.html
+
+# 怎样保证poky的稳定性
+
+三个方面有助于稳定；
+
+Yocto 项目团队保持 OpenEmbedded-Core (OE-Core) 的小而专注，包含大约 830 个配方，而不是其他 OpenEmbedded 社区层中提供的数千个配方。保持较小的规模使其易于测试和维护。
+
+Yocto 项目团队使用一组小型固定参考硬件以及==模拟目标来运行手动和自动测试。==
+
+Yocto 项目使用自动构建器，它提供持续的构建和集成测试。
+
+# 使用了yocto的产品有哪些
+
+https://wiki.yoctoproject.org/wiki/Project_Users#Products_that_use_the_Yocto_Project
+
+
+
+# 资料收集
+
+linux基金会的yocto培训ppt
+
+https://docs.google.com/presentation/d/1LmI3mHoD_Dzl8wplIYcUBrFF8BzDb_EadTvfbnpSK7Q/edit?pli=1#slide=id.p60
+
+高级教程ppt
+
+https://docs.google.com/presentation/d/1HoDtyN5SzlmuTN47ab4Y7w_i6c_VEW6EBUD944ntf38/edit#slide=id.p10
+
+这个人的博客可以
+
+https://e61983.github.io/categories/embedded-system/
+
+这个中文手册不错。
+
+https://github.com/guevaraya/Yocto_doc/blob/master/3.5/sdk-manual/extensible.md
+
+# 一般的工作流程
+
+一般“工作流程”——它是如何运作的
+首先，开发人员指定架构、策略、补丁和配置详细信息。
+然后构建系统从指定的位置获取并下载源代码。该项目支持标准方法，例如 tarball 或源代码存储库系统（例如 git）。
+下载后，源代码将被提取到本地工作区域，其中将应用补丁并运行配置和编译软件的常见步骤。
+然后，该软件将安装到临时暂存区域，您选择的二进制包格式（deb、rpm 或 ipk）将用于汇总该软件。
+在整个构建过程中都会运行不同的质量检查和健全性检查。
+创建二进制文件后，将生成二进制包 feed，然后用于创建最终的根文件映像。
+文件系统镜像已生成。
+使用 Yocto Project 时，此工作流程将根据实际使用的组件和工具而变化。
+
+# poky-sanity.bbclass
+
+`poky-sanity.bbclass` 是 Yocto 中的一个类（class），它包含了一系列用于检查构建环境和配置是否符合规范的函数和规则。
+
+这个类通常用于执行一些标准的检查，确保构建环境中的设置和配置是正确的。
+
+它包含了一些检查构建所需的依赖、环境变量的设置、路径是否正确以及其他规范性的检查。
+
+当一个 `.bb` 文件包含了 `inherit poky-sanity` 时，它将继承 `poky-sanity.bbclass` 中定义的函数和规则。
+
+这样可以确保在构建过程中执行一些标准的检查，以避免常见的配置错误或问题。
+
+总的来说，`poky-sanity.bbclass` 主要用于检查和确保构建环境和配置符合 Yocto 的规范，从而减少在构建过程中可能遇到的问题。
+
+
+
+# 命令查看一个recipe的依赖项
+
+要查看一个 Yocto recipe 的依赖项，可以使用 `bitbake` 命令的 `-g` 选项生成一个依赖关系图。
+
+使用以下命令生成指定 recipe 的依赖关系图：
+
+```bash
+bitbake -g <recipe-name>
+```
+
+这个命令会生成一个 `pn-depends.dot` 文件，其中 `<recipe-name>` 是你要查看依赖关系的 recipe 名称。`pn-depends.dot` 文件是一个 DOT 格式的文件，可以使用图形化工具（如 Graphviz）来可视化依赖关系图。
+
+你也可以使用 `less` 或其他文本查看工具查看这个文件，但对于复杂的依赖关系图，最好使用专门的图形化工具来进行查看和分析。
+
+# --sysroot=${STAGING_DIR_TARGET}
+
+指向的是：
+
+```
+STAGING_DIR_TARGET="/mnt/fileroot/hanliang.xiong/work/yocto-study/code/poky/build-arm64/tmp/work/qemuarm64-poky-linux/core-image-minimal/1.0-r0/recipe-sysroot"
+```
+
+这个目录下没有多少东西，有用吗？
+
+# MULTIMACH_TARGET_SYS
+
+```
+MULTIMACH_TARGET_SYS="qemuarm64-poky-linux"
+```
+
+# BBFILE_COLLECTIONS
+
+
+
+# BBFILE_PRIORITY
+
+为每层中的配方文件分配优先级。
+
+==当同一配方出现在多个层中时，此变量非常有用。==
+
+设置此变量允许您根据包含相同配方的其他层确定某个层的优先级 - 有效地让您控制多个层的优先级。
+
+无论配方的版本（PV 变量）如何，通过此变量建立的优先级都有效。
+
+例如，某个层的配方具有较高的 PV 值，但 BBFILE_PRIORITY 设置为较低的优先级，但该层的优先级仍然较低。
+
+BBFILE_PRIORITY 变量的值越大，优先级越高。
+
+例如，值 6 的优先级高于值 5。
+
+如果未指定，则根据层依赖性设置 BBFILE_PRIORITY 变量（有关详细信息，请参阅 LAYERDEPENDS 变量。如果没有为没有依赖性的层指定，则默认优先级，是定义的最低优先级 + 1（如果未定义优先级，则为 1）。
+
+# templateconf.cfg和TEMPLATECONF
+
+指定构建系统用来查找模板并从中构建 bblayers.conf 和 local.conf 文件的目录。
+
+如果您希望自定义此类文件以及获取 oe-init-build-env 脚本时显示的默认 BitBake 目标，请使用此变量。
+
+有关详细信息，请参阅 Yocto 项目开发任务手册中的创建自定义模板配置目录部分。
+
+您必须在外部环境中设置此变量才能使其正常工作
+
+
+
+`TEMPLATECONF` 是 Yocto 构建系统中的一个特殊变量，用于指定模板配置文件的位置。
+
+通常情况下，`TEMPLATECONF` 变量用于==告诉 Yocto 构建系统在哪里可以找到用于配置构建的模板文件。==
+
+这些模板文件提供了配置构建系统所需的示例、模板或默认设置。
+
+当你开始一个新的 Yocto 构建项目时，可以使用这些模板文件来作为起点，以快速配置构建系统。
+
+==默认情况下，`TEMPLATECONF` 变量为空，因为 Yocto 并不会预先设置模板配置文件的位置。==
+
+然而，当你从 Yocto 文档或其他资源中下载一个预配置的模板时，你可以将 `TEMPLATECONF` 设置为这个模板文件的路径。
+
+这样做可以告诉 Yocto 构建系统在哪里找到这个模板配置文件，从而使用它来配置构建过程。
+
+通常，你可以将 `TEMPLATECONF` 设置为一个路径，例如：
+
+```bash
+TEMPLATECONF = "/path/to/your/templateconf"
+```
+
+这个路径将指向你所下载的或定义的模板配置文件的位置。使用模板配置文件可以帮助快速开始 Yocto 构建项目，并基于现有的配置进行定制。
+
+# deploy/images/xx.testdata.json
+
+这个里面有很多变量的展开值，文件值得看一下。
+
+例如：
+
+```
+    "BUILDSDK_LDFLAGS": "-Wl,-O1",
+    "BUILDSTATS_BASE": "tmp/buildstats/",
+    "BUILD_AR": "ar",
+    "BUILD_ARCH": "x86_64",
+    "BUILD_AS": "as ",
+    "BUILD_AS_ARCH": "",
+    "BUILD_CC": "gcc ",
+    "BUILD_CCLD": "gcc ",
+    "BUILD_CC_ARCH": "",
+```
+
+```
+    "PACKAGE_ARCH": "mesona4_ba400_spk_lib32",
+    "PACKAGE_ARCHS": "all any noarch aarch64 armv8a armv8a-crc mesona4_ba400_spk_lib32",
+```
+
+```
+    "PREFERRED_PROVIDER_virtual/aarch64-poky-linux-binutils": "binutils-cross-aarch64",
+    "PREFERRED_PROVIDER_virtual/aarch64-poky-linux-compilerlibs": "gcc-runtime",
+    "PREFERRED_PROVIDER_virtual/aarch64-poky-linux-g++": "gcc-cross-aarch64",
+    "PREFERRED_PROVIDER_virtual/aarch64-poky-linux-gcc": "gcc-cross-aarch64",
+    "PREFERRED_PROVIDER_virtual/arm-pokymllib32-linux-gnueabi-binutils": "lib32-binutils-cross-arm",
+    "PREFERRED_PROVIDER_virtual/arm-pokymllib32-linux-gnueabi-compilerlibs": "lib32-gcc-runtime",
+    "PREFERRED_PROVIDER_virtual/arm-pokymllib32-linux-gnueabi-g++": "lib32-gcc-cross-arm",
+    "PREFERRED_PROVIDER_virtual/arm-pokymllib32-linux-gnueabi-gcc": "lib32-gcc-cross-arm",
+    
+    "PREFERRED_PROVIDER_virtual/lib32-kernel-vmlinux": "lib32-linux-meson",
+    "PREFERRED_PROVIDER_virtual/lib32-libc": "lib32-glibc",
+    
+```
+
+```
+    "PREFERRED_VERSION_lib32-linux-meson": "5.4.%",
+    "PREFERRED_VERSION_lib32-u-boot": "v2019.%",
+        "PREFERRED_VERSION_libgcc": "11.%",
+    "PREFERRED_VERSION_libgcc-initial": "11.%",
+    "PREFERRED_VERSION_linux-meson": "5.4.%",
+```
+
+```
+   "TUNE_ARCH": "aarch64",
+    "TUNE_ARCH_32": "arm",
+    "TUNE_ARCH_64": "aarch64",
+    "TUNE_ASARGS": "",
+    "TUNE_CCARGS": " -march=armv8-a+crc -mbranch-protection=standard",
+```
+
+# uninative 是什么概念
+
+`uninative` 是 Yocto 构建系统中的一个特殊工具链，
+
+用于提供一些本地主机平台上缺少的基本工具和库，
+
+以便在构建过程中使用。
+
+这样做的目的是为了确保在构建过程中不依赖于主机系统上缺少的工具或库，
+
+从而增强构建的可移植性和稳定性。
+
+
+
+在 Yocto 构建系统中，为了构建特定目标平台的软件和镜像，需要使用交叉编译工具链。
+
+然而，有些构建所需的工具或库在某些主机平台上可能不可用或版本不匹配。
+
+为了解决这个问题，Yocto 引入了 `uninative` 工具链，
+
+它是一个包含了一些基本工具和库的特殊工具链，可以在大多数主机平台上运行。
+
+
+
+使用 `uninative` 工具链，Yocto 构建系统可以确保在构建过程中所需的工具和库都是可用的，不依赖于主机系统上的特定设置。
+
+这有助于提高构建的可移植性，使其在不同的主机平台上都能正常运行。
+
+一般情况下，`uninative` 是作为构建环境的一部分提供的，Yocto 构建系统会自动下载和使用它，而不需要用户进行额外的配置或安装。
+
+当前就这一个。
+
+x86_64-nativesdk-libc-4.3.tar.xz
+
+
+
+# do_uboot_mkimage[dirs] += "${B}"
+
+通过将 `${B}` 添加到 `do_uboot_mkimage` 任务的目录列表中，表示该任务在执行时会查找并使用 `${B}` 目录中的文件或资源。
+
+# initramfs
+
+```
+  new 27 (42 hits)
+	Line 107: aml-image-initramfs:
+	Line 544: core-image-minimal-initramfs:
+	Line 570: core-image-testcontroller-initramfs:
+	Line 572: core-image-tiny-initramfs:
+	Line 752: dm-verity-image-initramfs:
+	Line 791:   meta-initramfs       1:056
+	Line 1238:   meta-initramfs       8.40 (skipped: incompatible with host aarch64-poky-linux (not in COMPATIBLE_HOST))
+	Line 1239:   meta-initramfs       git (skipped: incompatible with host aarch64-poky-linux (not in COMPATIBLE_HOST))
+	Line 1240:   meta-initramfs       git (skipped: incompatible with host aarch64-poky-linux (not in COMPATIBLE_HOST))
+	Line 1444: initramfs-boot:
+	Line 1446: initramfs-debug:
+	Line 1447:   meta-initramfs       1.0
+	Line 1448: initramfs-debug-image:
+	Line 1449:   meta-initramfs       1.0
+	Line 1450: initramfs-framework:
+	Line 1452: initramfs-kexecboot-image:
+	Line 1453:   meta-initramfs       1.0
+	Line 1454: initramfs-kexecboot-klibc-image:
+	Line 1455:   meta-initramfs       1.0
+	Line 1456: initramfs-live-boot:
+	Line 1458: initramfs-live-boot-tiny:
+	Line 1460: initramfs-live-install:
+	Line 1462: initramfs-live-install-efi:
+	Line 1464: initramfs-live-install-efi-testfs:
+	Line 1466: initramfs-live-install-testfs:
+	Line 1468: initramfs-meson-boot:
+	Line 1470: initramfs-module-install:
+	Line 1472: initramfs-module-install-efi:
+	Line 1474: initramfs-module-setup-live:
+	Line 1476: initramfs-recovery:
+	Line 1587:   meta-initramfs       2.0.18+gitAUTOINC+5750980cdb
+	Line 1589:   meta-initramfs       0.6+gitAUTOINC+5a5e04be20
+	Line 1591:   meta-initramfs       0.2
+	Line 1597:   meta-initramfs       2.0.8
+	Line 1599:   meta-initramfs       2.0.8
+	Line 1601:   meta-initramfs       2.0.8
+	Line 1603:   meta-initramfs       2.0.8
+	Line 2808: meta-initramfs-image:
+	Line 2809:   meta-initramfs       1.0
+	Line 3563: packagegroup-meta-initramfs:
+	Line 3564:   meta-initramfs       1.0
+	Line 6102:   meta-initramfs       2.0.2
+```
+
+## meta-openembedded\meta-initramfs
+
+meta-openembedded\meta-initramfs\recipes-core\packagegroups\packagegroup-meta-initramfs.bb
+
+
+
+# setscene 是个什么概念
+
+在 Yocto 构建系统中，`setscene` 是一个 BitBake 任务的一部分，用于准备或设置某个任务所需的场景或环境。
+
+==它主要用于生成任务执行所需的文件、中间结果或 metadata，==
+
+并将这些数据存储在临时目录中供后续步骤使用。
+
+- **setscene 任务：** 在 Yocto 构建过程中，有些任务可能涉及到复杂的依赖关系或需要大量的计算。为了提高构建性能，BitBake 会将这些任务的执行结果缓存起来，以便于后续的构建过程中重复使用，而不必每次都重新计算。==`setscene` 任务就是用来为某个特定的任务生成和准备这个缓存的。==
+
+- **场景设置：** `setscene` 实际上是用于设置一个场景，以模拟或准备执行某个任务时所需的环境。在这个场景中，所有任务的输入和依赖都被满足，确保后续任务能够正确执行。这样做可以提高构建效率，尤其是当任务的执行非常耗时时，通过缓存 setscene 结果，可以避免重复计算。
+
+`setscene` 的工作方式是在构建系统中动态创建和维护一组临时文件和 metadata，以确保被缓存的任务可以在构建过程中快速重新使用。这样可以提高构建的速度和效率，并在一定程度上优化构建系统的整体性能。
+
+# do_install[noexec] = "1" 和deltask do_install区别
+
+`do_install[noexec] = "1"` 和 `deltask do_install` 都是 Yocto 构建系统中用于管理任务执行的机制，但它们的作用和影响有所不同。
+
+- **`do_install[noexec] = "1"`：** 这个设置用于阻止某个特定任务（如 `do_install`）的执行。在一个 BitBake recipe 中，`do_install` 任务通常用于安装生成的软件或文件到目标位置。通过将 `noexec` 设置为 `1`，就可以禁止执行 `do_install` 任务，从而防止软件或文件的安装。这种设置通常用于调试或测试，或者在特定情况下，你不希望某个任务执行。
+
+- **`deltask do_install`：** 这个命令是用于从 BitBake 执行队列中删除一个任务。`do_install` 是一个在 Yocto 构建过程中非常重要的任务，负责将软件包或构建结果安装到指定的位置。如果使用 `deltask do_install`，将会从构建过程中移除 `do_install` 任务。这可能导致构建结果不包含安装的软件或文件，进而可能影响最终生成的镜像或软件包。
+
+总体来说，`do_install[noexec] = "1"` 是一个设置，用于阻止某个特定任务的执行，而 `deltask do_install` 则是一个命令，用于删除构建过程中的某个任务，可能会对最终构建结果产生影响。两者都能影响构建过程，但作用和影响是有区别的。
+
+# 查看依赖关系pn-buildlist
+
+这个文件是在bitbake -g core-image-minimal的时候生成的。
+
+可以用来查看
+
+```
+bitbake -g core-image-minimal && cat pn-buildlist | grep -ve "native" | sort | uniq
+```
+
+在基于 Yocto 的嵌入式 Linux 发行版中，
+
+我真的很感兴趣从每个依赖层中找到包/配方/内核模块的完整列表，
+
+这些依赖层将在执行映像构建配方之前构建并安装到映像文件中，
+
+```
+acl
+attr
+autoconf-archive
+base-files
+base-passwd
+bash
+bash-completion
+bc
+binutils
+bluez5
+btrfs-tools
+busybox
+bzip2
+ca-certificates
+cairo
+core-image-minimal
+coreutils
+curl
+dbus
+depmodwrapper-cross
+diffutils
+e2fsprogs
+elfutils
+eudev
+expat
+external-arm-toolchain
+file
+findutils
+fontconfig
+freetype
+gawk
+gcc
+gcc-source-arm-11.2
+gdbm
+glib-2.0
+gmp
+gnome-desktop-testing
+gnutls
+gobject-introspection
+grep
+icu
+init-ifupdown
+initscripts
+init-system-helpers
+iproute2
+iptables
+kmod
+libarchive
+libcap
+libcap-ng
+libdrm
+liberror-perl
+libffi
+libgcrypt
+libgpg-error
+libical
+libice
+libidn2
+libmicrohttpd
+libmnl
+libmpc
+libnsl2
+libpciaccess
+libpcre
+libpng
+libpthread-stubs
+libseccomp
+libsm
+libtirpc
+libtool-cross
+libunistring
+libx11
+libxau
+libxcb
+libxdamage
+libxdmcp
+libxext
+libxfixes
+libxml2
+libxrandr
+libxrender
+libxshmfence
+libxxf86vm
+linux-yocto
+lzo
+make
+mdadm
+mesa
+modutils-initscripts
+mpfr
+ncurses
+netbase
+nettle
+openssl
+opkg-utils
+packagegroup-core-boot
+perl
+pixman
+procps
+psmisc
+ptest-runner
+python3
+python3-dbus
+python3-pycairo
+python3-pygobject
+qemuwrapper-cross
+readline
+run-postinsts
+sed
+shadow
+shadow-securetty
+shadow-sysroot
+shared-mime-info
+socat
+sqlite3
+strace
+sysvinit
+sysvinit-inittab
+tcp-wrappers
+tzdata
+unzip
+update-rc.d
+util-linux
+util-linux-libuuid
+util-macros
+vala
+wayland
+wayland-protocols
+which
+xcb-proto
+xorgproto
+xrandr
+xtrans
+xz
+zip
+zlib
+zstd
+```
+
+build-ba400-spk-lib32\tmp\deploy\images\mesona4-ba400-spk-lib32\amlogic-yocto-mesona4-ba400-spk-lib32.manifest
+
+这个manifest也可以看出来。不过这个是要在编译完成后才能看出来。
+
+前面那个命令在编译完成前就可以看出。
+
+
+
+https://stackoverflow.com/questions/46878640/is-there-a-way-to-check-the-exact-list-of-packages-that-will-be-installed-in-the
+
+
+
+https://blog.csdn.net/sy373466062/article/details/50375061
+
+
+
+# 查看一个recipe继承了哪些bbclass
+
+要查看一个 recipe 继承了哪些 bbclass，可以使用 `devtool` 工具的 `extract` 功能。
+
+```bash
+devtool extract <recipe-name>
+cd <recipe-directory>
+```
+
+进入到该 recipe 的工作目录后，查看 `.bb` 文件，你会找到一个类似于 `inherit` 的部分，列出了该 recipe 所继承的 bbclass。这些 `inherit` 行会告诉你这个 recipe 使用了哪些类，进而了解它的行为和配置。
+
+另外，也可以直接查看 `.bb` 文件的内容，搜索 `inherit` 关键字，可以在文件中找到该 recipe 所继承的 bbclass 列表。
+
+# yocto付费教程
+
+https://fulinux.blog.csdn.net/article/details/116208803
+
+
+
+# workspace
+
+"Workspace" 通常指的是一个开发环境，用于进行软件开发和相关工作的场所。在 Yocto 项目中，"workspace" 可能指的是用于构建和开发 Yocto 软件的工作区域或文件夹。
+
+在 Yocto 项目中，工作区通常包含以下内容：
+
+1. **构建目录：** 这是 Yocto 构建系统生成的临时文件和输出文件的目录。这些文件包括构建软件包、镜像文件、临时数据以及构建时产生的其他中间文件。
+
+2. **元数据目录：** 包含了 `conf` 文件夹、`.bb` 和 `.bbappend` 文件等 Yocto 构建所需的元数据文件。这些文件定义了构建所需的配置、软件包、层和其他设置。
+
+3. **层目录：** Yocto 使用层的概念来管理不同组件的集合。每个层都包含了一组相关的 `.bb` 文件、配置文件和其他构建所需的元数据。
+
+4. **日志文件和输出目录：** 包含构建过程的日志文件、生成的软件包、镜像文件等构建输出结果。
+
+工作区对于 Yocto 项目开发和管理非常重要，它是构建、测试和管理 Yocto 软件的中心场所。在工作区内进行开发和配置，然后使用 Yocto 构建系统生成所需的软件包、镜像和其他构建结果。
+
+# B:task-populate-sdk = "${SDK_DIR}"
+
+这行代码是一个 BitBake 变量设置。它将 `SDK_DIR` 的值分配给了任务 `task-populate-sdk`。
+
+在 Yocto 构建系统中，`task-populate-sdk` 是一个任务（Task）的名称，用于创建 SDK（Software Development Kit）。该任务通常用于准备一个 SDK，以便开发者可以使用该 SDK 来构建、调试和部署软件到目标设备。
+
+`"${SDK_DIR}"` 是一个变量，代表 SDK 的目录路径。这个变量在 `task-populate-sdk` 任务中可能用于指定生成的 SDK 的输出目录，这样开发者可以方便地找到并使用生成的 SDK。
+
+通过将 `SDK_DIR` 变量的值分配给 `task-populate-sdk` 任务，这行代码可能是在设置任务中的某些路径或参数，以确保 SDK 生成的正确输出目录。
+
+# read_only_rootfs_hook
+
+看看这个做了什么。
+
+修改inittab和fstab。
+
+看看有没有这个feature：
+
+```
+'IMAGE_FEATURES', 'overlayfs-etc'
+```
+
+# overlay-etc
+
+看注释写的是：
+
+```
+# Class for setting up /etc in overlayfs
+```
+
+就是一定把/etc设置为overlayfs的方式来设置为可写的。
+
+# IMGDEPLOYDIR
+
+这个目录在这里，有这些内容：
+
+```
+tmp/work/mesona4_ba400_spk_lib32-pokymllib32-linux-gnueabi/lib32-amlogic-yocto/1.0-r0/deploy-lib32-amlogic-yocto-image-complete
+lib32-amlogic-yocto-mesona4-ba400-spk-lib32-20231212074051.rootfs.ext4      lib32-amlogic-yocto-mesona4-ba400-spk-lib32.ext4
+lib32-amlogic-yocto-mesona4-ba400-spk-lib32-20231212074051.rootfs.manifest  lib32-amlogic-yocto-mesona4-ba400-spk-lib32.manifest
+lib32-amlogic-yocto-mesona4-ba400-spk-lib32-20231212074051.testdata.json    lib32-amlogic-yocto-mesona4-ba400-spk-lib32.testdata.json
+```
+
+# KERNEL_FEATURES
+
+包括额外的内核元数据。
+
+在 OpenEmbedded 构建系统中，
+
+==默认的板级支持包 (BSP) 元数据是通过 KMACHINE 和 KBRANCH 变量提供的。==
+
+您可以使用内核配方或内核附加文件中的 KERNEL_FEATURES 变量
+
+来进一步添加所有 BSP 或特定 BSP 的元数据。
+
+您通过此变量添加的元数据包括配置片段和功能描述，通常包括补丁和配置片段。
+
+您通常会覆盖特定计算机的 KERNEL_FEATURES 变量。
+
+通过这种方式，您可以提供经过验证但可选的内核配置和功能集。
+
+例如，以下来自 linux-yocto-rt_4.12 内核配方的示例向所有 BSP 添加了“netfilter”和“taskstats”功能，并向所有 QEMU 机器添加了“virtio”配置。
+
+最后两条语句向目标机器类型添加特定配置：
+
+```
+KERNEL_EXTRA_FEATURES ?= "features/netfilter/netfilter.scc features/taskstats/taskstats.scc"
+KERNEL_FEATURES:append = " ${KERNEL_EXTRA_FEATURES}"
+KERNEL_FEATURES:append:qemuall = " cfg/virtio.scc"
+KERNEL_FEATURES:append:qemux86 = "  cfg/sound.scc cfg/paravirt_kvm.scc"
+KERNEL_FEATURES:append:qemux86-64 = " cfg/sound.scc"
+```
+
+
+
+每个 linux-yocto 风格的配方都必须定义 KMACHINE 变量。
+
+该变量通常设置为与 BitBake 使用的 MACHINE 变量相同的值。
+
+但是，在某些情况下，该变量可能会引用机器的底层平台。
+
+如果多个 BSP 使用相同的 BSP 描述构建，
+
+则它们可以重用相同的 KMACHINE 名称。
+
+多个基于 Corei7 的 BSP 可以共享 KMACHINE 的相同“intel-corei7-64”值。
+
+重要的是要认识到 KMACHINE 仅用于内核映射，而 MACHINE 是 BSP 层中的机器类型。
+
+然而，即使有这种区别，这两个变量也可以保持相同的值。
+
+有关详细信息，请参阅“BSP 描述”部分。
+
+每个 linux-yocto 风格的配方还必须指示用于构建 Linux 内核的 Linux 内核源代码存储库分支。
+
+必须设置 KBRANCH 变量来指示分支。
+
+
+
+LINUX_KERNEL_TYPE 定义了组装配置时使用的内核类型。
+
+如果不指定 LINUX_KERNEL_TYPE，则默认为“标准”。
+
+ LINUX_KERNEL_TYPE 与 KMACHINE 一起定义了内核工具使用的搜索参数，
+
+以在内核元数据中查找适当的描述，从而构建源和配置。 
+
+
+
+==linux-yocto 配方定义了“standard”、“tiny”和“preempt-rt”内核类型。==
+
+有关内核类型的更多信息，请参阅“内核类型”部分。
+
+在构建过程中，kern-tools 会搜索与从配方传入的 KMACHINE 和 LINUX_KERNEL_TYPE 变量最匹配的 BSP 描述文件。
+
+这些工具使用他们发现的第一个与这两个变量匹配的 BSP 描述。
+
+如果这些工具找不到匹配项，则会发出警告。
+
+这些工具首先搜索 KMACHINE，然后搜索 LINUX_KERNEL_TYPE。
+
+如果工具找不到部分匹配，它们将使用 KBRANCH 中的源以及 SRC_URI 中指定的任何配置。
+
+
+
+KERNEL_FEATURES 中条目的值取决于它们在内核元数据本身中的位置。
+
+这里的示例取自 yocto-kernel-cache 存储库。
+
+该存储库的每个分支都包含顶层的“features”和“cfg”子目录。
+
+有关详细信息，请参阅“内核元数据语法”部分。
+
+# Kernel Metadata Syntax
+
+内核元数据由三种主要类型的文件组成：
+
+scc描述文件、
+
+配置片段
+
+补丁。 
+
+
+
+scc 文件定义变量并包含或以其他方式引用三种文件类型中的任何一种。
+
+描述文件用于将所有类型的内核元数据聚合成最终描述构建针对特定机器定制的 Linux 内核所需的源和配置的内容。
+
+scc 描述文件用于定义两种基本类型的内核元数据：
+
+* features
+* bsp
+
+
+
+patch和配置片段组成一个小的单元，这个单元是可以被重复使用的。
+
+
+
+您可以使用features来实现概念上独立的内核元数据描述，
+
+例如纯配置片段、简单补丁、复杂功能和内核类型。
+
+
+
+内核类型定义了要在 BSP 中重用的一般内核功能和策略。
+
+
+
+BSP 定义特定于硬件的功能，并将它们与内核类型聚合，以形成将要组装和构建的内容的最终描述。
+
+虽然内核元数据语法不强制配置片段、补丁、功能或内核类型的任何逻辑分离，
+
+但最佳实践规定了这些类型的元数据的逻辑分离。建议使用以下元数据文件层次结构：
+
+```
+base/
+   bsp/
+   cfg/
+   features/
+   ktypes/
+   patches/
+```
+
+
+
+# bitbake-layers
+
+| 命令               | 说明                                                         |
+| ------------------ | ------------------------------------------------------------ |
+| show-overlayed     | 这个就是上层的layer强行覆盖下面的情况的。例如poky是2.0版本的某个recipe，而我在上层强行给1.0版本的。那么就发生了降级。这个行为可能是无意造成的。所以要打印出来看看。 |
+| show-recipes       |                                                              |
+| show-appends       |                                                              |
+| show-cross-depends |                                                              |
+
+# STAGING_DIR_NATIVE
+
+
+
+# KBUILD_DEFCONFIG
+
+`KBUILD_DEFCONFIG` 是 Linux 内核编译过程中使用的一个变量，
+
+它指定了内核构建过程中要使用的默认配置文件。
+
+在 Linux 内核的编译过程中，有许多配置选项可以控制内核的行为和功能。
+
+这些配置选项存储在内核源代码树中的一个配置文件中，通常命名为 `defconfig`。
+
+而 `KBUILD_DEFCONFIG` 变量允许开发人员指定要使用的默认配置文件。
+
+例如，在进行嵌入式系统的内核构建时，可能会有特定的默认配置文件适用于某种特定的硬件平台或者使用场景。通过设置 `KBUILD_DEFCONFIG` 变量，可以告诉编译系统使用特定的默认配置文件来构建内核。
+
+例如，假设存在一个名为 `mycustom_defconfig` 的自定义默认配置文件，您可以在进行内核构建时设置 `KBUILD_DEFCONFIG` 变量以指定使用该配置文件：
+
+```bash
+KBUILD_DEFCONFIG=mycustom_defconfig make <build_target>
+```
+
+这样会告诉编译系统在构建内核时使用 `mycustom_defconfig` 这个默认配置文件。这个文件中包含了一系列内核选项的配置，以确定构建的内核的特性和行为。
+
+# KERNEL_CC
+
+这个是kernel用的工具链指定。
+
+看看哪些地方用到了。
+
+```
+meta/classes/module.bbclass
+meta/classes/kernel-yocto.bbclass
+meta/recipes-kernel/linux/linux-yocto.inc
+```
+
+## 全局修改KERNEL_CC 
+
+在 Yocto 中，`KERNEL_CC` 是一个环境变量，用于指定内核构建时所使用的 C 编译器。
+
+如果您希望全局修改 `KERNEL_CC`，可以在 Yocto 构建环境中进行设置。
+
+在 Yocto 中，全局设置环境变量可以通过修改 `local.conf` 或者 `bitbake.conf` 文件来实现。
+
+这些文件位于 Yocto 构建环境的配置目录中。
+
+要全局修改 `KERNEL_CC` 变量，您可以执行以下步骤：
+
+1. **编辑 local.conf 文件**：
+   打开 Yocto 构建环境的 `local.conf` 文件。这个文件通常位于 `poky/build/conf/` 目录下。
+
+2. **设置 KERNEL_CC**：
+   在 `local.conf` 文件中添加或修改 `KERNEL_CC` 的设置，指定您想要使用的 C 编译器。例如：
+
+   ```bash
+   KERNEL_CC = "gcc"
+   ```
+
+   这里假设您想要将 `KERNEL_CC` 设置为使用 `gcc` 编译器。根据您的需求，您可以将其设置为其他编译器。
+
+3. **重新构建**：
+   保存文件并重新构建 Yocto 环境。您可以使用 `bitbake` 命令重新构建您的目标，以使新的 `KERNEL_CC` 变量生效。
+
+请确保您了解所使用的编译器与目标环境的兼容性，并且修改环境变量前做好备份以防止不可预料的问题。
+
+# MULTILIB_GLOBAL_VARIANTS
+
+添加 MULTILIBS 变量以启用 32 位和 64 位支持。
+
+您输入的值必须列在 AVAILTUNES 声明中。 
+
+MULTILIBS 值指定已定义的一个或多个以空格分隔的多重库。
+
+格式为 multilib:id。
+
+其中 id 通常是 lib32 或 lib64。 
+
+id 必须在 MULTILIB_GLOBAL_VARIANTS 变量中定义。
+
+要查看平台项目的 MULTILIB_GLOBAL_VARIANTS 值，请使用 bitbake -e 命令。
+
+对于定义的每个 MULTILIB，
+
+您必须定义一个 DEFAULTTUNE_virtclass-multilib-id = 'tune''，其中 id 是 multilib 的名称，如 MULTILIBS 中所定义。
+
+此外，tune 必须是此替代库类型的 AVAILTUNES 值之一。
+
+# TOOLCHAIN_TARGET_TASK
+
+
+
+但是，有时您可能需要更精细地控制工具链的选择，
+
+这时您可以使用 `TOOLCHAIN_TARGET_TASK` 变量来指定要使用的工具链任务。
+
+这可以在您的 Yocto 配置文件中设置，如下所示：
+
+
+
+此变量列出了 OpenEmbedded 构建系统在创建 SDK 的目标部分（即为目标硬件构建的部分）时使用的包，其中包括库和标头。
+
+使用此变量将各个包添加到在目标上运行的 SDK 部分。
+
+# PACKAGE_ARCHS
+
+指定与目标机器兼容的体系结构列表。
+
+该变量是自动设置的，通常不应手动编辑。
+
+条目使用空格分隔并按优先级顺序列出。 
+
+PACKAGE_ARCHS 的默认值为“所有任何 `noarch ${PACKAGE_EXTRA_ARCHS} ${MACHINE_ARCH}`”。
+
+# 怎么查看哪个recipe提供了virtual/aarch64-poky-linux-binutils
+
+您可以使用 Yocto 的命令行工具 `oe-pkgdata-util` 来查找哪个 recipe 提供了特定的虚拟提供者。
+
+要查找提供 `virtual/aarch64-poky-linux-binutils` 的 recipe，可以执行以下命令：
+
+```bash
+oe-pkgdata-util find-path virtual/aarch64-poky-linux-binutils
+```
+
+这个命令将会返回提供这个虚拟包的具体 recipe 路径和相关信息。这样可以帮助您找到提供者，进而检查相关的配置或修改依赖关系来解决依赖问题。
+
+# oe-pkgdata-util用法
+
+| 命令                                                 | 说明                                    |
+| ---------------------------------------------------- | --------------------------------------- |
+| oe-pkgdata-util list-pkgs                            | 列出pkg                                 |
+| oe-pkgdata-util lookup-pkg base-files                | 搜索base-files这个pkg                   |
+| oe-pkgdata-util list-pkg-files base-files            | 查看base-files这个pkg里的文件。         |
+| oe-pkgdata-util lookup-recipe  base-files            | 搜索recipe                              |
+| oe-pkgdata-util package-info  base-files             | 查看pkg的info                           |
+| oe-pkgdata-util find-path /usr/share/man/man1/make.1 | 这个是查看这个路径文件是存在哪个pkg里。 |
+
+https://blog.csdn.net/weixin_44410537/article/details/90734459
+
+
+
+# NATIVEDEPS
+
+`NATIVEDEPS` 是 Yocto 中用于定义本机（native）包依赖的变量。在 Yocto 构建系统中，有些软件包是针对主机系统（构建环境）而不是目标系统（最终生成的嵌入式系统）构建的，这些软件包被称为本机包。
+
+`NATIVEDEPS` 变量允许您在 Yocto 配方文件（.bb 文件）中定义本机包的依赖关系。当一个本机包依赖于其他本机包时，您可以使用 `NATIVEDEPS` 来指定这些依赖关系。
+
+这个变量指定了本机包依赖的名称列表。例如：
+
+```python
+NATIVEDEPS = "python3-native zlib-native"
+```
+
+这里，这个本机包依赖于 `python3-native` 和 `zlib-native`。这样在构建这个本机包时，Yocto 将确保先构建这些本机包的依赖，以满足构建的需要。
+
+`NATIVEDEPS` 变量的使用有助于管理本机包之间的依赖关系，确保在构建本机包时正确地解决依赖关系。
+
+# gcc的recipe分析
+
+poky\meta\recipes-devtools\gcc 在这个目录下。
+
+## gcc_11.4.bb gcc-cross_11.4.bb  gcc-cross-canadian_11.4.bb 这3个recipe的关系
+
+在 Yocto 中，通常有多个 recipe 与同一个软件包的不同方面或使用场景相关联。针对 GCC（GNU Compiler Collection），您提到了三个相关的 recipe：
+
+1. **gcc_11.4.bb**:
+   - 这是用于构建目标系统（target system）的 GCC 软件包的 recipe。
+   - `gcc_11.4.bb` 定义了如何构建和生成适用于目标硬件的 GCC 编译器。
+
+2. **gcc-cross_11.4.bb**:
+   - 这个 recipe 是构建交叉编译工具链（cross-compilation toolchain）的。
+   - 它提供了在主机环境上生成适用于目标硬件的 GCC 编译器，以便在主机上交叉编译软件以供目标系统使用。
+
+3. **gcc-cross-canadian_11.4.bb**:
+   - 这个 recipe 是用于构建 Canadian cross 编译工具链的。
+   - Canadian cross 编译工具链允许在一个宿主系统上生成用于一个目标系统的工具链，但这个工具链运行在另一个中间系统（intermediate system）上。
+   - 通常在嵌入式开发中，需要在一个宿主系统（host system）上生成用于目标嵌入式系统的交叉编译工具链。Canadian cross 允许在一个不同的中间系统上生成这样的工具链。
+
+这三个 recipe 为不同的情况提供了 GCC 的不同版本或构建配置，以满足在 Yocto 构建过程中不同的编译需求。每个 recipe 针对不同的编译环境和使用场景提供不同的编译器构建。
+
+## Canadian cross 名字的由来
+
+"Canadian cross" 这个术语源自计算机科学和编译器领域。
+
+它描述了一种特定类型的交叉编译（cross-compilation）方式，
+
+与标准的交叉编译有所不同。
+
+在传统的交叉编译中，您可能会考虑主机系统（host system）和目标系统（target system）。
+
+主机系统是您在其上进行编译的系统，
+
+而目标系统是您将程序或软件部署到的系统。
+
+传统的交叉编译通常涉及主机系统和目标系统不同的体系结构，
+
+例如在 x86 主机上编译 ARM 目标的程序。
+
+然而，在某些情况下，还存在一种更特殊的情况。
+
+这就是 Canadian cross 编译，它涉及三个不同的系统：
+
+1. **Host System**（宿主系统）：
+   - 这是进行编译的系统，即运行编译器的系统。
+
+2. **Target System**（目标系统）：
+   - 这是最终部署并运行生成的软件的系统。
+
+3. **Intermediate System**（中间系统）：
+   - 这是位于 Host 和 Target 之间的第三个系统，用于生成目标系统的编译器或工具链。
+
+在 Canadian cross 编译中，编译器本身在中间系统上生成，并且能够将针对目标系统的程序编译为可以在目标系统上运行的程序。
+
+这种方式允许在一个中间系统上生成针对另一个目标系统的工具链。
+
+"Canadian" 这个名字来源并不十分清晰，可能只是一种命名惯例或历史上的起源。
+
+## gcc_11.4.bb分析
+
+文件包含关系：
+
+```
+gcc_11.4.bb
+	gcc-11.4.inc
+		gcc-common.inc
+			100行代码。定义公共的基本信息，代码从哪里下载。S、B目录。
+		自己100行代码。也是定义S、B、OECONF_EXTRA这些信息。
+	gcc-target.inc
+		gcc-configure-common.inc
+			gcc-multilib-config.inc
+				就定义了一个python函数：gcc_multilib_setup
+			gcc-shared-source.inc
+				20行代码。基本没做什么。
+			自己100行代码。主要就是EXTRA_OECONF，定义了do_configure
+		自己200行代码。EXTRA_OECONF、PACKAGES定义了多个。FILES多个。compile和install函数
+	另外自己的不到10行的代码。有用的就这个：BBCLASSEXTEND = "nativesdk"
+```
+
+
+
+```
+gcc-cross_11.4.bb
+	gcc-11.4.inc
+	gcc-cross.inc
+		继承了cross.bbclass
+		gcc-configure-common.inc
+		自己的100行代码：定义了compile和install。禁止了打包。
+```
+
+
+
+bitbake-getvar -r gcc PROVIDES
+
+这个可以得到结果。
+
+bitbake-getvar -r gcc-cross PROVIDES
+
+这个得不到结果。
+
+为什么？明明有gcc-cross.bb的文件。
+
+bitbake-getvar -r gcc-crosssdk PROVIDES
+
+这个也是没有。
+
+列出所有的recipe。可以看到是有gcc-cross-arm
+
+PROVIDES="gcc-cross-arm virtual/arm-poky-linux-gnueabi-gcc virtual/arm-poky-linux-gnueabi-g++"
+
+这个是因为在gcc-cross.inc里，把PN名字重新赋值了（没有赋值的话，默认就是bb文件名字）
+
+```
+PN = "gcc-cross-${TARGET_ARCH}"
+```
+
+
+
+bitbake-getvar -r lib64-gcc-cross-aarch64   PROVIDES
+
+这个是：
+
+```
+PROVIDES="lib64-gcc-cross-aarch64 virtual/lib64-aarch64-pokymllib64-linux-gcc virtual/lib64-aarch64-pokymllib64-linux-g++"
+```
+
+跟gcc相关的recipe有这些：
+
+```
+gcc                                                :11.4.0-r0 
+gcc-cross-arm                                      :11.4.0-r0 
+gcc-cross-canadian-aarch64                         :11.4.0-r0 
+gcc-cross-canadian-arm                             :11.4.0-r0 
+gcc-crosssdk-x86_64-pokysdk-linux                  :11.4.0-r0 
+gcc-runtime                                        :11.4.0-r0 
+gcc-sanitizers                                     :11.4.0-r0 
+gcc-source-11.4.0                                  :11.4.0-r0 
+lib64-gcc                                          :11.4.0-r0 
+lib64-gcc-cross-aarch64                            :11.4.0-r0 
+lib64-gcc-runtime                                  :11.4.0-r0 
+lib64-gcc-sanitizers                               :11.4.0-r0 
+lib64-gcc-source-11.4.0                            :11.4.0-r0 
+lib64-libgcc                                       :11.4.0-r0 
+lib64-libgcc-initial                               :11.4.0-r0 
+libgcc                                             :11.4.0-r0
+libgcc-initial                                     :11.4.0-r0
+nativesdk-gcc                                      :11.4.0-r0
+nativesdk-gcc-runtime                              :11.4.0-r0
+nativesdk-gcc-sanitizers                           :11.4.0-r0
+nativesdk-libgcc                                   :11.4.0-r0
+nativesdk-libgcc-initial                           :11.4.0-r0   
+```
+
+## cross.bbclass
+
+
+
+# inherit nopackages
+
+`inherit nopackages` 是 Yocto 中一个特殊的类继承声明，它指示 Yocto 在处理某个特定的 `.bb` 文件时不要生成软件包（packages）。
+
+当一个 `.bb` 文件使用 `inherit nopackages` 时，它告诉 Yocto 不要为这个 recipe 自动生成任何软件包。这可能用于一些特殊情况，比如一个 recipe 只是为了执行一些特定的任务而不产生可安装的软件包。这种情况下，禁止生成软件包是有用的。
+
+这个声明允许开发者明确地指示 Yocto 不生成任何软件包，以适应特定的需求或情况。
+
+里面的代码很简单：
+
+```
+deltask do_package
+deltask do_package_write_rpm
+deltask do_package_write_ipk
+deltask do_package_write_deb
+deltask do_package_write_tar
+deltask do_package_qa
+deltask do_packagedata
+deltask do_package_setscene
+deltask do_package_write_rpm_setscene
+deltask do_package_write_ipk_setscene
+deltask do_package_write_deb_setscene
+deltask do_package_qa_setscene
+deltask do_packagedata_setscene
+```
+
+# PACKAGE_DEBUG_SPLIT_STYLE 
+
+确定在创建与 GNU 项目调试器 (GDB) 一起使用的调试包时如何拆分和打包调试信息和源信息。
+
+一般来说，根据此变量的值，您可以将源代码和调试信息合并在一个包中，
+
+您可以将源代码分解为可以独立安装的单独的包，
+
+或者您可以选择不打包源代码。
+
+PACKAGE_DEBUG_SPLIT_STYLE 变量的可能值：
+
+“.debug”：所有调试和源信息都放置在单个 *-dbg 包中；调试符号文件放置在 .debug 目录中的二进制文件旁边，因此，如果将二进制文件安装到 /bin 中，则相应的调试符号文件将安装在 /bin/.debug 中。源文件安装在 /usr/src/debug 下的同一个 *-dbg 包中。
+
+“debug-file-directory”：如上所述，所有调试和源信息都放置在单个 *-dbg 包中；调试符号文件完全放置在 /usr/lib/debug 目录下，并以二进制文件的安装路径分隔，因此，如果二进制文件安装在 /bin 中，则相应的调试符号将安装在 /usr/lib/ 中调试/bin 等。如上所述，源安装在 /usr/src/debug 下的同一包中。
+
+“debug-with-srcpkg”：调试信息与 .debug 值一样放置在标准 *-dbg 包中，而源代码放置在单独的 *-src 包中，可以独立安装。这是该变量的默认设置，如 Poky 的 bitbake.conf 文件中所定义。
+
+“debug-without-src”：与 .debug 设置相同的行为，但根本不打包任何源代码。
+
+# binutils.bbclass分析
+
+```
+binutils_2.38.bb
+	binutils.inc
+		就自己的200行代码。
+		定义基本的描述信息。
+		依赖：就是几个native工具。
+		
+	binutils-2.38.inc
+		70行代码。没有什么东西。
+	自己的60行代码：
+		BBCLASSEXTEND = "native nativesdk"
+```
+
+
+
+# features_check.bbclass
+
+`features_check.bbclass`是Yocto中的一个BitBake类。
+
+在Yocto/OpenEmbedded构建系统中，BitBake是用于构建和管理软件包的工具。
+
+`features_check.bbclass`类==提供了一种检查目标设备特性的方式==，并根据这些特性来选择或配置软件包的方法。
+
+这个类通常用于检查目标设备的硬件或软件特性，
+
+并根据这些特性来确定软件包的安装或配置选项。
+
+比如，可以根据处理器架构、操作系统版本、设备类型等条件来选择不同的软件包版本或配置选项。
+
+通过`features_check.bbclass`，
+
+可以实现在构建过程中根据目标设备的特性进行灵活的软件包选择和配置，以满足不同设备的需求。
+
+文件里就实现了一个匿名python函数。
+
+检查这些features
+
+```
+for kind in ['DISTRO', 'MACHINE', 'COMBINED', 'IMAGE']:
+```
+
+REQUIRED_DISTRO_FEATURES 
+
+继承 features_check 类时，此变量标识当前配置中必须存在的分发功能，以便 OpenEmbedded 构建系统构建配方。
+
+换句话说，如果 REQUIRED_DISTRO_FEATURES 变量列出了当前配置中未出现在 DISTRO_FEATURES 中的功能，则将跳过该配方，并且如果构建系统尝试构建该配方，则会触发错误。
+
+
+
+# multiarch 这个feature说明
+
+在Yocto中，`multiarch`是一个用于支持多架构（Multi-Architecture）的特性。
+
+这个特性允许您在同一个Linux发行版中同时支持和构建多个不同的处理器架构。
+
+这对于需要在不同类型的设备或处理器上运行相同软件的情况非常有用。
+
+例如，您可能希望在ARM和x86架构上运行相同的软件，而不必为每种架构分别构建不同的软件包或发行版。
+
+启用`multiarch`特性后，Yocto可以管理和构建针对多个不同处理器架构的软件包和发行版。
+
+这使得在不同架构之间共享相同的软件更加容易，并且可以在多种架构的设备上部署相同的软件。
+
+这个特性可以帮助开发者更有效地管理不同架构之间的软件构建和部署，从而提高开发效率并促进跨架构的软件共享和开发。
+
+# ld.bfd 的bfd是表示什么
+
+在 ld.bfd 中，BFD 代表“Binary File Descriptor”（二进制文件描述符）。ld.bfd 是 GNU 工具链中的一个链接器，它使用 BFD 库（Binary File Descriptor Library）来处理不同格式的二进制文件。
+
+BFD 库提供了一个通用的接口，用于读取、写入和操作各种不同格式的二进制文件，例如 ELF（Executable and Linkable Format）、COFF（Common Object File Format）、a.out 等等。这个库允许 GNU 工具链中的不同工具（如 ld、objcopy 等）能够处理多种不同格式的二进制文件。
+
+ld.bfd 是 ld（链接器）的一个变体，它使用 BFD 库来处理链接和操作不同格式的目标文件。它支持多种不同格式的二进制文件，并且能够在链接时正确处理这些文件。 ld.bfd 在处理目标文件时使用 BFD 库提供的功能，以确保对各种不同格式的文件进行正确的链接和处理。
+
+# 使用yocto来编译树莓派系统
+
+```
+git clone -b hardknott git://git.yoctoproject.org/poky.git
+git clone -b hardknott git://git.yoctoproject.org/meta-raspberrypi
+source poky/oe-init-build-env build-rpi
+bitbake-layers add-layer ../meta-raspberrypi
+```
+
+修改local.conf文件：
+
+```
+sed -i 's/^MACHINE.*/MACHINE ?= "raspberrypi3"/g' conf/local.conf
+sed -i '/^#DL_DIR ?= "${TOPDIR}\/downloads"/ a DL_DIR ?= \"${HOME}/yocto/downloads"' conf/local.conf
+sed -i 's/^PACKAGE_CLASSES.*/PACKAGE_CLASSES ?= "package_ipk"/g' conf/local.conf
+
+echo 'RPI_USE_U_BOOT = "1"' >> conf/local.conf
+echo 'ENABLE_UART = "1"' >> conf/local.conf
+```
+
+编译：
+
+```
+bitbake core-image-minimal
+```
+
+烧录：
+
+```
+bzip -Dk core-image-minimal-raspberrypi3.wic.bz2
+sudo dd if=core-image-minimal-raspberrypi3.wic of=${SD_CARD} bs=40960
+```
+
+
+
+https://e61983.github.io/2021-07-26-building-raspberry-pi-systems-with-yocto/#%e6%ba%96%e5%82%99-yocto-%e7%92%b0%e5%a2%83
+
+# 做第一个layer和recipe
+
+这篇文章很好，直接抓到了重点。没有多余的废话。
+
+https://e61983.github.io/2021-07-28-yocto-first-layer/
+
+# 调整kernel的方法
+
+
 
 # 参考资料
 

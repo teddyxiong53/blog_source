@@ -24,7 +24,7 @@ https://raw.github.com/Evilpaul/RPi-config/master/config.txt
 
 这里是一个完整的示例文件。
 
-#mem
+# mem
 
 1、disable_l2cache。默认是0。
 
