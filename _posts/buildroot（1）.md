@@ -2528,6 +2528,37 @@ images/rootfs.cpio: ROOTFS=CPIO
 
 ```
 
+
+
+```
+ROOTFS_$(FSTYPE)_CMD
+	这个命令是用来生成rootfs image的。
+下面这些变量是可选的：
+ROOTFS_$(FSTYPE)_DEPENDENCIES
+ROOTFS_$(FSTYPE)_PRE_GEN_HOOKS
+ROOTFS_$(FSTYPE)_POST_GEN_HOOKS
+```
+
+## FS_DIR = $(BUILD_DIR)/buildroot-fs
+
+`FS_DIR` 是一个变量，通常在 Buildroot 的 Makefile 或配置文件中使用，
+
+==用于指定生成根文件系统的目录路径。==
+
+在这个例子中，`FS_DIR` 被定义为 `$(BUILD_DIR)/buildroot-fs`。
+
+`$(BUILD_DIR)` 通常代表 Buildroot 构建系统的构建目录，是一个由 Buildroot 自动生成的变量，指向当前构建的临时目录。
+
+因此，`FS_DIR` 将会是一个相对于 Buildroot 构建临时目录的路径，
+
+指向构建过程中生成的根文件系统目录。
+
+这个目录存储了构建好的文件系统，包括 root 文件系统的内容、设备节点、配置文件等等。
+
+下面是这样：
+
+![image-20240109153044742](images/random_name/image-20240109153044742.png)
+
 # init初始化系统
 
 有这么几种，默认用的是busybox自带的。

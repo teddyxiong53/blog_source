@@ -7,11 +7,134 @@ tags:
 
 --
 
+# 一篇培训ppt
+
+这个是yocto内核开发的培训ppt
+
+https://elinux.org/images/b/be/Yps2021.11-handson-kernel.pdf
+
+这个很好，理论和实践结合。
+
+
+
+## 为什么需要linux-yocto？
+
+主要是提供工具来避免错误的kernel配置。
+
+包含了什么？
+
+kernel代码：https://git.yoctoproject.org/linux-yocto/
+
+recipe文件：
+
+![image-20231229140421815](images/random_name/image-20231229140421815.png)
+
+bbclass文件
+
+![image-20231229140430402](images/random_name/image-20231229140430402.png)
+
+## 为什么需要内核配置片段
+
+主要是为了方便定制和重用配置。相当于C语言的include头文件。
+
+## yocto kernel cache
+
+这个是一个代码仓库。
+
+https://git.yoctoproject.org/yocto-kernel-cache/
+
+里面的内容是这样：
+
+![image-20231229141027534](images/random_name/image-20231229141027534.png)
+
+## 传统的内核开发流程
+
+### 传统的做法1
+
+使用mainline的内核
+
+1、我只要一份内核代码和一个defconfig文件。
+
+2、内核代码一般是kernel.org下载的压缩包。
+
+3、用menuconfig生成的一个完整的defconfig。
+
+### 传统做法2
+
+使用自己本地的内核
+
+1、自己本地的内核git和defconfig文件。
+
+### 传统做法3
+
+用quilt打一些patch。
+
+用mainline的内核，打上一堆的patch。
+
+## yocto下面的kernel最佳实践
+
+1、不要创建一个evil vendor kernel。
+
+2、除非有特别的原因，否则你的内核要inherit linux-yocto
+
+3、不要使用完整的defconfig，使用yocto-kernel-cache仓库加配置片段的方式。
+
+## 操作
+
+这里有下面实验用的layer的代码。
+
+https://github.com/moto-timo/kernel-lab-layers
+
+## lab1测试传统方法1
+
+创建这个layer
+
+poky/meta-lab1-qemuarm64
+
+
+
+linux-korg。korg表示kernel.org。表示标准版本的linux。
+
+yocto下面的命名都是linux-xxx的方式。
+
+例如linux-yocto、linux-meson这样。
+
+meta-lab1-qemuarm64目录
+
+```
+.
+├── conf
+│   ├── layer.conf
+│   └── machine
+│       └── lab1-qemuarm64.conf
+└── recipes-kernel
+    └── linux
+        ├── linux-korg
+        │   ├── arm64_defconfig
+        │   ├── defconfig
+        │   ├── qemuarm64_defconfig
+        │   └── yocto-testmod.patch
+        └── linux-korg_5.17.bb
+```
+
+linux-korg_5.17.bb的内容是：
+
+```
+inherit kernel
+
+SRC_URI = "${KERNELORG_MIRROR}/linux/kernel/v5.x/linux-${PV}.tar.xz;name=kernel \
+           file://defconfig"
+```
+
+所以就是标准内核加defconfig文件。
+
+
+
+# 介绍
+
 主要以这个为指南。
 
 https://docs.yoctoproject.org/kernel-dev/intro.html
-
-# 介绍
 
 ## overview
 
@@ -863,4 +986,6 @@ Yocto 项目团队在功能不再共享并因此需要隔离的点创建内核�
 相反，内核团队存储将该功能应用到相关内核类型所需的独特差异。
 
 ## kernel 输出目录的结构
+
+
 

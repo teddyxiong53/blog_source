@@ -147,6 +147,24 @@ do_merge_delta_config[depends] += "virtual/${TARGET_PREFIX}gcc:do_populate_sysro
 do_merge_delta_config[dirs] = "${B}"
 ```
 
+## powerpc架构
+
+PowerPC 体系结构规范（PowerPC Architecture Specification）发布于 1993 年，
+
+==它是一个 64 位规范 ( 也包含 32 位子集 )。==
+
+几乎所有常规可用的 PowerPC（除了新型号 IBM RS/6000 和所有 IBM pSeries 高端服务器）都是 32 位的。
+
+PowerPC 处理器有广泛的实现范围，
+
+包括从诸如 Power4 那样的高端服务器 CPU 到嵌入式 CPU 市场（任天堂 Gamecube 使用了 PowerPC）。
+
+PowerPC 处理器有非常强的嵌入式表现，
+
+因为它具有优异的性能、较低的能量损耗以及较低的散热量。
+
+除了象串行和以太网控制器那样的集成 I/O，该嵌入式处理器与“台式机”CPU 存在非常显著的区别。例如，4xx 系列 PowerPC 处理器缺乏浮点运算，并且还使用一个受软件控制的 TLB 进行内存管理，而不是象台式机芯片中那样采用反转页表。
+
 
 
 # 参考资料

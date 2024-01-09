@@ -301,7 +301,7 @@ A ?= "aval"
 注：对同一个变量多次设置默认值，只第一个有效。
 ```
 
-设置弱默认值
+设置==弱默认值==
 
 ```
 A ??= "somevalue"
@@ -474,7 +474,7 @@ BitBake允许通过包含文件（.inc）和类文件（.bbclass）共享元数�
 
 # 依赖关系
 
-- build time依赖项
+- build time（编译时）依赖项
 
 1. DEPENDS变量来管理build time依赖性
    [deptask]任务的varflag表示其中列出的每个项目的任务DEPENDS必须先完成，然后才能执行该任务。
@@ -1161,6 +1161,53 @@ bitbake_renamed_vars = {
 在这个示例中，`OLD_VARIABLE_NAME` 被重命名为 `NEW_VARIABLE_NAME`，`ANOTHER_OLD_VARIABLE` 被重命名为 `ANOTHER_NEW_VARIABLE`。
 
 通过使用 `bitbake_renamed_vars`，BitBake 能够在处理脚本和 .bb 文件时检测到旧变量名，并将其转换为新名称，以确保构建系统的正常运行。这有助于简化项目升级的过程，因为旧的脚本和配置文件仍然可以使用，而不必立即修改以适应新的变量名称。这样，您可以逐步迁移到新的变量名称，而不会破坏旧的构建过程。
+
+# bitbake解析conf和recipe文件的顺序和关系
+
+在 Yocto 和 BitBake 构建系统中，`conf` 文件（如 `local.conf`、`bblayers.conf` 等）和 `.bb` 或 `.bbappend` 文件（recipe 文件）在构建过程中扮演不同的角色，它们之间的解析顺序和关系如下：
+
+1. **conf 文件**：
+   
+   - **local.conf**：这是主要的配置文件，包含了用户自定义的变量设置。`local.conf` 中的变量设置会影响整个构建环境。
+   
+   - **bblayers.conf**：这个文件定义了 Yocto 工程中所使用的层（layers）和层的优先级。它决定了 BitBake 在构建过程中将会使用哪些层中的 recipes。
+
+   - **distro.conf**：它包含了与所选发行版（distribution）相关的配置信息，例如默认的机器（MACHINE）、默认的软件包选择和默认的配置等。
+
+2. **Recipe 文件**：
+
+   - **.bb 文件**：这些文件包含了软件包的元数据，定义了如何构建和处理特定软件包的信息。`.bb` 文件中定义了软件包的来源、构建步骤、依赖关系等。它们按照层的优先级顺序（从高到低）进行解析。
+
+   - **.bbappend 文件**：这些是对现有 `.bb` 文件进行扩展或修改的文件。它们用于在现有的 recipe 上应用额外的配置或修改，例如添加补丁、修改变量值等。`.bbappend` 文件的解析顺序基于它们所属的层的优先级。
+
+在解析时，BitBake 会按照一定的顺序读取和处理这些文件，最终生成一个被称为 metadata cache 的数据结构，其中包含了所有已解析和处理的元数据信息。这些元数据包括软件包信息、依赖关系、变量设置等。BitBake 根据这些元数据在构建过程中执行任务和生成目标文件。
+
+总的来说，Yocto 和 BitBake 在构建时==会先读取和处理 conf 文件==（`local.conf`、`bblayers.conf`、`distro.conf`），然后按照层的优先级顺序解析处理 recipe 文件（`.bb` 和 `.bbappend` 文件），生成 metadata cache，最终执行构建任务。
+
+# bb.tinfoil
+
+`bb.tinfoil` 是 Yocto 构建系统中 tinfoil 模块的 Python 包装器。Tinfoil 是 BitBake 构建系统中一个重要的组件，负责管理构建过程中的元数据和任务执行。
+
+这个 Python 模块提供了一种交互式的方式来管理 BitBake 构建系统，允许您以编程方式执行 BitBake 命令和任务。通过 tinfoil，您可以访问 BitBake 构建系统中的元数据、配置设置和任务执行等信息，并且能够以编程方式执行构建、查询软件包信息、检查任务状态等操作。
+
+使用 `bb.tinfoil` 模块，您可以在 Python 中编写脚本来与 BitBake 构建系统交互，执行各种任务和操作。这个模块为自动化构建流程和与构建系统的交互提供了强大的工具。
+
+举例来说，您可以在 Python 中使用 `bb.tinfoil` 来执行以下操作：
+
+- 查询软件包的元数据信息。
+- 执行特定软件包的构建任务。
+- 检查构建任务的状态和输出信息。
+- 设置和修改构建配置。
+- 执行清理操作和重新构建。
+
+这种方法对于需要对构建系统进行自动化管理、集成和测试的场景非常有用。使用 `bb.tinfoil` 模块可以让开发者通过 Python 脚本更灵活地管理和控制 BitBake 构建系统。
+
+```
+# tinfoil: a simple wrapper around cooker for bitbake-based command-line utilities
+#
+```
+
+
 
 # 参考资料
 
