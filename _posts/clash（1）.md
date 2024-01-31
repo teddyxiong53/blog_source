@@ -100,6 +100,31 @@ log-level: info
 
 https://maintao.com/2021/use-clash-as-a-proxy/
 
+# 在开发服务器上配置翻墙
+
+1、从windows版本的把配置文件导出为config.yml。
+
+2、服务器上执行：
+
+```
+./clash -f config.yml
+```
+
+config.yml不需要进行什么修改，就可以的。
+
+3、在需要使用翻墙功能的shell窗口，执行：
+
+```
+export http_proxy="127.0.0.1:7890"
+export https_proxy="127.0.0.1:7890" 
+git config --global http.proxy http://127.0.0.1:7890
+git config --global https.proxy https://127.0.0.1:7890
+```
+
+然后就可以正常使用翻墙了。
+
+
+
 # 参考资料
 
 1、官方文档

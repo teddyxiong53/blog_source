@@ -188,7 +188,9 @@ Provision出现背景
 
 https://confluence.amlogic.com/display/SW/2022+TEE+Special+Training
 
+# ARMv8-A QEMU运行OP-TEE/ATF环境搭建 
 
+https://www.cnblogs.com/arnoldlu/p/14245834.html
 
 # 参考资料
 

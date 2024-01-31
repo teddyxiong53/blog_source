@@ -162,17 +162,153 @@ mkimage和dtc工具，可以将.its文件以及对应的image data file，打包
 
 
 
-image source file的语法和device tree source file完全一样（可参考[3][4][5]中的例子），只不过自定义了一些特有的节点，包括images、configurations等。说明如下：
+image source file的语法和device tree source file完全一样（可参考[3][4][5]中的例子），
+
+只不过自定义了一些特有的节点，包括images、configurations等。
 
 
 
-参考资料
+## 命名
+
+Kernel中引入的Device Trace概念，将配置信息放入dtb中。达到一个kernel，结合不同dtb适配多个平台。
+
+FIT是Flattened Image Tree的意思，即将多个镜像通过dts语法编译生成一个镜像文件。
+
+==uboot支持编写its文件，通过mkimage和dtc创建kernel、ramdisk、dtb等等文件的打包镜像。==
+
+这里的dts文件通常命名为.its，输出的镜像文件通常命名.itb。
+
+## 工具
+
+安装mkimage工具：
+
+```
+sudo apt install  u-boot-tools
+```
+
+还需要安装dtc：
+
+```
+sudo apt-get install device-tree-compiler
+```
+
+mkimage调用dtc创建itb文件。
+
+## FIT镜像的创建流程
+
+创建FIT镜像的命令：
+
+```
+mkimage -f multi.its fit.itb
+```
+
+查看FIT镜像头：
+
+```
+mkimage -l fit.itb
+```
+
+its(image tree source)是创建FIT镜像的配置脚本，itb(flattened image tree blob)是FIT镜像。
+
+![img](images/random_name/1083701-20231220141621561-1935470942.jpg)
+
+## its文件的示例
+
+```
+/dts-v1/;
+
+/ {
+    description = "Various kernels, ramdisks and FDT blobs";--对本镜像的描述。
+    #address-cells = <1>;--下面load/entry属性的格式，1表示只有一个地址。
+　　timestamp = <12399321>--镜像修改时间。
+    images {--镜像节点，必须包含一个子节点。
+        kernel-1 {--子节点名称。
+            description = "Linux ARM kernel";--子节点描述。
+            data = /incbin/("arch/arm/boot/zImage");--子节点二进制数据。
+            type = "kernel";--子节点类型为IH_TYPE_KERNEL，可以是"standalone", "kernel", "kernel_noload", "ramdisk", "firmware", "script","filesystem", "flat_dt"等。            arch = "arm";--架构名称，比如arm等。
+            os = "linux";--OS名称。
+            compression = "none";--对data使用的压缩算法。
+            load = <0x830000e8>;--本数据加载到的地址，注意地址要正确。
+            entry = <0x830000e8>;--镜像启动入口地址。Linux的load地址也是entry地址。
+            hash-1 {--使用md5进行哈希。哈希值存放于value属性中。
+                algo = "crc32";--支持的hash算法包括：crc32、md5、sha1、sha256。
+            };
+            hash-2 {--使用sha256进行哈希。
+                algo = "sha256";
+            };
+        };
+
+        ramdisk {
+            description = "Linux ramdisk";
+            data = /incbin/("rootfs.cpio.gz");
+            type = "ramdisk";--数据类型为ramdisk，对应类型为IH_TYPE_RAMDISK。
+            arch = "arm";
+            os = "linux";
+            compression = "none";--注意这里的数据虽然被gzip压缩了，但是不需要uboot处理。所以uboot认为的数据压缩类型为none。
+            hash-1 {
+                algo = "crc32";
+            };
+        };
+
+        kernel-fdt {
+            description = "NAND FDT blob";
+            data = /incbin/("nand.dtb");
+            type = "flat_dt";
+            arch = "arm";
+            compression = "none";　　　　　　　load = <0x86F00000>;
+            hash-1 {
+                algo = "crc32";
+            };
+        };
+
+        ramdisk-fdt {
+            description = "RAMDISK FDT blob";
+            data = /incbin/("ramdisk.dtb");
+            type = "flat_dt";--子镜像类型为flat_dt，对应类型为IH_TYPE_FLATDT。
+            arch = "arm";
+            compression = "none";
+            load = <0x86F00000>;--dtb加载到指定地址。
+            hash-1 {
+                algo = "sha1";
+            };
+        };
+    };
+
+    configurations {--提供对上述镜像的组合，有默认配置和多种配置可选。
+        default = "kernel";--默认配置，bootm未指定特殊配置时使用。
+
+        kernel {--配置名称。加载zImage和nand.dtb，rootfs从NAND中获取。
+            description = "Boot Linux kernel with FDT blob";--配置说明。
+            kernel = "kernel";
+            fdt = "kernel-fdt";
+        };
+
+        ramdisk {--加载zImage和dtb，文件系统通过rootfs.cpio.gz解压作为ramdisk使用。
+            description = "Boot Linux kernel with FDT blob and ramdisk";
+            kernel = "kernel";--指向kernel类型镜像。
+            ramdisk = "ramdisk";--指向ramdisk类型镜像。
+            fdt = "ramdiskfdt";--指向flat_dt类型数据。
+        };
+
+    };
+};
+```
+
+
+
+完整语法：
+
+https://docs.u-boot.org/en/stable/usage/fit/source_file_format.html#root-node-properties
+
+## 参考资料
 
 1、u-boot FIT image介绍
 
 http://www.wowotech.net/u-boot/fit_image_overview.html
 
+2、
 
+https://www.cnblogs.com/arnoldlu/p/17912109.html
 
 # 重要的文件
 

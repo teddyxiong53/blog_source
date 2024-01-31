@@ -2975,143 +2975,98 @@ Yocto Project Devtool 是一个工具，用于简化嵌入式 Linux 软件开发
 
 ==而无需手动编写 BitBake 配方（recipes）。==
 
+## 什么需要devtool
+
+
+
+## 用法
+
 以下是一些基本的 `devtool` 命令和用法：
 
-1. **安装软件包到工程中**:
-   
-   ```bash
-   devtool add <recipe-name>
-   ```
+
+
+```bash
+devtool add recipe fetchuri
+```
 用于将一个软件包添加到当前 Yocto Project 工程中。`<recipe-name>` 是软件包的名称，Devtool 将自动生成一个 BitBake 配方。
-   
-   以我的argcv加入为例：
-   
-   ```
-   devtool add argcv  https://github.com/teddyxiong53/argcv --srcbranch main
-   ```
-   
-   需要指定分支为main，因为现在github默认是main分支，为不指定的时候，默认是找master分支。会出错。
-   
-   默认是在这个目录下：
-   
-   ```
-   build-av400/workspace$ tree
-   .
-   ├── appends
-   │   └── argcv_git.bbappend
-   ├── conf
-   │   └── layer.conf
-   ├── README
-   ├── recipes
-   │   └── argcv
-   │       └── argcv_git.bb
-   └── sources
-       ├── argcv
-       │   ├── argcv.c
-       │   ├── argcv.h
-       │   ├── LICENSE
-       │   ├── Makefile
-       │   ├── README.md
-       │   └── test.c
-       └── devtoolsrcq0mulksg
-   ```
-   
-   argcv_git.bbappend的内容是：指定了externalsrc的信息。
-   
-   ```
-   inherit externalsrc
-   EXTERNALSRC = "/mnt/fileroot/hanliang.xiong/work/yocto-study/code/poky/build-arm64-ext-tc/workspace/sources/argcv"
-   EXTERNALSRC_BUILD = "/mnt/fileroot/hanliang.xiong/work/yocto-study/code/poky/build-arm64-ext-tc/workspace/sources/argcv"
-   ```
-   
-   recipe的内容是：
-   
-   ```
-   LICENSE = "MIT"
-   LIC_FILES_CHKSUM = "file://LICENSE;md5=09a1b191c4afac6965f59fed518b762d"
-   
-   SRC_URI = "git://github.com/teddyxiong53/argcv;protocol=https;branch=main"
-   
-   # Modify these as desired
-   PV = "1.0+git${SRCPV}"
-   SRCREV = "06affcc5156495b7558badf131d61adba68da98d"
-   
-   S = "${WORKDIR}/git"
-   
-   # NOTE: this is a Makefile-only piece of software, so we cannot generate much of the
-   # recipe automatically - you will need to examine the Makefile yourself and ensure
-   # that the appropriate arguments are passed in.
-   
-   do_configure () {
-   	# Specify any needed configure commands here
-   	:
-   }
-   
-   do_compile () {
-   	# You will almost certainly need to add additional arguments here
-   	oe_runmake
-   }
-   
-   do_install () {
-   	# NOTE: unable to determine what to put here - there is a Makefile but no
-   	# target named "install", so you will need to define this yourself
-   	:
-   }
-   
-   ```
-   
-   
-   
-2. **修改已存在的软件包**:
-   
-   ```bash
-   devtool modify <recipe-name>
-   ```
-用于修改已存在的软件包的 BitBake 配方。==它会将配方复制到 `workspace/sources/<recipe-name>` 中，然后您可以进行修改。==
-   
-3. **生成软件包的 patches**:
-   
-   ```bash
-   devtool extract <recipe-name>
-   ```
-用于从已存在的软件包生成 patches，以便进行修改或调试。
-   
-4. **重新构建软件包**:
-   
-   ```bash
-   devtool build <recipe-name>
-   ```
-用于重新构建软件包，包括修改后的软件包。这将使用 BitBake 构建过程重新构建软件包。
-   
-   
-   
-6. **将软件包从工程中移除**:
-   
-   ```bash
-   devtool remove <recipe-name>
-   ```
-用于从当前工程中移除软件包，同时删除相关的 BitBake 配方。
-   
-7. **查看工程中的软件包**:
-   ```bash
-   devtool list
-   ```
-   用于列出工程中的所有软件包。
 
-8. **查看软件包信息**:
-   ```bash
-   devtool info <recipe-name>
-   ```
-   用于查看特定软件包的信息，包括 BitBake 配方的位置。
+以我的argcv加入为例：
 
-9. **生成软件包的 README 文件**:
-   
-   ```bash
-   devtool finish <recipe-name>
-   ```
-   用于生成软件包的 README 文件，以提供软件包的使用和集成信息。
+```
+devtool add argcv  https://github.com/teddyxiong53/argcv --srcbranch main
+```
 
-以上是一些常用的 `devtool` 命令和用法，它们可以帮助简化 Yocto Project 软件包开发和构建过程。使用 `devtool` 可以加速软件包开发，减少手动配置和编写 BitBake 配方的工作。您可以在 Yocto Project 文档中找到更多有关 `devtool` 的信息和详细用法。
+需要指定分支为main，因为现在github默认是main分支，为不指定的时候，默认是找master分支。会出错。
+
+默认是在这个目录下：
+
+```
+build-av400/workspace$ tree
+.
+├── appends
+│   └── argcv_git.bbappend
+├── conf
+│   └── layer.conf
+├── README
+├── recipes
+│   └── argcv
+│       └── argcv_git.bb
+└── sources
+    ├── argcv
+    │   ├── argcv.c
+    │   ├── argcv.h
+    │   ├── LICENSE
+    │   ├── Makefile
+    │   ├── README.md
+    │   └── test.c
+    └── devtoolsrcq0mulksg
+```
+
+argcv_git.bbappend的内容是：指定了externalsrc的信息。
+
+```
+inherit externalsrc
+EXTERNALSRC = "/mnt/fileroot/hanliang.xiong/work/yocto-study/code/poky/build-arm64-ext-tc/workspace/sources/argcv"
+EXTERNALSRC_BUILD = "/mnt/fileroot/hanliang.xiong/work/yocto-study/code/poky/build-arm64-ext-tc/workspace/sources/argcv"
+```
+
+recipe的内容是：
+
+```
+LICENSE = "MIT"
+LIC_FILES_CHKSUM = "file://LICENSE;md5=09a1b191c4afac6965f59fed518b762d"
+
+SRC_URI = "git://github.com/teddyxiong53/argcv;protocol=https;branch=main"
+
+# Modify these as desired
+PV = "1.0+git${SRCPV}"
+SRCREV = "06affcc5156495b7558badf131d61adba68da98d"
+
+S = "${WORKDIR}/git"
+
+# NOTE: this is a Makefile-only piece of software, so we cannot generate much of the
+# recipe automatically - you will need to examine the Makefile yourself and ensure
+# that the appropriate arguments are passed in.
+
+do_configure () {
+	# Specify any needed configure commands here
+	:
+}
+
+do_compile () {
+	# You will almost certainly need to add additional arguments here
+	oe_runmake
+}
+
+do_install () {
+	# NOTE: unable to determine what to put here - there is a Makefile but no
+	# target named "install", so you will need to define this yourself
+	:
+}
+
+```
+
+
 
 ## devtool的帮助信息
 
@@ -11633,6 +11588,140 @@ SPECIAL_PKGSUFFIX = "-native -cross -initial -intermediate -crosssdk -cross-cana
 从而更好地组织和管理构建过程中生成的不同类型的软件包。
 
 例如，在构建交叉编译工具链时，可能会生成带有`-cross`后缀的工具包。这有助于识别和管理这些不同类型的包。
+
+# yocto debug特性配置
+
+使用适当的工具设置环境可以帮助开发人员调试和全面分析系统的行为。 
+
+Yocto 支持多种调试功能，旨在生成对开发过程有用的信息。
+
+这些 Yocto 功能可通过添加一些额外的软件包和功能来实现，如以下各节所述。
+
+## 基本环境设置
+
+为了创建适当的开发环境，Yocto 允许包含有用的包并生成开发工具所需的特定信息。
+
+另外，众所周知，在调试过程中，还需要禁用优化并启用调试符号。
+
+以下是要添加到 build/conf/local.conf 文件中的其他配置的列表。
+
+您可以根据您的应用程序和所需的环境选择要包含的内容。
+
+以下示例启用所有推荐的开发/调试工具。
+
+```
+EXTRA_IMAGE_FEATURES += "\
+      dbg-pkgs \       # adds -dbg packages for all installed packages and symbol information for debugging and profiling.
+      tools-debug \    # adds debugging tools like gdb and strace.
+      tools-profile \  # add profiling tools (oprofile, exmap, lttng valgrind (x86 only))
+      tools-testapps \ # add useful testing tools (ts_print, aplay, arecord etc.)
+      debug-tweaks \   # make image for suitable of development, like setting an empty root password
+      tools-sdk \      # OPTIONAL: adds development tools (gcc, make, pkgconfig, etc)  
+      dev-pkgs"        # OPTIONAL: adds -dev packages for all installed packages
+
+# Specifies to build packages with debugging information
+DEBUG_BUILD = "1"
+
+# Do not remove debug symbols
+INHIBIT_PACKAGE_STRIP = "1"
+
+# OPTIONAL: Do not split debug symbols in a separate file
+INHIBIT_PACKAGE_DEBUG_SPLIT= "1"
+```
+
+
+
+https://developer.ridgerun.com/wiki/index.php/Preparing_Yocto_Development_Environment_for_Debugging
+
+https://elinux.org/images/7/7c/002-1215-SLIDES-leveraging_the_yocto_project_to_debug_an_embedded_linux_system.pdf
+
+
+
+任何二进制包中的所有可执行文件在被删除之前都会被剥离
+打包（并因此安装在映像中），未剥离的版本是
+添加到 -dbg 包中，除非将 INHIBIT_PACKAGE_STRIP 设置为
+在任何配置文件中均为 true。
+
+# 关于去除GPLv3的软件包
+
+## 问题
+
+我正在尝试删除一些附加了 GPLv3 许可的开源软件包，
+
+我们无法将其作为最终生产映像的一部分进行分发。
+
+虽然可以使用 local.conf 中的“INCOMPATIBLE_LICENSE=GPLv3”删除这些软件包，但它会删除标记为 GPLv3 的每个软件包。
+
+我已使用 PREFERRED_VERSION_recipename=(GPLv2 Recipe_version) 并将所有 GPLv3 软件包降级为我们想要推送到最终映像中的 GPLv2。
+
+但我们希望保留几个 GPLv3 软件包作为调试映像的一部分，
+
+例如 M4、make、gdb、bison。
+
+这些包不需要出现在最终的生产映像中，但不能从构建中完全删除它们，因为在构建/调试期间需要它们。
+
+那么，我如何从最终的 rootfs 映像中删除这些包/配方，同时让它们成为构建过程的一部分并让它们构建。
+
+换句话说，我想让 bitbake 从 GPLv3 源代码构建它们，但将它们排除在最终的 rootfs 映像之外。
+
+我确实查看了 poky/lib/oe/manifest.py 和 rootfs.py create function == ，其中正在创建最终的 rootfs 清单，但无法弄清楚到底需要从 bitbake 设置什么。
+
+是否需要覆盖do_rootfs。如果是这样，需要设置哪些变量来覆盖最终清单。
+
+## 答复
+
+没有单一的方法可以做你想做的事。
+
+一种方法是让您的生产映像包含您需要交付的内容，然后让您的开发映像需要 production-image.bb。
+
+通过这种方式，您可以轻松地使用额外的软件包扩展开发映像。
+
+我有一个类似的问题，因为我想在我的开发映像中使用 gdbserver。 （到目前为止，我的开发映像中不需要/不需要任何其他 GPLv3）。
+
+我所做的就是设置
+
+INCOMPATIBLE_LICENSE =“GPL-3.0 LGPL-3.0 AGPL-3.0”
+INCOMPATIBLE_LICENSE_pn-gdb =“”
+
+这基本上允许构建 gdb，但没有其他任何 GPLv3 许可的东西。
+
+然后，我的图像继承了company-image.bbclass，而不是直接继承image.bbclass。
+
+在 company-image.bbclass 中，我有一个类似的函数：
+
+```
+python () {
+    for p in d.getVar('IMAGE_INSTALL', True).split():
+        if p in ['gdb', 'gdbserver'] and not d.getVar('IMAGE_BASENAME', True) == 'company-dev-image':
+            bb.fatal("gdb/gdbserver is not allowed in this image!")
+}
+```
+
+这将确保 gdb 和 gdbserver 只能安装在 company-dev-image 中；因此，不存在将它们分布在生产映像中的风险。
+
+https://stackoverflow.com/questions/34116799/how-to-remove-specific-packages-from-the-final-rootfs-image-built-by-bitbake
+
+
+
+# *INHIBIT_PACKAGE_DEBUG_SPLIT*
+
+`INHIBIT_PACKAGE_DEBUG_SPLIT`是一个Yocto变量，
+
+用于指定是否禁用在调试时拆分调试符号（debug symbols）到单独的调试包中的功能。
+
+设置`INHIBIT_PACKAGE_DEBUG_SPLIT = "1"`表示禁用调试时拆分，即不会生成单独的调试包。
+
+调试包包含可执行文件的调试符号，以便在进行调试时可以使用。
+
+==通过禁用拆分，调试符号将保留在主要的软件包中，而不是分离到独立的调试包中。==
+
+这样做的一个潜在好处是减少生成的软件包数量，使得构建的输出更为简洁。
+
+但同时，它可能增加了主要软件包的体积，因为调试符号将包含在主包中。
+
+这个设置通常用于在构建嵌入式系统时优化体积，因为在嵌入式系统中，可能并不需要保留大量的调试信息。
+
+在开发和调试过程中，拆分调试信息通常是很有用的，但在最终的嵌入式产品中，可能会考虑禁用调试时拆分以减小软件包的体积。
 
 
 

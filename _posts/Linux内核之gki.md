@@ -36,3 +36,11 @@ GKI为内核模块提供了稳定的内核模块接口（KMI），模块和内�
 1、GKI改造原则、机制和方法
 
 https://blog.csdn.net/feelabclihu/article/details/113409593
+
+2、Linux GKI开发指南 中文完整版PDF
+
+https://www.jb51.net/books/916755.html
+
+3、
+
+https://wuxianlin.com/2023/02/10/android-gsi-and-gki/
