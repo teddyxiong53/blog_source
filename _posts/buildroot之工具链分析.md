@@ -509,7 +509,11 @@ Buildroot知道许多著名的交叉编译工具链(来自用于 ARM 的 Linaro�
 
 
 
+## package\gcc\gcc-final\gcc-final.mk
 
+
+
+## package\gcc\gcc-initial\gcc-initial.mk
 
 https://www.cnblogs.com/kele-dad/p/13125808.html
 
@@ -591,3 +595,66 @@ toolchain-wrapper 确保正确的编译器（这里是 arm-linux-gnueabi-gcc）�
 # crosstool-ng手动编译工具链
 
 https://blog.csdn.net/birencs/article/details/124677373
+
+# 手动编译工具链
+
+这个脚本可以手动编译工具链。
+
+https://github.com/zhouronghua/CCC/blob/main/the_compiler_of_the_cross_compiler.sh
+
+对应的文章：
+
+https://www.cnblogs.com/zhouronghua/p/15236755.html
+
+## libgmp-dev libmpfr-dev libmpc-dev 这3个软件包的作用
+
+这三个软件包 `libgmp-dev`、`libmpfr-dev`、`libmpc-dev` 是用于支持 GNU MPC（Multiple Precision Complex Arithmetic Library）的开发的。它们提供了用于开发和编译与 GMP（GNU Multiple Precision Arithmetic Library）、MPFR（Multiple Precision Floating-Point Reliable Library）和 MPC 相关的软件的头文件和库文件。
+
+下面是它们各自的作用：
+
+1. **libgmp-dev:**
+   - 提供 GMP（GNU Multiple Precision Arithmetic Library）的开发文件。
+   - 包含 GMP 库的头文件和静态库，用于在程序中使用 GMP 提供的多精度整数和有理数算法。
+   - 在编译需要使用 GMP 功能的软件时，需要安装这个软件包。
+
+2. **libmpfr-dev:**
+   - 提供 MPFR（Multiple Precision Floating-Point Reliable Library）的开发文件。
+   - 包含 MPFR 库的头文件和静态库，用于在程序中进行高精度浮点数运算。
+   - 在编译需要使用 MPFR 功能的软件时，需要安装这个软件包。
+
+3. **libmpc-dev:**
+   - 提供 MPC（Multiple Precision Complex Arithmetic Library）的开发文件。
+   - 包含 MPC 库的头文件和静态库，用于在程序中进行复数运算。
+   - 在编译需要使用 MPC 功能的软件时，需要安装这个软件包。
+
+这些软件包通常是在编译数学库、科学计算软件或其他需要高精度算法支持的应用程序时所需的依赖项。在使用这些库的时候，安装相应的开发文件可以确保程序正确链接和调用这些库的功能。
+
+
+
+# toolchain\toolchain-external\pkg-toolchain-external.mk
+
+这段注释描述了 Buildroot 中用于支持外部工具链（external toolchains）的基础设施。
+
+外部工具链是指预先构建好、可直接使用的工具链，
+
+可以通过网络（如 Linaro、Sourcery CodeBench、处理器供应商提供的工具链）获取，
+
+也可以使用 Crosstool-NG 或 Buildroot 自身构建。
+
+Buildroot 的外部工具链基础设施已在一些环境中进行了测试，
+
+包括 Crosstool-NG 生成的工具链、Buildroot 生成的工具链、Linaro 为 ARM 和 AArch64 架构提供的工具链、Sourcery CodeBench 为 ARM、MIPS、PowerPC、x86_64 和 NIOS 2 架构提供的工具链，
+
+以及 Synopsys DesignWare 为 ARC 核心提供的工具链。
+
+这个基础设施的基本原则包括以下几个步骤：
+
+1. 如果工具链未预安装，则下载并解压缩到 `$(TOOLCHAIN_EXTERNAL_INSTALL_DIR)`。否则，`$(TOOLCHAIN_EXTERNAL_INSTALL_DIR)` 指向用户已经安装工具链的位置。
+
+2. 对于所有外部工具链，检查 Buildroot 菜单配置系统中工具链配置与外部工具链的实际配置之间的一致性。这对于确保 Buildroot 配置系统知道工具链是否支持 RPC、IPv6、locales、大文件等非常重要。这些信息无法在配置时自动检测，因为这些选项（例如 `BR2_TOOLCHAIN_HAS_NATIVE_RPC`）的值在配置时是必需的，由于这些选项用作其他选项的依赖项。在配置时，我们无法检索外部工具链的配置。
+
+3. ==将运行时所需的库复制到目标目录 `$(TARGET_DIR)`。显然，如果在目标系统上执行动态应用程序，则需要像 C 库、动态加载器和其他一些实用库。==
+
+4. ==将库和头文件复制到 staging 目录。这将允许所有后续对 gcc 的调用都使用 `--sysroot $(STAGING_DIR)`，从而大大简化使用外部工具链时软件包的编译。==因此，最终只有交叉编译器二进制文件保持外部，所有库和头文件都导入 Buildroot 树中。
+
+5. 构建一个工具链包装器（toolchain wrapper），==该包装器使用硬编码的一些参数（如 sysroot/march/mtune/..）执行外部工具链，以确保始终使用正确的配置，并且工具链的行为类似于内部工具链。==此工具链包装器和符号链接被安装到 `$(HOST_DIR)/bin`，其余 Buildroot 的处理与内部工具链的处理相同。

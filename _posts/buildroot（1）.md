@@ -3072,6 +3072,365 @@ alsa-lib-clean-for-reinstall
 
 这个倒有几个不同的clean。
 
+
+
+# TARGET_CONFIGURE_ARGS
+
+`TARGET_CONFIGURE_ARGS` 是 Buildroot 中一个用于设置目标软件包（target package）配置参数的变量。这个变量通常用于传递额外的参数给 configure 脚本，以影响软件包的构建和配置过程。
+
+在 Buildroot 的 Makefile 或配置文件中，你可以看到类似以下的使用方式：
+
+```makefile
+TARGET_CONFIGURE_ARGS += --enable-feature1
+TARGET_CONFIGURE_ARGS += --disable-feature2
+```
+
+这里，`TARGET_CONFIGURE_ARGS` 是一个存储目标软件包配置参数的变量，通过 `+=` 操作符可以逐步添加参数。在这个例子中，`--enable-feature1` 和 `--disable-feature2` 是 configure 脚本的选项，通过这些选项可以控制软件包的构建。
+
+具体而言，这些参数会传递给 configure 脚本，例如：
+
+```bash
+./configure --enable-feature1 --disable-feature2
+```
+
+这就允许你在 Buildroot 中定制特定软件包的配置选项，以满足你的需求。这样的灵活性对于构建定制化的嵌入式系统非常有用。
+
+以ffmpeg的为例：
+
+```
+package/ffmpeg/ffmpeg.mk:578: TARGET_CONFIGURE_ARGS:ac_cv_lbl_unaligned_fail=yes ac_cv_func_mmap_fixed_mapped=yes ac_cv_func_memcmp_working=yes ac_cv_have_decl_malloc=yes gl_cv_func_malloc_0_nonnull=yes ac_cv_func_malloc_0_nonnull=yes ac_cv_func_calloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes lt_cv_sys_lib_search_path_spec="" ac_cv_c_bigendian=no 
+```
+
+这一串看似复杂的字符串实际上是一组 configure 脚本中使用的变量设置。这些变量用于配置和检测系统环境，以确保软件包能够正确地构建和运行。让我解释其中一些关键的设置：
+
+- **ac_cv_lbl_unaligned_fail=yes:** 这个变量可能是用于检测目标系统是否支持对齐失败的标签（label）。通常，软件包会检查系统的对齐支持情况以确保正确的运行。
+
+- **ac_cv_func_mmap_fixed_mapped=yes:** 这个变量可能是用于检测系统是否支持固定映射的 mmap 函数。mmap 用于在内存中创建映射，`fixed_mapped` 表示是否支持映射到固定地址。
+
+- **ac_cv_func_memcmp_working=yes:** 这个变量可能是用于检测系统是否支持正常工作的 memcmp 函数。memcmp 用于比较内存块。
+
+- **ac_cv_have_decl_malloc=yes:** 这个变量可能是用于检测系统是否有正确的 malloc 声明。malloc 用于分配内存。
+
+- **gl_cv_func_malloc_0_nonnull=yes:** 这个变量可能是用于检测 malloc(0) 是否返回非空指针。malloc(0) 通常是合法的，但具体实现可能有所不同。
+
+- **ac_cv_func_malloc_0_nonnull=yes:** 同上，检测 malloc(0) 是否返回非空指针。
+
+- **ac_cv_func_calloc_0_nonnull=yes:** 检测 calloc(0, size) 是否返回非空指针。calloc 用于分配一块指定数量和大小的内存，并将内存初始化为零。
+
+- **ac_cv_func_realloc_0_nonnull=yes:** 检测 realloc(ptr, 0) 是否返回非空指针。realloc 用于更改先前分配的内存块的大小。
+
+- **lt_cv_sys_lib_search_path_spec="":** 设置系统库搜索路径规范为空字符串。这可能是为了避免在链接时搜索系统库。
+
+- **ac_cv_c_bigendian=no:** 检测目标系统是否是大端字节序。这里设置为 no，表示目标系统是小端字节序。
+
+这些变量的设置通常是由 configure 脚本根据系统环境和检测结果生成的，以确保软件包能够正确地与特定的系统进行交互。
+
+# buildroot里的kernel header的作用
+
+在 Buildroot 构建系统中，kernel headers（内核头文件）是用于编译用户空间程序的头文件，
+
+它们描述了 Linux 内核提供的系统调用、数据结构和常量等接口。
+
+这些头文件在编译用户空间应用程序时被引用，以确保用户空间程序能够与内核进行正确的交互。
+
+以下是 kernel headers 在 Buildroot 中的一些作用：
+
+1. **系统调用和函数声明：** Kernel headers 包含了系统调用和内核函数的声明。这些声明是用户空间程序与内核进行交互的接口。通过包含适当的头文件，用户空间程序可以调用内核提供的各种功能。
+
+2. **数据结构定义：** Kernel headers 包含了内核中使用的数据结构的定义，例如 `struct timeval`、`struct sockaddr` 等。这些数据结构在用户空间和内核空间之间传递时需要正确的定义，以确保数据的正确传递和解释。
+
+3. **常量定义：** Kernel headers 包含了许多常量的定义，例如错误码、文件权限标志、系统调用号等。用户空间程序通过包含相关的头文件来使用这些常量。
+
+4. **宏定义：** Kernel headers 中可能包含一些宏定义，用于简化用户空间程序中的编码，提高代码的可读性和可维护性。
+
+在 Buildroot 中，当你配置系统时，可以选择安装 kernel headers 到目标系统中，以供用户空间程序使用。这通常通过配置 Buildroot 中的选项来实现。确保正确的 kernel headers 可用，以便用户空间程序能够与正在运行的内核进行正确的交互。
+
+
+
+# toolchain-wrapper.c作用
+
+`toolchain-wrapper.c` 是一个通用的工具链包装器（toolchain wrapper）源文件，
+
+用于处理交叉编译工具链的调用。
+
+==这样的包装器通常是为了确保正确的编译和链接过程，==
+
+==并根据交叉编译的目标体系结构进行必要的设置。==
+
+通常，交叉编译工具链的调用涉及到一系列的编译器、链接器以及其他工具。
+
+`toolchain-wrapper.c` 的目的是提供一个中间层，使得这些工具能够以一种可控制的方式被调用，同时确保正确的编译和链接环境。
+
+以下是一些 `toolchain-wrapper.c` 的典型作用：
+
+1. **路径设置：** 确保正确的交叉编译工具链被调用。这包括编译器、链接器、库路径等。这样可以避免直接调用系统默认的工具，确保使用交叉编译工具链。
+
+2. **传递编译器参数：** 处理编译器参数，确保正确的编译器选项和标志被传递给底层的编译器。这可能包括设置目标体系结构、处理优化选项等。
+
+3. **传递链接器参数：** 处理链接器参数，确保正确的链接器选项和标志被传递给底层的链接器。这可能包括设置目标架构、库路径、链接库等。
+
+4. **环境设置：** 设置必要的环境变量，确保编译和链接过程在正确的环境中执行。这可能包括设置路径、库路径、头文件路径等。
+
+`toolchain-wrapper.c` 文件通常由交叉编译工具链的提供者或构建系统的维护者提供，并与工具链一起提供。
+
+用户在进行交叉编译时，只需调用这个包装器，而不是直接调用底层的编译器和链接器。
+
+这样的设计有助于确保交叉编译过程的正确性和可维护性。
+
+## `TOOLCHAIN_WRAPPER_ARGS = $($(PKG)_TOOLCHAIN_WRAPPER_ARGS)`
+
+这行代码是一个 Makefile 中的语句，用于设置 `TOOLCHAIN_WRAPPER_ARGS` 变量的值。这是一个典型的 Makefile 编写方式，其中使用变量来构建命令行参数。
+
+让我解释一下这行代码：
+
+1. **`TOOLCHAIN_WRAPPER_ARGS`：** 这是一个变量，用于存储工具链包装器 (`toolchain-wrapper`) 的参数。这个变量将被用于构建目标软件包时的编译和链接命令。
+
+2. **`$($(PKG)_TOOLCHAIN_WRAPPER_ARGS)`：** 这是一个嵌套的变量展开，它使用了 `PKG` 变量的值，组成了 `TOOLCHAIN_WRAPPER_ARGS` 变量。`$(PKG)_TOOLCHAIN_WRAPPER_ARGS` 可能是另一个变量，存储了特定软件包的工具链包装器参数。
+- `$(PKG)` 是一个变量，代表当前目标软件包的名称。
+   - `$(PKG)_TOOLCHAIN_WRAPPER_ARGS` 可能是一个包含了特定软件包工具链包装器参数的变量。
+
+例如，如果你有一个软件包名为 `example`，那么这行代码可能会等同于：
+
+```makefile
+TOOLCHAIN_WRAPPER_ARGS = $(example_TOOLCHAIN_WRAPPER_ARGS)
+```
+
+这样可以确保每个软件包都可以定义自己的工具链包装器参数，而不需要在 Makefile 中为每个软件包编写独立的规则。
+
+
+
+## TOOLCHAIN_WRAPPER_ARGS
+
+buildroot\toolchain\toolchain-wrapper.mk
+
+```
+TOOLCHAIN_WRAPPER_ARGS = $($(PKG)_TOOLCHAIN_WRAPPER_ARGS)
+	这个是首先从各个package里定义了的ARGS拿到值，一般都没有定义。
+TOOLCHAIN_WRAPPER_ARGS += -DBR_SYSROOT='"$(STAGING_SUBDIR)"'
+	这个是指定了sysroot。
+TOOLCHAIN_WRAPPER_ARGS += \
+	-DBR_ADDITIONAL_CFLAGS='$(foreach f,$(TOOLCHAIN_WRAPPER_OPTS),"$(f)"$(comma))'
+	增加几个编译选项。
+ifeq ($(BR2_CCACHE),y)
+TOOLCHAIN_WRAPPER_ARGS += -DBR_CCACHE
+endif
+	是否打开ccache。
+ifeq ($(BR2_PIC_PIE),y)
+TOOLCHAIN_WRAPPER_ARGS += -DBR2_PIC_PIE
+endif
+	打开pic。这个默认没有配置。
+```
+
+toolchain-wrapper 被安装到host/bin目录下面。
+
+toolchain-wrapper 怎样被使用
+
+```
+./package/gcc/gcc.mk:309:                       ln -sf toolchain-wrapper $$i; \
+./package/gcc/gcc.mk:310:                       ln -sf toolchain-wrapper $(ARCH)-linux$${i##$(GNU_TARGET_NAME)}; \
+./toolchain/toolchain-external/pkg-toolchain-external.mk:275:                   ln -sf toolchain-wrapper $$base; \
+```
+
+## BR2_DEBUG_WRAPPER 调试
+
+当使用外部工具链时，Buildroot生成一个`wrapper`程序，该程序透明地将适当的选项(根据配置)传递给外部工具链程序。如果您需要调试这个`wrapper`来检查传递了哪些参数，您可以将环境变量`BR2_DEBUG_WRAPPER`设置为以下任意一个:
+
+- 0, empty or not set: no debug
+- 1: trace all arguments on a single line
+- 2: trace one argument per line
+
+```
+export BR2_DEBUG_WRAPPER=2
+```
+
+
+
+输出的日志：
+
+```
+>>> helloworld 1.0 Building
+/usr/bin/make -j129 CC=/mnt/fileroot/hanliang.xiong/work/a113x2/code5/output/a5_av400_a6432_release/host/bin/arm-none-linux-gnueabihf-g++ -C /mnt/fileroot/hanliang.xiong/work/a113x2/code5/output/a5_av400_a6432_release/build/helloworld-1.0 all
+/mnt/fileroot/hanliang.xiong/work/a113x2/code5/output/a5_av400_a6432_release/host/bin/arm-none-linux-gnueabihf-g++ -c -Wall -Wextra helloworld.c -o helloworld.o
+Toolchain wrapper was called with:
+    '/mnt/fileroot/hanliang.xiong/work/a113x2/code5/output/a5_av400_a6432_release/host/bin/arm-none-linux-gnueabihf-g++'
+    '-c'
+    '-Wall'
+    '-Wextra'
+    'helloworld.c'
+    '-o'
+    'helloworld.o'
+Toolchain wrapper executing:
+    '/mnt/fileroot/hanliang.xiong/work/a113x2/code5/buildroot/../toolchain/gcc/linux-x86/arm/gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-g++'
+    '--sysroot=/mnt/fileroot/hanliang.xiong/work/a113x2/code5/output/a5_av400_a6432_release/host/arm-linux-gnueabihf/sysroot'
+    '-mabi=aapcs-linux'
+    '-mfpu=neon'
+    '-marm'
+    '-mfloat-abi=hard'
+    '-mcpu=cortex-a55'
+    '-c'
+    '-Wall'
+    '-Wextra'
+    'helloworld.c'
+    '-o'
+    'helloworld.o'
+cc1plus: warning: switch ‘-mcpu=cortex-a55’ conflicts with ‘-march=armv8.2-a’ switch
+/mnt/fileroot/hanliang.xiong/work/a113x2/code5/output/a5_av400_a6432_release/host/bin/arm-none-linux-gnueabihf-g++ helloworld.o -o helloworld
+Toolchain wrapper was called with:
+    '/mnt/fileroot/hanliang.xiong/work/a113x2/code5/output/a5_av400_a6432_release/host/bin/arm-none-linux-gnueabihf-g++'
+    'helloworld.o'
+    '-o'
+    'helloworld'
+Toolchain wrapper executing:
+    '/mnt/fileroot/hanliang.xiong/work/a113x2/code5/buildroot/../toolchain/gcc/linux-x86/arm/gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-g++'
+    '--sysroot=/mnt/fileroot/hanliang.xiong/work/a113x2/code5/output/a5_av400_a6432_release/host/arm-linux-gnueabihf/sysroot'
+    '-mabi=aapcs-linux'
+    '-mfpu=neon'
+    '-marm'
+    '-mfloat-abi=hard'
+    '-mcpu=cortex-a55'
+    'helloworld.o'
+    '-o'
+    'helloworld'
+touch /mnt/fileroot/hanliang.xiong/work/a113x2/code5/output/a5_av400_a6432_release/build/helloworld-1.0/.stamp_built
+>>> helloworld 1.0 Installing to target
+/usr/bin/install -D -m 0755 /mnt/fileroot/hanliang.xiong/work/a113x2/code5/output/a5_av400_a6432_release/build/helloworld-1.0/helloworld /mnt/fileroot/hanliang.xiong/work/a113x2/code5/output/a5_av400_a6432_release/target/usr/bin/helloworld
+if test -n "" ; then \
+        rm -f -f  ; \
+fi
+```
+
+所以host下面的工具链是调用到toolchain-wrapper，toolchain-wrapper去调用真正的工具链，并且扩展一部分编译选项。
+
+buildroot\toolchain\toolchain-external\pkg-toolchain-external.mk
+
+这里加了-march和-mcpu。
+
+那就把其中一个设置为空就好了。
+
+```
+ifneq ($(GCC_TARGET_ARCH),)
+TOOLCHAIN_EXTERNAL_CFLAGS += -march=$(GCC_TARGET_ARCH)
+TOOLCHAIN_EXTERNAL_TOOLCHAIN_WRAPPER_ARGS += -DBR_ARCH='"$(GCC_TARGET_ARCH)"'
+endif
+ifneq ($(GCC_TARGET_CPU),)
+TOOLCHAIN_EXTERNAL_CFLAGS += -mcpu=$(GCC_TARGET_CPU)
+TOOLCHAIN_EXTERNAL_TOOLCHAIN_WRAPPER_ARGS += -DBR_CPU='"$(GCC_TARGET_CPU)"'
+endif
+```
+
+
+
+ARCH_TOOLCHAIN_WRAPPER_OPTS
+
+这个一般都是空的，只有arc架构的有值：
+
+```
+arch/arch.mk.arc:5:ARCH_TOOLCHAIN_WRAPPER_OPTS = -matomic
+arch/arch.mk.arc:10:ARCH_TOOLCHAIN_WRAPPER_OPTS += -Wl,-z,max-page-size=4096
+arch/arch.mk.arc:12:ARCH_TOOLCHAIN_WRAPPER_OPTS += -Wl,-z,max-page-size=8192
+arch/arch.mk.arc:14:ARCH_TOOLCHAIN_WRAPPER_OPTS += -Wl,-z,max-page-size=16384
+```
+
+# buildroot对glibc的编译过程
+
+先看glibc.mk文件。
+
+```
+# glibc is part of the toolchain so disable the toolchain dependency
+GLIBC_ADD_TOOLCHAIN_DEPENDENCY = NO
+```
+
+依赖了：
+
+```
+GLIBC_DEPENDENCIES = host-gcc-initial linux-headers 
+```
+
+## GLIBC_LIBS_LIB 
+
+```
+GLIBC_LIBS_LIB = \
+	ld*.so.* libanl.so.* libc.so.* libcrypt.so.* libdl.so.* libgcc_s.so.* \
+	libm.so.* libpthread.so.* libresolv.so.* librt.so.* \
+	libutil.so.* libnss_files.so.* libnss_dns.so.* libmvec.so.*
+```
+
+这个变量 `GLIBC_LIBS_LIB` 包含了一组共享库文件（`.so` 文件）的通配符模式，用于匹配 GNU C Library (glibc) 中特定的共享库。这些库通常是在 Linux 系统中提供的，它们包括了一些基本的 C 库和其他一些与系统功能相关的库。
+
+具体来说，这个变量包含以下通配符模式：
+
+- `ld*.so.*`: 匹配动态链接器（linker）的库文件，这是系统用于加载和链接共享库的组件。
+- `libanl.so.*`: 匹配异步名称解析库。
+- `libc.so.*`: 匹配 C 标准库。
+- `libcrypt.so.*`: 匹配密码学库。
+- `libdl.so.*`: 匹配动态链接库。
+- `libgcc_s.so.*`: 匹配 GCC 支持库。
+- `libm.so.*`: 匹配数学库。
+- `libpthread.so.*`: 匹配 POSIX 线程库。
+- `libresolv.so.*`: 匹配 DNS 解析库。
+- `librt.so.*`: 匹配实时库。
+- `libutil.so.*`: 匹配实用工具库。
+- `libnss_files.so.*`: 匹配 Name Service Switch (NSS) 的文件数据库库。
+- `libnss_dns.so.*`: 匹配 Name Service Switch (NSS) 的 DNS 数据库库。
+- `libmvec.so.*`: 匹配多向量数学库。
+
+这些库是构建和运行基于 glibc 的程序所需的一些基本库。在 Makefile 或类似的构建脚本中，这样的变量通常用于在编译和链接过程中指定共享库的路径。例如，可以将这些库文件包含在链接命令中，以确保程序在运行时能够正确加载这些库。
+
+# ADD_TOOLCHAIN_DEPENDENCY 
+
+```
+package/glibc/glibc.mk:34:GLIBC_ADD_TOOLCHAIN_DEPENDENCY = NO
+package/pkg-generic.mk:629:$(2)_ADD_TOOLCHAIN_DEPENDENCY        ?= YES
+package/pkg-generic.mk:637:ifeq ($$($(2)_ADD_TOOLCHAIN_DEPENDENCY),YES)
+```
+
+就是不依赖工具链的意思：
+
+```
+ifeq ($$($(2)_ADD_TOOLCHAIN_DEPENDENCY),YES)
+$(2)_DEPENDENCIES += toolchain
+endif
+```
+
+# BR2_RELRO_FULL
+
+`BR2_RELRO_FULL` 是 Buildroot 中用于配置构建系统的一个选项，用于启用或禁用全局偏移重定位（Global Offset Table (GOT)）的完全 RELRO（Relocation Read-Only）保护。
+
+RELRO 是一种安全机制，用于防止攻击者滥用程序的全局偏移表 (GOT) 来进行攻击。
+
+==GOT 是一个表，用于存储动态链接的全局变量和函数地址。==
+
+通过修改 GOT 中的地址，攻击者可能尝试执行恶意代码或进行其他攻击。
+
+`BR2_RELRO_FULL` 的具体含义是：
+
+- 如果设置为 `y`（启用），则 Buildroot 将在构建过程中配置相关的编译选项，使得生成的二进制文件中使用全 RELRO 保护机制。这将使 GOT 中的所有条目都变为只读，增加程序的安全性。
+
+- 如果设置为 `n`（禁用），则 Buildroot 不会启用全 RELRO 保护机制。
+
+在构建安全性要求较高的系统时，启用完全 RELRO 通常是一个良好的实践。这样可以帮助防范一些针对 GOT 的攻击。但需要注意，启用完全 RELRO 可能会增加一些运行时开销，因为 GOT 中的条目将变为只读，可能需要一些额外的开销来处理动态链接。
+
+# 用brmake来记录log
+
+举例:
+
+```
+./utils/brmake initscripts-rebuild
+```
+
+就是用brmake来替代基本的make。这样会生成br.log文件，里面记录的日志是这样的：
+
+```
+2024-02-02T05:54:23 [7m>>> initscripts  Building[27m
+2024-02-02T05:54:23 [7m>>> initscripts  Installing to target[27m
+2024-02-02T05:54:23 mkdir -p /mnt/fileroot/hanliang.xiong/work/test/buildroot-2023.02.3/output/target/etc/init.d
+2024-02-02T05:54:23 /usr/bin/install -D -m 0755 package/initscripts/init.d/* /mnt/fileroot/hanliang.xiong/work/test/buildroot-2023.02.3/output/target/etc/init.d/
+```
+
+看起来比较清晰。
+
+
+
 # 参考资料
 
 1、HOWTO: Use BuildRoot to create a Linux image for QEMU
