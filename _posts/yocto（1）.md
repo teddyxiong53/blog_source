@@ -4442,6 +4442,32 @@ CONFFILES:${PN} = "${sysconfdir}/asound.conf"
 
 这个设置告诉 Yocto 构建系统，在安装 `${PN}` 软件包时，`asound.conf` 文件将==被视为配置文件，可能需要特殊的安装和处理方式，==例如，在更新软件包时，需要保留用户自定义的配置。
 
+
+
+`CONFFILES` 是 Yocto 中用于指定将在 root 文件系统中安装的配置文件列表的变量。
+
+这个变量允许你列出将在目标设备的特定位置具有特殊权限和保留配置信息的文件。
+
+在 Yocto 的 `.bb` 配方文件中，`CONFFILES` 变量典型的用法如下：
+
+```bitbake
+CONFFILES_${PN} += "${sysconfdir}/example.conf \
+                    ${sysconfdir}/another.conf \
+                    ${sysconfdir}/subdirectory/*.conf"
+```
+
+在这个例子中：
+
+- `CONFFILES_${PN}` 表示这个 `CONFFILES` 变量是与软件包名称 (`${PN}`) 相关联的。
+- `${sysconfdir}` 是 Yocto 中用于表示系统配置目录的变量，通常等于 `/etc`。
+- 后面列出的是需要安装到目标设备的具体文件路径。
+
+这个变量的主要目的是告诉 Yocto 哪些文件应该被标记为配置文件，==这样在更新软件包时，它可以保留用户对这些文件的更改。==
+
+值得注意的是，`CONFFILES` 主要用于保留配置文件的更改，而不是在软件包中添加配置文件。如果需要添加配置文件，通常会使用 `FILES` 变量。
+
+示例中的文件路径可能会根据具体的软件包和目标设备而有所不同，你需要根据你的具体情况进行适当的调整。
+
 # pkg_postinst
 
 ```
@@ -11723,7 +11749,126 @@ https://stackoverflow.com/questions/34116799/how-to-remove-specific-packages-fro
 
 在开发和调试过程中，拆分调试信息通常是很有用的，但在最终的嵌入式产品中，可能会考虑禁用调试时拆分以减小软件包的体积。
 
+# UPSTREAM_CHECK_URI
 
+`UPSTREAM_CHECK_URI` 是一个 Yocto 变量，用于定义一个或多个用于检查软件包是否为最新版本的 URI（Uniform Resource Identifier）。
+
+在 Yocto 构建系统中，`UPSTREAM_CHECK_URI` 变量通常用于指定一个或多个链接，这些链接可能是指向软件包官方源代码页面、版本控制系统（如 Git、GitHub）的页面或其他包含软件包最新版本信息的 URL。Yocto 使用这些链接来检查是否有新的软件包版本可用。
+
+例如，可以在 Yocto 的 `.bb` 文件（比如一个 `recipe` 文件）中看到如下设置：
+
+```bash
+UPSTREAM_CHECK_URI = "https://example.com/project/releases/"
+```
+
+或者，如果有多个链接，可以使用逗号分隔：
+
+```bash
+UPSTREAM_CHECK_URI = "https://example.com/project/releases/,https://github.com/example/project/tags"
+```
+
+在构建时，Yocto 可能会使用这些链接来查找最新的软件包版本信息，并在有新版本时发出警告或提示。
+
+请注意，具体的检查流程可能取决于 Yocto 版本以及软件包的配置和 `oe-core` 中的类和函数。这是一个帮助开发者在构建过程中了解是否有新版本的机制。
+
+# RECIPE_NO_UPDATE_REASON
+
+`RECIPE_NO_UPDATE_REASON` 是一个 Yocto 变量，用于提供一个说明，说明为什么不应该或者不会更新某个特定的软件包配方（recipe）。
+
+在 Yocto 构建系统中，有时候可能决定不更新特定的软件包版本，可能是因为已知的问题、稳定性需求或其他原因。为了帮助开发者和维护者理解为什么选择了不更新，可以使用 `RECIPE_NO_UPDATE_REASON` 变量提供一些描述性的文本。
+
+示例：
+
+```bitbake
+RECIPE_NO_UPDATE_REASON_${PN} = "Version 1.2.3 is known to cause issues with the current kernel."
+```
+
+在这个例子中：
+
+- `RECIPE_NO_UPDATE_REASON_${PN}` 表示这个 `RECIPE_NO_UPDATE_REASON` 变量是与软件包名称 (`${PN}`) 相关联的。
+- 提供了一段说明文字，描述了为什么不更新到版本 1.2.3。
+
+这个变量主要用于文档和说明的目的，以便在构建系统中更好地理解和管理软件包版本的决策。
+
+
+
+# INITSCRIPT_PACKAGES
+
+`INITSCRIPT_PACKAGES` 是一个 Yocto 变量，用于指定哪些软件包的 init 脚本将被安装到目标设备。在 Yocto 中，软件包可以包含一个或多个 init 脚本，这些脚本在系统启动或关闭时执行。
+
+`INITSCRIPT_PACKAGES` 允许你为每个软件包指定包含 init 脚本的软件包名称列表。这样，当软件包被安装到目标设备时，与该软件包相关联的 init 脚本也会被一同安装。
+
+例如：
+
+```bitbake
+INITSCRIPT_PACKAGES = "${PN} ${PN}-extra"
+```
+
+在这个例子中：
+
+- `INITSCRIPT_PACKAGES` 包含了两个软件包，`${PN}` 和 `${PN}-extra`。
+- 这意味着，与这两个软件包关联的任何 init 脚本都将被安装到目标设备。
+
+这个变量主要用于告诉 Yocto 构建系统哪些软件包的 init 脚本需要被包含在生成的根文件系统中。这对于确保系统启动时正确执行必要的初始化和清理任务非常重要。
+
+# INITSCRIPT_PARAMS
+
+`INITSCRIPT_PARAMS` 是 Yocto 中用于为 init 脚本指定参数的变量。在你提供的例子中，`INITSCRIPT_PARAMS` 用于定义与软件包名称 `${PN}-mdev` 相关联的 init 脚本的启动参数。
+
+```bitbake
+INITSCRIPT_PARAMS:${PN}-mdev = "start 04 S ."
+```
+
+在这个例子中：
+
+- `${PN}-mdev` 是软件包名称。
+- `"start 04 S ."` 是该软件包关联的 init 脚本的启动参数。
+
+解释参数的含义：
+
+- `start`: 表示在系统启动时运行脚本。
+- `04`: 表示脚本的启动顺序。
+- ==`S`: 表示脚本运行级别，此处为单用户模式。==
+- `.`: 表示执行脚本时的当前工作目录。
+
+这个参数字符串定义了 init 脚本在系统启动时的行为和配置。这些参数将在 init 脚本被启动时传递给它，以便根据需要执行特定的操作。
+
+请注意，具体的参数值可能会根据软件包和 init 脚本的具体实现而有所不同。这个示例主要用于说明如何使用 `INITSCRIPT_PARAMS` 变量来定义 init 脚本的启动参数。
+
+# cml1
+
+在 Yocto/OpenEmbedded 系统中，`inherit cml1` 意味着你的 Yocto 配方（`.bb` 文件）正在继承 `cml1` 类。`cml1` 是一个 Yocto 内建的类，用于处理命令行参数和选项。
+
+`inherit` 关键字用于包含类（class）的功能，从而在当前配方中重用类的功能。在这里，`inherit cml1` 表示该配方将使用 `cml1` 类的功能。
+
+`cml1` 类通常用于处理命令行参数，允许在 BitBake 构建过程中设置一些特定的选项或配置。
+
+在 Yocto 配方中，你可能会看到类似以下的用法：
+
+```bitbake
+inherit cml1
+CML1_OPT = "some_option"
+```
+
+在这个例子中，`CML1_OPT` 是一个命令行参数，表示在构建过程中设置了一个名为 `some_option` 的选项。通过继承 `cml1` 类，可以方便地处理这些命令行参数。
+
+具体的用法和效果可能会取决于具体的配方和类的实现。你可以查看相关的文档或者具体的配方文件以了解更多详细信息。
+
+# OE_DEL
+
+在 Yocto/OpenEmbedded 构建系统中，`OE_DEL` 是一个变量，通常用于设置删除文件或目录的命令。该变量定义了在构建过程中删除文件或目录时所使用的命令。
+
+默认情况下，`OE_DEL` 的值是 `"rm -f -r"`，表示使用 `rm` 命令强制递归删除文件和目录。在某些情况下，可以通过设置 `OE_DEL` 来更改删除文件的命令。
+
+例如，你可以在 Yocto 配方（`.bb` 文件）中看到以下用法：
+
+```bitbake
+OE_DEL = "rm -f"
+```
+
+这表示在构建过程中删除文件时，将使用 `rm -f` 命令，而不包括 `-r` 参数，因此只能删除文件而非递归删除目录。
+
+`OE_DEL` 主要用于提供在构建过程中删除文件的灵活性，以适应不同的构建要求。
 
 # 参考资料
 
