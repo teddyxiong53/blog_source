@@ -5503,6 +5503,8 @@ IMAGE_FSTYPES = "wic wic.gz hddimg"
 
 
 
+
+
 参考资料
 
 Yocto中WIC控制以及WKS文件
@@ -5540,6 +5542,36 @@ ERROR_QA_remove = "version-going-backwards"
 实际上是可以共存的。systemd本来就提供了对sysvinit的兼容。
 
 但是我尽量不用吧。
+
+## 只用systemd
+
+**只使用systemd**
+
+```
+DISTRO_FEATURES:append = "systemd"
+VIRTUAL-RUNTIME_init_manager = "systemd"
+```
+
+==如果要防止sysVinit功能被自动启用，做如下设置==
+
+```
+DISTRO_FEATURES_BACKFILL_CONSIDERED = "sysvinit"
+```
+
+这样会删除多余的SysVinit脚本，要从image中完全删除initscripts，还需要设置此变量
+
+```
+VIRTUAL-RUNTIME_initscripts = ""
+```
+
+**主image使用systemd，救援image使用sysvinit**
+
+```
+DISTRO_FEATURES:append = " systemd"
+VIRTUAL-RUNTIME_init_manager = "systemd"
+```
+
+http://www.pedestrian.com.cn/embedded/yocto/task_continue.html
 
 # dropbear的bb文件分析
 
@@ -7259,6 +7291,34 @@ Yocto Project 中的 "recipe-sysroot" 目录的设计是为了确保不同的 re
 3. 使用 `devtool` 来管理您的修改，并避免手动在源代码目录中操作。`devtool` 可以帮助您跟踪和应用您的修改，而不会生成额外的文件。
 
 遵循这些步骤可以帮助您在 `externalsrc` 仓库中更好地管理源代码，而无需生成额外的工作目录。
+
+## externalsrc目录下的oe-workdir，我在编译不同的机型的时候，怎么保证这个oe-workdir指向了正确的目录？
+
+在 Yocto 构建系统中，`externalsrc` 目录下的 `oe-workdir` 子目录通常由 `oe-core` 提供，用于存储外部源（externalsrc）的工作目录和构建过程中的临时文件。
+
+如果你需要确保在编译不同机型时 `oe-workdir` 指向正确的目录，可以采用以下方法：
+
+1. **清理工作目录：** 在切换到新的机型之前，可以通过运行 `bitbake -c cleanall <recipe>` 命令来清理构建产物，包括 `oe-workdir`。这可以确保下一次构建时重新生成。
+
+   ```bash
+   bitbake -c cleanall <recipe>
+   ```
+
+   其中 `<recipe>` 是你要构建的软件包或图像的名称。
+
+2. **删除 `oe-workdir` 目录：** 如果清理工作目录不够，你可以手动删除 `oe-workdir` 目录。这将强制 Yocto 在下一次构建时重新生成 `oe-workdir`。
+
+   ```bash
+   rm -rf /path/to/externalsrc/oe-workdir
+   ```
+
+3. **重新初始化 Yocto 环境：** 在切换到新的机型之前，可以重新初始化 Yocto 环境。这可以通过运行 `source poky/oe-init-build-env` 来实现，确保在正确的 Yocto 构建目录中执行该命令。
+
+   ```bash
+   source /path/to/poky/oe-init-build-env
+   ```
+
+这样，通过清理或删除相关目录，你可以确保在构建不同机型时，Yocto 将重新初始化 `oe-workdir` 目录，并正确指向新的构建环境。
 
 # DEFAULT_PREFERENCE 
 
@@ -11276,7 +11336,7 @@ https://blog.csdn.net/Neutionwei/article/details/111059573
 
 sources\poky\meta\recipes-kernel\linux-libc-headers\linux-libc-headers_5.16.bb
 
-这个的用途是用来编译ligc的。
+这个的用途是用来编译libc的。
 
 所以用公共的就行了，即使你的kernel是自己特殊的。
 
@@ -11869,6 +11929,346 @@ OE_DEL = "rm -f"
 这表示在构建过程中删除文件时，将使用 `rm -f` 命令，而不包括 `-r` 参数，因此只能删除文件而非递归删除目录。
 
 `OE_DEL` 主要用于提供在构建过程中删除文件的灵活性，以适应不同的构建要求。
+
+# rm_work
+
+为了在编译过程节约磁盘空间，
+
+你可以在你项目的配置文件追加一句，配置文件位于
+`poky/build/conf/local.conf`。
+
+加上这句后，一旦莫个包编译完成后，将删除编译这个包的工作目录。
+
+```
+INHERIT += “rm_work”
+```
+
+https://www.xiaopingtou.cn/article-68161.html
+
+# sato
+
+一个重要的Yocto项目的重要特性是Sato用户界面。这个基于GTK+的可选的UI主要面向有屏幕限制的设备。这个UI整齐的排布在设备显示的顶部通过使用GTK+的堆栈，提供了良好的用户体验。其实现在自己的层，它明确开发者怎么能够实现他们自己的用户借口在由Yocto生成的镜像顶部。
+
+
+
+# 一些问题的解决
+
+## ERROR: QA Issue: non debug package contains .debug directory: xxx path ............[debug-files]
+
+这个问题通常在我们打包一个第三方的应用程序的时候出现，
+
+解决的办法是在对应的BB文件里面添加 
+FILES_${PN}-dbg += "path/.debug"
+
+重新编译就可以通过了，path为我们打包的路径。
+
+
+
+## ERROR: QA Issue: xxx: Files/directories were installed but not shipped
+
+这个问题通常是在打包一些字库文件，图片文件之类的东东的时候报错的，解决的办法是在对应的BB文件中添加
+FILES_${PN} += "path"
+path为我们打包图片、字库等文件的路径。
+
+## 设置开机自启动的脚本
+
+在相应的BB文件里添加
+inherit update-rc.d
+INITSCRIPT_NAME = "xxx.sh"
+INITSCRIPT_PARAMS = "start 38 S ."
+编译成功后，开机会在etc/rcS.d目录下看到S38xxx.sh的链接文件，指向etc/init.d/xxx.sh
+开机就会启动这个脚本。
+
+38是启动顺序，S是runlevel
+例如也可以设置为 INITSCRIPT_PARAMS = "start 99 5 ."
+那么就会在etc/rc5.d的目录下产生一个S99xxx.sh的链接文件
+这里需要注意的是xxx.sh这个脚本要打包到etc/init.d/目录下。
+
+
+
+## 如何在rootfs中添加或者减少包
+
+rootfs需要打包那些文件是由bb文件确定的
+  例如我们编译命令是 bitbake fsl-image-qt5 ，
+
+那么打包的设置就在fsl-image-qt5.bb文件中，
+
+这个文件的位置在sources/meta-fsl-bsp-release/imx/meta-sdk/recipes-fsl/images/目录下
+
+  ==我们可以找到IMAGE_INSTALL下添加或者删除相应的包。==
+
+
+
+## 设置要生成的rootfs的类型
+
+ imx6q默认生成的rootfs，
+
+有xxx.rootfs.ext3 xxx.tar.bz2 xxx.ext3 xxx.sdcard,
+
+如果都生成，占用的磁盘空间很多，生成的时间也会更长。
+  实际上我们烧录的rootfs通常只需要一种，这时我们可以通过修改source/meta-fsl-arm/conf/machine/include目录下的imx-base.inc文件
+`  例如我们只需要xxx.tar.bz2文件，那么可以将SDCARD_ROOTFS ?= "${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.rootfs.ext3"注释掉`
+  将IMAGE_FSTYPES ?= "tar.bz2 ext3 sdcard" 改为IMAGE_FSTYPES ?= "tar.bz2 "
+  这样就只会生成xxx.tar.bz2一个文件了。
+
+
+
+https://blog.csdn.net/wince_lover/article/details/73508214
+
+
+
+# yocto的PV和PR一般用途
+
+在 Yocto 中，`PV` 和 `PR` 是两个与版本控制和包管理相关的变量。
+
+1. **`PV`（Package Version）:**
+   - `PV` 表示软件包的版本号，它是一个字符串，通常遵循 `<major>.<minor>.<patch>` 的形式。
+   - 例如，`PV = "1.2.3"` 表示软件包的版本是 1.2.3。
+
+2. **`PR`（Package Revision）:**
+   - `PR` 表示软件包的修订号，用于表示软件包的变更或修复。
+   - `PR` 的默认值为 `r0`，即软件包的第一个版本。每次对软件包的更改都会递增 `PR`。
+   - 例如，`PR = "r1"` 表示对软件包进行了一次修订。
+
+这两个变量通常一起使用，构成软件包的完整版本标识。在 Yocto 构建系统中，每个软件包都被分配一个唯一的 PV 和 PR 组合，以确保不同版本和修订的软件包在构建和部署时能够正确地被区分。
+
+在构建过程中，Yocto 使用 `PV` 和 `PR` 生成目标文件的名称、安装路径等信息。在构建多个版本或修订的软件包时，这两个变量对于正确版本控制和包管理非常重要。
+
+# 怎样用yocto实现可持续维护的发行版软件包
+
+在 Yocto 中，实现可持续维护的发行版软件包通常涉及使用 BitBake 构建系统和 OpenEmbedded 构建框架。以下是一些步骤和最佳实践，帮助你创建和维护可持续的发行版软件包：
+
+1. **创建 Yocto Layer:**
+   - 将你的软件包的构建和配置信息组织成一个 Yocto Layer。
+   - Yocto Layer 是一个包含 BitBake 配方文件和相关支持文件的目录结构，可以通过 `BBLAYERS` 变量添加到 Yocto 构建环境中。
+
+2. **使用 Recipes:**
+   - 创建 BitBake 配方文件（`.bb` 文件）来定义软件包的构建规则和配置。
+   - BitBake 配方文件包括 `do_configure`、`do_compile`、`do_install` 等任务，用于配置、编译和安装软件。
+
+3. **版本和修订控制:**
+   - 使用 `PV`（Package Version）和 `PR`（Package Revision）变量来管理软件包的版本和修订。
+   - 指定软件包的版本号和修订号，以确保在构建和部署过程中可以正确地识别不同的版本。
+
+4. **使用 SRCREV 和 SRCPV:**
+   - 在 BitBake 配方文件中，使用 `SRCREV` 和 `SRCPV` 变量来管理源代码的版本和修订。这可以确保构建系统使用特定的源代码快照来构建软件包。
+
+5. **发布 Layer:**
+   - 将 Yocto Layer 发布到一个版本控制系统（如 Git）上，以便团队成员共享和协作。
+   - 在 Yocto Layer 中包含文档和说明，以帮助其他开发者了解如何使用和贡献到该层。
+
+6. **持续集成和自动化:**
+   - 配置持续集成系统，确保软件包的自动构建和测试。
+   - 使用 Jenkins、GitLab CI 等工具，确保每次提交都能够触发构建和测试流程。
+
+7. **文档和注释:**
+   - 在 BitBake 配方文件中提供详细的注释，解释构建规则和配置选项。
+   - 编写文档，包括软件包的使用说明、配置说明和贡献指南。
+
+8. **定期更新:**
+   - 定期更新 Yocto Layer，包括软件包的版本和任何相关的依赖项。
+   - 确保软件包的更新是可重复且可测试的。
+
+通过以上步骤，你可以建立一个可维护和可持续的 Yocto 发行版软件包，使你的团队能够更轻松地构建、测试和维护软件。
+
+# SRCREV 用途
+
+`SRCREV` 是 Yocto 构建系统中的一个变量，用于指定使用的源代码的特定修订版本。它在 BitBake 配方文件（`.bb` 文件）中使用，主要用于确保在构建过程中使用确定性的源代码快照。
+
+具体用途包括：
+
+1. **确保可重复性:**
+   - 通过指定 `SRCREV`，可以确保每次构建都使用相同的源代码快照，从而实现可重复的构建过程。
+   - 对于软件包，特定的修订版本可以视为特定的软件包状态，避免了构建中使用不同的源代码版本。
+
+2. **版本控制:**
+   - `SRCREV` 与版本控制系统（通常是 Git 或 SVN）的特定修订哈希相关联。
+   - 当指定了 `SRCREV` 时，Yocto 构建系统将从版本控制系统中拉取或克隆特定的修订版本。
+
+3. **追踪软件包的更新:**
+   - 对于软件包的开发，`SRCREV` 可以用于追踪特定的开发状态，以便及时获取软件包的最新更新。
+   - 这在开发过程中对软件包进行测试和调试时尤其有用。
+
+示例：
+
+```bitbake
+SRC_URI = "git://example.com/project.git;protocol=https;branch=master"
+SRCREV = "0123456789abcdef0123456789abcdef01234567"
+```
+
+在上述示例中，`SRC_URI` 指定了从 Git 存储库拉取源代码，而 `SRCREV` 指定了使用的具体 Git 修订版本。这确保了构建时使用的源代码快照是确定性的。
+
+# yocto的最终的rootfs内容是怎么拼接出来的
+
+在 Yocto 构建系统中，最终的 rootfs 是通过一系列的任务和操作来构建的。以下是构建 rootfs 的一般过程：
+
+1. **BitBake Tasks:**
+   - 在 Yocto 构建系统中，BitBake 是主要的构建工具。每个软件包（包括基础系统工具、库、应用程序等）都有与之关联的 BitBake 配方文件（`.bb` 文件），其中定义了一系列任务（`do_configure`、`do_compile`、`do_install` 等）。
+
+2. **do_install Task:**
+   - `do_install` 任务是其中一个非常重要的任务，它负责将构建好的文件复制到指定的安装目录中。这些文件包括可执行文件、库、配置文件等。
+
+3. **Rootfs Directories:**
+   - 每个软件包的 `do_install` 任务会将文件安装到一个特定的目录结构中，称为 `ROOTFS`。这个目录结构包括 `/bin`、`/lib`、`/etc` 等子目录，模拟了最终根文件系统的布局。
+
+4. **Image Recipes:**
+   - Yocto 构建系统中有一个概念叫做 "Image Recipes"，它定义了构建根文件系统所需的软件包和配置。常见的 Image Recipes 包括 `core-image-minimal`、`core-image-sato` 等，它们定义了要包含在根文件系统中的软件包集合。
+
+5. **Package Groups and Image Recipes:**
+   - Image Recipes 可以包含 Package Groups，这些 Package Groups 定义了要包括在根文件系统中的软件包。这些软件包包括了基础系统组件、网络工具、调试工具等。
+
+6. **Rootfs Generation:**
+   - 在构建过程的最后阶段，BitBake 使用上述信息生成最终的 rootfs。
+   - 这涉及将所有软件包的安装目录合并到一个目录结构中，以构建一个包含所有所需文件的完整根文件系统。
+
+7. **Image Generation:**
+   - 最终，BitBake 将根文件系统打包到一个镜像文件中，这可以是一个 SD 卡映像、镜像文件、或者其他形式的输出。
+
+总体来说，Yocto 的 rootfs 构建过程是通过定义软件包的任务和目录结构，以及 Image Recipes 中的配置，然后通过 BitBake 执行这些任务，最终生成一个包含所有所需文件的根文件系统。
+
+# do_configure[cleandirs] = "${B}"
+
+在 Yocto/OpenEmbedded 的 BitBake 配方文件（`.bb` 文件）中，`do_configure[cleandirs]` 是一个变量设置，用于指定在 `do_configure` 任务执行前需要清理的目录。
+
+具体而言，`do_configure` 是一个 BitBake 任务，通常用于在构建软件包之前进行一些配置操作，例如运行 `configure` 脚本。而 `do_configure[cleandirs]` 变量则告诉 BitBake 在执行 `do_configure` 任务之前清理指定的目录。
+
+在这里，`${B}` 是 BitBake 构建目录的变量，表示当前软件包的构建目录。`${B}` 通常对应于 `${WORKDIR}/<package-name>`，其中 `${WORKDIR}` 是 BitBake 工作目录，存放了源代码、临时文件等。
+
+这个语句的目的是在执行 `do_configure` 任务之前，清理掉 `${B}` 目录，以确保在配置之前不会受到之前构建的影响，保持一个干净的状态。
+
+总体来说，`${B}` 目录是软件包构建期间的临时目录，通过在 `do_configure` 任务之前清理这个目录，可以防止可能的构建问题。
+
+# yocto显示中文文件名乱码
+
+kernel里的对utf8 的支持已经打开。
+
+SD卡里的中文文件名会乱码。
+
+需要放一个内容为中文的txt文件，cat一下看看是否正常。
+
+https://superuser.com/questions/556993/how-to-display-unicode-in-a-linux-virtual-terminal
+
+https://wiki.archlinux.org/title/Localization/Simplified_Chinese
+
+要正常显示中文，反而要设置为英文utf8的。
+
+```
+LANG=en_US.UTF-8
+```
+
+
+
+我现在还没有打开kernel的utf8选项。
+
+```
+root@mesona4-ba400-spk-32bit:~# export LANG="en_US.utf8"
+root@mesona4-ba400-spk-32bit:~# locale charmap
+locale: Cannot set LC_CTYPE to default locale: No such file or directory
+locale: Cannot set LC_MESSAGES to default locale: No such file or directory
+locale: Cannot set LC_ALL to default locale: No such file or directory
+ANSI_X3.4-1968
+```
+
+## IMAGE_LINGUAS 有哪些取值
+
+在 Yocto Project 中，`IMAGE_LINGUAS` 是一个用于指定构建图像时包含的语言环境（locales）的变量。它定义了在生成的根文件系统镜像中包含哪些语言环境的支持。以下是一些 `IMAGE_LINGUAS` 可能的取值：
+
+1. **"en-us" 或 "en-gb"：**
+   英语（美国英语或英国英语）。
+
+2. **"fr"：**
+   法语。
+
+3. **"de"：**
+   德语。
+
+4. **"es"：**
+   西班牙语。
+
+5. **"it"：**
+   意大利语。
+
+6. **"zh-cn" 或 "zh-tw"：**
+   中文（简体或繁体）。
+
+7. **"ja"：**
+   日语。
+
+8. **"ko"：**
+   韩语。
+
+9. **"ru"：**
+   俄语。
+
+10. **"pt"：**
+      葡萄牙语。
+
+11. **"ar"：**
+    阿拉伯语。
+
+12. **"hi"：**
+    印地语。
+
+这只是一些常见的示例，实际上你可以根据项目的需要选择所需的语言环境。在设置 `IMAGE_LINGUAS` 变量时，将所需的语言环境名称用空格分隔，例如：
+
+```bash
+IMAGE_LINGUAS = "en-us fr de zh-cn ja"
+```
+
+这将在构建根文件系统镜像时包含英语（美国英语）、法语、德语、中文（简体）和日语的语言环境支持。
+
+## /usr/share/locale/zh_CN/LC_MESSAGES 目录下面的mo文件
+
+`/usr/share/locale/zh_CN/LC_MESSAGES` 目录中包含了针对中文（简体）语言环境的 `mo` 文件。
+
+这些文件是用来本地化软件程序的消息的，
+
+通常包含了各种用户界面的文本、提示、警告等信息的翻译。
+
+==`mo` 文件（Machine Object）是 Gettext 工具使用的二进制消息目录文件。==
+
+它们是 Gettext 的一部分，用于将软件程序的消息从原始文本翻译成不同语言的本地化文件。
+
+这有助于确保软件在不同语言环境中提供用户友好的界面。
+
+在你提供的目录中，这些 `mo` 文件对应于不同的软件包或库，可能包括以下一些：
+
+- **Linux-PAM.mo:** Linux-PAM 是 Linux Pluggable Authentication Modules 的缩写，用于提供灵活的身份验证支持。这个文件包含有关身份验证和访问控制的本地化消息。
+
+- **e2fsprogs.mo:** e2fsprogs 包含用于操作 ext2/ext3/ext4 文件系统的工具。这个文件包含有关文件系统管理的本地化消息。
+
+- **gnutls.mo:** GnuTLS 是一个用于提供安全通信的库。这个文件包含有关加密和安全通信的本地化消息。
+
+- **libidn2.mo:** libidn2 是一个用于处理国际化域名（Internationalized Domain Names，IDN）的库。这个文件包含有关国际化域名处理的本地化消息。
+
+- 其他文件依次类推。
+
+这些 `mo` 文件的存在使得相应软件的用户界面能够在中文环境中提供本地化的文字消息，提高用户体验。
+
+# ROOTFS_BOOTSTRAP_INSTALL
+
+```
+ROOTFS_BOOTSTRAP_INSTALL is the list of recipes that also need to be installed to handle rootfs stuff, so typically it’s either empty or includes run-postinsts to run any postinstall scripts that couldn’t be ran on the build host.
+```
+
+在构建过程中，`oe_runmake` 工具用于运行 `do_install` 阶段中的一些任务，其中就包括运行 post-installation 脚本。这个工具会查找软件包的 `postinst` 目录，并运行其中的脚本。
+
+
+
+```
+pkg_postinst:${KERNEL_PACKAGE_NAME}-base () {
+	if [ ! -e "$D/lib/modules/${KERNEL_VERSION}" ]; then
+		mkdir -p $D/lib/modules/${KERNEL_VERSION}
+	fi
+	if [ -n "$D" ]; then
+		depmodwrapper -a -b $D ${KERNEL_VERSION}
+	else
+		depmod -a ${KERNEL_VERSION}
+	fi
+}
+```
+
+
 
 # 参考资料
 

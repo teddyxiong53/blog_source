@@ -120,11 +120,108 @@ s：取代
 
 # 例子
 
+`sed`（Stream Editor）是一个用于文本处理的流编辑器，它在Linux和Unix系统中非常常见。`sed`主要用于对文本进行搜索、替换、删除、插入等操作，可以通过脚本或者命令行参数来执行这些操作。
 
+以下是一些常用的`sed`命令及其功能：
+
+1. **替换文本：**
+   ```
+   sed 's/old_text/new_text/g' filename
+   ```
+   这个命令将文件中所有的`old_text`替换为`new_text`。
+
+2. **删除行：**
+   ```
+   sed '/pattern/d' filename
+   ```
+   这个命令将删除包含指定`pattern`的所有行。
+
+3. **插入行：**
+   ```
+   sed '3i\new_line' filename
+   ```
+   这个命令将在第3行之前插入新的行。
+
+4. **追加行：**
+   ```
+   sed '$a\new_line' filename
+   ```
+   这个命令将在文件的最后一行追加新的行。
+
+5. **打印行：**
+   ```
+   sed -n '5p' filename
+   ```
+   这个命令将打印文件中的第5行。
+
+6. **替换指定范围内的文本：**
+   ```
+   sed '2,5s/old_text/new_text/g' filename
+   ```
+   这个命令将在第2行到第5行之间替换指定文本。
+
+7. **使用正则表达式：**
+   ```
+   sed 's/[0-9]/X/g' filename
+   ```
+   这个命令将文件中的所有数字替换为字母X。
+
+8. **从文件读取`sed`脚本：**
+   
+   ```
+   sed -f script.sed filename
+   ```
+   这个命令从名为`script.sed`的文件中读取`sed`脚本并应用于指定的文件。
+
+这只是一些`sed`命令的基本示例，`sed`提供了丰富的功能和选项，可以根据具体需求进行更复杂的文本处理操作。请查阅`sed`的官方文档以获取更多详细信息。
 
 # 思维导图
 
 https://yemaosheng.com/wp-content/uploads/2009/05/sed.jpg
+
+# 使用脚本的例子
+
+**使用文件中的`sed`脚本进行多个操作：**
+假设有一个名为`myscript.sed`的文件包含以下内容：
+
+```
+s/apple/orange/g
+2i\
+New line
+/xyz/d
+```
+
+然后可以使用以下命令应用该脚本：
+```bash
+sed -f myscript.sed 1.txt
+```
+
+当前1.txt的内容是：
+
+```
+apple
+xyz
+123
+```
+
+执行时，输出：
+
+```
+sed -f ./script.sed 1.txt
+orange
+New line
+123
+```
+
+使用用-i选项（inplace的意思，直接修改目标文件的意思）
+
+```
+sed -i -f ./script.sed 1.txt
+```
+
+则1.txt的内容直接被修改。
+
+
 
 
 

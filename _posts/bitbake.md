@@ -1207,6 +1207,10 @@ bitbake_renamed_vars = {
 #
 ```
 
+# 一篇不错的总结
+
+http://www.pedestrian.com.cn/embedded/yocto/bitbake.html
+
 
 
 # 参考资料

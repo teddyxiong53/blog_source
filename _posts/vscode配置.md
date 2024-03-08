@@ -497,8 +497,18 @@ https://zhuanlan.zhihu.com/p/171797717
 
 https://devpress.csdn.net/cloud/6325abf36213ca4d56909c68.html
 
+# 禁用cpptools
 
-# 参考资料
+这个导致了cpu占用高和磁盘占用的主要原因。
+
+我无法忍受这个。所以要禁用掉。
+
+在settings.json中添加如下设置即可
+`"C_Cpp.intelliSenseEngine": "Disabled"`
+
+参考资料
+
+https://blog.csdn.net/qq_43827595/article/details/105613954
 
 1、
 

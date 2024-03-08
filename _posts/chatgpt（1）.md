@@ -237,3 +237,23 @@ https://www.codegpt.co/docs/tutorial-features/chat_code_gpt
 
 1、选中一段代码，然后在chat那里写：用JavaScript来写这个代码。
 
+# chatgpt的训练数据集是从哪里来的
+
+https://metaso.cn/search/8451829596966232064
+
+chatgpt的数据集之谜
+
+https://zhuanlan.zhihu.com/p/606432878
+
+# aishort用法
+
+
+
+https://www.aishort.top/docs/guides/getting-started
+
+
+
+
+
+虽然使用非英文提示词可能会得到不错的结果，但是当你再次输入相同的非英文提示时，结果可能会大相径庭。因为 ChatGPT 对非英文的理解每次都不同，所以建议大家在输入生产力型提示词时使用英文提示词，以保证输出效果。此外，英文提示词带来的回复也很可能是英文的。你可以在提示词结尾添加 `respond in Chinese`，将回复指定为中文。如果你的母语是其他语言，请将 "Chinese" 更改为你的母语。
+

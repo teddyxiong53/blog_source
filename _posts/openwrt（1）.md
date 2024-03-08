@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 自己编译烧录树莓派3b的。
 
@@ -738,7 +738,306 @@ WARNING: your configuration is out of sync. Please run make menuconfig, oldconfi
 
 当然如果其他包编译时需要用到这个包的头文件，那么其他包也应该定义为依赖这个包，这样在其他包编译之前会先编译这个包，并执行这些install动作以免其他包编译时找不到头文件。
 
+# Build/InstallDev 表示什么
 
+在OpenWRT的Makefile中，`Build/InstallDev` 是一个构建规则，用于定义软件包的开发文件（development files）安装。这通常包括头文件、库文件以及其他与开发有关的文件，使得其他软件能够与这个软件包进行交互或构建。
+
+在Makefile中，`Build/InstallDev` 的定义类似于下面的形式：
+
+```make
+define Build/InstallDev
+    $(INSTALL_DIR) $(1)/usr/include
+    $(CP) $(PKG_INSTALL_DIR)/usr/include/* $(1)/usr/include/
+    $(INSTALL_DIR) $(1)/usr/lib
+    $(CP) $(PKG_INSTALL_DIR)/usr/lib/* $(1)/usr/lib/
+    # Add more installation commands if needed
+endef
+```
+
+这个规则指定了如何将开发文件从软件包的构建目录（`$(PKG_INSTALL_DIR)`）复制到目标安装目录。在这个例子中，头文件被复制到 `$(1)/usr/include/`，库文件被复制到 `$(1)/usr/lib/`。`$(1)` 是Makefile系统传递的目标安装目录变量。
+
+在软件包的Makefile中，你可以使用这个规则来定义软件包的开发文件的安装方式。例如：
+
+```make
+include $(TOPDIR)/rules.mk
+
+# ...
+
+define Package/my-package
+    SECTION:=utils
+    CATEGORY:=Utilities
+    TITLE:=My Package
+    DEPENDS:=+libopenssl
+endef
+
+# ...
+
+define Build/InstallDev
+    $(INSTALL_DIR) $(1)/usr/include
+    $(CP) $(PKG_INSTALL_DIR)/usr/include/* $(1)/usr/include/
+    $(INSTALL_DIR) $(1)/usr/lib
+    $(CP) $(PKG_INSTALL_DIR)/usr/lib/* $(1)/usr/lib/
+endef
+
+# ...
+
+$(eval $(call BuildPackage,my-package))
+```
+
+在这个例子中，`Build/InstallDev` 规则被用于定义 `my-package` 软件包的开发文件的安装方式。
+
+## 这个名字可以随意改吗
+
+在OpenWRT的Makefile中，`Build/InstallDev` 是一个约定的规则名，但你可以根据需要自定义规则名。规则名通常是为了方便识别和组织代码，以及与其他软件包的规则进行区分。
+
+当你定义一个新的规则名时，最好保持一致性和可读性，以便其他开发者能够理解你的意图。通常，规则名的格式是 `Build/Install*`，其中 `*` 是一个描述性的标识符，指示这个规则的目的。例如，`Build/InstallDev` 表示安装开发文件。
+
+如果你希望使用一个不同的名字，确保它与其他规则名不冲突，并且最好反映出该规则的用途。然后，在软件包的定义中，你可以使用你自定义的规则名来指定相应的构建和安装步骤。
+
+总的来说，灵活性是存在的，但保持一致性和清晰性有助于提高代码的可读性和可维护性。
+
+## 除了Build/InstallDev，还有哪些预定义的名字？
+
+在OpenWRT的Makefile中，有一些预定义的构建规则名称，它们用于定义软件包的不同构建阶段的操作。以下是一些常见的构建规则名称：
+
+1. **Build/Configure：** 用于配置软件包，通常包括运行 `./configure` 脚本。
+   
+2. **Build/Compile：** 用于定义软件包的编译过程。
+
+3. **Build/Install：** 定义软件包的安装步骤。
+
+4. **Build/InstallDev：** 用于定义安装软件包的开发文件（头文件、库文件等）的步骤。
+
+5. **Build/Clean：** 定义清理构建目录的步骤。
+
+6. **Build/Prepare：** 用于定义构建准备步骤，通常用于创建构建目录等。
+
+7. **Build/ConfigureDev：** 用于配置软件包的开发文件。
+
+8. **Build/Patch：** 用于定义软件包的打补丁步骤。
+
+这些规则名称对应于不同的构建阶段，它们的作用是为软件包的构建过程提供灵活性和可定制性。你可以在软件包的Makefile中使用这些规则名称，按照需要定义相应的构建步骤。例如：
+
+```make
+define Build/Configure
+    # 配置步骤
+endef
+
+define Build/Compile
+    # 编译步骤
+endef
+
+define Build/Install
+    # 安装步骤
+endef
+
+define Build/Clean
+    # 清理步骤
+endef
+```
+
+通过合理使用这些规则名称，你可以有效地定制软件包的构建过程，以满足特定的需求和要求。
+
+## Build/Compile 默认行为在哪里定义的
+
+在OpenWRT的Makefile中，`Build/Compile` 的默认行为是在`include/package.mk`文件中定义的。这个文件包含了OpenWRT构建系统的一些通用规则和配置。
+
+在 `package.mk` 文件中，有以下相关的内容，定义了 `Build/Compile` 的默认行为：
+
+```make
+# Default build behavior
+# Invoked as $(call Build/Compile/Default)
+define Build/Compile/Default
+        $(call Build/Compile/Makefile)
+        $(call Build/Compile/Default/$(PKG_BUILD_TYPE))
+endef
+
+# Default build behavior for "makefile" build type
+define Build/Compile/Default/makefile
+        $(MAKE) -C $(PKG_BUILD_DIR) \
+                $(TARGET_CONFIGURE_OPTS) \
+                $(PKG_JOBS) \
+                $(if $(PKG_MAKE_PARALLEL), V=s) \
+                $(PKG_EXTRA_MAKE_ARGS) \
+                all
+endef
+```
+
+这里，`Build/Compile/Default` 宏定义了默认的构建行为，而 `Build/Compile/Default/makefile` 宏定义了在 "makefile" 构建类型下的默认行为。在这个默认行为中，使用了 `$(MAKE)` 命令来执行构建，调用了构建目录下的Makefile，并传递了相应的配置选项和参数。
+
+当你的软件包的Makefile没有定义自己的 `Build/Compile` 行为时，系统将使用这个默认的构建行为。如果你需要对构建过程进行更具体的定制，可以在软件包的Makefile中重新定义 `Build/Compile` 宏，覆盖默认的行为。
+
+# make编译单个openwrt包的时候，后面跟的字符串是包的路径吗
+
+对于OpenWRT，`Build/Compile` 的默认行为通常由 OpenWRT 的宏、规则以及软件包自身的 Makefile 定义。这个默认行为通常包括了编译整个软件包的步骤。具体的定义会依赖于 OpenWRT 版本以及软件包的类型和结构。
+
+关于 `make` 编译单个 OpenWRT 包时，后面跟的字符串通常是包的名称，而不是路径。这是因为 OpenWRT 使用包的名称来标识和组织软件包。例如，你可以使用以下命令编译单个软件包：
+
+```bash
+make package/PACKAGE_NAME/compile
+```
+
+其中 `PACKAGE_NAME` 是你想要编译的软件包的名称，而不是包的路径。OpenWRT 的构建系统会自动查找该软件包的 Makefile，执行相关的构建和编译操作。
+
+确保你的软件包名称是正确的，并且在 OpenWRT 源代码目录中可用，以便构建系统正确地定位和处理。
+
+## make package/PACKAGE_NAME/compile 为什么不直接写成make PACKAGE_NAME
+
+在OpenWRT中，`make package/PACKAGE_NAME/compile` 之所以需要这样的语法，是因为OpenWRT采用了一种模块化的软件包管理结构。软件包被组织在`feeds`中，而`package/`前缀告诉构建系统你正在操作的是软件包。
+
+具体来说：
+
+- `package/` 前缀表示你正在处理的是OpenWRT软件包。
+- `PACKAGE_NAME` 是实际软件包的名称。
+
+这种结构允许OpenWRT构建系统更灵活地处理软件包，使得构建系统能够自动从`feeds`中选择和集成软件包，而不是手动指定文件路径。通过使用这种模块化的结构，OpenWRT能够轻松地添加、移除或切换软件包，而不会导致构建系统的大幅修改。
+
+总体而言，这种模块化结构提高了OpenWRT的可维护性和可扩展性。虽然 `make package/PACKAGE_NAME/compile` 的语法看起来较长，但它为构建系统提供了足够的信息，以便动态选择和编译所需的软件包。
+
+## 除了package前缀，还有哪些前缀？
+
+在OpenWRT的构建系统中，除了 `package/` 前缀，还有其他几个常用的前缀，用于指定不同的构建目标或操作。以下是一些常见的前缀：
+
+1. **`target/` 前缀：** 用于指定目标系统的构建。例如，`make target/compile` 用于构建目标系统。
+
+2. **`package/` 前缀：** 用于指定软件包的构建和操作。例如，`make package/PACKAGE_NAME/compile` 用于构建特定的软件包。
+
+3. **`feeds/` 前缀：** 用于指定软件包源的操作。例如，`make feeds/update` 用于更新软件包源。
+
+4. **`tmp/` 前缀：** 用于指定临时构建目录的操作。例如，`make tmp/clean` 用于清理临时构建目录。
+
+5. **`kernel/` 前缀：** 用于指定内核相关的操作。例如，`make kernel/compile` 用于编译内核。
+
+这些前缀提供了一种清晰的结构，使得用户能够针对不同的构建目标执行相应的操作。例如，`make package/PACKAGE_NAME/compile` 中的 `package/` 前缀明确表示这是与软件包构建相关的操作。这种结构有助于模块化构建系统，提高可维护性和可扩展性。
+
+## 后缀除了compile，还有哪些？
+
+在OpenWRT的构建系统中，除了 `compile` 后缀，还有其他一些常用的后缀，用于指定不同的构建和操作目标。以下是一些常见的后缀：
+
+1. **`install` 后缀：** 用于指定安装相关的目标。例如，`make package/PACKAGE_NAME/install` 用于安装软件包。
+
+2. **`clean` 后缀：** 用于指定清理构建相关文件的目标。例如，`make package/PACKAGE_NAME/clean` 用于清理软件包的构建目录。
+
+3. **`menuconfig` 后缀：** 用于指定配置系统的目标。例如，`make menuconfig` 用于打开命令行菜单配置工具。
+
+4. **`config` 后缀：** 用于指定配置软件包的目标。例如，`make package/PACKAGE_NAME/config` 用于配置特定的软件包。
+
+5. **`update` 后缀：** 用于指定更新软件包源的目标。例如，`make feeds/update` 用于更新软件包源。
+
+这些后缀提供了一种清晰的方式，使用户能够执行特定的构建和操作目标。通过使用这些后缀，OpenWRT的构建系统能够提供更灵活的构建和配置选项，同时保持清晰的命令结构。
+
+## `make target/compile` 具体做了什么
+
+`make target/compile` 是OpenWRT构建系统中的一个目标，用于编译整个目标系统。具体而言，这个目标会执行以下主要步骤：
+
+1. **配置目标系统：** 执行与目标系统配置相关的操作。这包括根据设备和体系结构选择合适的配置选项。
+
+2. **下载和安装依赖项：** 检查目标系统所需的依赖项，并下载、编译、安装这些依赖项。这可能包括交叉编译工具链、内核源代码等。
+
+3. **构建目标系统：** 使用所选的配置选项和编译工具链，构建整个目标系统的所有组件，包括内核、基础系统工具和库等。
+
+4. **安装目标系统：** 将构建好的目标系统安装到指定的输出目录，以供后续的固件生成或烧录。
+
+执行 `make target/compile` 会触发OpenWRT构建系统对目标系统的全面构建过程。在这个过程中，会根据你的配置选择交叉编译工具链、构建和编译内核，以及生成目标系统的所有必要文件。这个目标通常是构建整个OpenWRT固件所需的第一步。
+
+# openwrt的package/feeds目录下面有什么内容
+
+`package/feeds` 目录是OpenWRT软件包管理中的一个重要目录，
+
+它包含了软件包源（feeds）的定义和配置。
+
+软件包源是包含软件包定义的目录，
+
+可以是官方的OpenWRT软件包源，
+
+也可以是用户自定义的第三方软件包源。
+
+每个软件包源都包含一系列软件包的 Makefile 文件以及相关的元信息。
+
+在 `package/feeds` 目录下，一般会看到一些默认的软件包源子目录，如：
+
+1. **`packages` 目录：** 这是OpenWRT官方软件包源的默认目录，包含了许多常见的软件包，例如网络工具、应用程序、驱动等。
+
+2. **`luci` 目录：** 包含LuCI（OpenWRT Web界面）相关的软件包。LuCI是一个用于配置和管理OpenWRT路由器的Web界面。
+
+3. **其他自定义软件包源：** 用户可以在 `package/feeds` 目录下添加自己的软件包源，以扩展或定制OpenWRT的软件包集合。
+
+每个子目录都包含了一个或多个软件包的 Makefile 文件，这些文件定义了如何构建和安装相应的软件包。软件包源的配置和定义可以在 `package/feeds.conf` 文件中找到，这个文件描述了使用哪些软件包源以及它们的配置信息。
+
+总体而言，`package/feeds` 目录是OpenWRT软件包管理的核心之一，提供了组织和管理软件包的框架。
+
+## 在feeds目录外面的package有什么不一样
+
+在OpenWRT中，`feeds` 目录之外的 `package` 目录包含了一些与 OpenWRT 主线（feeds/packages）不同的软件包。这些软件包通常是由社区维护的，而不是OpenWRT官方团队维护的。以下是 `package` 目录与 `feeds` 目录之外的主要区别：
+
+1. **来源与维护：**
+   - `feeds` 目录中的软件包通常由OpenWRT官方团队维护，包含了官方支持的软件包。
+   - `package` 目录之外的软件包通常是由社区成员或第三方维护的，它们可能是一些官方未收录的软件包或是社区维护的变种。
+
+2. **软件包的组织：**
+   - `feeds` 目录下的软件包是按照一定的分类和结构组织的，例如 `feeds/packages/net/` 子目录下包含了网络相关的软件包。
+   - `package` 目录之外的软件包组织方式可能因维护者而异，可能是按照不同的分类或结构组织，也可能直接放在 `package` 目录下。
+
+3. **更新频率：**
+   - `feeds` 目录中的软件包通常会定期从源仓库同步，保持更新。
+   - `package` 目录之外的软件包更新频率可能较低，取决于维护者的更新策略。
+
+综上所述，`package` 目录之外的软件包通常是一些社区维护的或者不符合官方团队标准的软件包。用户在选择使用这些软件包时，需要注意它们的维护状况、更新频率以及与OpenWRT主线的兼容性。
+
+## PACKAGE_librokid-bt:librokid-bt这个名字怎么理解
+
+在OpenWRT的Makefile中，`DEPENDS` 变量用于指定软件包的构建依赖关系。在你提供的示例中，`PACKAGE_librokid-bt:librokid-bt` 是一个构建依赖项的指定，它的格式为：
+
+```plaintext
+PACKAGE_NAME:TARGET_NAME
+```
+
+这里的 `PACKAGE_librokid-bt` 是一个软件包的名称，而 `librokid-bt` 是该软件包在构建过程中的目标名称或库名称。
+
+解释一下这个依赖项的含义：
+
+- `PACKAGE_librokid-bt` 是一个软件包的名称，表示这是一个名为 `librokid-bt` 的软件包。
+  
+- `librokid-bt` 是该软件包在构建过程中的目标名称或库名称。这通常表示在构建过程中，该软件包会生成一个名为 `librokid-bt` 的库文件。
+
+整个依赖项的含义是，当前软件包在构建过程中依赖于 `librokid-bt` 软件包，并且在链接时会链接到 `librokid-bt` 库。这通常表示软件包依赖于其他软件包提供的库或功能。
+
+在实际构建过程中，构建系统会自动解析这些依赖关系，并确保在构建当前软件包时，需要的依赖项也会被正确构建和链接。
+
+# Build/InstallDev 和Package/activation/install的关系
+
+`Build/InstallDev` 和 `Package/activation/install` 是两个不同的构建规则，用于不同的目的。让我解释它们之间的关系：
+
+1. **`Build/InstallDev`：** 这是一个构建规则，通常用于定义软件包的开发文件（development files）的安装。开发文件包括头文件、库文件等，它们允许其他软件包在构建时使用当前软件包的功能。这个规则通常在软件包的 Makefile 中定义，用于安装开发文件到目标安装目录。
+
+    例如：
+    ```make
+    define Build/InstallDev
+        $(INSTALL_DIR) $(1)/usr/include
+        $(CP) $(PKG_INSTALL_DIR)/usr/include/* $(1)/usr/include/
+        $(INSTALL_DIR) $(1)/usr/lib
+        $(CP) $(PKG_INSTALL_DIR)/usr/lib/* $(1)/usr/lib/
+    endef
+    ```
+
+2. **`Package/activation/install`：** 这是一个软件包的安装规则，用于定义软件包的运行时文件（runtime files）的安装。运行时文件包括执行文件、配置文件等，它们用于实际运行软件包。这个规则通常在软件包的 Makefile 中定义，用于安装运行时文件到目标安装目录。
+
+    例如：
+    ```make
+    define Package/activation/install
+        $(INSTALL_DIR) $(1)/usr/bin
+        $(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/* $(1)/usr/bin/
+        $(INSTALL_DIR) $(1)/etc
+        $(CP) $(PKG_INSTALL_DIR)/etc/* $(1)/etc/
+    endef
+    ```
+
+关系：
+- 在构建软件包时，`Build/InstallDev` 用于安装开发文件，以便其他软件包可以使用当前软件包的头文件和库文件进行编译。
+  
+- 在软件包的安装阶段，`Package/activation/install` 用于安装运行时文件，将可执行文件和配置文件等安装到目标系统中，以便软件包可以在运行时使用。
+
+这两个规则在构建和安装过程中分别负责不同类型的文件。 `Build/InstallDev` 主要用于开发环境，而 `Package/activation/install` 主要用于目标系统上的运行环境。
 
 # rules.mk
 

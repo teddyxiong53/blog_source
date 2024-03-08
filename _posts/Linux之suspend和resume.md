@@ -130,7 +130,55 @@ https://blog.csdn.net/MyArrow/article/details/8136109
 
 在 Linux 内核中，挂起和唤醒的具体实现与架构相关，并且可以通过 ACPI（高级配置与电源接口）等标准进行电源管理。 ACPI 提供了一个标准的接口，允许操作系统与硬件平台进行通信，以实现挂起和唤醒等电源管理功能。
 
+# 韦东山对tina平台的休眠唤醒功能分析
 
+tina 功耗管理系统主要由休眠唤醒（standby、autosleep、runtime pm）， 
+
+调频调压（cpufreq、devfreq、dvfs ），
+
+开关核（cpu hotplug），
+
+cpuidle 等子系统组成。
+
+主要用于对系统功耗进行管理和控制，平衡设备功耗和性能。
+
+一般我们可将其分为两类，即静态功耗管理和动态功耗管理。
+
+![Tina_Linux_Power_Management_Development_Guide-image-20230104145122259](images/random_name/Tina_Linux_Power_Management_Development_Guide-image-20230104145122259.png)
+
+一般地，可以动态调整或实时改变系统状态而达到节能目的技术，称为动态功耗管理，
+
+例如调频调压，idle, hotplug, runtime-pm 等；
+
+相对地，我们把单纯地将系统置为某一种状态，而不实时调整的低功耗技术，称为静态功耗管理，例如休眠唤醒相关技术等。
+
+
+
+由于在tina 系统中，动态功耗技术一般来说默认配置好了，基本不需要客户修改, 
+
+另外如调频，温控等模块会在Linux 模块开发指南目录下，由模块相关的文档说明。
+
+因此本文主要介绍静态功耗管理技术，即休眠唤醒框架。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+https://www.cnblogs.com/weidongshan/articles/17183758.html
 
 # 参考资料
 
@@ -158,3 +206,6 @@ https://docs.kernel.org/admin-guide/pm/suspend-flows.html
 
 https://www.cnblogs.com/LoyenWang/p/11372679.html
 
+5、
+
+https://zhuanlan.zhihu.com/p/542445635

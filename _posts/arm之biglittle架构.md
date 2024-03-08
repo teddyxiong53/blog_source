@@ -241,7 +241,9 @@ DynamIQ的方案于2017年5月出现，它是基于big.LITTLE进行扩展和设�
 
 同原生的big.LITTLE不同的是，**因为它采用了ARMv8.2中一些独有的特性，因此与之前的ARM架构不能完全兼容**，所以开始阶段只用在较新的Cortex-A75和Cortex-A55处理器上。
 
+# **android 大小核调度 android heapsize**
 
+https://blog.51cto.com/u_16099247/7113769
 
 # 参考资料
 
