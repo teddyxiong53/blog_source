@@ -66,7 +66,189 @@ https://github.com/zlgopen/awtk-iotjs
 
 https://github.com/rzr/webthing-iotjs
 
+# jerryscript和iotjs是同一个团队做的吗？
 
+是的，JerryScript 和 IoT.js 是由同一个团队开发的。JerryScript 是一个轻量级的 JavaScript 引擎，专门为嵌入式系统和物联网设备而设计。而 IoT.js 则是基于 JerryScript 引擎构建的 JavaScript 运行时环境，旨在为物联网设备提供高效、灵活的平台。
+
+这两个项目都由韩国的 Samsung Electronics 公司的团队开发和维护。JerryScript 最初由 Samsung 的研究团队开发，并于2015年开源发布。后来，JerryScript 的团队继续致力于开发 IoT.js，并将 JerryScript 作为其核心引擎之一。因此，虽然它们是两个独立的项目，但它们的开发团队有着密切的联系和协作关系。
+
+# 代码下载和编译运行
+
+下载，必须要用git clone的方式下载，因为依赖的子模块要git方式下载。
+
+```
+git clone https://github.com/jerryscript-project/iotjs.git
+```
+
+编译，这个可以进行很多的配置操作。
+
+```
+tools/build.py
+```
+
+运行，就iotjs后面跟js文件名就可以了。
+
+```
+build/x86_64-linux/debug/bin/iotjs tools/repl.js
+```
+
+# 编译系统分析
+
+## tools\build.py
+
+代码逻辑：
+
+1、初始化选项。
+
+2、自动调整选项，避免出现不合理的配置。
+
+3、看是不是进行clean。
+
+4、看是不是进行submodule操作。
+
+5、build iotjs
+
+6、如果是进行test，那么执行test。
+
+支持的参数有：
+
+| 参数                   | 说明                                                         |
+| ---------------------- | ------------------------------------------------------------ |
+| --buildtype            | debug<br />release                                           |
+| --builddir             | 默认是build目录                                              |
+| --buildlib             | 编译iotjs的静态库，默认不编译。                              |
+| --create-shared-lib    | 编译动态库，默认不编译。                                     |
+| --cmake-param          | 传递给cmake的额外参数。默认空。                              |
+| --compile-flag         | 额外的编译选项                                               |
+| --clean                | 进行clean操作。                                              |
+| --config               | 指定配置文件，是json文件。默认是iotjs/build.config文件。<br />这个就可以包括了所有其他的配置项了。 |
+| --experimental<br />-e | 打开实验选项，bool类型                                       |
+| --external-include-dir | 外部包含目录。                                               |
+| --external-lib         | 外部库目录。                                                 |
+| --external-modules     | 外部模块                                                     |
+| --link-flag            |                                                              |
+| --n-api                | 是否打开napi特性                                             |
+| --no-check-valgrind    | 就是不打开内存检查，默认是打开的。                           |
+| --no-init-submodule    | 不用进行git submodule操作。                                  |
+| --no-parallel-build    | 不要进行并行编译。                                           |
+| --no-snapshot          | 禁止iotjs的snapshot快照功能                                  |
+| --nuttx-home           | 指定nuttx os的目录，在使用nuttx的时候才需要。                |
+| --profile              | 指定iotjs的module profile文件。                              |
+| --run-test             | 在编译完成后自动运行测试。                                   |
+| --sysroot              | 交叉编译时需要。                                             |
+| --target-arch          |                                                              |
+| --target-board         | 'artik10', 'stm32f4dis', 'stm32f7nucleo','rpi2', 'rpi3', 'artik05x' |
+| --target-os            |                                                              |
+| --expose-gc            | 是否把jerryscript的gc接口暴露到js代码里。                    |
+|                        | 下面的参数是传递给Jerryscript的参数                          |
+| --jerry-cmake-param    |                                                              |
+| --jerry-compile-flag   |                                                              |
+| --jerry-debugger       |                                                              |
+| --jerry-heaplimit      |                                                              |
+| --jerry-heap-section   |                                                              |
+| --jerry-lto            |                                                              |
+| --jerry-memstat        |                                                              |
+| --jerry-profile        | 默认是es5.1                                                  |
+| --js-backtrace         |                                                              |
+
+
+
+build.config文件内容
+
+```
+{
+  "builddir": "",
+  "buildlib": false,
+  "buildtype": "debug",
+  "clean": false,
+  "config": "",
+  "cmake-param": [],
+  "compile-flag": [],
+  "external-include-dir": [],
+  "external-lib": [],
+  "jerry-cmake-param": [],
+  "jerry-compile-flag": [],
+  "jerry-heaplimit": 256,
+  "jerry-link-flag": [],
+  "jerry-lto": false,
+  "jerry-memstat": false,
+  "link-flag": [],
+  "no-check-tidy": false,
+  "no-init-submodule": false,
+  "no-parallel-build": false,
+  "no-snapshot": false,
+  "run-test": false,
+  "sysroot": "",
+  "target-arch": "",
+  "target-os": "",
+  "target-board": ""
+}
+```
+
+adjust_option的逻辑
+
+1、如果target_os是nuttx或者tizenrt，那么必须编译静态库，而且需要指定sysroot。
+
+2、如果os是x86，转成i686，如果os是x64，转成x86_64。
+
+3、如果os的苹果系统，那么不进行内存检查。
+
+4、如果是树莓派，也不进行内存检查。
+
+5、拼接得到host_tuple和target_tuple字符串。
+
+
+
+clean的操作逻辑
+
+就是删除build目录和test_build目录。
+
+
+
+init_submodule的逻辑
+
+```
+def init_submodule():
+    ex.check_run_cmd('git', ['submodule', 'init'])
+    ex.check_run_cmd('git', ['submodule', 'update'])
+```
+
+build_iotjs逻辑
+
+1、根据前面解析得到的options，赋值给cmake_opt。
+
+2、执行cmake
+
+```
+ex.check_run_cmd('cmake', cmake_opt)
+```
+
+3、执行make
+
+```
+run_make(options, options.build_root)
+```
+
+## CMakeLists.txt分析
+
+1、如果没有定义TARGET_OS，那么把CMAKE_SYSTEM_NAME当成TARGET_OS用。
+
+2、编译依赖模块
+
+```
+# Include external projects
+include(cmake/jerry.cmake)
+include(cmake/http-parser.cmake)
+include(cmake/libtuv.cmake)
+
+include(cmake/iotjs.cmake)
+```
+
+
+
+编译出来的静态库。
+
+![image-20240314173958022](images/random_name/image-20240314173958022.png)
 
 # iotjs内部
 
@@ -570,7 +752,19 @@ jerry_value_t iotjs_init_buffer(void) {
 }
 ```
 
+# iotjs为什么发展停滞了
 
+IoT.js 在一定程度上停止了活跃的发展，可能有几个原因导致这种情况：
+
+1. **生态系统和社区支持不足**：IoT.js 并没有像其他一些 JavaScript 运行时（如Node.js）那样形成庞大的生态系统和活跃的社区。缺乏足够的社区支持和开发者参与可能导致项目发展停滞。
+
+2. **竞争对手**：随着时间的推移，出现了更多的针对嵌入式系统和物联网设备的 JavaScript 运行时，如Espruino、Duktape等，这些竞争对手可能分散了开发者的注意力和资源。
+
+3. **资源限制**：IoT.js 可能面临着人力和财力等资源限制的挑战，这可能导致项目无法持续进行开发和维护。
+
+4. **技术限制**：虽然 IoT.js 构建在 JerryScript 引擎之上，但 JerryScript 自身也可能受到一些技术限制，这可能会影响 IoT.js 的进一步发展和应用范围。
+
+尽管 IoT.js 可能没有继续发展，但仍然有一些项目和组织在使用它，并可能会对其进行维护和改进。此外，尽管 IoT.js 可能没有继续活跃发展，但其中的一些技术和概念可能会在其他项目中得到应用和发展。
 
 # 参考资料
 
