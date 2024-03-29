@@ -2281,6 +2281,108 @@ The application has system and user types.
 
 - `/etc/yoda` for configurations like keyboard, env, and more.
 
+
+
+# shell脚本总结
+
+这个里面涉及到不少的脚本。
+
+感觉这些脚本的用法有值得学习参考的地方。
+
+所以总结一下。
+
+从最外层一层层往里面挖掘吧。
+
+## build.sh
+
+打印usage的方法：这个方法和格式都值得参考。
+
+```
+usage() {
+cat <<USAGE
+
+Usage:
+    bash $0 -p <PRODUCT> -f <IMG_FOLDER> -n <IMG_NAME> -j 32 [OPTIONS]
+    eg: ./build.sh -p leo_k18_universal_node -n openwrt-leo-k18-universal -f leo-k18-universal -r 
+
+Description:
+    Builds Openwrt for given PRODUCT
+
+OPTIONS:
+    -d, --debug
+        Enable debugging - change Debug/release image
+
+    -c, --clean
+        Make distclean 
+
+    -r, --remove
+        Make clean
+
+    -h, --help
+        Display this help message
+
+    -j, --jobs
+        Specifies the number of jobs to run simultaneously (Default: 8)
+
+    -p, --product
+        The product name (openwrt/configs/<PRODUCT>_defconfig, eg: leo_k18_universal_node)
+		
+    -f, --folder
+        Image folder (eg:leo-k18-universal)
+
+    -n, --name
+        Image name  (eg:openwrt-leo-k18-universal)
+
+    -s, --solid file system, a113===>squashfs
+		Read only filesystem
+
+USAGE
+}
+```
+
+选项的设置：
+
+```
+long_opts="debug,clean,folder:,help,jobs:,product:,name:,module:,solid_filesystem:"
+getopt_cmd=$(getopt -o dcrf:hj:p:n:m:s: --long "$long_opts" \
+            -n $(basename $0) -- "$@") || \
+            { echo -e "\nERROR: Getopt failed. Extra args\n"; usage; exit 1;}
+eval set -- "$getopt_cmd"
+```
+
+
+
+`eval set -- "$getopt_cmd"`：
+
+这行代码将`getopt`命令的输出作为字符串传递给`eval`命令，
+
+`set -- "$getopt_cmd"`将`$getopt_cmd`的内容设置为位置参数（即脚本的命令行参数）。
+
+这样做的目的是重新设置脚本的位置参数，使得之后的代码可以直接通过`$1`、`$2`等访问到解析后的命令行参数。
+
+逐个解析参数：
+
+```
+while true; do
+    case "$1" in
+        -d|--debug) DEBUG="true";;
+        -c|--clean) CLEAN_OUTPUT_PRODUCT_DIR="true";;
+        -m|--module) PACKAGES_TO_CLEAN=$(echo $2 | tr "," "\n");;
+        -r|--remove) REMOVE_OUTPUT_PRODUCT_DIR="true";;
+        -f|--folder) IMG_FOLDER="$2";;
+        -h|--help) usage; exit 0;;
+        -j|--jobs) JOBS="$2"; shift;;
+        -p|--product) PRODUCT="$2"; shift;;
+        -n|--name) IMG_NAME="$2"; shift;;
+        -s|--solid_filesystem) BUILD_ROOT_FILESYSTEM="$2"; shift;;
+        --) shift; break;;
+    esac
+    shift
+done
+```
+
+
+
 # 参考资料
 
 1、OpenWrt构建中遇到的问题以及解决办法

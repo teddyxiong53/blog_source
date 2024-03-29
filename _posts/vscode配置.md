@@ -506,9 +506,21 @@ https://devpress.csdn.net/cloud/6325abf36213ca4d56909c68.html
 在settings.json中添加如下设置即可
 `"C_Cpp.intelliSenseEngine": "Disabled"`
 
+## 兼顾性能和效率的做法
+
+2个vscode，各自有自己的插件目录。
+
+一个不打开cpptools，用来专门打开大代码目录，进行普通的修改。
+
+一个打开cpptools，专门用来写代码，不要用来打开大目录，可以进行代码的跳转。
+
+
+
 参考资料
 
 https://blog.csdn.net/qq_43827595/article/details/105613954
+
+# 参考资料
 
 1、
 

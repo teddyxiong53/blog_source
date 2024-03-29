@@ -429,7 +429,117 @@ doc\README.autoboot
 
 cat u-boot.bin u-boot.dtb >image.bin
 
+# hush脚本支持
 
+Hush Parser是U-Boot中的一种解释器，用于解析并执行Hush脚本语言中的命令。Hush是U-Boot的命令解释器，类似于Linux中的Bash或其他Shell。它允许用户在U-Boot的命令行界面中输入和执行命令，以及编写和运行脚本。
+
+Hush Parser的工作原理如下：
+
+1. **解析命令行输入：** 当用户在U-Boot的命令行中输入命令时，Hush Parser负责解析这些输入。它会识别并分析命令行中的命令、选项和参数。
+
+2. **执行命令：** 解析器识别命令后，会执行相应的操作。这可能涉及到调用U-Boot内部的函数或外部设备的操作。
+
+3. **执行脚本：** Hush Parser也能够解析和执行Hush脚本文件。用户可以编写包含一系列U-Boot命令的脚本文件，并通过Hush解释器执行这些脚本。
+
+4. **错误处理：** 解析器还负责处理用户输入中的错误，并向用户提供相应的错误信息或警告。
+
+Hush Parser在U-Boot中扮演着重要的角色，它使用户能够更方便地与U-Boot进行交互，并自动化执行一系列命令操作。
+
+
+
+Hush是U-Boot中使用的一种脚本语言，用于编写和执行脚本以自动化一系列命令操作。下面是对Hush脚本语言的简要介绍：
+
+1. **语法：** Hush的语法类似于Bourne shell（如Bash），但是更加简单。它支持基本的语句、条件语句、循环语句、变量赋值、函数定义等基本结构。
+
+2. **注释：** 使用`#`字符可以注释一行代码，注释部分将被忽略。
+
+3. **变量：** 变量在Hush中使用`$`符号进行引用，变量名不需要事先声明。例如，`$var`表示变量`var`的值。
+
+4. **条件语句：** Hush支持类似于Bash的`if-then-else`语句用于条件判断。语法如下：
+   ```
+   if condition; then
+       commands
+   elif condition; then
+       commands
+   else
+       commands
+   fi
+   ```
+
+5. **循环语句：** Hush支持`for`和`while`循环，用于迭代执行一系列命令。语法如下：
+   ```
+   for var in list; do
+       commands
+   done
+   ```
+   或者
+   ```
+   while condition; do
+       commands
+   done
+   ```
+
+6. **函数定义：** 可以使用`function`关键字定义函数，并在需要时调用它们。语法如下：
+   ```
+   function name {
+       commands
+   }
+   ```
+
+7. **命令替换：** 可以使用反引号（`）或 `$()` 来执行命令并将其输出结果赋值给变量。例如：
+   ```
+   output=`ls`
+   或者
+   output=$(ls)
+   ```
+
+8. **特殊变量：** Hush中有一些特殊的预定义变量，如`$#`表示参数个数，`$?`表示上一个命令的返回值等。
+
+这是Hush脚本语言的基本概述。使用Hush脚本语言，用户可以编写自定义的脚本来自动化U-Boot环境中的一系列操作，提高工作效率。
+
+# bl33z 是做什么的
+
+BL33z 是 U-Boot 中的一个特定版本或分支，通常用于处理 ARM 架构的启动加载阶段。
+
+BL33z 通常是指 U-Boot 的 SPL（Secondary Program Loader）或 TPL（Third Program Loader）的扩展版本，用于引导和加载操作系统内核（比如 Linux 内核）。
+
+在 ARM 架构中，启动过程通常包括三个阶段：
+
+1. **Primary Program Loader（PPL）**：通常是 SoC（System on Chip）内部的 ROM Bootloader，用于引导 SPL 或 TPL。
+
+2. **Secondary Program Loader（SPL）**：负责引导和初始化 U-Boot 的一部分，通常包括基本的初始化代码和引导设备的功能。SPL 通常被设计成非常小巧，以适应在启动时加载，以及在系统中不断减少内存占用。
+
+3. **Third Program Loader（TPL）**：在某些 ARM 架构中，TPL 是 SPL 的进一步分割，用于更细粒度地管理启动过程。TPL 在 SPL 之后运行，用于进一步引导操作系统内核。
+
+BL33z 通常指 SPL 或 TPL 的变种，用于处理引导和加载操作系统内核的工作。BL33z 的目标是优化和改进 SPL 或 TPL 的功能，以更有效地引导和加载操作系统内核，同时保持启动过程的可靠性和稳定性。
+
+因此，BL33z 可能包含一些特定的功能或优化，以适应特定的硬件平台或应用场景。
+
+# 默认环境变量
+
+include\env_default.h
+
+```
+const uchar default_environment[] = {
+这个结构体包含了默认的环境变量。
+在最后包含了每个板子自己定义的CONFIG_EXTRA_ENV_SETTINGS
+```
+
+# CONFIG_SYS_MAXARGS
+
+`CONFIG_SYS_MAXARGS` 是 U-Boot 中的一个配置选项，用于定义命令行输入的最大参数数量。这个选项规定了在 U-Boot 命令行中可以一次性输入的最大参数数量，包括命令本身在内。
+
+这个选项的默认值通常是 16，但是可以根据具体的需求进行调整。如果你的应用程序或者特定的使用场景需要更多的参数，你可以增加这个值，反之亦然。
+
+增加 `CONFIG_SYS_MAXARGS` 可以增加命令行的灵活性，允许用户在 U-Boot 命令行中一次性输入更多的参数，这在一些复杂的操作或者特定的应用场景中可能非常有用。但是，需要注意的是增加这个值可能会占用更多的内存空间，因为 U-Boot 在解析命令行参数时需要分配额外的内存空间来存储这些参数。
+
+在 U-Boot 的配置文件（通常是 `include/configs/xxx.h`）中，你可以找到并修改 `CONFIG_SYS_MAXARGS` 的定义，以调整命令行参数的最大数量，例如：
+
+```c
+#define CONFIG_SYS_MAXARGS 32
+```
+
+这样就将 `CONFIG_SYS_MAXARGS` 的值增加到 32，允许命令行输入的最大参数数量为 32。
 
 # 参考资料
 

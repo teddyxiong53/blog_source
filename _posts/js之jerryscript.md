@@ -7,6 +7,12 @@ tags:
 
 --
 
+# 学习方法
+
+看api手册
+
+https://jerryscript.net/api-reference/
+
 # 简介
 
 JerryScript（或称为Jerry）是一个轻量级、快速的嵌入式 JavaScript 引擎，旨在在资源受限的嵌入式设备上运行。以下是一些关于 JerryScript 的介绍：
