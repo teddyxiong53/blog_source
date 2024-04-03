@@ -151,5 +151,83 @@ j：js对象。
 
 # 用elk+mongoose实现一个精简的nodejs
 
+官方代码下的esp32js下面就是实现了这个功能。
 
+可以简单分析一下。
+
+## 我要用自己的js解释器实现一个最小的nodejs运行时，有哪些接口是需要实现的？
+
+要实现一个最小的 Node.js 运行时，你需要实现以下基本接口和功能：
+
+1. **模块加载器（Module Loader）**：
+   - 支持 `require()` 函数，用于加载模块。
+   - 实现模块缓存，以避免重复加载相同的模块。
+
+2. **全局对象（Global Object）**：
+   - 实现类似于 `global` 对象的全局对象，使其包含 Node.js 中的常用全局函数和对象，比如 `process`、`console` 等。
+
+3. **文件系统访问（File System Access）**：
+   - 实现类似于 Node.js 的 `fs` 模块，提供对文件系统的访问和操作功能，包括文件读写、目录操作等。
+
+4. **网络通信（Network Communication）**：
+   - 实现类似于 Node.js 的 `http` 或 `https` 模块，提供基本的 HTTP 或 HTTPS 服务器和客户端功能。
+
+5. **事件驱动（Event-Driven）**：
+   - 实现事件驱动的机制，比如类似于 Node.js 的 `EventEmitter`，用于处理事件和回调函数。
+
+6. **异步 I/O（Asynchronous I/O）**：
+   - 支持非阻塞 I/O 操作，使得程序可以异步地处理文件读写、网络请求等操作，而不会阻塞主线程。
+
+7. **定时器（Timers）**：
+   - 实现类似于 `setTimeout()`、`setInterval()` 等定时器功能，用于执行延迟或周期性任务。
+
+8. **进程管理（Process Management）**：
+   - 提供类似于 `process` 模块的功能，包括获取命令行参数、退出程序等。
+
+9. **错误处理（Error Handling）**：
+   - 实现错误处理机制，能够捕获并处理运行时错误，以及提供友好的错误提示和日志输出。
+
+10. **模块系统（Module System）**：
+    - 实现模块系统，使得可以按照 Node.js 的模块规范加载和导出模块。
+
+以上是最基本的接口和功能，你可以根据需求和实现难度逐步完善和扩展这个运行时环境。
+
+### 实现require
+
+```
+// Example Elk integration. Demontrates how to implement "require".
+// Create file "api.js" with the following content:
+//  ({
+//    add : function(a, b) { return a + b; },
+//    mul : function(a, b) { return a * b; },
+//  })
+//
+// Compile main.c and run:
+//   $ cc main.c ../../elk.c -I../.. -o cli
+//   $ ./cli 'let math = require("api.js"); math.mul(2,3);'
+//   6
+//   Executed in 0.663 ms. Mem usage is 3% of 8192 bytes.
+```
+
+### 异步回调怎么实现
+
+
+
+# 对elk的理解
+
+主要用途还是要可动态传递控制逻辑到板端。
+
+主要是对C接口进行调用组合。
+
+
+
+# 把elk理解消化后实现一个python版本
+
+主要是token解析。
+
+也可以尝试自己扩展一些语法元素进去。
+
+
+
+# elk绑定lvgl
 
