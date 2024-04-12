@@ -3431,6 +3431,22 @@ RELRO 是一种安全机制，用于防止攻击者滥用程序的全局偏移�
 
 
 
+# GLOBAL_INSTRUMENTATION_HOOKS
+
+`GLOBAL_INSTRUMENTATION_HOOKS` 是一个 Buildroot 的变量，
+
+用于指定全局的编译器插桩（instrumentation）钩子。
+
+在构建系统中，编译器插桩是一种技术，通过在代码中插入额外的指令或代码，可以实现对程序行为的监控、分析或修改。
+
+在 Buildroot 中，`GLOBAL_INSTRUMENTATION_HOOKS` 变量通常用于指定一个脚本或命令，这个脚本或命令会在构建过程中被调用，用于对源代码进行额外的操作或处理。
+
+这个脚本或命令可以是一个外部的脚本文件，也可以是一个 Shell 命令。
+
+通过设置 `GLOBAL_INSTRUMENTATION_HOOKS` 变量，可以实现一些特定的构建操作，比如在编译过程中添加额外的代码、执行静态分析、进行代码覆盖率测试等。
+
+具体的使用方式和操作内容会根据项目的需求和具体情况而有所不同，用户可以根据需要自定义和配置这个全局的编译器插桩钩子。
+
 # 参考资料
 
 1、HOWTO: Use BuildRoot to create a Linux image for QEMU

@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 代码可以看到shadownode里的promise.js的实现。只有300行代码。
 
@@ -444,6 +444,86 @@ https://cloud.tencent.com/developer/article/1470718
 2、
 
 https://www.cnblogs.com/Peter2014/p/13023368.html
+
+
+
+# 简介
+
+当谈到JavaScript中的异步编程时，Promise是一个非常重要的概念。Promise是一种用于处理异步操作的对象，它表示一个异步操作的最终完成（或失败）及其结果的值。
+
+以下是Promise的一些关键特点和用法：
+
+1. **状态（State）**：
+   - Promise有三种状态：pending（进行中）、fulfilled（已成功）和rejected（已失败）。
+   - 当一个Promise被创建时，它的初始状态是pending。
+   - 当操作成功完成时，Promise的状态变为fulfilled，并且会调用`then`方法的成功处理函数。
+   - 当操作失败时，Promise的状态变为rejected，并且会调用`catch`方法或`then`方法的失败处理函数。
+
+2. **创建Promise**：
+   - 使用`new Promise()`来创建一个Promise对象。它接受一个带有两个参数的函数作为参数，分别是resolve和reject。resolve用于将Promise状态从pending变为fulfilled，而reject用于将Promise状态从pending变为rejected。
+   - 示例：`const myPromise = new Promise((resolve, reject) => { /* 异步操作 */ });`
+
+3. **Promise链**：
+   - 可以通过串联多个Promise来处理复杂的异步操作。这就是所谓的Promise链。
+   - 使用`then`方法来连接Promise。每个`then`方法都返回一个新的Promise对象，使得可以在Promise链中进行进一步的操作。
+   - 示例：`myPromise.then(onFulfilled, onRejected).then(onFulfilled2, onRejected2);`
+
+4. **错误处理**：
+   - 可以使用`catch`方法来捕获Promise链中任何Promise的rejected状态，并进行错误处理。
+   - 示例：`myPromise.catch(onRejected);`
+
+5. **Promise.all和Promise.race**：
+   - `Promise.all(iterable)`接受一个可迭代对象（比如数组）作为参数，返回一个新的Promise，在所有Promise都成功时才会成功，否则失败。
+   - `Promise.race(iterable)`同样接受一个可迭代对象作为参数，但只要有一个Promise成功或失败，它就会返回一个成功或失败的新Promise。
+   - 示例：`Promise.all([promise1, promise2, promise3]);` 或 `Promise.race([promise1, promise2, promise3]);`
+
+Promise在JavaScript中广泛用于处理异步操作，它提供了一种更优雅和可维护的方式来编写和管理异步代码。
+
+# 用贴合实际的例子来说明async和await的用法
+
+当涉及到异步操作时，`async`和`await`是JavaScript中更现代、更清晰的异步编程方式。下面是一个简单的例子来说明它们的用法，假设我们有一个获取用户信息的异步函数`getUserInfo()`：
+
+```javascript
+// 异步函数，模拟获取用户信息
+function getUserInfo(userId) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (userId === 1) {
+                resolve({ id: 1, username: 'exampleUser' });
+            } else {
+                reject(new Error('User not found'));
+            }
+        }, 1000);
+    });
+}
+
+// 使用 async/await 处理异步操作
+async function fetchUserInfo(userId) {
+    try {
+        const userInfo = await getUserInfo(userId);
+        console.log('User info:', userInfo);
+        return userInfo;
+    } catch (error) {
+        console.error('Error fetching user info:', error.message);
+        throw error;
+    }
+}
+
+// 调用 async 函数
+fetchUserInfo(1)
+    .then((userInfo) => {
+        console.log('User info fetched successfully:', userInfo);
+    })
+    .catch((error) => {
+        console.error('Failed to fetch user info:', error.message);
+    });
+```
+
+在上面的例子中，我们首先定义了一个异步函数`getUserInfo()`，用于模拟获取用户信息的操作。然后，我们使用`async function fetchUserInfo()`定义了另一个异步函数，它使用`await`关键字等待`getUserInfo()`函数返回结果。使用`await`关键字能够使异步代码看起来更像同步代码，提高了代码的可读性。
+
+在`fetchUserInfo()`函数中，我们使用`try...catch`语句来捕获可能发生的错误。如果`getUserInfo()`函数返回成功，则`await`会返回一个包含用户信息的对象，并打印到控制台。如果`getUserInfo()`函数返回失败，则会抛出一个错误，被`catch`捕获，然后打印错误信息到控制台。
+
+最后，我们调用`fetchUserInfo(1)`函数来获取id为1的用户信息。在`then`方法中，我们处理成功的情况，打印用户信息；在`catch`方法中，我们处理失败的情况，打印错误信息。
 
 # 参考资料
 

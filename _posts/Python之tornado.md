@@ -20,6 +20,172 @@ tornado是一个Python写的web框架。字面意思是龙卷风。
 
 # 简介
 
+Tornado是一个用Python编写的异步网络框架，最初由FriendFeed开发，并后来由Facebook维护。它专门设计用于构建高性能的、可伸缩的网络应用程序，特别适用于长连接的网络应用场景，如实时聊天、消息推送等。以下是Tornado的一些主要特点和优势：
+
+1. **异步非阻塞IO模型：** Tornado采用了异步非阻塞的IO模型，使用单线程事件循环处理多个并发连接，提供了高效的IO操作。
+  
+2. **轻量级：** Tornado的核心非常精简，没有过多的依赖，使得它成为一个轻量级的网络框架。
+
+3. **支持WebSocket：** Tornado原生支持WebSocket协议，使得开发实时Web应用变得更加简单。
+
+4. **高性能：** 由于异步非阻塞的设计，Tornado在处理高并发请求时表现出色，适用于需要快速响应的应用场景。
+
+5. **优秀的文档和社区支持：** Tornado拥有清晰的文档和活跃的社区，提供了丰富的示例代码和使用指南，便于开发者学习和使用。
+
+6. **内置的HTTP服务器：** Tornado内置了一个高性能的HTTP服务器，使得开发者可以快速搭建起一个可用的Web应用环境，而无需额外的服务器软件。
+
+7. **可扩展性：** Tornado提供了灵活的扩展接口，可以方便地集成其他Python库，实现更多功能的扩展。
+
+总的来说，Tornado是一个功能强大、性能优异的异步网络框架，适用于构建高性能、实时的Web应用程序。
+
+
+
+当前gpt能解析到的是6.10这个版本的，也算足够新的，就以这个为学习对象。
+
+让chatgpt来教学。
+
+# helloworld
+
+以下是一个简单的 Tornado "Hello, World!" 示例代码：
+
+```python
+import tornado.ioloop
+import tornado.web
+
+class MainHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.write("Hello, World!")
+
+def make_app():
+    return tornado.web.Application([
+        (r"/", MainHandler),
+    ])
+
+if __name__ == "__main__":
+    app = make_app()
+    app.listen(8888)
+    print("Server is running at http://localhost:8888")
+    tornado.ioloop.IOLoop.current().start()
+```
+
+在这个示例中：
+
+- 首先，我们导入了 Tornado 所需的模块。
+- 然后，我们定义了一个名为 `MainHandler` 的请求处理类，其中 `get` 方法用于处理 HTTP GET 请求，它向客户端发送 "Hello, World!"。
+- 接着，我们定义了一个 `make_app` 函数，用于创建 Tornado 应用程序实例，并将 `MainHandler` 与 URL 路径 "/" 进行关联。
+- 最后，在 `__main__` 部分，我们创建了应用实例，监听端口 8888，并启动了 Tornado I/O 循环。
+
+运行该代码后，您可以在浏览器中访问 `http://localhost:8888`，应该会看到 "Hello, World!" 字样。
+
+# tornado的主要api说明
+
+Tornado 框架提供了许多重要的 API，用于构建异步 Web 应用程序。以下是一些主要的 Tornado API 及其简要说明：
+
+1. **tornado.web.Application**:
+   - 用于创建 Tornado 应用程序实例的类。
+   - 参数通常是 URL 映射列表和其他设置项，例如调试模式、静态文件路径等。
+
+2. **tornado.web.RequestHandler**:
+   - 所有请求处理器类的基类，用于处理 HTTP 请求和生成 HTTP 响应。
+   - 定义了一系列方法来处理不同类型的 HTTP 请求（如 GET、POST、PUT、DELETE）。
+
+3. **tornado.web.HTTPRequest**:
+   - HTTP 请求对象，包含了请求的各种信息，如请求方法、URL、请求头、请求体等。
+
+4. **tornado.web.HTTPResponse**:
+   - HTTP 响应对象，用于生成 HTTP 响应并发送给客户端。
+
+5. **tornado.ioloop.IOLoop**:
+   - Tornado 的核心事件循环类，用于管理事件的调度和执行。
+   - 可以使用 `start()` 方法启动事件循环，监听并处理事件。
+
+6. **tornado.gen**:
+   - 包含了用于编写异步代码的工具，如 `coroutine` 装饰器和 `yield` 关键字。
+   - 可以使用 `coroutine` 装饰器将普通函数转换为协程函数，以便在异步环境中使用。
+
+7. **tornado.httpclient.HTTPClient** / **tornado.httpclient.AsyncHTTPClient**:
+   - 用于发起 HTTP 请求的客户端类。
+   - `HTTPClient` 提供同步的 HTTP 请求方法，而 `AsyncHTTPClient` 则提供了异步的 HTTP 请求方法。
+
+8. **tornado.websocket.WebSocketHandler**:
+   - 用于处理 WebSocket 连接的基类，可以接收和发送 WebSocket 消息。
+
+9. **tornado.routing.Router**:
+   - 用于定义 URL 路由规则的类，可以将 URL 映射到相应的请求处理器。
+
+10. **tornado.template**:
+    - Tornado 内置的模板引擎模块，用于渲染 HTML 模板文件。
+
+11. **tornado.escape**:
+    - 提供了一系列用于 HTML、JSON、URL 等编码和解码的函数，以及用于转义和过滤文本的工具函数。
+
+这些是 Tornado 框架中一些常用的核心 API，通过它们可以实现各种类型的 Web 应用程序并处理各种类型的网络请求。
+
+# tornado.ioloop.IOLoop.current().spawn_callback
+
+`tornado.ioloop.IOLoop.current().spawn_callback` 方法用于在 Tornado 的当前事件循环中异步执行一个回调函数（即协程函数或普通函数）。这个方法在异步代码中非常有用，可以在不阻塞事件循环的情况下执行一些耗时的操作。
+
+下面是这个方法的基本用法：
+
+```python
+import tornado.ioloop
+
+async def my_async_function():
+    # 异步操作
+    await some_async_operation()
+
+def my_callback():
+    # 回调函数
+    print("Callback executed")
+
+# 在当前事件循环中异步执行回调函数
+tornado.ioloop.IOLoop.current().spawn_callback(my_callback)
+```
+
+在这个示例中，`my_callback` 是一个普通的函数，通过 `spawn_callback` 方法将其添加到当前事件循环中执行。您也可以将异步函数（协程函数）传递给 `spawn_callback` 方法，Tornado 将会自动执行这个异步函数，并在执行完成后调用回调函数。
+
+需要注意的是，使用 `spawn_callback` 方法执行的回调函数或异步函数不会阻塞当前的事件循环，因此可以在其内部执行一些耗时的操作而不会影响其他事件的处理。
+
+# 基于tornado的项目目录结构说明
+
+Tornado 框架的目录结构通常很简单，但是它可以根据项目的复杂程度和组织需求而有所变化。以下是一个基本的 Tornado 项目目录结构示例：
+
+```
+project/
+│
+├── handlers/          # 请求处理器目录
+│   ├── __init__.py
+│   └── main_handler.py    # 主要请求处理器
+│
+├── templates/         # 模板文件目录（可选）
+│   └── index.html
+│
+├── static/            # 静态文件目录（可选）
+│   ├── css/
+│   ├── js/
+│   └── img/
+│
+├── app.py             # 应用程序入口文件
+│
+└── requirements.txt   # 项目依赖的Python包列表
+```
+
+在这个目录结构中：
+
+- `handlers/` 目录存放了请求处理器类文件。通常，每个请求处理器都会有一个单独的 Python 文件。在这个示例中，有一个名为 `main_handler.py` 的文件，里面包含了处理主要请求的请求处理器类。
+  
+- `templates/` 目录用于存放模板文件，如果你使用 Tornado 的模板引擎来生成动态内容的话。通常情况下，HTML 模板文件会放在这里。
+
+- `static/` 目录存放静态文件，例如 CSS、JavaScript 和图像等。这些文件可以直接被客户端访问，而无需经过 Tornado 处理。
+
+- `app.py` 是应用程序的入口文件，其中包含了 Tornado 应用程序的初始化代码和配置。
+
+- `requirements.txt` 文件用于列出项目所依赖的 Python 包及其版本信息，方便在其他环境中重建项目所需的运行环境。
+
+当然，根据项目的需要，目录结构可能会有所不同。例如，如果你的项目需要多个模块或子应用程序，可能会有更复杂的目录结构。
+
+# 简介
+
 Tornado 是一个 Python Web 框架和异步网络库，
 
 最初由 FriendFeed 开发。

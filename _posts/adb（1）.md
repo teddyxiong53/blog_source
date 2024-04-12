@@ -1,5 +1,5 @@
 ---
-title: adbd代码分析
+title: adb代码分析
 date: 2020-04-08 13:09:51
 tags:
 	- Linux
@@ -7,6 +7,112 @@ tags:
 ---
 
 --
+
+# 使用经验
+
+
+
+## adb乱码问题解决
+
+https://www.cnblogs.com/xilifeng/archive/2013/03/15/2961456.html
+
+
+
+## 在bat文件里使用adb
+
+test.bat内容：
+
+```
+adb shell < cmd.txt
+```
+
+在cmd.txt里写入需要执行的命令。
+
+## Windows下adb shell使用有问题
+
+有这些问题：
+
+1、vi不能用。
+
+2、adb shell里不能tab补全。
+
+下载这个adb专用的putty就可以了。
+
+https://github.com/sztupy/adbputty/downloads
+
+hostname那里填写：transport-usb 。连接类型选择：adb。
+
+这样就可以正常使用了。
+
+## 后台有程序运行，无法exit
+
+exit提示
+
+```
+/data/doss # exit
+You have stopped jobs.
+```
+
+只需要把后台的杀掉就好了。
+
+```
+/data/doss # kill %1
+[1]+  Terminated                 tail -f wakeup.log
+```
+
+
+
+# adb协议
+
+adb的全称的Android Debug Brigdge。
+
+可以运行在两种底层介质上：
+
+网络或者usb。
+
+![img](images/random_name/20140503204102031.png)
+
+可见，协议涉及的部分有3个：
+
+1、adb client。
+
+2、adb server。
+
+3、adbd。
+
+adb client和adb server都是运行在PC上的。
+
+adbd运行在板端。
+
+adb client和adbd中间通过adb server来桥接。
+
+adb server监听在5037端口。adb client通过127.0.0.1:5037连接到adb server。
+
+adb server跟adbd通过usb（也可以通过网络）连接。
+
+用python来测试一下。
+
+```
+import sys, socket
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect(("127.0.0.1", 5037))
+
+s.send(b'000c')
+s.send(b'host:version')
+content = s.recv(1024)
+print(content)
+```
+
+返回结果：
+
+```
+b'OKAY'
+```
+
+
+
+# 代码分析
 
 rk3308的Linux开发包支持adb的方式进行调试。
 
@@ -265,7 +371,11 @@ echo fdd00000.crgudc2 > /sys/kernel/config/usb_gadget/amlogic/UDC
 
 usbfs files 
 
+# adb push/pull速度提升
 
+
+
+https://blog.csdn.net/weijory/article/details/73088916
 
 # 参考资料
 

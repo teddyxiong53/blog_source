@@ -104,6 +104,12 @@ git clone https://github.com/mesonbuild/meson.git
 sudo apt install ninja-build
 ```
 
+meson也可以这样安装：
+
+```
+pip3 install -U meson
+```
+
 
 
 ninja是谷歌为了开发chrome而做的工具。
@@ -111,7 +117,7 @@ ninja是谷歌为了开发chrome而做的工具。
 进行编译：
 
 ```
-在有meson.build的目录下，执行meson.py build。
+在有meson.build的目录下，执行meson build。
 然后会在当前目录生成一个build目录。
 进入到build目录。
 ninja 
@@ -135,6 +141,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 ```
+
+
 
 # ninja和meson是什么关系
 
@@ -241,6 +249,185 @@ Meson 构建系统是一个快速、简洁和易于使用的构建系统，具�
 - Kodi 媒体中心：Kodi 使用 Meson 作为其主要的构建系统，用于构建跨平台的媒体中心应用。
 
 这只是一些使用 Meson 的开源项目的例子，还有许多其他项目也在逐渐采用 Meson 构建系统。你可以在 Meson 的官方网站（https://mesonbuild.com/users.html）上找到更多使用 Meson 的项目列表。
+
+
+
+#  mesonbuild.envconfig
+
+`mesonbuild.envconfig` 是 Meson 构建系统中的一个模块，用于处理环境配置。Meson 是一个现代的、跨平台的构建系统，它的设计目标是简单、高效、易于使用。
+
+在 Meson 中，`mesonbuild.envconfig` 模块负责处理项目的环境配置，包括获取和设置环境变量、处理编译器选项、设置构建类型等。这个模块提供了一些函数和类，用于处理和管理项目的环境配置，并且通常会被 Meson 构建系统的其他部分所调用和使用。
+
+具体来说，`mesonbuild.envconfig` 模块可能包含了一些与环境相关的类和函数，比如：
+
+- 用于获取和设置环境变量的函数；
+- 用于处理编译器选项和链接器选项的函数；
+- 用于设置构建类型（debug、release 等）的函数；
+- 用于处理平台相关配置的函数；
+- 用于检查和设置依赖项的函数等。
+
+通过调用 `mesonbuild.envconfig` 模块中提供的函数和类，Meson 构建系统能够根据项目的需求和环境配置来正确地配置和管理项目的构建过程，从而实现自动化、高效的项目构建。
+
+
+
+# meson configure
+
+这个是查看meson的配置情况
+
+| 选项            | 可选值                                                       | 说明                                                    |
+| --------------- | ------------------------------------------------------------ | ------------------------------------------------------- |
+| backend         | ninja, vs, vs2010, vs2012,  vs2013, vs2015, vs2017, vs2019,vs2022, xcode, none | 支持的backend的类型。默认是ninja。                      |
+| buildtype       | plain, debug, debugoptimized,release, minsize, custom        | 默认 是debug类型                                        |
+| default_library | shared, static, both                                         | 默认是shared                                            |
+| layout          | mirror, flat                                                 | 就是build的目录层次跟源代码层次是怎样的布局，默认mirror |
+|                 |                                                              |                                                         |
+|                 |                                                              |                                                         |
+
+目录变量
+
+```
+Directories                     Default Value        
+-------------                   -------------        
+bindir                          bin                  
+datadir                         share                
+includedir                      include              
+infodir                         share/info           
+libdir                          lib/x86_64-linux-gnu 
+libexecdir                      libexec              
+licensedir                                           
+localedir                       share/locale         
+localstatedir                   /var/local           
+mandir                          share/man            
+prefix                          /usr/local           
+sbindir                         sbin                 
+sharedstatedir                  /var/local/lib       
+sysconfdir                      etc                  
+```
+
+# project 配置
+
+当您谈到"project配置"时，我认为您可能在询问有关Meson项目的配置。在Meson中，项目配置是指通过修改项目根目录下的`meson.build`文件来配置项目的构建设置和选项。
+
+以下是一些您可能需要了解的常见项目配置选项：
+
+1. **项目名称和版本：**
+   ```meson
+   project('project_name', 'lang', 'version')
+   ```
+
+2. **指定支持的编译器：**
+   
+   ```meson
+   project('project_name', 'lang', 'version', meson_version : '>=0.59.0', default_options : ['cpp_std=c++14'])
+```
+   
+3. **指定项目的源文件和目标文件：**
+   ```meson
+   sources = ['source_file1.cpp', 'source_file2.cpp']
+   executables('executable_name', sources)
+   ```
+
+4. **设置编译选项和编译器标志：**
+   ```meson
+   add_project_arguments('-DDEBUG_MODE', language : 'cpp')
+   ```
+
+5. **指定依赖项：**
+   ```meson
+   dependency('library_name', version : '>=x.y.z')
+   ```
+
+6. **设置安装路径：**
+   
+   ```meson
+   install_dir = '/usr/local/bin'
+   install(executable_name, install_dir)
+```
+   
+7. **定义自定义构建选项：**
+   ```meson
+   option('option_name', type : 'boolean', value : true, description : 'Enable feature X')
+   ```
+
+8. **配置测试：**
+   
+   ```meson
+   test('test_name', executable_name)
+   ```
+
+这些只是Meson项目配置中的一部分选项，具体取决于您的项目需求。您可以根据Meson的文档和您的项目需求进行相应的配置。
+
+# meson子命令
+
+| 子命令      | 说明                 |
+| ----------- | -------------------- |
+| setup       | 配置project          |
+| configure   | 配置project的options |
+| dist        | 生成release包        |
+| install     | 安装                 |
+| introspect  | 查看project信息      |
+| init        | 创建一个新的project  |
+| test        | 运行测试             |
+| wrap        | wrap工具             |
+| subprojects | 管理subproject       |
+| rewrite     |                      |
+| compile     |                      |
+| devenv      |                      |
+| env2mfile   |                      |
+| help        |                      |
+
+配置使用clang
+
+```
+CC=clang CXX=clang++ meson setup buildclang
+```
+
+# meson语法
+
+Meson 规范语言的语法尽可能简单。它是强类型化的，因此不会在后台将任何对象转换为另一个对象。变量没有可见类型，这使得 Meson 动态类型化（也称为鸭子类型化）。
+
+该语言的主要构建块是变量、数字、布尔值、字符串、数组、函数调用、方法调用、if 语句和 include。
+
+字符串用单引号声明。
+
+可以使用符号 `+` 将字符串连接起来以形成新字符串。
+
+您可以使用 `/` 运算符连接任意两个字符串来构建路径。这将始终用作 `/` 所有平台上的路径分隔符。
+
+运行在多行上的字符串可以用三个单引号声明，如下所示：
+
+```meson
+multiline_string = '''#include <foo.h>
+int main (int argc, char ** argv) {
+  return FOO_SUCCESS;
+}'''
+```
+
+注释从 `#` 字符开始，一直延伸到行尾。
+
+大多数源代码树都有多个子目录要处理。
+
+这些可以通过 Meson `subdir` 的命令来处理。
+
+它更改为给定的子目录并执行该子目录 `meson.build` 中的内容。
+
+所有状态（变量等）都传递到子目录和从子目录传递。
+
+其效果大致相同，就好像子目录的 Meson 文件的内容被写入 include 命令所在的位置一样。
+
+
+
+
+
+```
+meson init --language=c --name=myproject --version=0.1 --build
+```
+
+# 参考手册
+
+https://mesonbuild.com/Reference-manual.html
+
+
 
 # 参考资料
 

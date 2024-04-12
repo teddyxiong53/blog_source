@@ -1029,6 +1029,21 @@ PyWebIO 是一个用于构建交互式 Web 应用程序的 Python 库，它提�
 
 总之，PyWebIO 提供了一种简单而强大的方式来构建交互式的 Web 应用程序，适用于许多不同的应用场景。你可以根据自己的需求和创意，利用 PyWebIO 来构建各种类型的应用。
 
+## pywebio可以写哪些类型的应用
+
+PyWebIO是一个Python库，它允许开发者创建基于Web的应用程序，而无需了解前端技术（如HTML、CSS或JavaScript）。它提供了一个简单的API来接收用户输入和输出信息到浏览器。使用PyWebIO，你可以编写以下类型的应用：
+1. **数据输入和输出应用**：用于数据收集、数据展示和数据可视化的应用程序。例如，数据输入表单、数据报告和数据仪表板。
+2. **文件处理应用**：允许用户上传文件、处理文件并将结果下载的应用程序。例如，一个在线的CSV文件编辑器。
+3. **交互式命令行工具（CLI）**：将传统的命令行工具转换为Web应用程序，提供更友好的用户界面。
+4. **教育工具**：创建交互式教学程序，如在线编程教程、代码实验室或教育游戏。
+5. **实时数据分析应用**：实时处理和可视化数据流的应用程序，例如股票市场监控或实时日志分析。
+6. **远程控制应用**：通过Web界面远程控制或监控设备的应用程序。
+7. **小型企业和企业内部工具**：为特定业务流程创建定制的Web应用程序，如订单管理系统、客户关系管理（CRM）工具或内部报告系统。
+8. **交互式报告和仪表板**：生成动态报告和仪表板，用户可以与数据交互，筛选和探索信息。
+9. **科学计算和模拟**：为科学家和工程师提供的工具，用于运行模拟、分析数据和可视化结果。
+10. **Web服务的简单前端**：为API或Web服务创建一个简单的Web界面，以便用户可以直接通过浏览器与之交互。
+PyWebIO特别适合快速原型制作和创建简单的Web界面，尤其是当你想要专注于后端逻辑而不是前端设计时。然而，对于复杂的前端交互和高级UI设计，PyWebIO可能不是最佳选择，你可能需要考虑使用更完整的前端框架或库，如React、Vue.js或Angular。
+
 # chatgpt写的一些程序
 
 ## 投票程序
@@ -1298,6 +1313,50 @@ def main():
 
 # 启动PyWebIO应用程序
 start_server(main, port=8080, debug=True)
+```
+
+## todo list
+
+```
+from pywebio.input import input, TEXT
+from pywebio.output import put_text, put_table, clear
+from pywebio import start_server
+
+# 待办事项列表
+todos = []
+
+def add_todo():
+    """添加新的待办事项"""
+    todo = input("请输入新的待办事项：", type=TEXT)
+    if todo:
+        todos.append(todo)
+        show_todos()
+
+def show_todos():
+    """显示待办事项列表"""
+    if todos:
+        put_table([
+            ['ID', '待办事项'],
+            *enumerate(todos, start=1)
+        ])
+    else:
+        put_text("没有待办事项")
+
+def main():
+    """主程序"""
+    clear()  # 清空输出
+    show_todos()  # 显示当前待办事项列表
+
+    while True:
+        action = input("请选择操作：[添加] 待办事项 或 [退出]：", type=TEXT)
+        if action == "添加":
+            add_todo()
+        elif action == "退出":
+            put_text("谢谢使用，再见！")
+            break
+
+# 使用start_server启动Web应用
+start_server(main, port=8081)
 ```
 
 

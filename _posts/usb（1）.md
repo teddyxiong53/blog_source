@@ -113,3 +113,8 @@ Host端检测到插头插入，则打开VBus，如果没有外设检测到，则
 # otg问题解决
 
 https://blog.51cto.com/u_15315240/5109960
+
+# android usb代码分析
+
+https://www.cnblogs.com/cascle/p/4442787.html
+
