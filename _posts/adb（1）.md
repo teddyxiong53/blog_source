@@ -377,6 +377,88 @@ usbfs files
 
 https://blog.csdn.net/weijory/article/details/73088916
 
+
+
+# adb代码分析
+
+```
+kernel层的代码在如下路径：
+drivers/usb/gadget/f_adb.c
+drivers/usb/gadget/android.c
+他提供给上层应用的是如下的设备节点：/dev/android_adb
+应用层的代码在如下路径：
+system/core/adb目录
+针对device，该目录编译的输出是adbd
+```
+
+**1、ADB client**
+
+提供HOST端运行的命令
+
+**2、ADB service**
+
+HOST端上的一个后台进程
+
+**3、ADB daemom**
+
+DEVICE端（真实的机器或者模拟器）的守护进程
+
+ADB代码位于/system/core/adb目录下，**[通过查看Android.mk](https://link.zhihu.com/?target=https%3A//github.com/weiqifa0/android-adb/blob/master/Android.mk)**，
+
+可以知道，该目录下的代码生成了两个MODULE，
+
+分别是**adb**和**adbd**,
+
+ **adb client和adb service都是由adb这个可执行文件实现**， **adb daemon由adbd实现**。
+
+adb和adbd的一些源代码文件是用同一个的，
+
+编译时通过**LOCAL_CFLAGS**的参数**ADB_HOST**来区分，
+
+这种你中有我我中有你的关系，对于初次接触的朋友们，多少增加了些困扰。
+
+理清了ADB几部分的关系，以及源代码的结构，对ADB的认识已经有一个飞越了。
+
+## USBDEVFS_SUBMITURB
+
+`USBDEVFS_SUBMITURB` 是一个用于向 USB 设备提交 URB（USB Request Block）的 ioctl（Input/Output Control）命令。
+
+在 Linux 中，USB 设备的访问和控制通常通过设备文件 `/dev/bus/usb/<bus>/<device>` 进行。
+
+通过向这些设备文件发送 IOCTL 命令，可以执行各种 USB 操作，如发送控制命令、读取/写入数据等。
+
+`USBDEVFS_SUBMITURB` 命令的主要作用是提交一个 URB，以与 USB 设备进行数据交换。
+
+URB 是一个数据结构，用于描述 USB 设备与主机之间的数据传输操作。
+
+它包含了一些关键的信息，如数据缓冲区的位置、数据传输方向、数据长度等。
+
+通过使用 `USBDEVFS_SUBMITURB` 命令，用户空间程序可以向 USB 设备发送数据或者从 USB 设备接收数据，从而实现与 USB 设备的通信。
+
+这个命令通常是通过调用 `ioctl` 系统调用来执行的。
+
+在 Linux 内核源码中，`USBDEVFS_SUBMITURB` 命令的处理逻辑通常位于 `usbdevfs` 子系统中，具体的实现可以在相应的源文件中找到。
+
+```
+SRCS+=	usb_linux_client.c
+```
+
+usb_ffs_init
+
+usb_ffs_open_thread
+
+
+
+https://bbs.kanxue.com/thread-276404.htm
+
+# buildroot上使用网络方式连接adb
+
+关键就是要禁用掉usb的adb那部分脚本，然后手动启动adbd就可以。
+
+pc上用adb connect 192.168.137.24:5555 ，然后adb push文件就可以了。
+
+但是速度非常慢。
+
 # 参考资料
 
 1、

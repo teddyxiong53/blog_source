@@ -319,13 +319,14 @@ sysconfdir                      etc
    
    ```meson
    project('project_name', 'lang', 'version', meson_version : '>=0.59.0', default_options : ['cpp_std=c++14'])
+   ```
 ```
    
 3. **指定项目的源文件和目标文件：**
    ```meson
    sources = ['source_file1.cpp', 'source_file2.cpp']
    executables('executable_name', sources)
-   ```
+```
 
 4. **设置编译选项和编译器标志：**
    ```meson
@@ -342,12 +343,13 @@ sysconfdir                      etc
    ```meson
    install_dir = '/usr/local/bin'
    install(executable_name, install_dir)
+   ```
 ```
    
 7. **定义自定义构建选项：**
    ```meson
    option('option_name', type : 'boolean', value : true, description : 'Enable feature X')
-   ```
+```
 
 8. **配置测试：**
    
@@ -426,6 +428,41 @@ meson init --language=c --name=myproject --version=0.1 --build
 # 参考手册
 
 https://mesonbuild.com/Reference-manual.html
+
+# 配置prefix
+
+在Meson构建系统中，`prefix`是一个配置选项，它指定了安装目标文件系统的根目录。
+
+这个选项决定了安装的可执行文件、库、头文件和其他资源应该被放置在文件系统的哪个目录下。
+
+默认情况下，Meson会使用以下默认值：
+
+- 在Windows上，默认的`prefix`通常是`C:/Program Files/`。
+- 在其他系统（如Linux和macOS）上，默认的`prefix`通常是`/usr/local/`。
+如果你想改变安装的`prefix`，你可以在配置Meson时指定它。有几种方法可以做到这一点：
+1. **命令行选项**：
+   当你运行`meson setup`命令时，你可以使用`--prefix`选项来指定`prefix`：
+   
+   ```sh
+   meson setup --prefix /my/custom/prefix build
+   ```
+   
+2. **配置文件**：
+   你可以在`meson.build`文件中设置`prefix`：
+   
+   ```meson
+   project('my_project', 'c')
+   prefix = '/my/custom/prefix'
+   ```
+   
+3. **交叉编译配置**：
+   如果你正在进行交叉编译，你可以在交叉工具链的配置文件中指定`prefix`。
+请注意，如果你改变了`prefix`，你可能还需要修改其他相关的安装选项，比如`libdir`（库文件安装目录）、`bindir`（可执行文件安装目录）等，以确保所有的文件都被安装到正确的位置。
+在安装项目时，你可以使用`meson install`命令，Meson会根据`prefix`和其他安装选项将文件安装到正确的位置。
+
+
+
+# buildroot里的meson
 
 
 

@@ -820,6 +820,7 @@ add_library(MultipartParser INTERFACE)
    set(TEXT "Hello, World!")
    string(LENGTH ${TEXT} LEN)
    message("Length of TEXT is ${LEN}")
+   ```
 ```
    
 3. **字符串截取：**
@@ -827,7 +828,7 @@ add_library(MultipartParser INTERFACE)
    set(FULL_STRING "This is a long sentence.")
    string(SUBSTRING ${FULL_STRING} 0 4 PARTIAL_STRING)
    message(${PARTIAL_STRING})
-   ```
+```
 
 4. **字符串替换：**
    ```cmake
@@ -889,6 +890,7 @@ add_library(MultipartParser INTERFACE)
    else()
        message("Not running on Windows")
    endif()
+   ```
 ```
    
 4. **输出警告信息：**
@@ -896,7 +898,7 @@ add_library(MultipartParser INTERFACE)
    if(NOT DEFINED MY_VARIABLE)
        message(WARNING "MY_VARIABLE is not defined.")
    endif()
-   ```
+```
 
 5. **输出错误信息：**
    ```cmake
@@ -909,13 +911,14 @@ add_library(MultipartParser INTERFACE)
    
    ```cmake
    message(STATUS "Configuring project...")
+   ```
 ```
    
 7. **输出调试信息：**
    
    ```cmake
    message(DEBUG "Debugging information: ${DEBUG_INFO}")
-   ```
+```
 
 请注意，`message` 命令可以用于输出不同级别的信息，如普通信息、警告、错误、状态等。在构建过程中，它可以帮助你了解变量的值、条件判断的结果以及构建流程中的各种情况。在CMake的生成过程中，你可以在终端或CMake生成的构建日志中看到这些消息。
 
@@ -946,6 +949,7 @@ add_library(MultipartParser INTERFACE)
    ```cmake
    set(NAME "Alice")
    message("Hello, ${NAME}!")
+   ```
 ```
    
 4. **变量的值可以被修改：**
@@ -956,7 +960,7 @@ add_library(MultipartParser INTERFACE)
    set(MY_NUMBER 99)
    message("Now my number is ${MY_NUMBER}")
 ```
-   
+
 5. **默认值和空值：**
    
    ```cmake
@@ -964,6 +968,7 @@ add_library(MultipartParser INTERFACE)
    set(NO_VALUE)
    message("Default: ${DEFAULT_VALUE}")
    message("No value: ${NO_VALUE}")
+   ```
 ```
    
 6. **条件设置变量：**
@@ -974,7 +979,7 @@ add_library(MultipartParser INTERFACE)
        set(PLATFORM "Other")
    endif()
    message("Running on ${PLATFORM}")
-   ```
+```
 
 7. **引用多个变量：**
    ```cmake
@@ -996,6 +1001,7 @@ add_library(MultipartParser INTERFACE)
    
    ```cmake
    set(FILE_LIST file1.cpp file2.cpp file3.cpp)
+   ```
 ```
    
 2. **引用列表元素：**
@@ -1004,12 +1010,13 @@ add_library(MultipartParser INTERFACE)
    list(GET FILE_LIST 0 FIRST_FILE)
    message("First file: ${FIRST_FILE}")
 ```
-   
+
 3. **获取列表长度：**
    
    ```cmake
    list(LENGTH FILE_LIST FILE_LIST_LENGTH)
    message("Number of files: ${FILE_LIST_LENGTH}")
+   ```
 ```
    
 4. **遍历列表：**
@@ -1019,7 +1026,7 @@ add_library(MultipartParser INTERFACE)
        message("File: ${FILE}")
    endforeach()
 ```
-   
+
 5. **添加元素到列表末尾：**
    ```cmake
    list(APPEND FILE_LIST file4.cpp)
@@ -1035,6 +1042,7 @@ add_library(MultipartParser INTERFACE)
    ```cmake
    string(REPLACE ";" " " FILE_LIST_STR "${FILE_LIST}")
    message("Files as string: ${FILE_LIST_STR}")
+   ```
 ```
    
 8. **使用列表作为循环计数器：**
@@ -1042,7 +1050,7 @@ add_library(MultipartParser INTERFACE)
    foreach(i RANGE 1 5)
        message("Index: ${i}")
    endforeach()
-   ```
+```
 
 需要注意的是，CMake 中的列表是由分号 `;` 分隔的一系列值。你可以使用列表函数来操作这些列表，执行添加、删除、遍历等操作。列表在构建过程中非常有用，可以用于定义文件列表、编译选项列表、库依赖等等。
 
@@ -1088,6 +1096,7 @@ endmacro()
    
    OptionalMacro("First Argument")
    OptionalMacro("First Argument" "Second Argument")
+   ```
 ```
    
 5. **宏内部使用变量：**
@@ -1101,7 +1110,7 @@ endmacro()
    message("Outside macro: ${LOCAL_VAR}")
 
    MacroWithVariables()
-   ```
+```
 
 6. **宏可以调用其他宏：**
    ```cmake
@@ -1354,6 +1363,10 @@ target_link_libraries(my_app ${OPENSSL_LIBRARIES})
 在上面的示例中，`find_package(OpenSSL REQUIRED)` 将查找 OpenSSL 软件包，并导入其配置文件。然后，通过使用 `${OPENSSL_INCLUDE_DIR}` 和 `${OPENSSL_LIBRARIES}` 变量，可以将 OpenSSL 的头文件路径和库链接到项目中。
 
 注意：`find_package` 命令的具体效果取决于所查找的软件包是否提供了正确的 CMake 配置文件。如果你想使用 `find_package` 导入某个库，确保该库支持 CMake 构建，并提供了相应的配置文件。
+
+# cmake中文手册
+
+https://modern-cmake-cn.github.io/Modern-CMake-zh_CN/chapters/intro/running.html
 
 # 参考资料
 

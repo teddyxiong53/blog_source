@@ -7,7 +7,15 @@ tags:
 
 ---
 
-lsof表示list open files。列出打开的文件。在一个pc系统上输入这个命令，输出的内容是居多的，难以阅读。不过在嵌入式系统上，一般输出不多。可以用来定位一些格式化SD卡失败，删除文件失败等问题。
+--
+
+lsof表示list open files。列出打开的文件。
+
+在一个pc系统上输入这个命令，输出的内容是居多的，难以阅读。
+
+不过在嵌入式系统上，一般输出不多。
+
+可以用来定位一些格式化SD卡失败，删除文件失败等问题。
 
 
 
@@ -31,7 +39,9 @@ sshd    1250 root  txt   unknown                      /proc/1250/exe (readlink: 
 sshd    1250 root NOFD                                /proc/1250/fd (opendir: Permission denied)
 ```
 
+# lsof -i
 
+这个很有用，查看网络情况。
 
 # 2. 关于lsof的缺点和替代品
 

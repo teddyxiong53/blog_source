@@ -167,13 +167,251 @@ proxy = "192.168.0.1:3333"
 proxy = "192.168.0.1:3333"
 ```
 
+## cargo常用命令
 
+Cargo 是 Rust 的包管理器和构建工具，它提供了一系列的命令来帮助 Rust 开发者管理项目依赖、构建项目、运行测试等。以下是一些 Cargo 的常用命令：
+1. `cargo new <project-name>`: 创建一个新的 Rust 项目。
+2. `cargo build`: 编译项目，生成可执行文件或库。
+3. `cargo run`: 编译并运行项目。
+4. `cargo check`: 快速检查代码是否可以编译，但不生成可执行文件。
+5. `cargo test`: 运行项目的测试。
+6. `cargo doc`: 为项目生成文档。
+7. `cargo fmt`: 格式化项目的代码。
+8. `cargo clean`: 清除生成的可执行文件和库。
+9. `cargo update`: 更新项目依赖到最新版本。
+10. `cargo install <crate>`: 从 Crates.io 安装一个 Rust 包。
+11. `cargo publish`: 将你的包发布到 Crates.io。
+12. `cargo bench`: 运行项目的基准测试。
+13. `cargo build --release`: 以发布模式编译项目，生成优化后的可执行文件或库。
+14. `cargo tree`: 显示项目的依赖树。
+15. `cargo add <crate>`: 添加一个新的依赖到 `Cargo.toml` 文件中。
+16. `cargo remove <crate>`: 从 `Cargo.toml` 文件中移除一个依赖。
+这些命令是 Cargo 的核心功能，覆盖了从项目创建到发布的整个生命周期。通过组合这些命令，开发者可以有效地管理 Rust 项目。
 
 
 
 # 基础语法
 
+# #的用法
 
+在Rust编程语言中，`#`字符主要用于两种场合：文档注释和宏。
+1. **文档注释（Doc Comments）**:
+   Rust使用`///`来为模块、函数、类型、方法等创建单行文档注释。如果需要多行文档注释，可以使用`/** ... */`。这些注释可以通过`rustdoc`工具生成漂亮的API文档。
+   ```rust
+   /// 这个函数会加上两个数字
+   ///
+   /// # 示例
+   ///
+   /// ```
+   /// let result = add(2, 3);
+   /// assert_eq!(result, 5);
+   /// ```
+   pub fn add(a: i32, b: i32) -> i32 {
+       a + b
+   }
+   ```
+   在文档注释中，`#`还可以用来创建标题或者子标题：
+   ```rust
+   /// # 介绍
+   ///
+   /// 这是一个库的介绍。
+   ///
+   /// # 使用方法
+   ///
+   /// 要使用这个库，首先需要...
+   ```
+   
+2. **宏（Macros）**:
+   Rust的宏系统非常强大，允许开发者定义自定义的语法扩展。宏调用通常以`macro!`的形式出现，其中`macro`是宏的名称。宏可以通过`macro_rules!`来定义。
+   ```rust
+   #[macro_export]
+   macro_rules! vec {
+       ( $( $x:expr ),* ) => {
+           {
+               let mut temp_vec = Vec::new();
+               $(
+                   temp_vec.push($x);
+               )*
+               temp_vec
+           }
+       };
+   }
+   ```
+   在宏定义中，`#`用于模式匹配和重复构造。例如，`$x:expr`匹配一个表达式，并且`$( ... )*`表示前面的模式可以重复零次或多次。
+   `#`还可以在宏中用于创建变长参数列表，例如：
+   ```rust
+   macro_rules! print_numbers {
+       ( $( $x:expr ),* ) => {
+           $(
+               println!("{}", $x);
+           )*
+       };
+   }
+   print_numbers!(1, 2, 3); // 会打印出1, 2, 3
+   ```
+以上就是Rust中`#`的常见用法。
+
+
+
+# rust标准库
+
+Rust 的标准库（std library）是一组提供基础功能的包（crates），它们与 Rust 语言一同分发，并且被广泛用于日常编程中。标准库为 Rust 程序提供了一系列的实用功能，包括但不限于：
+1. **基本类型和宏**：标准库为 Rust 的基本类型（如 `i32`、`f64`、`String` 等）提供了一系列的实用方法，并且定义了许多有用的宏（如 `println!`、`vec!` 等）。
+2. **集合类型**：提供了多种集合类型，如 `Vec`、`HashMap`、`BTreeMap`、`HashSet`、`BTreeSet` 等，用于存储和管理数据。
+3. **字符串处理**：提供了丰富的字符串处理功能，包括字符串切片（`str`）和 `String` 类型的操作。
+4. **I/O操作**：包括文件读写、网络通信、异步编程等 I/O 相关的功能。
+5. **线程和同步**：提供了创建和管理线程的机制，以及同步原语（如 `Mutex`、`RwLock`、`Arc` 等）用于并发编程。
+6. **错误处理**：提供了 `Result` 和 `Option` 类型以及相关的宏和方法，用于处理可能的错误和空值。
+7. **时间处理**：包括日期和时间的表示、格式化、计算等功能。
+8. **随机数生成**：提供了生成随机数的工具。
+9. **外部函数接口（FFI）**：允许 Rust 代码调用其他语言编写的代码。
+10. **操作系统交互**：提供了与操作系统交互的功能，如环境变量、文件系统操作、程序执行等。
+11. **编解码和序列化**：提供了数据编解码和序列化的功能，如 JSON、XML、二进制序列化等。
+12. **异步编程**：提供了异步编程的支持，包括 `Future`、`Stream` 等异步编程模型。
+标准库是 Rust 生态系统的核心部分，它为开发者提供了构建应用程序所需的基础工具。由于 Rust 标准库是经过严格测试和优化的，开发者可以放心地使用它来构建稳定和高效的软件。
+Rust 标准库的文档可以在 [Rust 官方文档网站](https://doc.rust-lang.org/std/) 上找到，其中详细介绍了标准库中的每个模块、类型、函数和宏。
+
+# Trait用法
+
+在Rust中，trait是一个非常重要的概念，
+
+==它类似于其他编程语言中的接口（interfaces），但功能更为强大。==
+
+Trait用于定义一组可以被共享的方法，
+
+这样就可以在不关心具体类型的情况下对不同的类型进行操作。
+
+Rust的trait允许你定义行为，而不需要关心数据的具体实现。
+
+### 基本用法
+#### 定义一个Trait
+```rust
+trait Speak {
+    fn speak(&self) -> &str;
+}
+```
+这里定义了一个名为`Speak`的trait，它有一个方法`speak`，该方法返回一个字符串的引用。
+#### 实现（Implementing）一个Trait
+```rust
+struct Dog;
+impl Speak for Dog {
+    fn speak(&self) -> &str {
+        "Woof!"
+    }
+}
+```
+这里我们为`Dog`类型实现了`Speak` trait，提供了`speak`方法的实现。
+#### 使用Trait作为函数参数
+```rust
+fn animal_speak<T: Speak>(animal: T) {
+    println!("{}", animal.speak());
+}
+fn main() {
+    let dog = Dog;
+    animal_speak(dog); // 输出 "Woof!"
+}
+```
+这里定义了一个函数`animal_speak`，它接受任何实现了`Speak` trait的类型作为参数。
+### Trait bounds
+当你想要对泛型类型进行约束时，可以使用trait bounds。
+```rust
+fn animal_speak<T: Speak>(animal: T) {
+    println!("{}", animal.speak());
+}
+```
+在这个例子中，`T`被约束为必须实现`Speak` trait。
+### 默认实现
+Trait可以提供默认的方法实现。
+```rust
+trait Speak {
+    fn speak(&self) -> &str {
+        "Hello!"
+    }
+}
+struct Cat;
+impl Speak for Cat {}
+fn main() {
+    let cat = Cat;
+    println!("{}", cat.speak()); // 输出 "Hello!"
+}
+```
+在这个例子中，`Cat`类型实现了`Speak` trait，但没有提供自己的`speak`方法实现。因此，它会使用trait中提供的默认实现。
+### 运算符重载（Operator Overloading）
+通过trait，Rust允许你对运算符进行重载。
+```rust
+use std::ops::Add;
+struct Point {
+    x: i32,
+    y: i32,
+}
+impl Add for Point {
+    type Output = Point;
+    fn add(self, other: Point) -> Point {
+        Point {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+}
+fn main() {
+    let p1 = Point { x: 1, y: 2 };
+    let p2 = Point { x: 3, y: 4 };
+    let p3 = p1 + p2;
+    println!("({}, {})", p3.x, p3.y); // 输出 "(4, 6)"
+}
+```
+在这个例子中，我们为`Point`类型实现了`Add` trait，从而允许我们使用`+`运算符来对两个`Point`对象进行加法操作。
+### 关联类型（Associated Types）
+Trait可以定义关联类型，这样可以在trait中使用泛型类型而不需要明确指定。
+```rust
+trait Graph<N, E> {
+    type Node;
+    type Edge;
+    fn nodes(&self) -> Vec<Self::Node>;
+    fn edges(&self) -> Vec<Self::Edge>;
+}
+```
+在这个例子中，`Graph` trait有两个关联类型`Node`和`Edge`，这样实现`Graph` trait的类型可以指定自己的节点和边类型。
+### 范围限定（Supertraits）
+Trait可以基于其他trait来定义，这被称为范围限定。
+```rust
+trait OutlinePrint: fmt::Display {
+    fn outline_print(&self) {
+        let output = self.to_string();
+        println!("{}{}", output, output);
+    }
+}
+```
+在这个例子中，`OutlinePrint` trait有一个范围限定`fmt::Display`，这意味着任何实现`OutlinePrint`的类型也必须实现`fmt::Display`。
+### Trait对象（Trait Objects）
+Rust还支持trait对象，它允许你在运行时动态地选择实现某个trait的类型。
+```rust
+trait Animal {
+    fn speak(&self) -> &str;
+}
+struct Dog;
+impl Animal for Dog {
+    fn speak(&self) -> &str {
+        "Woof!"
+    }
+}
+struct Cat;
+impl Animal for Cat {
+    fn speak(&self) -> &str {
+        "Meow!"
+    }
+}
+fn main() {
+    let animals: Vec<Box<dyn Animal>> = vec![
+        Box::new(Dog),
+        Box::new(Cat),
+    ];
+    for animal in animals {
+        println!("{}", animal.speak());
+    }
+}
+```
+在这个例子中，我们创建了一个`animals`向量，它包含两个不同类型的动物，但它们都实现了`Animal` trait。通过使用`Box<dyn Animal>`
 
 # 参考资料
 
