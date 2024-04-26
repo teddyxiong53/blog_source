@@ -686,6 +686,26 @@ automatic
 
 需要注意的是，禁用隐含规则后，你需要显式定义所有构建规则，包括编译、链接、汇编等操作。这可能会导致Makefile变得更加复杂，但也提供了更高的灵活性和控制权，尤其适用于复杂的项目。
 
+# 查看make的递归嵌套层次
+
+```
+# 用于跟踪嵌套层数的变量
+CURRENT_DEPTH := 0
+
+# 递归目标
+recursive_target:
+	@$(eval CURRENT_DEPTH=$(shell echo $$(($(CURRENT_DEPTH) + 1))))
+	@echo "当前嵌套层数为 $(CURRENT_DEPTH)"
+	@$(MAKE) recursive_target_inner
+	@$(eval CURRENT_DEPTH=$(shell echo $$(($(CURRENT_DEPTH) - 1))))
+	@echo "当前嵌套层数为 $(CURRENT_DEPTH)"
+
+recursive_target_inner:
+	@echo "这是递归目标内部"
+```
+
+
+
 # 参考资料
 
 1、

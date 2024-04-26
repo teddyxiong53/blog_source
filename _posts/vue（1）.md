@@ -705,6 +705,254 @@ this.$emit('update:title', 'new title')
 
 https://blog.csdn.net/fengjingyu168/article/details/79769608
 
+
+
+# vue2和vue3的主要区别
+
+Vue 3 相对于 Vue 2 来说有一些重要的变化和改进。以下是一些主要区别：
+
+1. **性能优化：** Vue 3 在性能方面有显著的改进。其中包括虚拟 DOM 的重写，提高了渲染速度，减少了内存使用。Vue 3 还引入了更好的 Tree-Shaking 支持，以及更快的初始化速度。
+
+2. **Composition API：** Vue 3 引入了 Composition API，这是一个可选的新的组织组件逻辑的方式。相比于 Vue 2 中的 Options API，Composition API 更灵活，更易于组织和重用代码，尤其是在编写复杂组件或者逻辑复用时。
+
+3. **Typescript 支持：** Vue 3 在设计时考虑了更好的 TypeScript 支持。Vue 3 的源码是用 TypeScript 编写的，因此对 TypeScript 的支持更加完善。
+
+4. **更好的 TypeScript 集成：** Vue 3 改进了 TypeScript 的类型定义，使得开发者在使用 TypeScript 时拥有更好的开发体验。
+
+5. **更小的体积：** Vue 3 在代码结构和模块化方面进行了改进，使得它的打包体积相对更小。
+
+6. **Composition API：** Vue 3 中引入了 Composition API，可以更好地组织和重用组件逻辑，特别是在编写复杂组件时更为实用。
+
+7. **Teleport 组件：** Vue 3 引入了 Teleport 组件，可以将子组件移动到 DOM 中的任何位置，而不会打破组件之间的关系。
+
+8. **Fragments 支持：** Vue 3 支持 Fragments，允许组件返回多个根节点，而不再需要一个根元素包裹。
+
+9. **Suspense 和异步组件改进：** Vue 3 中引入了 Suspense 组件，可以更方便地处理异步组件的加载状态，使得异步组件的使用更加简单和直观。
+
+总的来说，Vue 3 在性能、开发体验和功能方面都有很大的改进，尤其是引入了 Composition API 这一新的组件编写方式，使得开发者可以更加灵活地编写和组织组件逻辑。
+
+# vue原理
+
+Vue.js 是一款用于构建用户界面的渐进式 JavaScript 框架，其核心原理主要包括数据驱动、组件化和虚拟 DOM。
+
+1. **数据驱动：** ==Vue 的核心思想是数据驱动视图==。它通过建立一个响应式的数据模型来管理应用的状态，当数据发生变化时，视图会自动更新以反映这些变化，而不需要手动操作 DOM。这种数据绑定的实现是通过 Vue 的响应式系统来完成的，==它使用了 Object.defineProperty 或 ES6 的 Proxy 来监听数据的变化，并在数据变化时通知相关的视图更新。==
+
+2. **组件化：** Vue 把用户界面拆分成一个个独立可复用的组件，每个组件都包含了自己的视图、样式和行为逻辑。组件化开发使得代码更易于维护和扩展，同时也提高了开发效率。Vue 的组件化开发还支持父子组件之间的通信，通过 props 和 events 实现了组件之间的数据传递和事件监听。
+
+3. **虚拟 DOM：** ==虚拟 DOM 是 Vue 用来提高性能的重要技术之一==。Vue 在内部维护了一个虚拟 DOM 树，它是一个轻量级的 JavaScript 对象结构，用来描述真实 DOM 树的结构。当数据发生变化时，Vue 首先会生成一个新的虚拟 DOM 树，然后通过 diff 算法比较新旧虚拟 DOM 树的差异，并只更新发生变化的部分到真实 DOM，从而减少了 DOM 操作的次数，提高了性能。
+
+4. **生命周期：** Vue 组件的生命周期钩子函数是一组在组件生命周期不同阶段被调用的函数，包括创建、挂载、更新和销毁等阶段。开发者可以通过这些钩子函数来执行自定义的逻辑，比如在创建前初始化数据、在挂载后发送网络请求、在更新前清理资源等。
+
+总的来说，Vue.js 的原理基于数据驱动、组件化和虚拟 DOM，通过这些核心概念来实现高效的用户界面构建和开发体验。
+
+# 一步步学习
+
+我要学习vue3，请一步步教我怎么学习。首先我需要在本地搭建一个基础环境，vue的代码就引用cdn地址的就好了
+
+## 搭建环境
+
+学习 Vue.js 3 的第一步是搭建一个基础的开发环境，并且了解如何使用 Vue 的基本语法。以下是一些步骤：
+
+### 步骤一：安装 Node.js 和 npm
+
+1. 前往 Node.js 官网（https://nodejs.org/）下载并安装最新版本的 Node.js。
+2. 安装完成后，打开命令行工具（如终端或命令提示符），运行以下命令来验证安装是否成功：
+   ```
+   node -v
+   npm -v
+   ```
+   如果成功安装，会显示 Node.js 和 npm 的版本号。
+
+### 步骤二：创建项目
+
+1. 创建一个新的项目文件夹，例如 `vue3-demo`。
+2. 在命令行中进入项目文件夹，并运行以下命令来初始化一个新的 npm 项目：
+   ```
+   npm init -y
+   ```
+   这会创建一个默认的 `package.json` 文件。
+
+### 步骤三：安装 Vue CLI
+
+1. Vue CLI 是 Vue.js 的官方脚手架工具，可以帮助你快速搭建 Vue 项目并进行开发。
+2. 在命令行中运行以下命令来全局安装 Vue CLI：
+   ```
+   npm install -g @vue/cli
+   ```
+   
+### 步骤四：创建 Vue 项目
+
+1. 在命令行中运行以下命令来使用 Vue CLI 创建一个新的 Vue 项目：
+   ```
+   vue create my-vue3-app
+   ```
+   这里 `my-vue3-app` 是你的项目名称，你也可以使用其他名称。
+2. Vue CLI 会提示你选择一些配置选项，如使用默认配置或手动选择特性，你可以根据需要进行选择。
+3. 创建完成后，进入项目文件夹：
+   ```
+   cd my-vue3-app
+   ```
+
+### 步骤五：启动开发服务器
+
+1. 在命令行中运行以下命令来启动开发服务器：
+   ```
+   npm run serve
+   ```
+2. Vue CLI 会启动一个开发服务器，并在浏览器中打开一个预览页面，你可以在其中进行开发。
+
+### 步骤六：引入 Vue.js 3
+
+1. 在项目中打开 `public/index.html` 文件。
+2. 在 `<head>` 标签内添加以下代码来引入 Vue.js 3 的 CDN：
+   ```html
+   <script src="https://unpkg.com/vue@next"></script>
+   ```
+
+### 步骤七：编写 Vue 组件
+
+1. 在 `src` 目录下创建一个新的 `.vue` 文件，例如 `HelloWorld.vue`。
+2. 在文件中编写一个简单的 Vue 组件：
+   ```vue
+   <template>
+     <div>
+       <h1>{{ greeting }}</h1>
+     </div>
+   </template>
+   
+   <script>
+   export default {
+     data() {
+       return {
+         greeting: 'Hello, Vue 3!'
+       };
+     }
+   }
+   </script>
+   ```
+   
+### 步骤八：在主文件中使用组件
+
+1. 打开 `src/main.js` 文件。
+2. 在文件中引入并注册你的组件：
+   ```javascript
+   import { createApp } from 'vue'
+   import App from './App.vue'
+   
+   createApp(App).mount('#app')
+   ```
+   
+### 步骤九：运行项目
+
+1. 回到命令行，确保开发服务器正在运行。
+2. 在浏览器中打开预览页面，你应该能够看到 `Hello, Vue 3!` 的文字。
+
+现在，你已经成功搭建了一个基础的 Vue.js 3 项目，并且编写了一个简单的 Vue 组件。接下来，你可以继续深入学习 Vue.js 3 的其他特性和概念，例如组件化、路由、状态管理等。
+
+## 下一步
+
+下一步是深入学习 Vue.js 3 的核心概念和功能。以下是一些建议的学习路径：
+
+### 1. Vue.js 官方文档
+
+浏览 Vue.js 官方文档是学习 Vue.js 最有效的方式之一。官方文档详细介绍了 Vue.js 的各个方面，从基础概念到进阶特性都有涵盖。你可以按照自己的需求和兴趣，选择相应的章节进行学习。
+
+- [Vue.js 官方文档](https://v3.vuejs.org/guide/introduction.html)
+
+### 2. 组件化开发
+
+学习如何使用 Vue.js 开发可复用、组件化的用户界面是非常重要的。你可以学习如何创建和组合 Vue 组件，以及如何进行组件间的通信、传递数据和事件等。
+
+- 学习 Vue 组件的基本语法和使用方法。
+- 了解组件之间的通信方式，如 props、events、$emit 等。
+- 掌握 Vue 3 中的 Composition API，它提供了更灵活的组件代码组织方式。
+
+### 3. 路由管理
+
+如果你的应用需要多页面间的导航和路由管理，那么学习 Vue Router 就非常重要。Vue Router 是 Vue.js 的官方路由管理器，可以帮助你在单页面应用中实现路由导航。
+
+- 学习 Vue Router 的基本用法，包括路由配置、路由导航、动态路由等。
+- 掌握路由导航守卫的使用，用于控制路由跳转和页面访问权限。
+- 了解 Vue Router 在 Vue.js 3 中的新特性和改进。
+
+### 4. 状态管理
+
+在大型应用中，状态管理是必不可少的。学习 Vue.js 的状态管理工具 Vuex 可以帮助你更好地管理应用的状态，使得代码结构更清晰、易于维护。
+
+- 学习 Vuex 的基本概念，包括 state、mutations、actions 和 getters 等。
+- 掌握如何在 Vue 组件中使用 Vuex 来管理状态。
+- 了解 Vuex 4 在 Vue.js 3 中的新特性和改进。
+
+### 5. 项目实践
+
+最后，通过实际项目实践来巩固所学知识。你可以选择一个小型的项目，例如一个待办事项列表应用，然后尝试使用 Vue.js 3 来实现它。在项目实践中，你将会遇到各种实际的问题和挑战，这有助于你更深入地理解 Vue.js，并提升自己的开发能力。
+
+继续学习和实践，不断积累经验，你将会成为一名熟练的 Vue.js 开发者。祝你学习顺利！
+
+## 下一步
+
+下一步是在 `my-vue3-app` 项目中学习如何使用 Vue Router 进行路由管理。
+
+### 2. 路由管理
+
+1. 首先，确保你已经安装了 Vue Router。如果没有安装，可以使用以下命令安装：
+
+```
+npm install vue-router@next
+```
+
+2. 创建一个新的文件夹 `views` 在 `src` 目录下，用于存放页面组件。
+
+3. 在 `views` 目录下创建两个新的 Vue 组件，分别命名为 `Home.vue` 和 `About.vue`。这些组件将作为路由对应的页面。
+
+4. 在 `src` 目录下创建一个新的文件夹 `router`，用于存放 Vue Router 相关的代码。
+
+5. 在 `router` 目录下创建一个新的文件 `index.js`，用于配置和创建 Vue Router 实例。
+
+6. 编写 `router/index.js` 文件的代码，配置路由：
+
+```javascript
+import { createRouter, createWebHistory } from 'vue-router';
+import Home from '@/views/Home.vue';
+import About from '@/views/About.vue';
+
+const routes = [
+  {
+    path: '/',
+    name: 'Home',
+    component: Home
+  },
+  {
+    path: '/about',
+    name: 'About',
+    component: About
+  }
+];
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes
+});
+
+export default router;
+```
+
+7. 在 `src/main.js` 文件中导入并使用 Vue Router：
+
+```javascript
+import { createApp } from 'vue';
+import App from './App.vue';
+import router from './router';
+
+createApp(App).use(router).mount('#app');
+```
+
+8. 在 `App.vue` 组件中添加 `<router-view>` 标签，用于渲染匹配到的路由组件。
+
+9. 运行项目，并尝试访问 `/` 和 `/about` 路径，查看效果。
+
+现在，你已经学会了在 Vue.js 3 项目中使用 Vue Router 进行路由管理。接下来，你可以继续学习 Vuex 进行状态管理，或者进行更复杂的路由配置和功能开发。
+
 # 参考资料
 
 1、

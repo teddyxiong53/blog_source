@@ -861,6 +861,66 @@ extern const lv_obj_class_t lv_btn_class;
 lv_obj_t * lv_btn_create(lv_obj_t * parent);
 ```
 
+# 一些好的lvgl应用分析
+
+## minipad
+
+https://gitee.com/Jumping99/minipad?_from=gitee_search
+
+这个是在linux上多进程实现了一个pad的操作逻辑。
+
+有homepage，可以打开各个应用。
+
+但是是进程独占窗口的方式。
+
+不过可以了。这样实现起来简单。
+
+### 百问网也有一个类似的桌面，看起来更强大
+
+https://github.com/100askTeam/lv_100ask_linux_desktop
+
+## 实现86盒子
+
+其实“86盒”（86Box）是一种电工标准，我们家里常见的开关面板、电源插座等一般都是86盒标准，**其面板尺寸为86mm X 86mm，因此得名**。
+
+https://www.sohu.com/a/669465847_121135949
+
+https://bbs.21ic.com/icview-3371674-1-1.html
+
+https://bbs.aw-ol.com/user/q1215200171
+
+T113的资料
+
+https://forums.100ask.net/t/topic/399
+
+## phonegui
+
+这个实现了对iphone的模仿。
+
+主要是设计工具的熟练使用。和动画设计。
+
+https://gitee.com/seafine/phonegui
+
+## page manage
+
+https://developer.aliyun.com/article/1170625
+
+
+
+## 百问网的例子
+
+https://github.com/100askTeam/lv_lib_100ask/blob/master/README_zh.md
+
+## xterminal
+
+这个是基于esp的。用c++写的，感觉应用框架写得很好。
+
+https://github.com/lithiumice/XTerminal/
+
+## cpp binding
+
+https://github.com/lvgl/lv_binding_cpp
+
 
 
 # 参考资料

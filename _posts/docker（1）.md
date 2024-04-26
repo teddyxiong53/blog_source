@@ -423,9 +423,98 @@ production 阶段拉取 java:8-jdk-alpine 镜像，这个镜像大约 150MB，�
 
 http://pbeta.me/docker-volume-migrate/
 
+# 给Dockerfile传递参数
+
+好的，下面是一个简单的 Dockerfile 示例，它将创建一个基于 Alpine Linux 的镜像，并在其中创建一个新用户，并打印该用户的 UID 和 GID。
+
+```Dockerfile
+FROM alpine:latest
+
+ARG MY_UID
+ARG MY_GID
+
+# 添加构建参数传递的用户和组
+RUN addgroup -g ${MY_GID} mygroup && \
+    adduser -D -u ${MY_UID} -G mygroup myuser
+
+# 打印用户和组的信息
+RUN echo "UID of myuser: $(id -u myuser)" && \
+    echo "GID of myuser: $(id -g myuser)"
+
+USER myuser
+
+CMD ["sh"]
+```
+
+你可以使用以下命令来构建这个 Docker 镜像，并传递 UID 和 GID 参数：
+
+```bash
+docker build --build-arg MY_GID=$(id -g) --build-arg MY_UID=$(id -u) -t my_test_image .
+```
+
+然后，你可以运行这个镜像，并进入容器进行测试：
+
+```bash
+docker run -it --rm my_test_image
+```
+
+这样你就可以在容器内看到用户和组的 UID 和 GID 了。
+
+# 确保docker内外uid一样来确保修改文件的权限问题
+
+就看这个就好了。靠gosu这个工具来做的。
+
+https://github.com/T-Firefly/buildroot-builder/blob/master/Dockerfile
+
+我基于这个进行的测试：
+
+```
+docker build  -t my_test_image .
+docker run -it --rm  -e USER_ID=$UID -v $(pwd):/home/br my_test_image
+```
+
+# 基于docker搭建统一的开发环境
+
+大多数人可能都遇到过这样一个问题，在本地开发好功能后，部署到服务器，或者其他人拉到本地接着开发时，会出现功能用不了的情况。
+
+大多数时候是由于系统不同，依赖出现差异而导致的。因此，为了解决这个问题，基于 Docker 构建统一开发环境的需求便产生了。
+
+## 使用 Docker 的好处
+
+- 部署方便：平常要搭建环境常常需要耗费几个小时，而且，对于团队协作时来说，每有新人进来，都需要浪费这可以避免的时间，而且搭建环境时，也常常会产生的各种问题，导致项目代码运行异常。如果使用了 Docker 的话，只需最开始的人写好开发容器，其他人只需要 pull 下来，即可完成项目环境的搭建，能有效避免无意义的时间浪费。
+- 隔离性：我们时常会在一台电脑部署多个项目环境，若是直接安装的话，彼此间有可能会造成干扰，比如一个项目需要 Node.js 14，有的又需要 Node.js 12，若是直接在本机部署的话，总是不能共存的，而是用 Docker 的话，则可以避免该问题。Docker 还能确保每个应用程序只使用分配给它的资源（包括 CPU、内存和磁盘空间）。一个特殊的软件将不会使用你全部的可用资源，要不然这将导致性能降低，甚至让其他应用程序完全停止工作。
 
 
-参考资料
+
+### 编写 Dockerfile
+
+安装完 Docker 之后，接下来我们便可以来编写我们自己的项目开发环境了。本文将以前端开发环境为例，构建 Dockerfile。
+
+包含环境：
+
+- node.js 14.17
+- npm 6.14
+- yarn 1.22
+
+
+
+# docker  run --privileged 这个参数的作用
+
+`--privileged` 参数是在运行 Docker 容器时可选的一个选项。它的作用是提供容器内部的进程对主机系统的更高权限，允许容器中的进程访问主机上的特权操作。
+
+具体来说，`--privileged` 参数将允许容器内的进程访问主机上的所有设备，并且能够执行特权操作，比如修改主机上的网络配置、加载内核模块等。这样的权限可能会对主机的安全性造成潜在的风险，因此建议谨慎使用。
+
+通常情况下，只有在确实需要在容器内执行特权操作，并且理解可能带来的安全风险时，才会使用 `--privileged` 参数。
+
+# -v /var/run/docker.sock:/var/run/docker.sock 这样有什么作用
+
+`-v /var/run/docker.sock:/var/run/docker.sock` 这个参数用于将 Docker 守护进程的 UNIX 套接字（UNIX socket）绑定到容器内的相同路径上。这样做的作用是让容器内的进程可以与宿主机上的 Docker 守护进程进行通信。
+
+具体来说，这个参数通常用于在容器内部运行 Docker CLI 命令，使得容器内的命令可以直接与宿主机上的 Docker 引擎进行交互。这样做可以实现一些特定的功能，比如在容器内启动其他容器、管理容器、构建镜像等。
+
+总之，通过将 Docker 守护进程的 UNIX 套接字映射到容器内部，可以实现容器内与宿主机上 Docker 引擎的交互，从而使得容器内的操作可以直接影响到宿主机上的 Docker 守护进程。
+
+# 参考资料
 
 1、怎么才是 docker 最佳实践
 

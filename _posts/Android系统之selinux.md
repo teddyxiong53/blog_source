@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 SELinux([Security Enhanced Linux](https://en.wikipedia.org/wiki/Security-Enhanced_Linux))是Linux下的安全控制机制, 
 
@@ -121,7 +121,7 @@ SELinux 政策组合使用核心 AOSP 政策（平台）和设备专用政策（
 
 
 
-参考资料
+# 参考资料
 
 1、构建 SELinux 政策
 
@@ -130,3 +130,7 @@ https://source.android.com/security/selinux/build
 2、SELinux在Android中的应用
 
 http://sniffer.site/2019/12/07/Selinux%E5%9C%A8Android%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8/
+
+3、
+
+https://www.cnblogs.com/schips/p/SELinux.html
