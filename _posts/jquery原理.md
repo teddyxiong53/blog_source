@@ -45,7 +45,7 @@ jQuery.fn.init.prototype = jQuery.fn;
 
 第二句把jQuery对象的原型又赋给了init对象的原型。
 
-也就是说，init对象和jQuery具有相同的原型，
+也就是说，==init对象和jQuery具有相同的原型，==
 
 **因此我们在上面返回的init对象，就与jQuery对象有一样的属性和方法。**
 

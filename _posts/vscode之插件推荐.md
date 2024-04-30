@@ -46,3 +46,6 @@ tags:
 
 3、还需要在目录下执行eslint --init。
 
+# 插件编写
+
+https://www.cnblogs.com/xueweihan/p/14672480.html

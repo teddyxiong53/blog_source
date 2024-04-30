@@ -109,7 +109,7 @@ https://www.cnblogs.com/fqh123/p/11736421.html
 
 # bootstrap插件
 
-bs自带了12中jquery的插件。
+bs自带了12种jquery的插件。
 
 使用bs的data-* api来写，只要添加属性就可以使用这些插件。
 
@@ -287,6 +287,36 @@ $(function () { $("[data-toggle='tooltip']").tooltip(); });
 5. **组件化开发：** 使用 `<div>` 元素有助于实现组件化开发的思想。通过将不同的功能单元封装在 `<div>` 中，可以更轻松地复用和维护代码。这有助于提高代码的可维护性和可读性。
 
 尽管 `<div>` 元素在前端开发中是一种非常灵活和强大的工具，但过度使用也可能导致 HTML 结构复杂，增加代码的阅读难度。因此，在实际开发中，开发人员通常会努力保持代码的简洁性和可读性，避免不必要的嵌套和过多的 `<div>` 元素。
+
+# bootstrap的3/4/5 这3个版本的主要区别
+
+Bootstrap 3、Bootstrap 4 和 Bootstrap 5 是 Bootstrap 框架的三个主要版本，它们之间有一些显著的区别：
+
+1. **响应式设计差异**：
+   - Bootstrap 3：Bootstrap 3是第一个引入了响应式设计理念的版本。它提供了一套基于栅格系统的响应式布局，可以轻松地创建适应不同设备大小的网站。
+   - Bootstrap 4：Bootstrap 4进一步加强了对响应式设计的支持，引入了更加灵活的栅格系统，支持更多种类的设备和屏幕尺寸。
+   - Bootstrap 5：Bootstrap 5继续着重于响应式设计，但对于移动优先设计的概念更加强调。它推荐优先考虑移动设备，然后逐渐增加更大屏幕的优化。
+
+2. **组件和工具的更新**：
+   - Bootstrap 4 和 Bootstrap 5 引入了一些新的组件和工具，同时也对现有组件和工具进行了改进和优化。例如，Bootstrap 5 引入了一些新的组件，同时对现有组件进行了调整，以提供更好的用户体验和更好的性能。
+
+3. **样式和主题的改变**：
+   - Bootstrap 4 和 Bootstrap 5 在样式和主题方面有一些微妙的差异。Bootstrap 4 引入了一种称为“变量”（variables）的新特性，允许开发者更轻松地自定义样式。Bootstrap 5 在这方面继续发展，进一步简化了样式的定制和主题的创建。
+
+4. **JavaScript插件的变化**：
+   - Bootstrap 4 和 Bootstrap 5 在 JavaScript 插件方面也有一些差异。Bootstrap 5 更加注重性能和可访问性，对一些 JavaScript 插件进行了重新设计和改进，以确保更好的性能和更好的用户体验。
+
+总体来说，Bootstrap 5 是对 Bootstrap 4 的进一步发展和改进，着重于简化、性能和移动优先设计。
+
+如果您是新用户，建议您直接使用最新版本的 Bootstrap 5 来开始您的项目。
+
+如果您已经在使用 Bootstrap 4，也可以考虑将您的项目升级到 Bootstrap 5，以获得更好的性能和更好的用户体验。
+
+# bs5已经完全去掉jquery了吗？
+
+是的，Bootstrap 5 (BS5) 已经完全移除了对 jQuery 的依赖。在 Bootstrap 4 中，一些 JavaScript 插件（例如模态框、下拉菜单等）是基于 jQuery 实现的，但在 Bootstrap 5 中，这些插件已经被重写为纯 JavaScript 实现，不再依赖于 jQuery。
+
+Bootstrap 5 引入了 Popper.js 来处理定位和弹出框等功能，以及一些自定义的 JavaScript 代码来管理组件行为。==这种更轻量级的实现使得 Bootstrap 5 更加现代化、更加灵活，并且减少了对第三方库的依赖。==
 
 # 参考资料
 

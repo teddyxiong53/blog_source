@@ -87,6 +87,22 @@ root.mainloop()
 
 这只是一个简单的入门示例，Tkinter还有很多其他功能和选项，可以根据项目的需要进行更复杂的界面设计。
 
+# 发展历史
+
+Tkinter的发展历史可以追溯到Tk工具包的诞生。以下是Tkinter和Tk的主要发展历程：
+
+1. **Tcl/Tk的诞生（1988年）**：Tcl（Tool Command Language）是一种脚本语言，由约翰·奥斯特比（John Ousterhout）于1988年创建。Tk是与Tcl一同开发的图形用户界面工具包，提供了创建图形界面的功能。
+
+2. **Python与Tkinter的结合（1991年）**：Tkinter最早是由Guido van Rossum于1991年作为Python的一个标准库加入到Python中的。它是Python的一个重要模块，为Python程序员提供了创建图形用户界面的能力。
+
+3. **Tkinter的成长（1990年代至今）**：随着Python的发展，Tkinter也不断完善和发展。Python社区对Tkinter进行了改进，增加了新的功能和小部件，提高了性能和稳定性。
+
+4. **Python 3的引入（2008年）**：Python 3于2008年发布，与Python 2相比，它对Tkinter进行了一些改进和优化。Python 3的发布进一步推动了Tkinter的发展和应用。
+
+5. **其他图形界面工具包的竞争**：随着时间的推移，出现了许多其他的Python图形界面工具包，如PyQt、wxPython等，它们提供了更丰富的功能和更现代化的界面设计。尽管如此，Tkinter仍然是Python中最常用的GUI工具包之一，因为它的简单易用和与Python的紧密集成。
+
+总的来说，Tkinter作为Python的标准GUI工具包，在Python的发展历程中扮演了重要的角色，并持续为Python开发者提供创建图形界面应用程序的能力。
+
 ## Tk GUI工具包
 
 Tk是一个用于创建图形用户界面（GUI）的工具包，最初是为Tcl编程语言设计的。
@@ -164,10 +180,11 @@ Tkinter提供了三种主要的布局管理器：`pack`、`grid`和`place`。这
    - `pack` 布局管理器将组件按照添加的顺序一个接一个地放置在父容器中。
    - 使用 `side` 参数指定组件相对于父容器的位置，例如 `side='top'` 表示在顶部，`side='left'` 表示在左侧等。
 - 可以使用 `fill` 参数控制组件在其可用空间内的填充方式，`fill='both'` 表示填充水平和垂直方向。
-   
+  
    示例：
    ```python
    label.pack(side='top', fill='both', pady=10)
+   ```
 ```
    
 2. **`grid` 布局管理器：**
@@ -178,13 +195,14 @@ Tkinter提供了三种主要的布局管理器：`pack`、`grid`和`place`。这
    示例：
    ```python
    button.grid(row=0, column=1, sticky='e', padx=10, pady=10)
-   ```
+```
 
 3. **`place` 布局管理器：**
+   
    - `place` 布局管理器允许您以绝对坐标的方式放置组件。
    - 使用 `x` 和 `y` 参数指定组件左上角的坐标，以像素为单位。
-   - 可以使用 `relx` 和 `rely` 参数以相对于父容器的比例来指定组件的位置。
-
+- 可以使用 `relx` 和 `rely` 参数以相对于父容器的比例来指定组件的位置。
+   
    示例：
    ```python
    entry.place(x=50, y=20)
@@ -543,6 +561,68 @@ https://blog.csdn.net/qq_59142194/article/details/123937365
 6. **复杂布局：** 尽管Tkinter提供了几种布局管理器，但在处理复杂的自定义布局时，可能需要编写更多的代码。一些现代GUI框架提供更灵活的布局选项和工具。
 
 尽管Tkinter可能缺少一些高级功能，但它在编写简单到中等复杂度的GUI应用程序时仍然是一个强大而方便的工具。对于更复杂的需求，开发者可能需要考虑使用其他GUI框架，如PyQt、wxPython等，这些框架提供了更多现代GUI应用程序开发所需的功能。
+
+# 简单计算器
+
+```
+import tkinter as tk
+
+# 创建主窗口
+root = tk.Tk()
+root.title("简单计算器")
+
+# 输入框
+entry = tk.Entry(root, width=20, font=('Arial', 14))
+entry.grid(row=0, column=0, columnspan=4)
+
+# 按钮点击事件
+def button_click(event):
+    entry.insert(tk.END, event.widget.cget("text"))
+
+# 创建按钮
+buttons = [
+    '7', '8', '9', '/',
+    '4', '5', '6', '*',
+    '1', '2', '3', '-',
+    'C', '0', '=', '+'
+]
+
+for i, button_text in enumerate(buttons):
+    button = tk.Button(root, text=button_text, width=5, height=2, font=('Arial', 14))
+    button.grid(row=i // 4 + 1, column=i % 4)
+    button.bind("<Button-1>", button_click)
+
+# 计算结果
+def calculate():
+    try:
+        result = eval(entry.get())
+        entry.delete(0, tk.END)
+        entry.insert(tk.END, str(result))
+    except Exception as e:
+        entry.delete(0, tk.END)
+        entry.insert(tk.END, "Error")
+
+# 绑定 "=" 按钮点击事件
+equal_button = None
+for child in root.winfo_children():
+    if child.cget("text") == "=":
+        equal_button = child
+
+if equal_button:
+    equal_button.bind("<Button-1>", lambda event: calculate())
+
+# 运行主循环
+root.mainloop()
+
+```
+
+`"<Button-1>"` 是Tkinter事件绑定中的一种事件描述符，它表示鼠标左键的单击事件。
+
+在Tkinter中，你可以通过使用`bind()`方法将事件（如鼠标点击、键盘按键等）与函数或方法关联起来。`bind()`方法接受两个参数，第一个参数是事件描述符，用于指定要绑定的事件类型，第二个参数是处理该事件的函数或方法。
+
+在这个例子中，我们使用`"<Button-1>"`作为事件描述符，它表示鼠标左键的单击事件。当用户单击按钮时，Tkinter会触发该事件，并调用与之关联的`button_click()`函数来处理该事件。
+
+在Tkinter中，还有许多其他的事件描述符，用于指定不同类型的事件，例如鼠标右键单击事件`"<Button-3>"`、鼠标移动事件`"<Motion>"`等。
 
 # 参考资料
 

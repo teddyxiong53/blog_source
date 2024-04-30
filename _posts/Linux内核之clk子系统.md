@@ -304,7 +304,7 @@ ret = of_clk_add_provider(np, of_clk_src_onecell_get,
 
 
 
-为什么要有prepare接口, 直接enable不就行了吗?
+# 为什么要有prepare接口, 直接enable不就行了吗?
 
 从硬件的角度来说, 某些clock, 如果想使能它, 需要等待一段时间.
 
@@ -487,6 +487,101 @@ audio locker就是用来解决这个问题的。
 # 基于rk3399分析clk子系统
 
 https://blog.csdn.net/weixin_43644245/article/details/122203512
+
+
+
+# 设备树文件里如何配置clk
+
+在设备树（Device Tree）文件中配置时钟（CLK）通常涉及以下步骤：
+
+1. **定义时钟节点**：在设备树中，每个时钟资源都应该有一个对应的节点来描述它。这个节点的类型通常是 `clocks`。
+
+2. **指定时钟名称和属性**：在时钟节点中，你需要指定时钟的名称和其他属性，例如时钟的频率、时钟源等。这些属性通常以键值对的形式给出，可以根据具体的硬件情况进行配置。
+
+3. **将时钟节点与设备节点关联**：如果时钟是某个设备的时钟源，你需要在设备节点中指定该时钟节点的引用。这样，当设备被启动时，相应的时钟资源也会被启用。
+
+以下是一个示例，展示了如何在设备树中配置一个名为 `example_clk` 的时钟：
+
+```dts
+clocks {
+    example_clk: example-clock {
+        compatible = "fixed-clock"; // 时钟类型
+        #clock-cells = <0>; // 时钟单元数目，通常为0
+        clock-frequency = <100000000>; // 时钟频率，单位为Hz
+    };
+};
+
+// 将时钟节点与设备节点关联
+&device {
+    clock-names = "example_clk"; // 指定时钟的名称
+    clocks = <&example_clk>; // 引用时钟节点
+};
+```
+
+在这个示例中，我们定义了一个名为 `example_clk` 的时钟节点，并指定了它的类型为 `fixed-clock`，频率为 100MHz。然后，我们将这个时钟节点与某个设备的节点关联起来，使得该设备可以使用 `example_clk` 作为它的时钟源。
+
+需要注意的是，具体的配置方式可能会因为硬件平台和 Linux 内核版本的不同而有所差异，以上示例仅供参考。在实际应用中，你需要根据硬件文档和 Linux 内核的要求来正确配置时钟节点。
+
+# 常用api
+
+Linux CLK 子系统提供了一系列 API 供内核代码和驱动程序使用。这些 API 可以用于获取、控制和操作系统中的时钟资源。以下是一些常用的 CLK 子系统 API：
+
+1. **clk_get()**：
+   - 函数原型：`struct clk *clk_get(struct device *dev, const char *id)`
+   - 功能：根据设备和时钟标识符获取对应的时钟句柄。
+   - 说明：通过传入设备和时钟的名称（或 ID），可以获取到对应的时钟句柄，用于后续的操作。
+
+2. **clk_put()**：
+   - 函数原型：`void clk_put(struct clk *clk)`
+   - 功能：释放之前获取的时钟句柄。
+   - 说明：在使用完时钟句柄后，应该使用该函数释放资源。
+
+3. **clk_prepare_enable()** 和 **clk_disable_unprepare()**：
+   - 函数原型：`int clk_prepare_enable(struct clk *clk)` 和 `void clk_disable_unprepare(struct clk *clk)`
+   - 功能：准备并启用时钟资源，以及关闭并释放时钟资源。
+   - 说明：在使用时钟前，需要先调用 `clk_prepare_enable()` 来准备并启用时钟资源；在使用完时钟后，应该调用 `clk_disable_unprepare()` 来关闭并释放资源。
+
+4. **clk_set_rate()** 和 **clk_round_rate()**：
+   - 函数原型：`int clk_set_rate(struct clk *clk, unsigned long rate)` 和 `unsigned long clk_round_rate(struct clk *clk, unsigned long rate)`
+   - 功能：设置时钟的频率，以及将给定频率舍入到最接近的有效频率。
+   - 说明：`clk_set_rate()` 用于直接设置时钟的频率，而 `clk_round_rate()` 则用于将给定频率舍入到最接近的有效频率。
+
+5. **clk_get_rate()**：
+   - 函数原型：`unsigned long clk_get_rate(struct clk *clk)`
+   - 功能：获取当前时钟的频率。
+   - 说明：用于获取当前时钟的实际频率。
+
+这些是 CLK 子系统中一些常用的 API，它们可以帮助开发者在 Linux 内核中对时钟资源进行管理和控制。在编写驱动程序或内核代码时，可以使用这些 API 来操作系统中的时钟资源。
+
+# struct clk结构体
+
+在 Linux 内核中，`struct clk` 结构体用于表示一个时钟资源，它包含了时钟的各种属性和操作函数。这是一个关键的数据结构，用于在内核中管理和操作时钟资源。下面是 `struct clk` 结构体的一个简化版本示例：
+
+```c
+struct clk {
+    const char *name;           // 时钟的名称
+    struct clk_ops *ops;        // 指向时钟操作函数的指针
+    struct clk_parent *parent;  // 指向时钟父节点的指针（如果有）
+    // 其他时钟相关的属性
+};
+
+struct clk_ops {
+    int (*enable)(struct clk *clk);       // 启用时钟
+    void (*disable)(struct clk *clk);     // 禁用时钟
+    int (*set_rate)(struct clk *clk, unsigned long rate);  // 设置时钟频率
+    unsigned long (*get_rate)(struct clk *clk);  // 获取时钟频率
+    // 其他时钟操作函数
+};
+
+struct clk_parent {
+    struct clk *clk;        // 指向父时钟的指针
+    // 其他时钟父节点相关的属性
+};
+```
+
+在这个简化版本中，`struct clk` 结构体包含了时钟的名称、指向时钟操作函数的指针以及指向父时钟节点的指针。`struct clk_ops` 结构体定义了一组时钟操作函数，如启用时钟、禁用时钟、设置时钟频率、获取时钟频率等。`struct clk_parent` 结构体用于表示时钟的父节点，指向了当前时钟节点的父时钟。
+
+需要注意的是，这只是一个简化的示例，实际的 `struct clk` 结构体可能包含更多的属性和函数指针，具体取决于硬件和内核版本。在 Linux 内核中，时钟资源的表示和操作是非常灵活和复杂的，因此 `struct clk` 结构体可能会根据具体的需求和场景进行扩展和修改。
 
 # 参考资料
 

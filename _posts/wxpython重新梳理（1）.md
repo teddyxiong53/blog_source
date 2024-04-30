@@ -784,6 +784,113 @@ https://blog.csdn.net/seniorwizard/article/details/130894657
 
 https://blog.csdn.net/jdzhangxin/article/details/78377619
 
+# 带欢迎界面的应用
+
+下面是一个简单的 wxPython 应用程序示例，带有一个欢迎界面：
+
+```python
+import wx
+
+class WelcomeFrame(wx.Frame):
+    def __init__(self):
+        super().__init__(None, title="Welcome", size=(400, 300))
+        
+        panel = wx.Panel(self)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        
+        welcome_text = wx.StaticText(panel, label="Welcome to My App!", style=wx.ALIGN_CENTER)
+        vbox.Add(welcome_text, 1, wx.EXPAND|wx.ALL, 20)
+        
+        start_button = wx.Button(panel, label="Start")
+        start_button.Bind(wx.EVT_BUTTON, self.on_start)
+        vbox.Add(start_button, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        
+        panel.SetSizer(vbox)
+        self.Show(True)
+        
+    def on_start(self, event):
+        # 打开主应用程序窗口
+        self.Close()  # 关闭欢迎界面
+        main_frame = MainFrame()
+        main_frame.Show()
+
+class MainFrame(wx.Frame):
+    def __init__(self):
+        super().__init__(None, title="My App", size=(400, 300))
+        
+        panel = wx.Panel(self)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        
+        welcome_text = wx.StaticText(panel, label="Welcome to My App!", style=wx.ALIGN_CENTER)
+        vbox.Add(welcome_text, 1, wx.EXPAND|wx.ALL, 20)
+        
+        panel.SetSizer(vbox)
+        self.Show(True)
+
+if __name__ == "__main__":
+    app = wx.App()
+    welcome_frame = WelcomeFrame()
+    app.MainLoop()
+```
+
+这个示例包含两个窗口，一个欢迎界面窗口 `WelcomeFrame`，和一个主应用程序窗口 `MainFrame`。当用户点击欢迎界面上的 "Start" 按钮时，会关闭欢迎界面窗口并打开主应用程序窗口。
+
+## 在欢迎界面上带一个下拉列表，把下拉列表选择的值传递给MainFrame 
+
+好的，我稍微修改一下代码，在欢迎界面上添加一个下拉列表，并将用户选择的值传递给主应用程序窗口：
+
+```python
+import wx
+
+class WelcomeFrame(wx.Frame):
+    def __init__(self):
+        super().__init__(None, title="Welcome", size=(400, 300))
+        
+        panel = wx.Panel(self)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        
+        welcome_text = wx.StaticText(panel, label="Welcome to My App!", style=wx.ALIGN_CENTER)
+        vbox.Add(welcome_text, 1, wx.EXPAND|wx.ALL, 20)
+        
+        # 添加下拉列表
+        choices = ['Option 1', 'Option 2', 'Option 3']
+        self.choice = wx.Choice(panel, choices=choices)
+        vbox.Add(self.choice, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        
+        start_button = wx.Button(panel, label="Start")
+        start_button.Bind(wx.EVT_BUTTON, self.on_start)
+        vbox.Add(start_button, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        
+        panel.SetSizer(vbox)
+        self.Show(True)
+        
+    def on_start(self, event):
+        selected_value = self.choice.GetStringSelection()  # 获取用户选择的值
+        self.Close()  # 关闭欢迎界面
+        main_frame = MainFrame(selected_value)  # 将选择的值传递给主应用程序窗口
+        main_frame.Show()
+
+class MainFrame(wx.Frame):
+    def __init__(self, selected_value):
+        super().__init__(None, title="My App", size=(400, 300))
+        
+        panel = wx.Panel(self)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        
+        welcome_text = wx.StaticText(panel, label=f"Welcome to My App! You selected: {selected_value}", style=wx.ALIGN_CENTER)
+        vbox.Add(welcome_text, 1, wx.EXPAND|wx.ALL, 20)
+        
+        panel.SetSizer(vbox)
+        self.Show(True)
+
+if __name__ == "__main__":
+    app = wx.App()
+    welcome_frame = WelcomeFrame()
+    app.MainLoop()
+```
+
+在这个修改后的示例中，我添加了一个名为 `choice` 的下拉列表控件，并在欢迎界面窗口的 `on_start` 方法中获取用户选择的值，并将其作为参数传递给主应用程序窗口 `MainFrame` 的初始化方法。然后，在主应用程序窗口中显示欢迎文本时，将用户选择的值显示出来。
+
 # 参考资料
 
 https://blog.csdn.net/qq_37534835/article/details/90715871

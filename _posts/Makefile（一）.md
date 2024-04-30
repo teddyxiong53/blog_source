@@ -704,7 +704,240 @@ recursive_target_inner:
 	@echo "这是递归目标内部"
 ```
 
+# 教程
 
+当然，请允许我逐步为您介绍如何编写 Makefile。
+
+Makefile 是一种用于自动化编译和构建程序的脚本文件，
+
+它指定了源代码文件之间的依赖关系以及如何将它们编译成可执行文件或者库。
+
+以下是一个简单的 Makefile 示例，
+
+然后我将逐步解释它：
+
+```makefile
+CC = gcc
+CFLAGS = -Wall -Wextra -std=c11
+SRC_DIR = src
+BUILD_DIR = build
+EXECUTABLE = myprogram
+
+SRCS = $(wildcard $(SRC_DIR)/*.c)
+OBJS = $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
+
+$(BUILD_DIR)/$(EXECUTABLE): $(OBJS)
+    $(CC) $(CFLAGS) $^ -o $@
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
+    $(CC) $(CFLAGS) -c $
+
+
+
+```
+上面这个 Makefile 假设您的项目结构如下：
+
+```
+project_folder/
+│
+├── src/
+│   ├── main.c
+│   └── utils.c
+│
+├── build/
+│
+└── Makefile
+```
+
+
+
+```
+
+现在，我来逐步解释这个 Makefile：
+
+1. `CC = gcc`：定义了 C 编译器为 gcc。您可以根据需要将其更改为其他编译器，比如 clang。
+
+2. `CFLAGS = -Wall -Wextra -std=c11`：定义了编译选项，其中 `-Wall` 和 `-Wextra` 开启了更多的警告信息，`-std=c11` 指定了使用 C11 标准。
+
+3. `SRC_DIR = src`：定义了源代码文件的目录。
+
+4. `BUILD_DIR = build`：定义了编译生成文件的目录。
+
+5. `EXECUTABLE = myprogram`：定义了最终生成的可执行文件的名称。
+
+6. `SRCS = $(wildcard $(SRC_DIR)/*.c)`：使用 `wildcard` 函数获取源代码目录下所有的 `.c` 文件。
+
+7. `OBJS = $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)`：将源文件路径替换为对象文件路径。
+
+8. `$(BUILD_DIR)/$(EXECUTABLE): $(OBJS)`：定义了生成可执行文件的规则。依赖于所有的对象文件。
+
+9. `$(CC) $(CFLAGS) $^ -o $@`：命令行，用于将所有的对象文件链接成可执行文件。
+
+10. `$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)`：定义了生成对象文件的规则。依赖于对应的源文件和 `build` 目录的存在。
+
+11. `$(CC) $(CFLAGS) -c $
+
+这行命令用于将源文件编译成对象文件。
+
+12. `| $(BUILD_DIR)`：管道符 `|` 指定了构建对象文件之前需要确保 `build` 目录存在。
+
+
+```
+
+接下来，您可以根据自己的项目需求进行适当的修改。例如，如果您的项目包含了头文件，您需要在 Makefile 中指定头文件的搜索路径，并且在编译规则中包含相应的 `-I` 选项。
+
+这只是一个简单的 Makefile 示例，如果您的项目更加复杂，可能需要更多的规则和变量来管理。但是，通过这个简单的例子，您可以了解到如何开始编写一个基本的 Makefile 来管理您的项目。
+
+# make的一些高级使用技巧
+
+Make 是一个强大的构建工具，除了基本的规则和命令外，还有一些高级的使用技巧可以让您更有效地管理项目。以下是一些高级使用技巧：
+
+1. **使用变量和函数**：在 Makefile 中，您可以定义变量来存储命令、编译选项、文件名等信息。您还可以使用 Make 的内置函数来进行字符串操作、文件操作等。例如：
+   ```makefile
+   CC = gcc
+   CFLAGS = -Wall -Wextra
+   SOURCES = $(wildcard *.c)
+   OBJECTS = $(SOURCES:.c=.o)
+
+   myprogram: $(OBJECTS)
+       $(CC) $(CFLAGS) $^ -o $@
+
+   clean:
+       rm -f $(OBJECTS) myprogram
+   ```
+
+2. **自动化依赖关系生成**：Make 可以自动生成依赖关系，使得当头文件发生变化时，相应的源文件会被重新编译。您可以使用 `-M` 或 `-MM` 选项与 `gcc` 或 `g++` 配合使用来实现这一功能。例如：
+   ```makefile
+   DEPS = $(OBJECTS:.o=.d)
+
+   -include $(DEPS)
+
+   %.o: %.c
+       $(CC) $(CFLAGS) -MMD -MP -c $
+```
+   
+3. **条件语句和循环**：Makefile 支持条件语句和循环，您可以根据条件执行不同的命令或规则。例如：
+   ```makefile
+   DEBUG = 1
+
+   ifdef DEBUG
+       CFLAGS += -g
+   else
+       CFLAGS += -O2
+   endif
+
+   FILES = $(wildcard *.c)
+
+   all: $(FILES:.c=)
+
+   %.o: %.c
+       $(CC) $(CFLAGS) -c $
+```
+   
+4. **并行构建**：通过指定 `-j` 选项，Make 可以并行构建多个目标，加快构建速度。例如：
+   ```
+   make -j4
+   ```
+   这将允许 Make 使用最多 4 个并发任务来构建目标。
+
+5. **命令前缀**：您可以在 Makefile 中使用 `@` 前缀来阻止 Make 打印执行的命令。这对于减少输出信息或隐藏敏感信息很有用。例如：
+   ```makefile
+   quiet:
+       @echo "This is a quiet command"
+   ```
+
+6. **Phony 目标**：有时您可能希望定义一些不对应真实文件的目标，比如 `clean`、`all` 等，您可以使用 `.PHONY` 来声明这些目标。这样 Make 将不会检查它们对应的文件是否存在。例如：
+   ```makefile
+   .PHONY: clean all
+
+   clean:
+       rm -f *.o myprogram
+
+   all: myprogram
+   ```
+
+这些高级技巧可以让您更好地管理和优化您的构建过程。通过结合这些技巧，您可以创建更加灵活和高效的 Makefile。
+
+# MAKECMDGOALS
+
+`MAKECMDGOALS` 是 Make 工具中的一个特殊变量，它包含了用户在命令行中指定的目标。通常，用户可以在命令行中指定要构建的目标，例如：
+
+```
+make clean all
+```
+在这个例子中，`clean` 和 `all` 都是用户指定的目标。`MAKECMDGOALS` 将包含这些目标的列表，以空格分隔。
+
+您可以在 Makefile 中使用 `MAKECMDGOALS` 来根据用户指定的目标执行不同的操作。例如，您可以使用它来检查用户是否指定了特定的目标，并相应地执行相关的命令。以下是一个简单的示例：
+```makefile
+# 如果用户指定了 clean 目标，则执行清理操作
+ifeq (clean,$(filter clean,$(MAKECMDGOALS)))
+    CLEAN_TARGET := clean
+endif
+
+# 如果用户指定了 all 目标，则执行构建操作
+ifeq (all,$(filter all,$(MAKECMDGOALS)))
+    BUILD_TARGET := all
+endif
+
+# 默认情况下，执行构建操作
+ifeq ($(BUILD_TARGET),)
+    BUILD_TARGET := all
+endif
+
+$(BUILD_TARGET):
+    @echo "Building..."
+    # 在这里放置构建的命令
+
+$(CLEAN_TARGET):
+    @echo "Cleaning..."
+    # 在这里放置清理的命令
+```
+
+通过使用 `MAKECMDGOALS`，您可以编写更加灵活的 Makefile，根据用户的选择执行不同的操作。
+
+# 给出一个makefile，让自己递归调用自己一次
+
+下面是一个简单的 Makefile 示例，它定义了一个目标 `recursive`，在该目标中会调用 `make` 命令来递归调用自己一次：
+
+```makefile
+.PHONY: recursive
+
+recursive:
+    @echo "Recursive target is called."
+    @$(MAKE) recursive_call
+
+recursive_call:
+    @echo "Recursive call is made."
+    @$(MAKE) some_other_target
+
+some_other_target:
+    @echo "Some other target is called."
+```
+
+在这个示例中，`recursive` 目标被声明为 `.PHONY`，这意味着它不对应任何真实的文件，而是一个伪目标。当执行 `make recursive` 时，将会输出 "Recursive target is called."，然后调用 `make recursive_call`。在 `recursive_call` 中再次调用 `make`，最终执行 `some_other_target`。因此，这就实现了递归调用自己一次的效果。
+
+请注意，递归调用 `make` 可能会导致性能问题，并且可能使得构建过程变得更加复杂。在实际项目中，应谨慎使用递归调用，并确保了解其带来的影响。
+
+# MAKEOVERRIDES
+
+`MAKEOVERRIDES` 是 Make 工具中的一个特殊变量，它包含了在命令行或环境变量中覆盖了 Makefile 中定义的变量的名称。当您在命令行或环境变量中重新定义了 Makefile 中已经定义的变量时，这些变量的名称会被记录在 `MAKEOVERRIDES` 中。
+
+这个变量对于了解哪些变量是被覆盖或者重写的很有用，可以帮助您更好地调试 Makefile。
+
+例如，如果您在命令行中执行了 `make CC=clang`，那么 `MAKEOVERRIDES` 就会包含 `CC`，指示了 `CC` 这个变量被重新定义了。
+
+以下是一个简单的示例：
+
+```makefile
+# Makefile 内容
+CC = gcc
+CFLAGS = -Wall
+
+foo:
+    $(CC) $(CFLAGS) -o foo foo.c
+```
+
+如果您在命令行中执行了 `make CC=clang`，那么 `MAKEOVERRIDES` 将会包含 `CC`。
 
 # 参考资料
 

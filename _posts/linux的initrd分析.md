@@ -7,7 +7,32 @@ tags:
 ---
 --
 
-为什么需要initrd？
+# linux的initrd、ramdisk、initramfs这些用于启动的ramfs的发展历史，以及演进的驱动力
+
+Linux启动过程中使用的initrd、ramdisk和initramfs都是用于
+
+==在系统启动时加载所需的基本文件系统和驱动程序到内存中。==
+
+它们的发展历史和演进如下：
+
+1. **initrd（Initial RAM Disk）**：
+   - initrd最初用于早期的Linux系统，它是一个小型的根文件系统，通常包含用于启动系统的关键文件和驱动程序。在Linux内核启动时，initrd被加载到内存中，然后解压缩并挂载为根文件系统，以便系统可以继续引导过程。
+
+2. **ramdisk**：
+   - ramdisk是一种将一块内存作为磁盘驱动器来使用的技术。在早期的Linux系统中，ramdisk被用作initrd的一种形式，用于在启动时加载基本文件系统和驱动程序。然而，ramdisk存在一些限制，如固定大小和需要预先分配内存空间等。
+
+3. **initramfs（Initial RAM File System）**：
+   - initramfs是对initrd的现代替代方案。它是一个压缩的文件系统映像，可以在内核启动时直接由内核加载到内存中。与initrd不同，initramfs不需要预先分配固定大小的内存空间，而是在运行时动态地分配所需的内存。这使得==initramfs更加灵活和高效，并且更容易管理和定制。==
+
+这些技术的演进驱动力主要包括：
+- **性能和效率**：随着硬件和系统的发展，对启动速度和资源利用率的需求不断提高。initramfs相比于早期的initrd和ramdisk，更加高效和灵活，可以更好地满足这些需求。
+- **可定制性**：initramfs允许开发人员轻松定制启动过程，包括添加或删除所需的文件和驱动程序，以适应不同的系统配置和需求。
+- **内核功能的增加**：随着Linux内核功能的增加，如支持新的文件系统和设备驱动程序，需要一种更灵活的方式来在启动时加载这些功能。initramfs可以更好地满足这种需求，使得内核的新特性可以在启动过程中动态加载。
+  
+
+总的来说，随着对性能、效率和灵活性的不断追求，initramfs作为initrd的替代方案已经成为了Linux系统启动过程中的主流技术。
+
+# 为什么需要initrd？
 
 内核里没有编译根文件系统所在的介质的驱动，例如cd-rom。
 
@@ -39,16 +64,32 @@ initramfs从内核2.5版本才出现。比initrd要晚。
 
 **initramfs的根本上的不同，就是它跟内核被打包成一个文件了。**
 
-该cpio格式的文件被链接进了内核中特殊的数据段.init.ramfs上，其中全局变量`__initramfs_start和__initramfs_end`分别指向这个数据段的起始地址和结束地址。内核启动时会对.init.ramfs段中的数据进行解压，然后使用它作为临时的根文件系统。
+该cpio格式的文件被链接进了内核中特殊的数据段.init.ramfs上，
+
+其中全局变量`__initramfs_start和__initramfs_end`
+
+分别指向这个数据段的起始地址和结束地址。
+
+内核启动时会对.init.ramfs段中的数据进行解压，然后使用它作为临时的根文件系统。
 
 
 
-**linux对所有文件的读写都会在内存里做缓存，这样效率会高很多。**
-ramfs直接利用了linux内核的高速缓存机制，做成一个大小可以动态变化的基于内存的文件系统。ramfs工作在vfs层，不能被格式化，可以创建多个，默认情况下，ramfs最多用到系统内存的一半。可以在编译内核的时候修改。
+linux对所有文件的读写都会在内存里做缓存，这样效率会高很多。
+
+ramfs直接利用了linux内核的高速缓存机制，做成一个大小可以动态变化的基于内存的文件系统。
+
+ramfs工作在vfs层，不能被格式化，可以创建多个，默认情况下，ramfs最多用到系统内存的一半。
+
+可以在编译内核的时候修改。
 
 rootfs是一个特定的ramfs实例，始终存在于系统中，是系统的根。
 
-initrd是一个被压缩过的小型根目录。系统启动时，initrd文件被载入到内存，内核然后把解压后的initrd挂载为根目录。然后执行/init脚本。在/init脚本里，再去挂载真正的根文件系统。
+initrd是一个被压缩过的小型根目录。
+
+系统启动时，initrd文件被载入到内存，内核然后把解压后的initrd挂载为根目录。
+
+然后执行/init脚本。在/init脚本里，再去挂载真正的根文件系统。
+
 看内核里的代码，大概的流程是这样的。
 
 ```
@@ -141,6 +182,7 @@ boot分区自带recovery mode的ramdisk;
 system分区包含了Android系统的rootfs;
 
 启动中，如何选择加载boot分区的ramdisk还是system分区的rootfs呢？
+
 答案是由kernel的命令行参数skip_initramfs来决定。
 
 正常启动的时候，skip_initramfs这个是设置了的。
@@ -697,7 +739,7 @@ init会解析init.rc文件，
 linux调用populate_rootfs默认会并加载boot分区自带的ramdisk（recovery），但如果do_skip_initramfs被设置为1，则会调用default_rootfs生成一个极小的rootfs：
 ```
 
-# ramdisk和initrd
+
 
 
 
@@ -845,9 +887,9 @@ config BLK_DEV_INITRD
 	  If unsure say Y.
 ```
 
-BLK_DEV_RAM应该是要这个也使能，才说明使用initrd。
+==BLK_DEV_RAM应该是要这个也使能，才说明使用initrd。==
 
-否则表示是initramfs。
+==否则表示是initramfs。==
 
 
 
@@ -1116,10 +1158,11 @@ https://www.cnblogs.com/sky-heaven/p/13856545.html
 在 U-Boot 中，可以通过设置环境变量来指定内核映像和 initramfs 文件的位置。具体的环境变量可能因 U-Boot 版本和配置而有所不同，下面是一些常见的环境变量及其用法示例：
 
 1. **bootargs:** 这个环境变量用于指定内核启动参数，包括内核映像和 initramfs 文件的位置。示例：
+   
    ```
    setenv bootargs 'console=ttyS0 root=/dev/mmcblk0p2 rw rootwait'
-   ```
-
+```
+   
 2. **bootcmd:** 这个环境变量用于定义启动命令。在启动命令中可以指定加载内核映像和 initramfs 文件的方式和位置。示例：
    ```
    setenv bootcmd 'ext4load mmc 0:1 0x8000000 /boot/zImage; ext4load mmc 0:1 0x9000000 /boot/initramfs.cpio.gz; bootz 0x8000000 0x9000000'
@@ -1129,23 +1172,27 @@ https://www.cnblogs.com/sky-heaven/p/13856545.html
    
    ```
    setenv bootargs_root 'root=/dev/mmcblk0p2 rootwait'
+   ```
 ```
    
 4. **loadaddr:** 这个环境变量用于指定加载内核映像的地址。示例：
    
-   ```
+```
    setenv loadaddr 0x8000000
 ```
    
 5. **initrdaddr:** 这个环境变量用于指定加载 initramfs 文件的地址。示例：
    
-   ```
+```
    setenv initrdaddr 0x9000000
    ```
 
 需要根据具体的硬件平台和 U-Boot 版本进行适配和配置。在 U-Boot 启动时，可以通过命令行界面或者配置文件进行环境变量的设置。一般来说，需要确保设置的文件路径和设备名称与实际的存储介质和文件系统相匹配。
 
 请注意，上述示例仅为演示目的，实际的配置可能因硬件平台和需求而有所不同。请参考相关的 U-Boot 文档和说明来了解更多详细信息。
+
+
+   ```
 
 # 参考资料
 

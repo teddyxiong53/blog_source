@@ -98,6 +98,51 @@ https://www.cnblogs.com/zsb517/p/6822870.html
 
 https://blog.codingnow.com/2015/01/lua_52_53.html
 
+# lua5.3相比于lua5.2的改动
+
+Lua 5.3 在许多方面都进行了改动和改进，以下是一些主要的变化：
+
+1. **整数运算的改进：** Lua 5.3引入了整数的64位支持。这意味着Lua 5.3可以处理更大范围的整数，以及更高的精度计算。
+
+2. **整数除法：** 在Lua 5.3中，整数除法（`//`）操作符被引入，用于执行整数除法，返回整数结果。
+
+3. **无符号整数支持：** Lua 5.3引入了对无符号整数的支持，通过新增的无符号位操作（例如`&`，`|`，`~`，`<<`，`>>`）来实现。
+
+4. **utf8库：** Lua 5.3引入了一个新的utf8库，用于处理UTF-8编码的字符串。这个库提供了一些有用的函数，比如计算字符串长度、迭代字符串中的字符等。
+
+5. **goto语句的限制：** Lua 5.3限制了`goto`语句的使用，不允许跳转到函数内部的标签。这个变化旨在提高代码的可读性和可维护性。
+
+6. **其他改进：** Lua 5.3还进行了一些其他方面的改进，包括对尾调用优化的改进、对`table`和`string`库的增强、对`load`函数的改进等等。
+
+这些改变使得Lua 5.3在性能、功能和语言特性上都有所提升，为Lua语言的使用者提供了更好的编程体验。
+
+# lua5.4相比于lua5.3的改动
+
+Lua 5.4 带来了一系列的改动和改进，以下是一些主要的变化：
+
+1. **新的语法和语言特性：**
+   - Lua 5.4 引入了一些新的语法和语言特性，例如在函数参数列表中支持三点运算符（`...`）的使用，允许直接在函数定义中使用`::`语法声明局部标签等。
+
+2. **UTF-8支持的增强：**
+   - Lua 5.4 增强了对UTF-8编码的支持，引入了一些新的UTF-8相关的库函数，使得处理UTF-8字符串更加方便和高效。
+
+3. **元表元方法的改进：**
+   - Lua 5.4 对元表元方法进行了改进和扩展，包括新增了`__pairs`和`__ipairs`元方法，以及对`__index`和`__newindex`元方法的优化。
+
+4. **虚拟机性能的提升：**
+   - Lua 5.4 对虚拟机的性能进行了优化，改进了对函数调用和尾调用的处理，提高了Lua代码的执行效率。
+
+5. **标准库的增强：**
+   - Lua 5.4 对标准库进行了一些改进和扩展，包括对`table`、`string`、`math`等库的增强，使得标准库提供的功能更加丰富和强大。
+
+6. **错误处理的改进：**
+   - Lua 5.4 对错误处理进行了改进，引入了新的`lua_pcallk`和`lua_callk`函数，使得错误处理更加灵活和可靠。
+
+7. **其他改进：**
+   - Lua 5.4 还进行了一些其他方面的改进，包括对GC的优化、对debug库的增强、对模块加载器的改进等等。
+
+这些改变使得 Lua 5.4 在性能、功能和语言特性上都有所提升，为 Lua 语言的使用者提供了更好的编程体验和更强大的工具支持。
+
 # lua包管理
 
 Luarocks 是一个 Lua 包管理器，
@@ -385,7 +430,7 @@ https://stackoverflow.com/questions/30362466/with-multiple-versions-of-lua-insta
 
 # lua代码初步分析
 
-看一下乱的源代码。
+看一下lua的源代码。
 
 就看lua5.3的。这个已经有一段时间了。应用应该比较广泛。
 
@@ -466,7 +511,9 @@ https://github.com/teal-language/tl
 
 点号后面跟属性，冒号后面跟方法。
 
-调用时的 player.takeDamage(player, 20) 稍显不和谐（据说用术语叫做 DRY），于是就要出动「冒号操作符」这个专门为此而生的语法糖了：
+调用时的 player.takeDamage(player, 20) 稍显不和谐（据说用术语叫做 DRY），
+
+于是就要出动「冒号操作符」这个专门为此而生的语法糖了：
 
 ```
 player:takeDamage(20)              --> 等同于 player.takeDamage(player, 20)
@@ -1074,6 +1121,56 @@ end
 
 https://blog.csdn.net/Dionysos_lai/article/details/47974747
 
+# lua的C语言接口用法举例
+
+Lua 提供了 C 语言接口，使得开发者可以通过 C 语言来扩展 Lua 的功能，例如添加新的函数、类型、模块等。下面是一个简单的示例，演示了如何使用 Lua 的 C 语言接口来向 Lua 中注册一个 C 函数，并在 Lua 中调用它：
+
+首先，我们创建一个 C 源文件 `mylib.c`：
+
+```c
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+
+// 定义一个 C 函数，该函数将两个数相加并返回结果
+static int add(lua_State *L) {
+    double a = luaL_checknumber(L, 1);
+    double b = luaL_checknumber(L, 2);
+    lua_pushnumber(L, a + b);
+    return 1;  // 返回值的数量
+}
+
+// 注册函数到 Lua
+static const struct luaL_Reg mylib[] = {
+    {"add", add},  // 在 Lua 中注册名为 "add" 的函数，对应的 C 函数是 add
+    {NULL, NULL}   // 结束标记
+};
+
+// 初始化函数，用于加载库
+int luaopen_mylib(lua_State *L) {
+    luaL_newlib(L, mylib);  // 创建一个新的 Lua 库
+    return 1;  // 返回创建的库
+}
+```
+
+然后，我们使用以下命令编译这个 C 源文件成为一个动态链接库 `mylib.so`：
+
+```
+gcc -Wall -shared -o mylib.so -fPIC mylib.c -llua
+```
+
+接着，我们可以在 Lua 中使用这个动态链接库：
+
+```lua
+-- 加载动态链接库
+local mylib = require("mylib")
+
+-- 调用 C 函数 add，并打印结果
+print(mylib.add(10, 20))  -- 输出 30
+```
+
+在这个例子中，我们创建了一个名为 `add` 的 C 函数，它将两个参数相加并返回结果。然后我们将这个函数注册到 Lua 中，并在 Lua 中通过 `require` 加载这个 C 函数，最后通过 `mylib.add(10, 20)` 调用它并打印结果。
+
 # lua_rawset作用
 
 早在之前我们就讲述过，如果对一个表进行查找的时候，若表中不存在该值，则会查找该表的元表访问其原表`__index`字段来解决。
@@ -1175,6 +1272,121 @@ https://blog.csdn.net/cooclc/article/details/115346937
    ```
 
 这些示例展示了如何创建、设置元表、传递和操作 Lua Userdata。通过使用 Userdata，可以在 Lua 和 C 之间进行数据交互，并将自定义的 C 数据结构或对象封装为 Lua 中的类型，从而扩展 Lua 的功能。
+
+# lua的元表
+
+在 Lua 中，元表（metatable）是一种特殊的表，
+
+用于定义某个值的特定行为。
+
+每个值都可以有一个关联的元表，
+
+这个元表中包含了一系列的元方法（metamethods），==用于重载 Lua 中的一些操作。==
+
+元表通常通过 `setmetatable` 函数来设置，
+
+通过 `getmetatable` 函数来获取。
+
+当对一个值进行某些操作时，Lua 会首先检查该值是否有关联的元表，
+
+如果有的话，Lua 会查找元表中对应的元方法来执行相应的操作。
+
+以下是一些常见的元方法以及它们的作用：
+
+- `__index`: 当试图访问一个表中不存在的索引时被调用。（就是get操作）
+- `__newindex`: 当试图给一个表中不存在的索引赋值时被调用。（就是set操作）
+- `__add`, `__sub`, `__mul`, `__div`, `__mod`, `__pow`: 用于重载算术操作符 `+`, `-`, `*`, `/`, `%`, `^`。
+- `__eq`, `__lt`, `__le`: 用于重载比较操作符 `==`, `<`, `<=`。
+- `__tostring`: 控制如何将对象转换为字符串。
+
+通过定义元方法，可以灵活地改变 Lua 中各种操作的行为，使得 Lua 支持自定义类型、操作符重载等功能。元表的使用使得 Lua 在语言层面上更加灵活和强大，为用户提供了更多的编程可能性。
+
+## 元表使用举例
+
+当你想要自定义 Lua 中某种类型的行为时，就可以使用元表。以下是一个简单的例子，演示了如何使用元表来重载 Lua 中表的加法操作：
+
+```lua
+-- 创建两个表
+local table1 = {10, 20, 30}
+local table2 = {40, 50, 60}
+
+-- 创建元表
+local metaTable = {}
+
+-- 定义元方法 __add，用于重载表的加法操作
+metaTable.__add = function (t1, t2)
+    local result = {}
+    for i = 1, #t1 do
+        result[i] = t1[i] + t2[i]
+    end
+    return result
+end
+
+-- 设置元表
+setmetatable(table1, metaTable)
+setmetatable(table2, metaTable)
+
+-- 进行加法操作
+local resultTable = table1 + table2
+
+-- 输出结果
+for i, v in ipairs(resultTable) do
+    print(i, v)
+end
+```
+
+在这个例子中，我们创建了两个表 `table1` 和 `table2`，然后创建了一个元表 `metaTable`。我们定义了元方法 `__add`，该方法接收两个参数 `t1` 和 `t2`，分别表示两个表。在 `__add` 方法中，我们遍历了两个表，并将对应位置的元素相加，然后将结果存入新的表 `result` 中并返回。
+
+接着，我们使用 `setmetatable` 函数将 `metaTable` 设置为 `table1` 和 `table2` 的元表，这样就将加法操作重载到了这两个表上。
+
+最后，我们进行加法操作 `table1 + table2`，得到了结果表 `resultTable`，并将其打印出来。
+
+## 我在上面基础上，实现__tostring方法
+
+```
+local table1 = {10,20,30}
+local table2 = {40,50,60}
+
+local metaTable = {}
+
+metaTable.__add = function(table1, table2) 
+    local result = {}
+    for i=1, #table1 do
+        result[i] = table1[i] + table2[i]
+    end    
+    return result
+end
+metaTable.__tostring = function(table)
+    local result = ""
+    for i=1, #table do
+        result = result.. table[i].. " "
+    end
+    return result
+end
+local table3 = {}
+setmetatable(table1, metaTable)
+setmetatable(table2, metaTable)
+setmetatable(table3, metaTable)
+
+print(table1)
+print(table2)
+table3 = table1 + table2
+# setmetatable(table3, metaTable) # 如果没有这一行，那么打印table3调用不到__tostring的实现。
+print(table3)
+
+```
+
+在你的代码中，`table3` 的赋值操作 `table3 = table1 + table2` 实际上将 `table3` 重新赋值为一个新的表，这个新表并没有与你定义的元表 `metaTable` 关联。因此，这个新表并不会调用 `metaTable.__tostring` 方法。
+
+要让 `table3` 与 `metaTable` 关联，你可以在赋值之后再次使用 `setmetatable` 函数来设置它的元表，例如：
+
+```lua
+table3 = table1 + table2
+setmetatable(table3, metaTable)
+print(table3)  -- 这样会调用到 metaTable.__tostring 方法
+```
+
+通过在 `table3` 赋值后设置元表，你就能够确保它与 `metaTable` 关联，从而在打印时调用 `metaTable.__tostring` 方法。
 
 # userdata的元表
 
@@ -1923,6 +2135,46 @@ total >=128 ? 128 : total
 
 相关概念进行一一对等。
 
+
+
+Lua 协程是一种轻量级的线程，可以在同一个线程内部实现多个并发执行的任务。
+
+==与操作系统线程不同，Lua 协程是由用户程序控制的，==
+
+可以自由挂起（yield）和恢复（resume），并且共享同一个全局环境。
+
+Lua 协程通过 `coroutine` 库提供支持。
+
+主要的函数有 `coroutine.create()`、`coroutine.resume()`、`coroutine.yield()` 和 `coroutine.status()`。
+
+1. `coroutine.create(func)`: 创建一个新的协程，传入一个函数作为参数。该函数将在新的协程中执行。
+2. `coroutine.resume(co, ...)`: 启动或恢复一个协程的执行。传入一个协程及其参数，如果成功则返回 `true`，否则返回 `false` 加错误信息。
+3. `coroutine.yield(...)`: 挂起当前协程的执行，并返回一些值给调用方。当 `coroutine.resume()` 调用该协程时，它会从 `yield` 的位置继续执行。
+4. `coroutine.status(co)`: 返回协程的状态，可能的状态有 `"suspended"`、`"running"`、`"normal"` 和 `"dead"`。
+
+下面是一个简单的示例，演示了如何使用 Lua 协程：
+
+```lua
+function foo()
+    print("foo started")
+    coroutine.yield()  -- 挂起协程
+    print("foo resumed")
+end
+
+-- 创建协程
+local co = coroutine.create(foo)
+
+-- 启动协程
+coroutine.resume(co)
+
+-- 恢复协程
+print(coroutine.status(co))  -- 输出 "suspended"
+coroutine.resume(co)          -- 恢复协程
+print(coroutine.status(co))  -- 输出 "dead"
+```
+
+在这个示例中，`foo` 函数是一个简单的协程，它会在 `yield` 处挂起，并在 `resume` 处继续执行。我们创建了一个协程 `co`，并通过 `coroutine.resume(co)` 启动它。然后，我们调用 `coroutine.resume(co)` 恢复协程的执行，并通过 `coroutine.status(co)` 查看协程的状态。
+
 ## coroutine.create(f)
 
 create只有一个参数，就是一个function。这个相当于pthread_create函数。
@@ -2015,6 +2267,102 @@ error test
 false   test/test.lua:3: attempt to index a nil value (global 'aa')
 dead
 ```
+
+# 协程的实际使用场景举例
+
+Lua 协程在实际中有很多用途，以下是一些常见的使用场景：
+
+1. **协作式多任务处理：** 协程可以用于实现协作式多任务处理，例如游戏中的 AI 控制、网络服务器中的请求处理等。通过协程，可以将不同的任务分解为多个协程，每个协程负责执行一部分任务，从而实现异步执行、并发处理。
+
+2. **状态机：** 协程可以用于实现状态机，例如游戏中的角色状态、UI 界面状态等。每个状态对应一个协程，通过 `yield` 和 `resume` 在不同的状态之间切换，从而实现状态的管理和控制。
+
+3. **事件驱动编程：** 协程可以用于实现事件驱动编程模型，例如异步 IO、定时器等。通过协程，可以在事件发生时挂起当前任务，并在事件处理完成后恢复执行，从而实现非阻塞式的事件处理。
+
+4. **并发编程：** 协程可以用于实现并发编程，例如并行计算、任务调度等。通过协程，可以将复杂的任务分解为多个子任务，并行执行，从而提高程序的性能和效率。
+
+5. **协程池：** 协程可以用于实现协程池，提高协程的复用率和性能。通过维护一组空闲的协程，并在需要时从池中获取协程执行任务，可以降低协程创建和销毁的开销，提高程序的性能。
+
+总的来说，Lua 协程可以在各种需要异步处理、并发执行、状态管理等场景中发挥作用，通过合理地利用协程，可以提高程序的性能、简化代码逻辑，并实现更加灵活和高效的编程模式。
+
+## 游戏中的角色状态，把这个用lua代码协程举例
+
+在游戏开发中，角色的状态管理是一个常见的需求。例如，角色可能处于不同的状态，如站立、移动、攻击、受伤等，每个状态对应着不同的行为和动画。
+
+下面是一个简单的示例，演示了如何使用 Lua 协程来管理游戏角色的状态：
+
+假设我们有一个角色类 `Character`，其中定义了一些角色的行为函数，如 `stand()`、`move()`、`attack()`、`hurt()` 等。
+
+```lua
+-- character.lua
+
+Character = {}
+
+function Character:new(name)
+    local obj = {
+        name = name,
+        state = coroutine.create(self.stand)  -- 默认状态为站立
+    }
+    setmetatable(obj, self)
+    self.__index = self
+    return obj
+end
+
+function Character:stand()
+    print(self.name .. " is standing")
+    coroutine.yield()
+end
+
+function Character:move()
+    print(self.name .. " is moving")
+    coroutine.yield()
+end
+
+function Character:attack()
+    print(self.name .. " is attacking")
+    coroutine.yield()
+end
+
+function Character:hurt()
+    print(self.name .. " is hurt")
+    coroutine.yield()
+end
+
+function Character:update()
+    local status = coroutine.status(self.state)
+    if status == "suspended" then
+        coroutine.resume(self.state)
+    elseif status == "dead" then
+        print(self.name .. " state finished")
+    end
+end
+```
+
+然后我们可以在游戏逻辑中创建角色对象，并切换角色的状态：
+
+```lua
+-- main.lua
+
+dofile("character.lua")
+
+local player = Character:new("Player")
+
+-- 站立状态
+player:update()
+
+-- 移动状态
+player.state = coroutine.create(player.move)
+player:update()
+
+-- 攻击状态
+player.state = coroutine.create(player.attack)
+player:update()
+
+-- 受伤状态
+player.state = coroutine.create(player.hurt)
+player:update()
+```
+
+在这个示例中，我们通过 Lua 协程来管理角色的状态。首先，我们创建了一个 `Character` 类，并定义了角色的不同状态对应的行为函数。然后，在游戏逻辑中，我们创建了一个角色对象 `player`，并切换了角色的状态。每次调用 `update` 方法时，会检查当前状态并根据情况调用相应的行为函数。通过使用 Lua 协程，我们可以方便地管理角色的状态，使得代码更加清晰和可维护。
 
 # lua_tothread作用
 
@@ -2452,7 +2800,11 @@ https://juejin.cn/post/6844904121862995981
 
 `ipairs` 和 `pairs` 都是 Lua 中用于迭代表的函数，它们之间的区别在于迭代的方式不同。
 
-`ipairs` 函数用于迭代数组，它会返回数组中的每一个元素。具体来说，它会返回数组中的下标和对应的元素值。使用 `ipairs` 函数迭代数组时，迭代顺序是从下标 1 开始，一直到最后一个下标。
+`ipairs` 函数用于迭代数组，它会返回数组中的每一个元素。
+
+具体来说，它会返回数组中的下标和对应的元素值。
+
+使用 `ipairs` 函数迭代数组时，迭代顺序是从下标 1 开始，一直到最后一个下标。
 
 下面是一个使用 `ipairs` 函数迭代数组的例子：
 
@@ -2463,9 +2815,13 @@ for i, v in ipairs(array) do
 end
 ```
 
-上述代码中，我们定义了一个数组 `array`，然后使用 `ipairs` 函数迭代该数组。在循环中，变量 `i` 表示当前元素的下标，变量 `v` 表示当前元素的值。
+上述代码中，我们定义了一个数组 `array`，然后使用 `ipairs` 函数迭代该数组。
 
-`pairs` 函数用于迭代表中的键值对，它会返回表中的每一个键值对。具体来说，它会返回键和对应的值。使用 `pairs` 函数迭代表时，迭代顺序是不确定的，因为 Lua 中的表是无序的。
+在循环中，变量 `i` 表示当前元素的下标，变量 `v` 表示当前元素的值。
+
+==`pairs` 函数用于迭代表中的键值对，它会返回表中的每一个键值对。==
+
+具体来说，它会返回键和对应的值。使用 `pairs` 函数迭代表时，迭代顺序是不确定的，因为 Lua 中的表是无序的。
 
 下面是一个使用 `pairs` 函数迭代表的例子：
 
@@ -2742,6 +3098,143 @@ Lua 内部使用 C 的 `longjmp` 机制让出一个协程。
 **由于 `longjmp` 会移除 C 栈的栈帧， Lua 就无法返回到 `foo` 里了。**
 
 
+
+# C语言里调用lua
+
+在C语言中调用Lua通常涉及以下步骤：
+
+1. 创建Lua状态（Lua state）。
+2. 加载Lua标准库和其他的Lua库（可选）。
+3. 加载并执行Lua代码。
+4. 在Lua中注册C函数（如果需要）。
+5. 调用Lua函数。
+6. 释放Lua状态。
+
+下面是一个简单的示例，演示了如何在C语言中调用Lua：
+
+```c
+#include <stdio.h>
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+
+int main() {
+    // 创建Lua状态
+    lua_State *L = luaL_newstate();
+    
+    // 加载Lua标准库
+    luaL_openlibs(L);
+    
+    // 加载并执行Lua代码
+    luaL_dostring(L, "function greet(name) return 'Hello, ' .. name end");
+
+    // 在Lua中注册C函数
+    lua_register(L, "printFromC", printFromC);
+    
+    // 调用Lua函数
+    lua_getglobal(L, "greet");  // 获取全局函数 greet
+    lua_pushstring(L, "Lua");   // 传递参数 "Lua"
+    lua_call(L, 1, 1);          // 调用函数，传递一个参数，期望一个返回值
+    
+    // 读取并打印返回值
+    const char *result = lua_tostring(L, -1);
+    printf("%s\n", result);
+
+    // 释放Lua状态
+    lua_close(L);
+    
+    return 0;
+}
+```
+
+在这个例子中，我们首先创建了一个Lua状态 `L`，然后加载了Lua标准库。接着，我们通过 `luaL_dostring` 函数执行了一段Lua代码，定义了一个名为 `greet` 的Lua函数。然后，我们使用 `lua_register` 函数将一个C函数 `printFromC` 注册到Lua中。接着，我们调用了Lua函数 `greet`，传递了一个参数 `"Lua"`，并读取了返回值并打印。最后，我们释放了Lua状态。
+
+# C语言把lua当成参数配置文件来用
+
+当将 Lua 当作参数配置文件时，通常的做法是在 Lua 脚本中定义一些变量、表和函数，这些内容描述了程序的配置信息，例如文件路径、网络设置、算法参数等等。下面是一个示例，演示了如何使用 Lua 配置文件来描述复杂的配置信息：
+
+假设有一个名为 `config.lua` 的 Lua 配置文件，内容如下：
+
+```lua
+-- config.lua
+
+-- 文件路径配置
+file_paths = {
+    input_file = "/path/to/input.txt",
+    output_file = "/path/to/output.txt"
+}
+
+-- 网络设置配置
+network_settings = {
+    host = "localhost",
+    port = 8080,
+    timeout = 300
+}
+
+-- 算法参数配置
+algorithm_params = {
+    iterations = 1000,
+    tolerance = 0.001
+}
+
+-- 函数定义
+function greet(name)
+    return "Hello, " .. name
+end
+```
+
+然后，我们可以编写一个 C 程序，读取并解析 `config.lua` 文件，并获取其中的配置信息：
+
+```c
+#include <stdio.h>
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+
+int main() {
+    // 创建 Lua 状态
+    lua_State *L = luaL_newstate();
+    
+    // 加载 Lua 标准库
+    luaL_openlibs(L);
+    
+    // 读取 Lua 配置文件
+    const char *filename = "config.lua";
+    if (luaL_dofile(L, filename)) {
+        fprintf(stderr, "Error loading file: %s\n", lua_tostring(L, -1));
+        lua_close(L);
+        return 1;
+    }
+    
+    // 读取并打印配置信息
+    printf("Input file: %s\n", lua_tostring(L, -1));
+    lua_getglobal(L, "network_settings");
+    lua_getfield(L, -1, "host");
+    printf("Host: %s\n", lua_tostring(L, -1));
+    lua_getfield(L, -2, "port");
+    printf("Port: %d\n", lua_tointeger(L, -1));
+    lua_getfield(L, -3, "timeout");
+    printf("Timeout: %d\n", lua_tointeger(L, -1));
+    lua_pop(L, 3);  // 弹出栈顶的三个值
+    
+    // 关闭 Lua 状态
+    lua_close(L);
+    
+    return 0;
+}
+```
+
+在这个示例中，我们使用 Lua 解析了 `config.lua` 文件，并通过 Lua API 获取了文件路径、网络设置等配置信息，并打印出来。这样，我们就可以在 C 程序中使用 Lua 配置文件来描述复杂的配置信息了。
+
+
+
+## lua_getfield(L, -2, "port"); 这为什么是-2
+
+在 Lua C API 中，`lua_getfield(L, idx, k)` 函数用于从表中获取字段值，并将其压入 Lua 栈中。其中 `idx` 表示表在 Lua 栈中的索引，`k` 是要获取的字段名。
+
+在你提供的例子中，`lua_getfield(L, -2, "port")` 中的 `-2` 表示在 Lua 栈中索引为 -2 的位置的表。这个表通常是通过 `lua_getglobal(L, "network_settings")` 将全局变量 `network_settings` 压入 Lua 栈的。因此，`-2` 表示的是全局变量 `network_settings` 所在的位置。
+
+因此，`lua_getfield(L, -2, "port")` 会从 `network_settings` 表中获取名为 "port" 的字段值，并将其压入 Lua 栈中。
 
 # 参考资料
 
