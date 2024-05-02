@@ -143,7 +143,7 @@ Lua 5.4 带来了一系列的改动和改进，以下是一些主要的变化：
 
 这些改变使得 Lua 5.4 在性能、功能和语言特性上都有所提升，为 Lua 语言的使用者提供了更好的编程体验和更强大的工具支持。
 
-# lua包管理
+# luarocks包管理
 
 Luarocks 是一个 Lua 包管理器，
 
@@ -239,7 +239,7 @@ require 用于搜索 Lua 文件的路径是存放在全局变量 package.path �
 export LUA_PATH="~/lua/?.lua;;"
 ```
 
-文件路径以 ";" 号分隔，最后的 2 个 ";;" 表示新加的路径后面加上原来的默认路径。
+文件路径以 ";" 号分隔，**最后的 2 个 ";;" 表示新加的路径后面加上原来的默认路径。**
 
 这两种写法都是合法的。
 
@@ -2686,6 +2686,162 @@ require的返回值，取决于导入的文件的返回值。
 
 如果没有返回值，那么默认是返回true。
 
+# lua写一个C语言模块
+
+好的，下面是一个简单的示例，演示了如何使用 Lua C API 创建一个 C 模块，并提供对应的测试代码和 Makefile。
+
+首先，我们创建一个名为 `mymodule.c` 的 C 文件，实现一个简单的函数 `add`，用于将两个数字相加：
+
+```c
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+
+static int add(lua_State *L) {
+    double a = luaL_checknumber(L, 1);
+    double b = luaL_checknumber(L, 2);
+    lua_pushnumber(L, a + b);
+    return 1;  // 返回值的数量
+}
+
+static const struct luaL_Reg mymodule[] = {
+    {"add", add},  // 注册 add 函数
+    {NULL, NULL}   // 结束标记
+};
+
+int luaopen_mymodule(lua_State *L) {
+    luaL_newlib(L, mymodule);  // 创建一个新的 Lua 库
+    return 1;  // 返回创建的库
+}
+```
+
+然后，我们创建一个名为 `test.lua` 的 Lua 文件，用于测试我们的 C 模块：
+
+```lua
+-- test.lua
+
+local mymodule = require("mymodule")
+
+print(mymodule.add(10, 20))  -- 输出 30
+```
+
+最后，我们创建一个名为 `Makefile` 的 Makefile 文件，用于编译我们的 C 模块和测试代码：
+
+```Makefile
+CC = gcc
+CFLAGS = -Wall -shared -fPIC
+
+.PHONY: all clean
+
+all: mymodule.so
+
+mymodule.so: mymodule.c
+    $(CC) $(CFLAGS) -o $@ $^ -llua
+
+clean:
+    rm -f mymodule.so
+```
+
+现在，我们可以在命令行中运行 `make` 来编译我们的 C 模块：
+
+```bash
+make
+```
+
+编译完成后，我们可以使用 Lua 来运行测试代码：
+
+```bash
+lua test.lua
+```
+
+运行结果将会输出 `30`，表示 C 模块的 `add` 函数正常工作。
+
+## 碰到的问题和解决
+
+首先是lua默认是静态的liblua.a文件。没有liblua.so文件。
+
+这个需要修改lua的Makefile。
+
+总的来说，lua的owner太佛系了。基本没有怎么做生态建设。
+
+构建系统也只针对本机构建的简单情况。
+
+都是大家自发的。
+
+不过lua的应用场景也太分散了。
+
+很难形成合力。
+
+
+
+看起来编译失败了，错误提示表明 ld 在链接时遇到了一些问题。主要问题是 `/usr/local/lib/liblua.a` 中的一些符号不能被正确链接。
+
+这可能是由于 `liblua.a` 是一个静态库文件，而我们正在尝试生成一个共享库文件 `mymodule.so`。静态库文件中的代码是在编译时被链接到可执行文件中的，因此其中的符号已经被解析了，但是生成共享库文件时，编译器需要重新解析符号，但其中的一些符号可能无法重新解析。
+
+为了解决这个问题，我们需要重新编译 Lua 并确保使用 `-fPIC` 选项来生成位置无关的代码，这样才能生成共享库文件。我们可以尝试按照以下步骤重新编译 Lua：
+
+1. 下载 Lua 源代码，并解压缩。
+
+2. 进入 Lua 源代码目录，并执行以下命令重新配置并编译 Lua：
+
+```bash
+make linux MYCFLAGS=-fPIC
+```
+
+3. 编译完成后，在 Lua 源代码目录下会生成 `liblua.a` 静态库文件，以及 `liblua.so` 共享库文件。
+
+4. 将生成的共享库文件复制到系统库目录中，或者在编译 C 模块时使用 `-L` 选项指定库文件路径。
+
+5. 重新执行 `make` 命令编译 C 模块。
+
+希望这能帮助你成功编译 C 模块。
+
+
+
+在 Makefile 中，你可以使用以下命令将 `.o` 文件生成为 `.so` 共享库文件：
+
+```Makefile
+yourmodule.so: yourmodule.o
+    $(CC) -shared -o $@ $^ $(LDFLAGS)
+```
+
+这个规则将会告诉 Make 工具如何从 `yourmodule.o` 目标文件生成 `yourmodule.so` 共享库文件。这里的 `$@` 表示目标文件名，`$^` 表示所有依赖文件（即 `.o` 文件）的列表。
+
+你也可以添加额外的依赖项，例如其他的目标文件或库文件：
+
+```Makefile
+yourmodule.so: yourmodule.o otherfile.o
+    $(CC) -shared -o $@ $^ $(LDFLAGS)
+```
+
+这个规则将会告诉 Make 工具在生成 `yourmodule.so` 之前先生成 `yourmodule.o` 和 `otherfile.o` 这两个目标文件。
+
+这个错误通常发生在 Lua 找不到指定的共享库文件（`.so` 文件）。在你的情况中，Lua 试图加载 `mymodule` 模块，但在加载 `./mymodule.so` 文件时遇到了问题，因为它依赖于 Lua 的共享库文件 `liblua.so`，但无法找到。
+
+要解决这个问题，你需要确保 Lua 的共享库文件 `liblua.so` 在系统中可用，并且可以被加载。你可以通过以下几种方法来解决这个问题：
+
+1. **将 Lua 的共享库文件复制到合适的路径：** 将 `liblua.so` 文件复制到系统库目录中，通常是 `/usr/lib` 或 `/usr/local/lib`。你可以使用以下命令将它复制到 `/usr/lib`：
+
+```bash
+sudo cp /path/to/liblua.so /usr/lib
+```
+
+2. **设置 LD_LIBRARY_PATH 环境变量：** 在运行 Lua 脚本之前，设置 `LD_LIBRARY_PATH` 环境变量，将 Lua 的共享库文件所在的路径添加到其中。例如：
+
+```bash
+export LD_LIBRARY_PATH=/path/to/lua/lib:$LD_LIBRARY_PATH
+```
+
+3. **在运行 Lua 脚本时指定 Lua 共享库路径：** 在运行 Lua 脚本时，使用 `-L` 选项指定 Lua 共享库文件所在的路径。例如：
+
+```bash
+lua -L /path/to/lua/lib test.lua
+```
+
+请注意，`/path/to/lua/lib` 应该替换为你实际安装 Lua 的路径。完成以上操作后，重新运行你的 Lua 脚本，应该就能够成功加载 `mymodule` 模块了。
+
+
+
 # 函数的本质
 
 第六章 More About Functions 中说到我们平时在 Lua 中写的函数声明
@@ -3235,6 +3391,92 @@ int main() {
 在你提供的例子中，`lua_getfield(L, -2, "port")` 中的 `-2` 表示在 Lua 栈中索引为 -2 的位置的表。这个表通常是通过 `lua_getglobal(L, "network_settings")` 将全局变量 `network_settings` 压入 Lua 栈的。因此，`-2` 表示的是全局变量 `network_settings` 所在的位置。
 
 因此，`lua_getfield(L, -2, "port")` 会从 `network_settings` 表中获取名为 "port" 的字段值，并将其压入 Lua 栈中。
+
+# lauxlib.h里的api接口分类记忆
+
+`lauxlib.h` 头文件中的 API 接口主要是辅助函数，用于 Lua C API 的一些扩展和辅助功能。这些函数通常用于更高级的 Lua C 编程，包括创建和操作 Lua 数据、加载 Lua 模块等。这些接口可以大致分为以下几个类别：
+
+1. **栈操作函数：** 这些函数用于 Lua 栈的操作，包括值的压入和弹出、类型检查、栈大小调整等。例如：`luaL_checkstack()`、`luaL_argerror()`、`luaL_error()` 等。
+
+2. **全局环境操作函数：** 这些函数用于获取和设置 Lua 全局环境。例如：`luaL_openlibs()`、`luaL_newstate()` 等。
+
+3. **加载器函数：** 这些函数用于加载 Lua 模块和库。例如：`luaL_requiref()`、`luaL_dofile()`、`luaL_dostring()` 等。
+
+4. **辅助函数：** 这些函数提供了一些辅助功能，例如字符串处理、类型转换、错误处理等。例如：`luaL_checkstring()`、`luaL_optinteger()`、`luaL_typename()` 等。
+
+5. **注册函数：** 这些函数用于注册 C 函数到 Lua 中，从而可以在 Lua 中调用。例如：`luaL_register()`、`luaL_newmetatable()`、`luaL_setmetatable()` 等。
+
+6. **缓冲区操作函数：** 这些函数用于创建和操作 Lua 缓冲区，用于处理大块数据。例如：`luaL_Buffer` 相关的函数。
+
+7. **其他函数：** 还有一些其他的辅助函数，用于处理特定的任务，如读写文件、操作系统相关等。例如：`luaL_loadfile()`、`luaL_execresult()` 等。
+
+这些函数提供了丰富的功能，可以让开发者更方便地使用 Lua C API 来扩展 Lua 的功能，实现更复杂的任务。
+
+# lua binding的思考
+
+绑定到 Lua 的最直接方法是使用 Lua C API。
+
+C API 由两部分组成：基本 API （lua.h） 为 C 和 Lua 之间的所有交互提供原始函数，
+
+而辅助库 （lauxlib.h） 为一些常见任务提供更高级别的函数。
+
+默认情况下，Lua C API 几乎不对传递给它的参数进行健全性检查。
+
+例如，传递不正确的堆栈索引可能会导致段错误或随机数据损坏。
+
+应始终在任何调试版本中启用 API 检查。
+
+您可以通过使用 选项 进行编译来执行此操作 `-DLUA_USE_APICHECK` 。
+
+ `luaconf.h` 使用此 C 宏来定义 `luai_apicheck` 在各个位置调用 `assert()` （您也可以编辑此定义以执行可能更有用的事情）。
+
+这些函数通过构建函数指针和名称表，然后调用 `luaL_register()` 来注册到 Lua 中。常量 `pi` 和 `huge` 是单独设置的。这个注册码被放置在一个名为 `luaopen_math()` 的函数中，该函数可以静态调用（例如从 linit.c）或动态调用（通过 Lua 的共享库加载机制通过 `require` ）。
+
+```
+static const luaL_Reg mathlib[] = {
+    { "abs", math_abs },
+    { "cos", math_cos },
+    { "sin", math_sin },
+    { NULL, NULL } };
+    
+LUALIB_API int luaopen_math(lua_State* L)
+{
+    luaL_register(L, LUA_MATHLIBNAME, mathlib);
+    lua_pushnumber(L, PI);
+    lua_setfield(L, -2, "pi");
+    lua_pushnumber(L, HUGE_VAL);
+    lua_setfield(L, -2, "huge");
+    return 1;
+}
+```
+
+http://lua-users.org/wiki/BindingCodeToLua
+
+
+
+https://github.com/orangeduck/LuaAutoC
+
+# LuaDist
+
+LuaDist 是一个开源项目，旨在为 Lua 社区提供一站式的解决方案，
+
+包括工具、库和应用程序的管理和分发。
+
+它提供了一个集成的平台，使得用户可以轻松地获取、安装和管理 Lua 相关的工具和库，从而加快开发速度，提高代码质量。
+
+LuaDist 主要包含以下几个方面的功能和特点：
+
+1. **包管理系统：** LuaDist 提供了一个简单易用的包管理系统，允许用户从中央仓库中获取、安装和管理各种 Lua 工具和库。用户可以通过命令行工具或图形界面来进行操作，实现快速依赖解决和包更新。
+
+2. **跨平台支持：** LuaDist 支持多种操作系统，包括 Linux、Windows、MacOS 等，以及多种架构，如 x86、x86_64、ARM 等，从而满足不同用户的需求。
+
+3. **集成开发环境：** LuaDist 提供了一个集成的开发环境，包括编辑器、调试器、版本控制工具等，使得用户可以在一个统一的环境中进行 Lua 开发，并享受到自动化、智能化的开发体验。
+
+4. **自动化构建和测试：** LuaDist 提供了自动化的构建和测试工具，可以帮助开发者快速构建和测试他们的 Lua 项目，确保代码质量和稳定性。
+
+5. **社区支持：** LuaDist 是一个开放的社区项目，欢迎用户和开发者共同参与和贡献。用户可以通过邮件列表、论坛、社交媒体等渠道与其他开发者交流和分享经验。
+
+总的来说，LuaDist 为 Lua 社区提供了一个完善的生态系统，为用户提供了丰富的工具和资源，帮助他们更轻松地开发、测试和部署 Lua 项目。
 
 # 参考资料
 

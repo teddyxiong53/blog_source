@@ -9,6 +9,16 @@ tags:
 
 还是把electron的仔细学习一下。用来写跨平台的gui程序。
 
+# 资源
+
+github上 electron的topic下面有不少的东西。
+
+https://github.com/topics/electron
+
+
+
+https://github.com/sindresorhus/awesome-electron
+
 # 安装electron
 
 安装全局工具
@@ -51,7 +61,123 @@ Electron是一个开源的桌面应用程序开发框架，
 
 总的来说，Electron是一个强大的桌面应用程序开发框架，使开发者能够使用Web技术构建跨平台的应用程序，同时获得访问操作系统和硬件的能力。这使得它成为许多开发者和公司的首选选择，用于快速构建桌面应用程序。
 
+# 发展历史
+
+Electron GUI 技术的发展历史可以追溯到2013年，当时是由GitHub公司开发的用于构建跨平台桌面应用程序的开源框架。以下是 Electron 的主要发展历程：
+
+1. **诞生和初期发展（2013-2015年）**：
+   - Electron 最初被称为 Atom Shell，是为了支持 GitHub 的文本编辑器 Atom 的开发而创建的。
+   - GitHub 公司将 Atom Shell 开源，并迅速吸引了开发者的关注，因为它为使用 Web 技术构建桌面应用提供了一种简单而强大的方式。
+
+2. **正式更名为 Electron（2015年）**：
+   - 由于 Atom Shell 在开源社区中获得了广泛的认可和使用，GitHub 宣布将其正式更名为 Electron，并专注于提供更好的文档和支持。
+
+3. **增长和普及（2015-至今）**：
+   - 随着时间的推移，Electron 在开发者社区中变得越来越流行。它的简单易用性和基于 Web 技术的开发方式吸引了许多开发者。
+   - 许多知名的应用程序开始采用 Electron，包括 Visual Studio Code、Slack、Discord 等，这些应用程序的成功案例进一步促进了 Electron 的普及和发展。
+   - 随着时间的推移，Electron 的生态系统不断壮大，涌现了大量的插件和工具，为开发者提供了丰富的资源和支持。
+
+4. **持续改进和发展**：
+   - Electron 框架本身也在不断地改进和发展，发布了许多版本，引入了新的功能、性能优化和安全增强等。
+   - 开发者社区也在不断地贡献代码、修复 Bug，并提出了各种改进建议，以使 Electron 框架更加完善和强大。
+
+总的来说，Electron 在过去的几年中已经成为了构建跨平台桌面应用程序的首选框架之一，它的发展历程充满了活力和创新，为开发者提供了丰富的工具和资源，助力他们构建出更加强大、灵活和易用的应用程序。
+
+# 入门
+
+当然，让我们一步步来学习如何入门开发 Electron 应用程序：
+
+### 步骤 1：安装 Node.js 和 npm
+
+首先，你需要安装 Node.js 和 npm（Node 包管理器），因为 Electron 是基于 Node.js 的。你可以从 Node.js 官网下载并安装最新版本的 Node.js：[https://nodejs.org](https://nodejs.org)。
+
+安装完成后，你可以在命令行中运行以下命令来验证 Node.js 和 npm 是否已经正确安装：
+
+```bash
+node -v
+npm -v
+```
+
+### 步骤 2：创建新的 Electron 项目
+
+1. 在命令行中，创建一个新的目录用于你的 Electron 项目：
+
+```bash
+mkdir my-electron-app
+cd my-electron-app
+```
+
+2. 初始化一个新的 npm 项目：
+
+```bash
+npm init -y
+```
+
+### 步骤 3：安装 Electron
+
+在项目目录中，使用 npm 安装 Electron：
+
+```bash
+npm install electron
+```
+
+### 步骤 4：创建主进程和渲染进程文件
+
+1. 创建一个名为 `main.js` 的文件作为 Electron 应用的主进程文件。这个文件将控制整个应用的生命周期和窗口管理等。
+
+```javascript
+// main.js
+const { app, BrowserWindow } = require('electron');
+
+function createWindow() {
+  const win = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  });
+
+  win.loadFile('index.html');
+}
+
+app.whenReady().then(createWindow);
+```
+
+2. 创建一个名为 `index.html` 的文件作为 Electron 应用的渲染进程文件。这个文件将作为应用的主界面。
+
+```html
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Electron App</title>
+</head>
+<body>
+  <h1>Hello, Electron!</h1>
+</body>
+</html>
+```
+
+### 步骤 5：运行 Electron 应用
+
+在项目目录中，运行以下命令启动 Electron 应用：
+
+```bash
+npx electron .
+```
+
+这将启动 Electron 应用，并显示一个窗口，窗口中将加载 `index.html` 文件中的内容。
+
+### 结束语
+
+至此，你已经成功创建了一个简单的 Electron 应用程序。从这个基础上，你可以继续学习如何添加更多功能、界面和交互性，开发出更加丰富和复杂的 Electron 应用。祝你开发愉快！
+
 # HelloWorld
+
+
 
 可以看到下面有3个文件。
 
@@ -164,6 +290,43 @@ Chromium的多进程结构带来了一些显著的优点，
 
 
 
+当开发 Electron 应用时，主要有两种类型的进程：主进程和渲染进程。以下是它们的基本概念和区别：
+
+### 主进程（Main Process）：
+
+- 主进程是 Electron 应用的核心进程，负责控制应用的生命周期、管理窗口和执行系统级别的操作。
+- 一个 Electron 应用只有一个主进程，通常由一个名为 `main.js` 的脚本文件控制。
+- 主进程中可以创建和管理多个渲染进程，每个渲染进程对应一个窗口。
+
+在主进程中，通常会执行以下任务：
+
+1. 创建主窗口和其他辅助窗口。
+2. 监听应用生命周期事件（如应用启动、退出等）。
+3. 处理系统级别的操作和事件。
+4. 与底层操作系统进行交互，如文件系统、网络请求等。
+5. 创建和管理渲染进程。
+
+### 渲染进程（Renderer Process）：
+
+- 渲染进程是 Electron 应用中用于显示界面的进程，通常由一个 HTML 页面和相关的前端代码组成。
+- 一个 Electron 应用可以有一个或多个渲染进程，每个渲染进程对应一个窗口。
+- 渲染进程通过渲染器进程 API（Renderer APIs）与主进程进行通信和交互。
+
+在渲染进程中，通常会执行以下任务：
+
+1. 显示用户界面，呈现 HTML、CSS 和 JavaScript。
+2. 处理用户输入和交互事件。
+3. 通过 IPC（进程间通信）与主进程进行通信，以执行一些需要主进程权限的任务，比如文件操作、系统调用等。
+4. 加载和管理渲染进程内的网页或应用。
+
+### 通信机制：
+
+主进程和渲染进程之间通过 IPC（进程间通信）进行通信，Electron 提供了一些 API 来实现这种通信。比如，在渲染进程中可以使用 `ipcRenderer` 对象来发送事件和数据到主进程，而在主进程中可以使用 `ipcMain` 模块来监听和处理渲染进程发送过来的事件。
+
+这种进程间通信机制使得主进程和渲染进程可以进行数据交换和协作，实现更复杂的应用逻辑和功能。
+
+总的来说，主进程负责控制整个应用的生命周期和系统级别的操作，而渲染进程则负责显示用户界面和处理用户交互。通过这种分工，Electron 应用可以实现丰富的功能和交互性。
+
 # 结构分析
 
 electron运行package.json里的main脚本的进程，叫做主进程。
@@ -193,6 +356,325 @@ electron运行package.json里的main脚本的进程，叫做主进程。
 **在web页面里操作原生资源是非常危险的。**
 
 **渲染进程需要发消息给主进程来完成这种操作。**
+
+# 复杂一点的例子
+
+好的，以下是一个稍微复杂一些的 Electron 应用示例，它包含了界面的一些复杂设计、对本地文件的操作以及进程间通信。
+
+### 主进程（main.js）
+
+```javascript
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const fs = require('fs');
+
+let mainWindow;
+
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  });
+
+  mainWindow.loadFile('index.html');
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
+}
+
+app.on('ready', createWindow);
+
+// 打开文件对话框
+ipcMain.on('open-file-dialog', (event) => {
+  dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile']
+  }).then(result => {
+    if (!result.canceled && result.filePaths.length > 0) {
+      const filePath = result.filePaths[0];
+      fs.readFile(filePath, 'utf-8', (err, data) => {
+        if (err) {
+          event.sender.send('file-opened', { error: err.message });
+        } else {
+          event.sender.send('file-opened', { data });
+        }
+      });
+    }
+  });
+});
+```
+
+### 渲染进程（index.html）
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complex Electron App</title>
+</head>
+<body>
+  <h1>Complex Electron App</h1>
+  <button id="open-file-btn">Open File</button>
+  <div id="file-content"></div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    document.getElementById('open-file-btn').addEventListener('click', () => {
+      ipcRenderer.send('open-file-dialog');
+    });
+
+    ipcRenderer.on('file-opened', (event, data) => {
+      const fileContentDiv = document.getElementById('file-content');
+      if (data.error) {
+        fileContentDiv.innerHTML = `<p>Error: ${data.error}</p>`;
+      } else {
+        fileContentDiv.innerHTML = `<pre>${data.data}</pre>`;
+      }
+    });
+  </script>
+</body>
+</html>
+```
+
+在这个示例中，主进程负责创建窗口、处理文件操作和进程通信。渲染进程负责显示界面、处理用户交互和显示文件内容。
+
+当用户点击 "Open File" 按钮时，渲染进程会发送一个事件到主进程，请求打开文件对话框。主进程接收到事件后，打开文件对话框并读取所选文件的内容，然后将内容发送回渲染进程。渲染进程接收到内容后，将其显示在界面上。
+
+这个示例展示了如何使用 Electron 来实现一个包含界面设计、本地文件操作和进程通信的复杂应用。
+
+# 更复杂一些的例子
+
+好的，让我们创建一个更丰富的示例，其中包含更复杂的界面布局和更多实用的功能，例如菜单栏、工具栏、文件浏览器、文本编辑器等。我们将使用 Electron 的常见模块来实现这些功能。
+
+### 主进程（main.js）
+
+```javascript
+const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
+const fs = require('fs');
+
+let mainWindow;
+
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 1024,
+    height: 768,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  });
+
+  mainWindow.loadFile('index.html');
+
+  const mainMenu = Menu.buildFromTemplate([
+    {
+      label: 'File',
+      submenu: [
+        {
+          label: 'Open File',
+          accelerator: 'CmdOrCtrl+O',
+          click() {
+            mainWindow.webContents.send('open-file-dialog');
+          }
+        },
+        {
+          label: 'Save File',
+          accelerator: 'CmdOrCtrl+S',
+          click() {
+            mainWindow.webContents.send('save-file-dialog');
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'Exit',
+          accelerator: 'CmdOrCtrl+Q',
+          click() {
+            app.quit();
+          }
+        }
+      ]
+    }
+  ]);
+  Menu.setApplicationMenu(mainMenu);
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
+}
+
+app.on('ready', createWindow);
+
+ipcMain.on('open-file-dialog', (event) => {
+  dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile']
+  }).then(result => {
+    if (!result.canceled && result.filePaths.length > 0) {
+      const filePath = result.filePaths[0];
+      fs.readFile(filePath, 'utf-8', (err, data) => {
+        if (err) {
+          event.sender.send('file-opened', { error: err.message });
+        } else {
+          event.sender.send('file-opened', { filePath, data });
+        }
+      });
+    }
+  });
+});
+
+ipcMain.on('save-file-dialog', (event, data) => {
+  dialog.showSaveDialog(mainWindow, {
+    title: 'Save File',
+    defaultPath: app.getPath('documents'),
+    filters: [{ name: 'Text Files', extensions: ['txt'] }]
+  }).then(result => {
+    if (!result.canceled && result.filePath) {
+      fs.writeFile(result.filePath, data, (err) => {
+        if (err) {
+          event.sender.send('file-saved', { error: err.message });
+        } else {
+          event.sender.send('file-saved', { success: true });
+        }
+      });
+    }
+  });
+});
+```
+
+### 渲染进程（index.html）
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Electron App</title>
+</head>
+<body>
+  <header>
+    <h1>Advanced Electron App</h1>
+  </header>
+  <main>
+    <div id="file-explorer">
+      <h2>File Explorer</h2>
+      <ul id="file-list"></ul>
+    </div>
+    <div id="editor">
+      <h2>Text Editor</h2>
+      <textarea id="editor-text"></textarea>
+    </div>
+  </main>
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    ipcRenderer.on('file-opened', (event, data) => {
+      if (data.error) {
+        alert(`Error: ${data.error}`);
+      } else {
+        document.getElementById('editor-text').value = data.data;
+      }
+    });
+
+    ipcRenderer.on('file-saved', (event, data) => {
+      if (data.error) {
+        alert(`Error: ${data.error}`);
+      } else if (data.success) {
+        alert('File saved successfully!');
+      }
+    });
+  </script>
+</body>
+</html>
+```
+
+这个示例中，我们创建了一个包含文件浏览器和文本编辑器的应用。用户可以通过菜单栏中的选项来打开和保存文件。打开文件后，文件内容将显示在文本编辑器中，用户可以对其进行编辑并保存。
+
+# 大型的electron应用的目录结构和架构
+
+针对大型 Electron 应用程序，一个清晰且可维护的目录结构和良好的架构设计非常重要。下面是一个针对大型 Electron 应用的典型目录结构和架构设计示例：
+
+### 目录结构：
+
+```
+your-electron-app/
+│
+├── package.json          # npm 包配置文件
+├── main.js               # 主进程入口文件
+├── preload.js            # 预加载脚本文件（可选）
+│
+├── app/
+│   ├── index.html        # 渲染进程入口 HTML 文件
+│   ├── renderer.js       # 渲染进程脚本文件
+│   ├── styles.css        # 渲染进程样式文件
+│   ├── components/       # 可复用的组件目录
+│   ├── pages/            # 页面组件目录
+│   ├── assets/           # 图片、字体等资源文件目录
+│   └── ...
+│
+├── main-process/         # 主进程相关文件目录
+│   ├── windows/          # 窗口管理器目录
+│   ├── ipc/              # 进程间通信相关文件目录
+│   └── ...
+│
+├── renderer-process/     # 渲染进程相关文件目录
+│   ├── components/       # 可复用的组件目录
+│   ├── pages/            # 页面组件目录
+│   ├── services/         # 服务相关文件目录
+│   └── ...
+│
+└── ...
+```
+
+### 架构设计：
+
+1. **主进程（Main Process）**：
+   - `main.js` 文件负责创建应用的主窗口和处理应用的生命周期事件。
+   - `preload.js` 文件可选，用于预加载一些在渲染进程中需要用到的模块或变量。
+   - `main-process/` 目录用于存放主进程相关的模块和功能，如窗口管理、进程间通信等。
+   - `main-process/windows/` 目录可以包含窗口相关的代码，如窗口的创建、关闭、最小化等。
+   - `main-process/ipc/` 目录可以包含进程间通信相关的代码，如处理渲染进程发送的事件等。
+
+2. **渲染进程（Renderer Process）**：
+   - `app/` 目录存放渲染进程相关的文件，包括主 HTML 文件、渲染进程脚本和样式文件。
+   - `renderer-process/` 目录用于存放渲染进程相关的模块和功能，如页面组件、服务等。
+   - `renderer-process/components/` 目录可以包含可复用的组件，如按钮、表单等。
+   - `renderer-process/pages/` 目录包含应用的不同页面组件。
+   - `renderer-process/services/` 目录可以包含与后端通信、数据处理等服务相关的代码。
+
+3. **资源文件（Assets）**：
+   - `app/assets/` 目录存放应用所需的资源文件，如图片、字体等。
+
+4. **其他目录和文件**：
+   - `package.json` 文件用于配置应用的依赖和脚本。
+   - 其他目录和文件根据实际需要添加，例如测试文件、文档等。
+
+通过以上的目录结构和架构设计，可以将大型 Electron 应用分为多个模块和组件，使代码结构清晰、可维护性高，并且方便团队协作。
+
+# 对于工厂场景，electron可以做哪些应用
+
+Electron 在工厂场景中可以实现许多应用，例如：
+
+1. **生产过程监控系统**：通过 Electron 应用可以实时监控工厂中的生产过程，包括设备运行状态、生产数据采集、生产线效率分析等，从而提高生产效率和质量管理水平。
+
+2. **设备远程控制系统**：Electron 应用可以连接到工厂中的设备，实现远程监控和控制，包括设备开关、参数调整、故障诊断等功能，从而实现远程设备管理和维护。
+
+3. **质量检测和品质管理系统**：通过 Electron 应用可以实现工厂中产品的质量检测和品质管理，包括自动化检测、缺陷识别、数据分析等功能，从而提高产品质量和生产效率。
+
+4. **生产计划和调度系统**：Electron 应用可以帮助工厂制定生产计划和调度方案，包括订单管理、生产排程、物料管理等功能，从而优化生产资源利用和生产进度管理。
+
+5. **员工培训和知识管理系统**：Electron 应用可以用于员工培训和知识管理，包括培训课程管理、知识库查询、在线考试等功能，从而提高员工技能和工作效率。
+
+6. **能源监测和节能管理系统**：Electron 应用可以用于监测工厂中的能源消耗情况，包括电力、水、气等能源的监测和分析，从而实现节能减排和成本控制。
+
+7. **物料追溯和供应链管理系统**：Electron 应用可以用于物料追溯和供应链管理，包括物料入库、出库、流转等过程的追踪和管理，从而保证产品质量和供应链的可控性。
+
+8. **安全监控和环境管理系统**：Electron 应用可以用于监控工厂中的安全和环境情况，包括生产现场的安全监控、环境污染检测等功能，从而保障员工安全和环境保护。
+
+总的来说，Electron 在工厂场景中可以实现许多应用，帮助工厂提高生产效率、质量管理水平和安全环保水平，从而实现智能制造和工业升级。
 
 # 官方教程
 

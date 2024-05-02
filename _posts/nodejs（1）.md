@@ -369,13 +369,29 @@ console.log("end of code");
 
 
 
+# require('node:path') 
 
+通常情况下，我们不需要像上面那样显式地引入 `node:` 前缀。直接使用 `require('path')` 即可，因为 `path` 是一个核心模块。
 
+## node: 前缀这种方式是哪个版本开始引入的
 
+`node:` 前缀的形式是在 Node.js 12 版本中引入的。在 Node.js 12 中，为了提供更好的可见性和明确性，引入了这种新的引入方式，**用于区分核心模块和第三方模块。**
 
+在 Node.js 12 之前，使用 `require()` 直接引入核心模块是没有问题的，但是在 Node.js 12 中，为了使代码更清晰，建议使用 `node:` 前缀来引入核心模块。
 
+需要注意的是，即使使用了 `node:` 前缀，引入核心模块的方式仍然是异步的，因此仍然需要使用 `require('node:path')` 这样的语法。
 
+## 除了使用node:前缀，还可以使用其他的前缀吗？这个前缀哪里来的
 
+在 Node.js 中，`node:` 前缀是用于引入核心模块的特殊前缀。除了 `node:` 前缀，Node.js 还支持使用其他特殊前缀来引入不同类型的模块，这种引入方式被称为 "模块解析"（Module Resolution）。
+
+除了 `node:` 前缀，Node.js 中还支持以下特殊前缀：
+
+1. `file:`：用于引入文件模块，例如 `require('file:/path/to/module.js')`。
+2. `data:`：用于引入内存中的数据，例如 `require('data:text/javascript,console.log("Hello")')`。
+3. `link:`：用于引入符号链接模块，例如 `require('link:/path/to/module.js')`。
+
+这些特殊前缀的引入方式是 Node.js 模块解析的一部分，它们提供了灵活的方式来引入不同类型的模块。这些前缀提供了更多的选择，使得开发者可以更好地控制模块的引入方式。
 
 # 参考资料
 

@@ -15,9 +15,81 @@ curl这个名字的含义是：Command line Url viewer。
 
 
 
+# 简介
+
+curl是一个非常强大的命令行工具，用于在各种操作系统上进行网络数据传输。
+
+它支持多种协议，包括HTTP、HTTPS、FTP、SFTP、SCP等，
+
+能够执行各种网络操作，如下载文件、发送表单数据、进行文件传输等。
+
+以下是一些curl命令的常见用法：
+
+1. 发送HTTP GET请求：
+```
+curl http://example.com
+```
+
+2. 发送HTTP POST请求：
+```
+curl -X POST http://example.com/resource -d "param1=value1&param2=value2"
+```
+
+3. 下载文件：
+```
+curl -O http://example.com/file.txt
+```
+
+4. 上传文件：
+```
+curl -T file.txt ftp://ftp.example.com/upload/
+```
+
+5. 使用HTTPS：
+```
+curl https://example.com
+```
+
+6. 显示响应头信息：
+```
+curl -I http://example.com
+```
+
+7. 使用代理：
+```
+curl -x proxy.example.com:8080 http://example.com
+```
+
+8. 设置请求头：
+```
+curl -H "Content-Type: application/json" http://example.com
+```
+
+这只是curl命令的一小部分用法，它还有很多其他功能和选项，可以根据需要进行深入学习和使用。
 
 
 
+# 常用选项
+
+| 选项                              | 说明                                                         |
+| --------------------------------- | ------------------------------------------------------------ |
+| `-X, --request <command>`         | 指定HTTP请求方法，如GET、POST、PUT等。                       |
+| `-H, --header <header>`           | 添加自定义请求头信息，如`-H "Content-Type: application/json"`。 |
+| `-d, --data <data>`               | 发送POST请求时，指定要发送的数据。                           |
+| `-F, --form <name=content>`       | 以multipart/form-data格式发送表单数据。                      |
+| `-o, --output <file>`             | 将响应输出到指定文件。                                       |
+| `-O, --remote-name`               | 将远程文件下载到本地，并使用远程文件名。                     |
+| `-I, --head`                      | 仅显示响应头信息，不下载文件内容。                           |
+| `-u, --user <username:password>`  | 指定用户名和密码进行HTTP基本身份验证。                       |
+| `-A, --user-agent <agent-string>` | 设置用户代理字符串。                                         |
+| `-c, --cookie <cookie-string>`    | 发送请求时携带cookie。                                       |
+| `-b, --cookie-jar <file>`         | 保存服务器返回的cookie到文件中。                             |
+| `-e, --referer <URL>`             | 设置Referer头信息。                                          |
+| `-L, --location`                  | 跟随重定向。                                                 |
+| `-s, --silent`                    | 静默模式，不显示进度或错误信息。                             |
+| `-v, --verbose`                   | 详细模式，显示请求和响应的详细信息。                         |
+
+这些是常用的curl选项，可以根据需要进行组合和使用。
 
 # 常用命令
 

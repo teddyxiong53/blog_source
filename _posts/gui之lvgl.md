@@ -180,6 +180,61 @@ git clone --recursive https://github.com/lvgl/lv_sim_vscode_sdl
 
 然后按F5编译并自动进入到调试。
 
+2024年5月1日10:07:13
+
+现在不能这样直接运行了。
+
+首先需要
+
+```
+mkdir build
+cd build
+cmake ../
+make
+```
+
+
+
+首先我在没有打开C文件的时候，按F5，会提示：
+
+you don't have an extension for debugging json with comments 
+
+然后我打开一个C文件，再按F5，这个时候会提示没有launch.json。
+
+我让gpt帮我写了这个launch.json文件：
+
+```
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "C Debug",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "${workspaceFolder}/bin/main",
+        "args": [],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ]
+      }
+    ]
+  }
+  
+```
+
+然后确保我的电脑上gdb已经是安装的。
+
+然后按F5就可以调试了。
+
 
 
 # 板端linux fb方式运行
