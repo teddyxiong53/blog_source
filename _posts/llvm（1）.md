@@ -66,3 +66,15 @@ LLVM（Low Level Virtual Machine）和GCC（GNU Compiler Collection）是两个�
 6. 社区和生态系统：GCC拥有庞大的社区和生态系统，有很多年的发展历史，并且许多开源项目和商业软件都在使用GCC。LLVM的社区也在不断增长，并且有许多基于LLVM的工具和项目。
 
 总体而言，LLVM和GCC都是强大的编译器基础设施，它们在设计、性能、优化等方面有所差异。选择使用哪个编译器取决于具体的需求和项目要求。
+
+# llvm-project
+
+https://github.com/espressif/llvm-project
+
+该存储库包含 LLVM 的源代码，LLVM 是一个用于构建高度优化的编译器、优化器和运行时环境的工具包。
+
+LLVM 项目有多个组件。该项目的核心本身称为“LLVM”。其中包含处理中间表示并将其转换为目标文件所需的所有工具、库和头文件。工具包括汇编器、反汇编器、位码分析器和位码优化器。
+
+类 C 语言使用 Clang 前端。该组件使用 LLVM 将 C、C++、Objective-C 和 Objective-C++ 代码编译成 LLVM 位码，并从那里编译成目标文件。
+
+其他组件包括：libc++ C++ 标准库、LLD 链接器等。

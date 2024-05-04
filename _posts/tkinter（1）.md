@@ -202,7 +202,7 @@ Tkinter提供了三种主要的布局管理器：`pack`、`grid`和`place`。这
    - `place` 布局管理器允许您以绝对坐标的方式放置组件。
    - 使用 `x` 和 `y` 参数指定组件左上角的坐标，以像素为单位。
 - 可以使用 `relx` 和 `rely` 参数以相对于父容器的比例来指定组件的位置。
-   
+  
    示例：
    ```python
    entry.place(x=50, y=20)
@@ -623,6 +623,50 @@ root.mainloop()
 在这个例子中，我们使用`"<Button-1>"`作为事件描述符，它表示鼠标左键的单击事件。当用户单击按钮时，Tkinter会触发该事件，并调用与之关联的`button_click()`函数来处理该事件。
 
 在Tkinter中，还有许多其他的事件描述符，用于指定不同类型的事件，例如鼠标右键单击事件`"<Button-3>"`、鼠标移动事件`"<Motion>"`等。
+
+# 复杂tkinter应用
+
+## 基于tkinter做的界面设计器
+
+https://github.com/honghaier-game/PyMe
+
+不开源的。
+
+这篇文章有一些介绍。
+
+https://cloud.tencent.com/developer/article/1919868
+
+我只是尝试着写一个简单的界面编辑器，
+
+它基于tkinter，提供简单的控件拖拽设计和代码生成，可以直接运行，
+
+并通过pyinstaller打包成EXE。
+
+我将它命名为“TkinterDesigner”，并在github上提交了可执行程序，很快，就有人关注，并成为了第一批用户。
+
+于是，我利用工作之余，不断的完善它，加入了变量绑定、事件响应函数映射与代码编辑，
+
+并加入了一些预设的工程案例模版，使它看起来像VisualBasic一样简单而易用。
+
+TkinterDsigner”成长为一个可视化的桌面应用开发工具，
+
+在这个过程中，我熟练的掌握了Python的编程，
+
+但我并没有打算结束它，而是有了一些更大的想法。
+
+因为我逐渐的认知到，随着Python语言在全世界的广泛学习和应用，未来Python有机会成为像英语一样的通用语言！
+
+人的价值 = 积累的经验素材 + 处理事情的方法 = 数据 + 算法
+
+PyMe不开源，它是一款工具产品，
+
+但PyMe中你生成的所有工程代码，包括内置的Fun函数库和游戏引擎底层源码，都是公开的。
+
+https://cloud.tencent.com/developer/article/1919868
+
+## 做复杂界面的一些经验
+
+https://blog.csdn.net/jumpbull01/article/details/127306081
 
 # 参考资料
 

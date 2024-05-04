@@ -6,7 +6,21 @@ tags:
 
 ---
 
+--
 
+# 资源收集
+
+go语言设计与实现
+
+https://draveness.me/golang/
+
+有趣的Golang开源项目
+
+https://github.com/tabalt/interesting-golang-opensource-project
+
+
+
+# 开始
 
 我现在其实不是很想学新的语言，但是看到很多人推荐go语言，我就了解一下。
 
@@ -111,6 +125,30 @@ Go语言（又称Golang）适合用于各种不同的应用场景，由于其设
 需要注意的是，Go不适用于所有应用场景。例如，如果你需要进行大规模科学计算或图形处理，Go可能不是最佳选择。此外，Go的静态类型系统和编译时类型检查可能会让一些开发者觉得有些受限，但这也有助于提高代码的稳定性和可维护性。
 
 综上所述，Go是一种通用编程语言，适用于各种不同的应用场景，尤其擅长于并发编程、网络应用、分布式系统和系统编程领域。
+
+
+
+
+
+其实Go语言主要用作服务器端开发，
+
+其定位是用来开发“大型软件”的，
+
+适合于很多程序员一起开发大型软件，并且开发周期长，支持云计算的网络服务。
+
+Go语言能够让程序员快速开发，并且在软件不断的增长过程中，它能让程序员更容易地进行维护和修改。
+
+它融合了传统编译型语言的高效性和脚本语言的易用性和富于表达性。
+
+Go语言作为服务器编程语言，很适合处理日志、数据打包、虚拟机处理、文件系统、分布式系统、数据库代理等；
+
+网络编程方面，Go语言广泛应用于Web应用、API应用、下载应用等；
+
+除此之外，Go语言还可用于内存数据库和云平台领域，目前国外很多云平台都是采用Go开发。
+
+
+
+
 
 # ubuntu 安装或者升级go版本
 
@@ -1469,6 +1507,49 @@ Go 语言的 `defer` 会在当前函数或者方法**返回之前执行传入的
 
 例如在 `defer` 中回滚数据库的事务：
 
+
+
+defer是在return之前执行的。这个在 [官方文档](http://golang.org/ref/spec#defer_statements)中是明确说明了的。要使用defer时不踩坑，
+
+最重要的一点就是要明白，**return xxx这一条语句并不是一条原子指令!**
+
+函数返回的过程是这样的：
+
+先给返回值赋值，然后调用defer表达式，最后才是返回到调用函数中。
+
+defer表达式可能会在设置函数返回值之后，在返回到调用函数之前，修改返回值，使最终的函数返回值与你想象的不一致。
+
+其实使用defer时，用一个简单的转换规则改写一下，就不会迷糊了。
+
+改写规则是将return语句拆成两句写，return xxx会被改写成:
+
+```
+返回值 = xxx
+调用defer函数
+空的return
+```
+
+
+
+普通的函数返回时，汇编代码类似：
+
+```
+add xx SP
+return
+```
+
+如果其中包含了defer语句，则汇编代码是：
+
+```
+call runtime.deferreturn，
+add xx SP
+return
+```
+
+
+
+https://tiancaiamao.gitbooks.io/go-internals/content/zh/03.4.html
+
 # RateLimiting
 
 ```
@@ -1741,6 +1822,72 @@ func main() {
 }
 ```
 
+panic 是一个 Go 内置函数，
+
+它用来停止当前常规控制流并启动 panicking（运行时恐慌）过程。
+
+当函数 F 调用 panic 函数时，函数 F 的执行停止，
+
+函数 F 中已进行了求值的 defer 函数都将得到正常执行，
+
+然后函数 F 将控制权返还给其调用者。
+
+对于函数 F 的调用者而言，函数 F 之后的行为就如同调用者调用的函数是 panic 一样，该 panicking（运行时恐慌）过程将继续在栈上进行下去，直到当前 goroutine 中的所有函数都返回为止，此时程序将崩溃退出。
+
+
+
+olang 语言是静态强类型语言，在编译时，大多数问题就会被发现。
+
+但是一些会触发 panic 的问题只能在运行时才会被发现。
+
+panic 触发方式有两种，
+
+除了上面讲到的，在运行时遇到错误触发 panic，
+
+比如越界访问数组，不相同类型的变量强制类型转换等，
+
+还可以通过直接调用 panic 函数触发 panic。
+
+
+
+怎么通过显式调用 panic 函数触发 panic，
+
+panic 函数接收一个 interface{} 空接口类型的参数，
+
+也就是说，panic 函数可以接收一个任意类型的参数，代码如下：
+
+
+
+直接调用recover是不能正常恢复的。
+
+```
+func main() {
+	println("this is a panic example")
+	panic("this is a panic")
+	r := recover()
+	fmt.Println("panic recover:%s", r)
+}
+```
+
+需要用defer来调用。
+
+```
+func main() {
+	println("this is a panic example")
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("panic recover:%s", r)
+		}
+	}()
+	panic("this is a panic")
+}
+
+```
+
+
+
+https://cloud.tencent.com/developer/article/1799265
+
 # defer
 
 ```
@@ -1950,6 +2097,41 @@ replace (
 
 总之，`go.mod` 文件对于Go项目的依赖管理和版本控制非常重要，使得项目更加可维护和可靠。
 
+## mod生成
+
+`go.mod` 文件是 Go 语言的模块管理系统的核心文件，它定义了模块的依赖关系。在 Go 1.11 及以后的版本中，当你使用模块时，`go.mod` 文件会被自动创建和管理。下面是如何生成和使用 `go.mod` 文件的基本步骤：
+1. **启用模块支持**：
+   确保你的 Go 版本至少是 1.11。然后设置环境变量 `GO111MODULE` 为 `on` 以启用模块支持。在 Go 1.16 及以后版本中，模块模式是默认开启的。
+2. **创建新的模块**：
+   在你的项目目录中，执行以下命令来初始化一个新的模块。这个命令会创建一个 `go.mod` 文件。
+   ```
+   go mod init [模块名]
+   ```
+   其中 `[模块名]` 是你的模块的路径，通常是你的仓库的导入路径。
+3. **添加依赖**：
+   当你添加新的依赖或更新现有依赖时，可以使用 `go get` 命令。例如：
+   
+   ```
+   go get example.com/mymodule
+   ```
+   这个命令会自动更新 `go.mod` 文件，添加或修改依赖项的版本记录。
+4. **编译和运行代码**：
+   当你编译或运行你的代码时，Go 会自动解析 `go.mod` 文件中的依赖，并下载它们（如果尚未在本地缓存中）。
+   
+   ```
+   go build ./...
+   go run main.go
+   ```
+5. **维护 `go.mod` 文件**：
+   如果你移除了代码中对某个依赖的引用，你可以使用 `go mod tidy` 命令来清理 `go.mod` 文件，移除不再需要的依赖。
+6. **版本选择**：
+   `go.mod` 文件会记录每个依赖的特定版本。这些版本可以是语义化版本（如 `v1.2.3`），也可以是伪版本号（如 `v0.0.0-20200102193040-0232cb4c06c8`），用于精确指定依赖的提交。
+7. **升级依赖**：
+   要升级到依赖的最新版本，可以使用 `go get -u` 命令。如果你只想升级到最新的次要版本或补丁版本，可以使用 `go get -u=patch` 或 `go get -u=minor`。
+8. **解决冲突**：
+   如果你的代码依赖了不同版本的两个模块，Go 会尝试解决这些冲突，选择一个合适的版本。如果自动解决失败，你可能需要手动调整 `go.mod` 文件。
+`go.mod` 文件是 Go 模块化系统的关键组成部分，它使得依赖管理变得简单和可靠。通过以上步骤，你可以有效地使用和管理 `go.mod` 文件。
+
 # go语言项目的pkg目录作用
 
 在Go语言项目中，通常会创建一个名为 `pkg` 的目录，它有以下主要作用：
@@ -2059,7 +2241,7 @@ Steve Francia（又称 spf13）是一位知名的开源开发者和计算机程�
 
 总之，`embed` 是Go标准库的一部分，它允许将静态文件或资源嵌入到Go程序中，以简化部署和分发。这对于创建自包含的可执行文件和容器化应用程序非常有用。这个库在Go 1.16及以后的版本中可用。
 
-# 什么时候需要make函数
+# make函数和new
 
 `make` 函数通常用于在Go中创建切片、映射和通道，
 
@@ -2074,7 +2256,7 @@ Steve Francia（又称 spf13）是一位知名的开源开发者和计算机程�
    slice := make([]int, 10)
    ```
 
-2. **创建映射：** 在创建映射时，使用 `make` 函数来初始化映射是一种常见的做法。这有助于分配内存并创建一个空映射，以后可以向其添加键值对：
+2. **创建map：** 在创建映射时，使用 `make` 函数来初始化映射是一种常见的做法。这有助于分配内存并创建一个空映射，以后可以向其添加键值对：
 
    ```go
    // 创建一个字符串到整数的映射
@@ -2098,6 +2280,19 @@ Steve Francia（又称 spf13）是一位知名的开源开发者和计算机程�
 需要注意的是，`make` 函数只适用于切片、映射和通道的创建，而不适用于数组。Go 中的数组是具有固定大小的，它们在声明时已经分配了内存。所以，如果需要创建动态大小的集合，通常会使用切片、映射或通道。
 
 总之，`make` 函数在Go中用于创建切片、映射和通道，并且通常在需要动态分配内存的情况下使用，或者在创建切片或映射时不知道容量的情况下使用。
+
+
+
+相比与复杂的 `make` 关键字，`new` 的功能就简单多了，它只能接收类型作为参数然后返回一个指向该类型的指针：
+
+```
+i := new(int)
+
+var v int
+i := &v
+```
+
+
 
 # 常用库
 
@@ -2136,9 +2331,845 @@ https://golang-china.github.io/gopl-zh/ch1/ch1-01.html
 
 
 
+# Printf的格式有哪些
+
+在 Go 语言中，`fmt.Printf` 函数用于根据格式说明符来格式化并输出文本。格式说明符是紧跟在 `%` 符号后面的字符，用于指定输出数据的类型、宽度、精度等。以下是一些常用的格式说明符：
+
+- `%v`：默认格式的占位符，会自动选择变量的默认表现形式。
+- `%+v`：类似 `%v`，但输出结构体会包括字段名。
+- `%#v`：Go 语法格式的值，用于输出值的 Go 语法表示。
+- `%T`：输出一个值的数据类型。
+- `%d`：格式化整数类型（`int`、`int8`、`int16`、`int32`、`int64` 等）为十进制。
+- `%b`：将整数以二进制形式输出。
+- `%o`：将整数以八进制形式输出。
+- `%x`、`%X`：将整数以十六进制形式输出，`%x` 输出小写字母，`%X` 输出大写字母。
+- `%U`：输出一个 `rune` 类型的值（Unicode 码点）的 Unicode 字符。
+- `%c`：输出一个 `rune` 类型的值（Unicode 码点）对应的字符。
+- `%s`：输出字符串。
+- `%q`：输出带引号的字符串，必要时会进行转义。
+- `%f`、`%F`：格式化浮点数为小数形式，`%f` 和 `%F` 是等价的。
+- `%e`、`%E`：格式化浮点数为科学计数法，`%e` 输出小写 `e`，`%E` 输出大写 `E`。
+- `%g`、`%G`：自动选择 `%f` 或 `%e`（或 `%F` 或 `%E`）格式，以更紧凑的方式输出。
+- `%p`：输出指针的地址，以十六进制表示。
+- `%t`：输出布尔值 `true` 或 `false`。
+- `%%`：输出一个 `%` 字符。
+
+此外，可以在 `%` 和格式说明符之间插入一些修饰符，例如：
+
+- `width`：输出字段的宽度。如果输出的数据小于这个宽度，会在左侧填充空格。
+- `precision`：对于浮点数，表示小数点后的数字位数；对于字符串，表示输出字符的最大数量。
+- `-`：左对齐输出，默认是右对齐。
+- `+`：总是输出数值的正负号，即使是正数。
+- ` `（空格）：对于数值，正数前输出一个空格，负数前输出负号。
+- `0`：对于数值，用 `0` 填充空白而不是空格。
 
 
 
+# go语言的switch需要break吗
+
+在 Go 语言中，`switch` 语句的行为与传统的 C 或 Java 中的 `switch` 语句有所不同。
+
+在 Go 中，`switch` 语句会自动在每一个 `case` 分支的末尾插入 `break` 语句，
+
+这意味着执行完一个 `case` 分支后，程序会自动跳出 `switch` 语句，
+
+而不会继续执行下一个 `case`。
+
+**因此，在 Go 语言的 `switch` 语句中，通常不需要显式编写 `break` 语句。**
+例如：
+
+```go
+package main
+import "fmt"
+func main() {
+    fruit := "apple"
+    switch fruit {
+    case "apple":
+        fmt.Println("The fruit is an apple.")
+    case "banana":
+        fmt.Println("The fruit is a banana.")
+    case "orange":
+        fmt.Println("The fruit is an orange.")
+    default:
+        fmt.Println("Unknown fruit.")
+    }
+}
+```
+在这个例子中，如果 `fruit` 的值是 "apple"，程序会打印 "The fruit is an apple."，然后自动退出 `switch` 语句，不会继续检查其他 `case`。
+如果你想要在 Go 的 `switch` 语句中实现 "fallthrough" 行为（即不自动插入 `break`，继续执行下一个 `case`），可以使用 `fallthrough` 关键字。这与其他语言中的 `switch` 默认行为相似。
+例如：
+```go
+package main
+import "fmt"
+func main() {
+    number := 1
+    switch number {
+    case 1:
+        fmt.Println("Case 1")
+        fallthrough
+    case 2:
+        fmt.Println("Case 2")
+    default:
+        fmt.Println("Default case")
+    }
+}
+```
+在这个例子中，即使 `number` 的值匹配了 `case 1`，程序也会继续执行 `case 2`，因为 `case 1` 的末尾使用了 `fallthrough` 关键字。输出将是：
+```
+Case 1
+Case 2
+```
+总的来说，Go 语言的 `switch` 语句通过默认在 `case` 分支末尾插入 `break` 来避免意外执行多个 `case`，从而简化了 `switch` 的使用并减少了错误。如果你需要连续执行多个 `case`，可以使用 `fallthrough`。
+
+# goland ide
+
+发现这个ide 2024.01版本里已经是带来AI自动补全功能的。
+
+在学习阶段需要关闭这个，不然非常影响学习。
+
+# 标准库文档
+
+https://pkg.go.dev/net/http
+
+https://www.topgoer.com/%E5%B8%B8%E7%94%A8%E6%A0%87%E5%87%86%E5%BA%93/http.html
+
+
+
+# interface{}
+
+func (c *Context) JSON(code int, obj interface{})   这个interface{}是什么意思
+
+
+
+在 Go 语言中，`interface{}` 表示一个空接口，
+
+它是对任何类型都满足的接口。
+
+**由于 `interface{}` 不包含任何方法，**
+
+**因此所有类型都实现了 `interface{}`。**
+
+这使得 `interface{}` 成为一种通用的类型，可以用来表示任何值。
+
+在你提供的函数 `func (c *Context) JSON(code int, obj interface{})` 中，`obj` 参数的类型被指定为 `interface{}`，这意味着这个函数可以接受任何类型的参数。
+
+这个设计使得 `JSON` 函数非常灵活，可以接受各种数据类型，并将其序列化为 JSON 格式。
+
+例如，你可以传递一个结构体、map、切片、字符串、整数等任何类型的数据给 `obj` 参数，`JSON` 函数会负责将这个数据转换为 JSON 格式的响应。
+
+这种使用 `interface{}` 作为参数类型的设计在 Go 的标准库和许多第三方库中非常常见，因为它提供了极大的灵活性和通用性。开发者可以使用这种类型的参数来编写处理任意数据类型的函数，同时保持代码的简洁和可重用性。
+
+
+
+需要注意的是，与 C 语言中的 `void *` 不同，`interface{}` 类型**不是任意类型**。如果我们将类型转换成了 `interface{}` 类型，变量在运行期间的类型也会发生变化，获取变量类型时会得到 `interface{}`。
+
+
+
+
+
+# go语言常用库和框架
+
+Go 语言有一个丰富的标准库，提供了广泛的内置功能，从网络编程到文件操作，从加密到数据处理等。除了标准库之外，还有很多第三方库和框架，它们在 Go 社区中非常流行，用于加速开发过程和提高生产力。以下是一些常用的第三方 Go 库和框架：
+### Web 框架
+1. **Gin**: 一个高性能的 HTTP Web 框架，它提供了一个轻量级、易用的API用于构建Web应用程序。
+2. **Beego**: 一个全栈框架，包含了大多数Web开发所需的功能，如ORM、缓存、日志等。
+3. **Echo**: 一个高性能、极简的Web框架，专注于高性能和易用性。
+4. **Fiber**: 受 Express.js 启发的一个Web框架，它提供了简洁的API和高性能。
+### 数据库
+1. **GORM**: 一个流行的 ORM（对象关系映射）库，用于将 Go 结构体映射到数据库中的表。
+2. **Ent**: 一个现代的ORM框架，用于构建和查询实体图。
+3. **Bun**: 一个快速的SQL查询生成器和ORM，支持MySQL、PostgreSQL和SQLite。
+### 配置管理
+1. **Viper**: 一个完整的配置解决方案，用于处理配置文件，支持多种格式如JSON、TOML、YAML等。
+2. **Config**: 一个用于处理JSON、TOML、YAML、HCL、envfile和Java properties格式配置文件的库。
+### 测试
+1. **/testify**: 提供了许多有用的工具来帮助你编写更好的测试代码，包括模拟对象（mocks）、断言等。
+2. **GoConvey**: 一个用于Go的BDD（行为驱动开发）风格的测试框架，提供了丰富的测试报告和实时反馈。
+### JSON Web Token (JWT)
+1. **jwt-go**: 一个用于实现JWT的库，用于安全地传输信息。
+2. **go-jose**: 一个实现了JSON Web签名和加密的库。
+### 其他
+1. **logrus**: 一个结构化的日志框架，支持多种日志输出和自定义插件。
+2. **Gorilla WebSocket**: 一个WebSocket协议的实现，用于构建实时Web应用程序。
+3. **Negroni**: 一个小巧的中间件库，用于构建HTTP中间件。
+4. **grpc-go**: Google开发的gRPC的Go语言实现，用于构建高性能、分布式的系统。
+5. **fx**: 一个用于构建Go应用程序的依赖注入框架。
+这些库和框架只是Go生态系统中的一小部分。Go社区非常活跃，不断有新的库和工具被开发和维护，以满足不同的开发需求。在选择库或框架时，建议考虑项目的具体需求、社区的活跃度、文档的完善程度以及持续的支持和维护。
+
+# package使用
+
+# 安装依赖项
+
+有一个hello.go，里面依赖了beego。
+
+```
+go get hello
+```
+
+这样就会下载对应的依赖。
+
+靠goland运行就会自动提示你一个链接，你点一下就会自动下载的。
+
+# 内置builtin变量、函数
+
+https://pkg.go.dev/builtin@go1.22.2
+
+常量
+
+| 名字  | 说明                                                         |
+| ----- | ------------------------------------------------------------ |
+| false | 0!=0                                                         |
+| true  | 0==0                                                         |
+| iota  | iota 是一个预先声明的标识符，表示（通常带括号的）const 声明中当前 const 规范的无类型整数序数。它是零索引的。 |
+
+变量
+
+| 名字 | 说明                                                         |
+| ---- | ------------------------------------------------------------ |
+| nil  | nil 是一个预先声明的标识符，表示指针、通道、函数、接口、映射或切片类型的零值。 |
+
+函数
+
+| 名字    | 说明                                                         |
+| ------- | ------------------------------------------------------------ |
+| append  | append 内置函数将元素追加到切片的末尾。                      |
+| cap     | cap 内置函数根据 v 的类型返回 v 的容量                       |
+| clear   | 清除map和切片。                                              |
+| close   | 关闭通道，该通道必须是双向的或仅发送的。它只能由发送方执行，而不能由接收方执行， |
+| complex | 根据两个浮点值构造一个复数值， 实部和虚部必须具有相同的大小，可以是 float32 或 float64 |
+| copy    | 将源切片中的元素复制到目标切片中。                           |
+| delete  | 从map中删除具有指定键 (m[key]) 的元素。如果 m 为 nil 或者不存在这样的元素，则删除是无操作。 |
+| imag    | 返回复数 c 的虚部。                                          |
+| len     | 根据 v 的类型返回 v 的长度：                                 |
+| make    | 分配并初始化 slice、map 或 chan类型的对象。                  |
+| max     |                                                              |
+| min     |                                                              |
+| new     | 分配内存                                                     |
+| panic   | panic会停止当前goroutine的正常执行。                         |
+| print   | 以特定于实现的方式格式化其参数并将结果写入标准错误。         |
+| println |                                                              |
+| real    | 返回复数 c 的实部。                                          |
+| recover | 允许程序管理恐慌 goroutine 的行为。                          |
+
+类型
+
+| 名字        | 说明                                                         |
+| ----------- | ------------------------------------------------------------ |
+| ComplexType | 仅用于文档目的。它是复杂类型的替代：complex64 或complex128。 |
+| FloatType   | 仅用于文档目的。它是 float 类型的替代：float32 或 float64。  |
+| IntegerType | 仅用于文档目的。它是任何整数类型的替代：int、uint、int8 等。 |
+| Type        | 仅用于文档目的。它是任何 Go 类型的替代品，但代表任何给定函数调用的相同类型。 |
+| Type1       | 仅用于文档目的。它是任何 Go 类型的替代品，但代表任何给定函数调用的相同类型。 |
+| any         | any 是interface{} 的别名，并且在所有方面与interface{} 等效。 |
+| bool        |                                                              |
+| byte        | type byte = uint8                                            |
+| comparable  | type comparable interface{ comparable }                      |
+| error       | type error interface { 	Error() string } error类型就是实现了Error方法的接口。 |
+| rune        | rune 是 int32 的别名，在所有方面与 int32 等效。按照惯例，它用于区分字符值和整数值。 |
+| string      | string 是所有 8 位字节字符串的集合，通常但不一定表示 UTF-8 编码的文本。字符串可以为空，但不能为 nil。字符串类型的值是不可变的。 |
+|             |                                                              |
+
+# errors标准库
+
+New 函数会创建错误，其唯一内容是文本消息。
+
+## 自定义一个error类型
+
+```
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+type MyError struct {
+	When time.Time
+	What string
+}
+
+func (e MyError) Error() string {
+	return fmt.Sprintf("%v: %v", e.When, e.What)
+}
+
+func oops() error {
+	return MyError{
+		time.Now(),
+		"this is error message ",
+	}
+}
+
+func main() {
+	if err := oops(); err != nil {
+		fmt.Println(err)
+	}
+}
+```
+
+## error的As和Is
+
+在 Go 语言中，`error` 类型是一个接口，用于表示可能发生的错误。`error` 接口有一个 `As` 方法和两个 `Is` 方法，这些方法提供了错误检查和转换的功能。
+### `As` 方法
+`As` 方法用于尝试将一个错误转换为指定的接口类型。如果转换成功，它将返回 `true` 和转换后的接口值；如果转换失败，它将返回 `false` 和原始错误值。
+```go
+func (e *Error) As(target interface{}) bool {
+    if e == nil {
+        return false
+    }
+    if target == nil {
+        return false
+    }
+    // 判断 target 是否实现了 error 接口
+    if reflect.TypeOf(target).AssignableTo(reflect.TypeOf((*error)(nil)).Elem()) {
+        *target.(*error) = e
+        return true
+    }
+    return false
+}
+```
+### `Is` 方法
+`Is` 方法用于检查一个错误是否实现了特定的接口类型。如果错误实现了该接口，它将返回 `true`；否则返回 `false`。
+
+```go
+func (e *Error) Is(target error) bool {
+    if e == nil {
+        return target == nil
+    }
+    if target == nil {
+        return false
+    }
+    // 判断 e 是否实现了 target 接口
+    return reflect.TypeOf(e).Implements(reflect.TypeOf(target))
+}
+```
+### 示例
+假设你有一个自定义的错误类型 `MyError`：
+```go
+type MyError struct {
+    Message string
+}
+func (e *MyError) Error() string {
+    return e.Message
+}
+func (e *MyError) As(target interface{}) bool {
+    if target == nil {
+        return false
+    }
+    if t, ok := target.(*MyError); ok {
+        *t = *e
+        return true
+    }
+    return false
+}
+func (e *MyError) Is(target error) bool {
+    if target == nil {
+        return false
+    }
+    if t, ok := target.(*MyError); ok {
+        return *t == *e
+    }
+    return false
+}
+```
+现在，你可以这样使用这些方法：
+```go
+var err MyError
+err.Message = "Something went wrong"
+var someOtherError error
+if err.As(&someOtherError) {
+    if err.Is(someOtherError) {
+        fmt.Println("The errors are the same")
+    }
+}
+```
+这样，你可以更方便地处理错误，并检查它们是否属于特定的类型。
+
+# fmt库
+
+fmt 包使用类似于 C 语言的 printf 和 scanf 的函数来实现格式化 I/O。 “动词”格式源自 C 语言，但更简单。
+
+%v 的默认格式是：
+
+```
+bool:                    %t
+int, int8 etc.:          %d
+uint, uint8 etc.:        %d, %#x if printed with %#v
+float32, complex64, etc: %g
+string:                  %s
+chan:                    %p
+pointer:                 %p
+```
+
+确实，`fmt` 库提供了丰富的打印格式，包括基本的格式化输出和更复杂的格式化选项。但是，实际上你并不需要记住所有的格式化选项，因为大多数情况下，你只需要使用一些基本的格式化字符串即可满足需求。
+以下是一些常用的 `fmt` 格式化字符串和它们的作用：
+1. **%v**：默认格式，根据变量的类型自动选择输出格式。
+2. **%+v**：结构体或切片类型的默认格式，输出结构体字段名和字段值，或者切片的索引和值。
+3. **%#v**：Go 语法格式的值。
+4. **%T**：输出值的类型。
+5. **%d**：格式化整数类型为十进制。
+6. **%b**：将整数以二进制形式输出。
+7. **%o**：将整数以八进制形式输出。
+8. **%x**、%X**：将整数以十六进制形式输出，`%x` 输出小写字母，`%X` 输出大写字母。
+9. **%U**：输出一个 `rune` 类型的值（Unicode 码点）的 Unicode 字符。
+10. **%c**：输出一个 `rune` 类型的值（Unicode 码点）对应的字符。
+11. **%s**：输出字符串。
+12. **%q**：输出带引号的字符串，必要时会进行转义。
+13. **%f**、%F**：格式化浮点数为小数形式，`%f` 和 `%F` 是等价的。
+14. **%e**、%E**：格式化浮点数为科学计数法，`%e` 输出小写 `e`，`%E` 输出大写 `E`。
+15. **%g**、%G**：自动选择 `%f` 或 `%e`（或 `%F` 或 `%E`）格式，以更紧凑的方式输出。
+16. **%p**：输出指针的地址，以十六进制表示。
+17. **%t**：输出布尔值 `true` 或 `false`。
+18. **%%**：输出一个 `%` 字符。
+在实际使用中，你只需要记住这些基本的格式化字符串，并根据需要调整格式。例如，当你需要输出一个整数时，你可以使用 `%d`；当你需要输出一个浮点数时，你可以使用 `%f`。
+此外，`fmt` 库还提供了更多的复杂格式化选项，例如 `%+v`、`%#v`、`%T` 等，这些可以在需要时查阅文档。在大多数情况下，基本的格式化字符串已经足够满足需求。
+
+对于结构体，`%+v` 和 `%#v` 的输出是相同的，因为它们都会包括字段名。但对于切片和映射，`%+v` 和 `%#v` 的输出是不同的，因为 `%+v` 不会输出索引或键值对，而 `%#v` 会。
+
+# strings标准库
+
+包 strings 实现了简单的函数来操作 UTF-8 编码的字符串。
+
+# container/list
+
+实现了双向链表。
+
+```
+package main
+
+import (
+	"container/list"
+	"fmt"
+)
+
+func main() {
+	l := list.New()
+	e4 := l.PushBack(4)
+	e1 := l.PushFront(1)
+	l.InsertBefore(3, e4)
+	l.InsertAfter(2, e1)
+
+	for e := l.Front(); e != nil; e = e.Next() {
+		fmt.Println(e.Value)
+	}
+}
+```
+
+
+
+# go的测试怎么编写
+
+在 Go 语言中，编写测试是遵循“测试先行”原则的重要部分。Go 的测试框架非常强大且易于使用，它支持单元测试、基准测试和性能测试。
+### 单元测试
+单元测试是针对代码中的单个函数或方法编写的。在 Go 中，每个测试文件通常以 `_test.go` 结尾。
+1. **编写测试函数**：
+   **测试函数以 `Test` 开头，例如 `TestAdd`。**它们可以包含 `func` 关键字，也可以省略，因为测试函数通常不需要返回值。
+2. **调用测试函数**：
+   在测试文件中，你可以直接调用测试函数。在命令行中，你可以使用 `go test` 命令来运行测试。
+3. **使用断言**：
+   Go 的测试框架提供了断言函数，如 `Equal`、`NotEqual`、`Nil`、`NotNil` 等，用于检查预期结果和实际结果是否匹配。
+下面是一个简单的单元测试示例：
+```go
+package main
+import "testing"
+func Add(a, b int) int {
+    return a + b
+}
+func TestAdd(t *testing.T) {
+    result := Add(2, 3)
+    expected := 5
+    if result != expected {
+        t.Errorf("Add(2, 3) = %d; want %d", result, expected)
+    }
+}
+```
+### 基准测试
+基准测试用于评估代码的性能。基准测试文件通常以 `_bench.go` 结尾。
+1. **编写基准测试函数**：
+   基准测试函数以 `Benchmark` 开头，例如 `BenchmarkAdd`。
+2. **使用 `Benchmark` 函数**：
+   在基准测试函数中，你可以使用 `Benchmark` 函数来执行多次计算，并测量执行时间。
+下面是一个简单的基准测试示例：
+```go
+package main
+import (
+    "testing"
+)
+func Add(a, b int) int {
+    return a + b
+}
+func BenchmarkAdd(b *testing.B) {
+    for n := 0; n < b.N; n++ {
+        Add(2, 3)
+    }
+}
+```
+### 性能测试
+性能测试用于评估代码的性能，与基准测试类似，但提供了更详细的统计信息。性能测试文件通常以 `_perf.go` 结尾。
+1. **编写性能测试函数**：
+   性能测试函数以 `Perf` 开头，例如 `PerfAdd`。
+2. **使用 `Perf` 函数**：
+   在性能测试函数中，你可以使用 `Perf` 函数来执行多次计算，并测量执行时间。
+下面是一个简单的性能测试示例：
+```go
+package main
+import (
+    "testing"
+)
+func Add(a, b int) int {
+    return a + b
+}
+func PerfAdd(b *testing.B) {
+    for n := 0; n < b.N; n++ {
+        Add(2, 3)
+    }
+}
+```
+### 运行测试
+你可以使用 `go test` 命令来运行测试。这个命令会自动找到所有以 `_test.go` 结尾的文件，并运行它们。
+```sh
+go test
+```
+这会执行所有的单元测试、基准测试和性能测试。你也可以通过添加 `-run` 标志来指定要运行的测试函数，或者使用 `-bench` 和 `-perf` 标志来分别运行基准测试和性能测试。
+```sh
+go test -run TestAdd
+go test -bench BenchmarkAdd
+go test -perf PerfAdd
+```
+这样，你就可以有效地编写和运行 Go 语言的测试了。
+
+# 维基百科的介绍切中要点
+
+https://zh.wikipedia.org/zh-cn/Go
+
+
+
+# cobra命令行库
+
+https://darjun.github.io/2020/01/17/godailylib/cobra/
+
+https://xie.infoq.cn/article/915006cf3760c99ad0028d895
+
+Cobra 是一个 Go 语言开发的命令行（CLI）框架，
+
+它提供了简洁、灵活且强大的方式来创建命令行程序。
+
+它包含一个用于创建命令行程序的库（Cobra 库），
+
+以及一个用于快速生成基于 Cobra 库的命令行程序工具（Cobra 命令）。
+
+Cobra 是由 Go 团队成员 [spf13](https://xie.infoq.cn/link?target=https%3A%2F%2Fspf13.com%2F) 为 [Hugo](https://xie.infoq.cn/link?target=https%3A%2F%2Fgohugo.io%2F) 项目创建的，
+
+并已被许多流行的 Go 项目所采用，
+
+如 Kubernetes、Helm、Docker (distribution)、Etcd 等。
+
+写一个demo.go文件：
+
+```
+package main
+
+import (
+	"fmt"
+	"github.com/spf13/cobra"
+	"os"
+)
+
+var rootCmd = &cobra.Command{
+	Use:   "hugo",
+	Short: "Hugo is a very fast static site generator",
+	Long: `A Fast and Flexible Static Site Generator built with
+                love by spf13 and friends in Go.
+                Complete documentation is available at https://gohugo.io`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("run hugo...")
+	},
+}
+
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func main() {
+	Execute()
+}
+```
+
+![image-20240504094717830](images/random_name/golang（1）/image-20240504094717830.png)
+
+增加一个子命令：
+
+```
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "print the version of hugo",
+	Long:  "long help ",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("version is 0.0.1")
+	},
+}
+
+func Execute() {
+	rootCmd.AddCommand(versionCmd)
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+```
+
+![image-20240504095106241](images/random_name/golang（1）/image-20240504095106241.png)
+
+现在看到的help信息：
+
+![image-20240504095156043](images/random_name/golang（1）/image-20240504095156043.png)
+
+## 脚手架
+
+安装脚手架工具：
+
+```
+go install github.com/spf13/cobra-cli@latest
+```
+
+`cobra-cli` 是一个命令行程序，用于生成cobra应用程序和命令文件。它将引导您的应用程序脚手架以快速开发基于 Cobra 的应用程序。这是将 Cobra 融入您的应用程序的最简单方法。
+
+使用命令 `go install github.com/spf13/cobra-cli@latest` 安装 cobra 生成器。 Go 会自动将其安装在您的 `$GOPATH/bin` 目录中，该目录应该位于您的 $PATH 中。
+
+`cobra-cli init [app]` 命令将为您创建初始应用程序代码。
+
+它是一个非常强大的应用程序，它将用正确的结构填充您的程序，以便您可以立即享受 Cobra 的所有好处。
+
+它还可以将您指定的许可证应用于您的应用程序。
+
+随着 Go 模块的引入，Cobra 生成器已被简化以利用模块。 Cobra 生成器在 Go 模块内工作。
+
+```
+mkdir myapp
+cd myapp
+go mod init github.com/spf13/myapp
+cobra-cli init
+go run main.go
+```
+
+cobra-cli init 也可以从子目录运行，例如 cobra 生成器本身的组织方式。
+
+如果您希望将应用程序代码与库代码分开，这非常有用。
+
+Viper 是 Cobra 的配套产品，旨在提供对环境变量和配置文件的轻松处理，并将它们无缝连接到应用程序标志。
+
+一旦 Cobra 应用程序初始化，您可以继续使用 Cobra 生成器向您的应用程序添加其他命令。执行此操作的命令是 `cobra-cli add` 。
+
+假设您创建了一个应用程序，并且需要为其执行以下命令：
+
+- app serve 应用程序服务
+- app config 应用程序配置
+- app config create 应用程序配置创建
+
+在您的项目目录（main.go 文件所在的位置）中，您将运行以下命令：
+
+```
+cobra-cli add serve
+cobra-cli add config
+cobra-cli add create -p 'configCmd'
+```
+
+-p表示指定当前命令的parent。上面的意思是create是config的子命令。
+
+`cobra-cli add` 支持与 `cobra-cli init` 相同的所有可选标志（如上所述）。
+
+*注意：命令名称使用驼峰命名法（而不是蛇形命名法/短横线命名法）。否则，您将遇到错误。例如， `cobra-cli add add-user` 不正确，但 `cobra-cli add addUser` 有效。*
+
+您现在已经启动并运行了一个基于 Cobra 的基本应用程序。
+
+下一步是在 cmd 中编辑文件并为您的应用程序自定义它们。
+
+可以提供一个全局的配置文件来制定cobra的特性。
+
+示例 ~/.cobra.yaml 文件：
+
+```
+author: Steve Francia <spf@spf13.com>
+license: MIT
+useViper: true
+```
+
+
+
+https://github.com/spf13/cobra-cli/blob/main/README.md
+
+
+
+# Go语言中结构体与json映射
+
+实际中有一个Adset的结构体定义如下：
+
+```
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+type Adset struct {
+	Cost float64 `json:"cost"`
+	Name string  `json:"name"`
+	msg  string  // 小写的不会被json解析
+}
+
+func main() {
+	a := Adset{
+		1.2,
+		"aaa",
+		"bbb",
+	}
+	data, err := json.Marshal(a)
+	if err == nil {
+		fmt.Printf("%s\n", data)
+	}
+}
+
+```
+
+在实际中，虽然我们将结构体的cost字段定义成了float64类型的，
+
+但是在与前端交互的时候（或者通过RPC调用获取别的渠道的数据的时候），
+
+有可能别人传过来的是一个字符串类型的数据，
+
+这时候我门需要使用strconv模块将字符串类型转成float类型再进行自己逻辑的处理。
+
+本文介绍一下另外一种做法。
+
+```
+type Adset struct {
+	Cost float64 `json:"cost,string"` //注意这里的string表示解析为string类型
+	Name string  `json:"name"`
+	msg  string  // 小写的不会被json解析
+}
+
+```
+
+反序列化
+
+```
+	s := `{"name": "abc", "cost": "1.23"}`
+	var obj Adset
+	if err := json.Unmarshal([]byte(s), &obj); err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Printf("%T \n", obj.Cost)
+		fmt.Printf("%v \n", obj)
+	}
+```
+
+https://www.cnblogs.com/paulwhw/p/14050240.html
+
+# 泛型
+
+https://www.kunkkawu.com/archives/shen-ru-li-jie-golang-de-fan-xing
+
+如果没有泛型，可以用反射来达到类似的效果。
+
+假设有函数：
+
+```
+func AddFloat(a, b float32) float32 {
+	return a+b;
+}
+```
+
+我们希望它能够对任意类型实现加的操作。
+
+使用反射：
+
+```
+func Add (a interface{}, b interface{}) interface{} {
+	switch a.(type) {
+	case int:
+		return a.(int) + b.(int)
+	case float32:
+		return a.(float32) + b.(float32)
+	default:
+		return nil
+	}
+}
+```
+
+# 并发
+
+## Context
+
+上下文与 Goroutine 有比较密切的关系，是 Go 语言中独特的设计，在其他编程语言中我们很少见到类似的概念。
+
+是go语言在1.7版本引入的接口。
+
+这个接口定义了4个需要实现的方法：
+
+1、Deadline。任务的截止日期。
+
+2、Done。返回一个ch。
+
+3、Err。返回Context结束的原因。
+
+4、Value。
+
+在go http包的server里，
+
+每个req都有一个对应的goroutine去处理。
+
+而在每个处理的goroutine内部，又会额外启动goroutine去访问其他的服务，例如读取数据库，调用rpc。
+
+
+
+为什么需要Context
+
+主要是为了实现客户端调用服务端api的时候，进行超时控制。
+
+
+
+https://www.topgoer.com/%E5%B8%B8%E7%94%A8%E6%A0%87%E5%87%86%E5%BA%93/Context.html
+
+# sync.WaitGroup
+
+`sync.WaitGroup` 是 Go 语言标准库中的一个同步原语，它用于等待一组 goroutine 完成执行。`sync.WaitGroup` 通常用于并发编程中，以确保在主 goroutine 完成执行之前，所有其他 goroutine 都已经完成。
+以下是一个使用 `sync.WaitGroup` 的简单例子：
+```go
+package main
+import (
+	"fmt"
+	"sync"
+	"time"
+)
+func main() {
+	// 创建一个新的 sync.WaitGroup
+	var wg sync.WaitGroup
+	// 设置 wg 的计数器，等待的 goroutine 数量
+	wg.Add(2)
+	// 创建两个 goroutine
+	go func() {
+		defer wg.Done() // 完成一个 goroutine
+		fmt.Println("goroutine 1 is running")
+		time.Sleep(time.Second * 2)
+		fmt.Println("goroutine 1 is done")
+	}()
+	go func() {
+		defer wg.Done() // 完成一个 goroutine
+		fmt.Println("goroutine 2 is running")
+		time.Sleep(time.Second * 1)
+		fmt.Println("goroutine 2 is done")
+	}()
+	// 等待所有 goroutine 完成
+	wg.Wait()
+	fmt.Println("All goroutines are done")
+}
+```
+在这个例子中，我们创建了一个 `sync.WaitGroup` 对象 `wg`，并将其计数器设置为 2。然后，我们创建了两个 goroutine，每个 goroutine 在执行完成后都会调用 `wg.Done()` 方法，这会将 `wg` 的计数器减 1。
+在主 goroutine 中，我们调用 `wg.Wait()` 方法来等待所有 goroutine 完成。只有当 `wg` 的计数器变为 0 时，`wg.Wait()` 才会返回，这意味着所有 goroutine 都已经完成执行。
+最后，我们输出 "All goroutines are done"，表示所有 goroutine 都已经完成执行。
 
 # 参考资料
 

@@ -69,3 +69,13 @@ Windows上的WebView2是一个嵌入式Web浏览器控件，它使用Microsoft E
 5. **跨平台**: 虽然WebView2目前主要针对Windows平台，但微软也在不断努力将其扩展到其他平台，例如.NET MAUI和Electron等。
 
 WebView2为开发人员提供了一种强大的工具，使他们能够在其应用程序中集成现代的Web内容，从而提供更丰富、更交互的用户体验。
+
+# 命令行安装软件
+
+winget：我的电脑上工作不正常。
+
+chocolatey：这个是基于NuGet的工具。
+
+https://chocolatey.org/
+
+https://blog.csdn.net/qq_39609993/article/details/120710357
