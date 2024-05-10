@@ -891,6 +891,130 @@ if __name__ == "__main__":
 
 在这个修改后的示例中，我添加了一个名为 `choice` 的下拉列表控件，并在欢迎界面窗口的 `on_start` 方法中获取用户选择的值，并将其作为参数传递给主应用程序窗口 `MainFrame` 的初始化方法。然后，在主应用程序窗口中显示欢迎文本时，将用户选择的值显示出来。
 
+# 耗时操作界面不要失去响应
+
+我在一个button里有一个耗时的操作，我不希望点击button后界面失去响应，但是也不希望在耗时操作完成前button能再次触发耗时操作
+
+
+
+你可以使用多线程或者异步操作来解决这个问题。在wxPython中，你可以使用Python的`threading`模块或者`asyncio`模块来实现。
+
+1. **多线程方法**：
+
+```python
+import wx
+import threading
+
+class MyFrame(wx.Frame):
+    def __init__(self, parent, title):
+        wx.Frame.__init__(self, parent, title=title, size=(300, 200))
+        panel = wx.Panel(self)
+        self.btn = wx.Button(panel, label="执行耗时操作")
+        self.btn.Bind(wx.EVT_BUTTON, self.on_button_click)
+
+    def on_button_click(self, event):
+        self.btn.Disable()  # 禁用按钮
+        t = threading.Thread(target=self.long_running_task)
+        t.start()
+
+    def long_running_task(self):
+        # 在这里执行你的耗时操作
+        import time
+        time.sleep(5)  # 模拟一个耗时操作
+        wx.CallAfter(self.btn.Enable)  # 操作完成后启用按钮
+
+app = wx.App(False)
+frame = MyFrame(None, "耗时操作示例")
+frame.Show(True)
+app.MainLoop()
+```
+
+2. **异步方法（使用asyncio）**：（这个实际测试是不行的）
+
+```python
+import wx
+import asyncio
+
+class MyFrame(wx.Frame):
+    def __init__(self, parent, title):
+        wx.Frame.__init__(self, parent, title=title, size=(300, 200))
+        panel = wx.Panel(self)
+        self.btn = wx.Button(panel, label="执行耗时操作")
+        self.btn.Bind(wx.EVT_BUTTON, self.on_button_click)
+
+    async def on_button_click(self, event):
+        self.btn.Disable()  # 禁用按钮
+        await self.long_running_task()
+        self.btn.Enable()  # 操作完成后启用按钮
+
+    async def long_running_task(self):
+        # 在这里执行你的耗时操作
+        await asyncio.sleep(5)  # 模拟一个耗时操作
+
+app = wx.App(False)
+frame = MyFrame(None, "耗时操作示例")
+frame.Show(True)
+asyncio.ensure_future(frame.on_button_click(None))  # 异步调用按钮点击事件处理函数
+app.MainLoop()
+```
+
+无论使用多线程还是异步方法，都可以在按钮点击后禁用按钮，执行耗时操作，然后在操作完成后再启用按钮，以确保界面不会在耗时操作期间失去响应。
+
+# 配合difflib写文件对比工具
+
+当然可以！您可以使用 `difflib` 模块生成文本差异，并将差异结果以图形化界面的形式展示出来，配合 `wxPython` 创建一个简单的图形化文本对比工具。
+
+下面是一个简单的示例代码，演示了如何使用 `difflib` 和 `wxPython` 实现一个简单的文本对比工具：
+
+```python
+import difflib
+import wx
+
+class TextDiffFrame(wx.Frame):
+    def __init__(self):
+        super().__init__(None, title='Text Diff Tool', size=(800, 600))
+        self.panel = wx.Panel(self)
+        
+        # 创建文本框
+        self.text1 = wx.TextCtrl(self.panel, style=wx.TE_MULTILINE)
+        self.text2 = wx.TextCtrl(self.panel, style=wx.TE_MULTILINE)
+        self.text_diff = wx.TextCtrl(self.panel, style=wx.TE_MULTILINE | wx.TE_READONLY)
+        
+        # 创建按钮
+        self.compare_btn = wx.Button(self.panel, label='Compare')
+        self.compare_btn.Bind(wx.EVT_BUTTON, self.on_compare)
+        
+        # 布局
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(self.text1, 1, wx.EXPAND)
+        sizer.Add(self.text2, 1, wx.EXPAND)
+        sizer.Add(self.compare_btn, 0, wx.EXPAND)
+        sizer.Add(self.text_diff, 1, wx.EXPAND)
+        self.panel.SetSizer(sizer)
+        
+    def on_compare(self, event):
+        text1 = self.text1.GetValue()
+        text2 = self.text2.GetValue()
+        
+        # 生成差异结果
+        diff = difflib.unified_diff(text1.splitlines(keepends=True), text2.splitlines(keepends=True))
+        
+        # 将差异结果显示在文本框中
+        self.text_diff.SetValue(''.join(diff))
+
+if __name__ == '__main__':
+    app = wx.App(False)
+    frame = TextDiffFrame()
+    frame.Show()
+    app.MainLoop()
+```
+
+这个示例创建了一个简单的 `wxPython` 界面，其中包含两个文本框用于输入文本，一个按钮用于比较两个文本的差异，以及一个文本框用于显示差异结果。当用户点击按钮时，程序会获取两个文本框中的文本，使用 `difflib.unified_diff()` 函数比较它们之间的差异，并将差异结果显示在结果文本框中。
+
+您可以根据实际需求进一步完善界面和功能，以实现更加复杂的文本对比工具。
+
+![image-20240509152703928](images/random_name/image-20240509152703928.png)
+
 # 参考资料
 
 https://blog.csdn.net/qq_37534835/article/details/90715871

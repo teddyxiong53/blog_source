@@ -85,6 +85,16 @@ pip的版本问题
 
 我当前python27对应的pip版本是10.0.1 。
 
+# pip3 install starlette[full] 中括号
+
+在 `pip3 install` 命令中，方括号 `[]` 通常用于指定要安装的软件包的特定选项或附加组件。
+
+在你提到的命令中，`starlette[full]` 中的 `[full]` 是一个附加选项，
+
+用于指定安装 `starlette` 包的完整版本，
+
+包括所有的附加组件或依赖项。
+
 
 
 # 参考资料

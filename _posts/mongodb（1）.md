@@ -636,7 +636,67 @@ sudo service mongod restart
 
 https://mongoing.com/archives/docs/mongodb%e5%88%9d%e5%ad%a6%e8%80%85%e6%95%99%e7%a8%8b/2019%e5%b9%b49%e7%a7%8d%e6%9c%80%e4%bd%b3mongodb-gui%e5%b7%a5%e5%85%b7
 
+# Python使用mongodb的例子
 
+当然，以下是一个简单的Python示例，演示如何连接到MongoDB并进行一些基本操作：
+
+```python
+from pymongo import MongoClient
+
+# 连接到本地MongoDB数据库，默认端口为27017
+client = MongoClient('localhost', 27017)
+
+# 选择一个数据库
+db = client['mydatabase']
+
+# 选择一个集合（类似于表）
+collection = db['mycollection']
+
+# 插入一条文档
+post = {"author": "Alice", "text": "Hello MongoDB!"}
+collection.insert_one(post)
+
+# 查询所有文档
+cursor = collection.find({})
+
+# 打印结果
+for document in cursor:
+    print(document)
+
+# 更新文档
+query = {"author": "Alice"}
+new_values = {"$set": {"text": "Hello MongoDB! This is an updated message."}}
+collection.update_one(query, new_values)
+
+# 删除文档
+query = {"author": "Alice"}
+collection.delete_one(query)
+
+# 关闭连接
+client.close()
+```
+
+在这个例子中，我们使用了`pymongo`库来连接到MongoDB。首先，我们连接到本地数据库，然后选择一个数据库和一个集合。我们插入了一条文档，然后查询了所有文档，并打印了它们。接着，我们更新了一个文档，然后删除了它。最后，我们关闭了与数据库的连接。
+
+# pymongo介绍
+
+`pymongo` 是 Python 中与 MongoDB 数据库进行交互的官方驱动程序。它允许开发者使用 Python 语言来连接、查询、更新和操作 MongoDB 数据库中的数据。
+
+以下是 `pymongo` 的一些主要特点和功能：
+
+1. **简单易用：** `pymongo` 提供了直观的 API，使得与 MongoDB 的交互变得简单和容易。
+
+2. **完整的功能支持：** `pymongo` 支持 MongoDB 的所有主要功能，包括文档插入、查询、更新、删除、索引、聚合等。
+
+3. **异步操作支持：** `pymongo` 还提供了异步操作的支持，使得在异步框架中（如 asyncio）与 MongoDB 进行交互更加方便。
+
+4. **自动类型转换：** `pymongo` 能够自动地将 Python 的数据类型转换为 MongoDB 中的数据类型，并在需要时将其转换回来。
+
+5. **支持复制集和分片集群：** `pymongo` 可以与 MongoDB 的复制集和分片集群一起使用，以实现高可用性和水平扩展。
+
+6. **文档对象映射（ODM）：** 虽然 `pymongo` 本身并不是一个全功能的 ODM（对象文档映射器），但它提供了一些辅助功能来简化将 MongoDB 文档映射到 Python 对象的过程。
+
+总的来说，`pymongo` 是一个功能强大且易于使用的工具，用于在 Python 中与 MongoDB 数据库进行交互。
 
 # 参考资料
 

@@ -459,6 +459,129 @@ pc上用adb connect 192.168.137.24:5555 ，然后adb push文件就可以了。
 
 但是速度非常慢。
 
+# linux下的adb分析
+
+![img](images/random_name/1083701-20231114163138217-1613313723.jpg)
+
+
+
+作为ADB设备时是USB Device，
+
+对应的驱动是Gadget FunctionFS驱动，
+
+==FunctionFS借助configfs==方便用户空间进行各种功能组合例化。
+
+另外还涉及到UDC驱动控制USB设备控制器和USB主机控制器进行数据交互。
+
+
+
+往UDC写空则和Gadget驱动解绑，将Gadget从Host拔出；
+
+写入/sys/clss/udc下一个名称，则将Gadget驱动绑定到UDC，Host即可识别Gadget。
+
+# stm32的adb配置
+
+```
+#!/bin/sh
+
+gadget=gadget
+
+do_start(){
+    #挂载configs文件系统。
+    #has_mount=$(mount -l | grep /sys/kernel/config)
+    #if [[ -z  $has_mount ]];then
+        mount -t configfs none /sys/kernel/config
+    #fi
+    cd /sys/kernel/config/usb_gadget
+
+    #进入usb_gadget，创建gadget目录后系统自动创建usb gadget相关的内容。
+    if [[ ! -d ${gadget} ]]; then
+        mkdir ${gadget}
+    else
+        exit 0
+    fi
+    cd ${gadget}
+
+    #设置EP0 Packet最大值。
+    echo "64" > bMaxPacketSize0
+    #设置USB协议版本USB2.0，Device版本号为0x0100。
+    echo 0x0200 > bcdUSB
+    echo 0x0100 > bcdDevice
+
+    #定义产品的VendorID和ProductID。
+    echo "0x09D9"  > idVendor
+    echo "0x0502" > idProduct
+
+    #0x409对应en-us，表示后续string类型的语言。
+    mkdir strings/0x409
+
+    #将开发商、产品和序列号字符串写入内核。
+    echo "76543210" > strings/0x409/serialnumber
+    echo "STM"  > strings/0x409/manufacturer
+    echo "STM32MP157"  > strings/0x409/product
+
+    #创建一个USB配置实例。
+    if [[ ! -d configs/config.1 ]]; then
+        mkdir configs/config.1
+    fi
+    
+    #设备从总线获取的最大电流mA。
+    echo 120 > configs/config.1/MaxPower
+
+    #定义配置描述符使用的字符串。
+    if [[ ! -d configs/config.1/strings/0x409 ]]; then
+        mkdir configs/config.1/strings/0x409
+    fi
+
+    echo "STMCfg" > configs/config.1/strings/0x409/configuration
+
+    #按照FUNC.INSTANCE格式创建功能实例。需要注意的是，一个功能如果有多个实例的话，扩展名必须用数字编号。
+    mkdir functions/ffs.adb
+    
+    #分配一个usb_function并加入到func_list中。后续绑定驱动到UDC时需要。
+    ln -s functions/ffs.adb configs/config.1
+
+    mkdir /dev/usb-ffs
+    mkdir /dev/usb-ffs/adb
+
+    #挂载adb设备functionfs文件系统到/dev/usb-ffs/adb，出现ep0/1/2，给adbd使用。
+    mount -t functionfs adb /dev/usb-ffs/adb
+    
+    adbd &
+
+    echo "sleep 3s"
+    sleep 3s
+
+    #将gadget驱动注册到UDC上，插上USB线到电脑上，电脑就会枚举USB设备。
+    udc_name=$(ls /sys/class/udc)
+    echo UDC:$udc_name
+    echo "$udc_name" > UDC
+}
+
+do_stop() {
+    cd /sys/kernel/config/usb_gadget/${gadaget}
+    echo "" > UDC
+}
+
+case $1 in
+    start)
+        echo "Start hid gadget "
+        do_start
+        ;;
+    stop)
+        echo "Stop hid gadget"
+        do_stop
+        ;;
+    *)
+        echo "Usage: $0 (stop | start)"
+        ;;
+esac
+```
+
+
+
+https://www.cnblogs.com/arnoldlu/p/17726081.html
+
 # 参考资料
 
 1、

@@ -40,15 +40,16 @@ Tcl的基本语法相对简单，主要包括命令、变量、控制结构和�
    
    - Tcl的基本操作是通过命令完成的。命令通常由一个或多个单词组成，每个单词之间用空格隔开。
 - 示例：`puts "Hello, World!"`
-   
+  
 2. **变量：**
    - 变量在Tcl中使用`set`命令进行赋值。
    - 示例：`set greeting "Hello"`
 
 3. **输出：**
+   
    - 使用`puts`命令将文本输出到控制台。
-   - 示例：`puts "Hello, World!"`
-
+- 示例：`puts "Hello, World!"`
+   
 4. **输入：**
    - 使用`gets`命令获取用户输入。
    - 示例：`gets stdin user_input`

@@ -7,7 +7,7 @@ tags:
 
 --
 
-复合型设备：
+# 复合型设备
 
 具有两种usb设备功能的一种设备，
 
@@ -183,7 +183,9 @@ Linux提供了许多gadget可以使用的功能。
 
 创建一个gadget意味着决定将有哪些配置以及每个配置将提供哪些功能。
 
-Configfs(请参阅[Configfs—用户空间驱动的内核对象配置](https://www.cnblogs.com/wanglouxiaozi/p/15179719.html))非常适合告诉内核上述决定。本文档是关于如何实现这一点的。它还描述了如何将configfs集成到gadget中。
+Configfs(请参阅[Configfs—用户空间驱动的内核对象配置](https://www.cnblogs.com/wanglouxiaozi/p/15179719.html))非常适合告诉内核上述决定。
+
+本文档是关于如何实现这一点的。它还描述了如何将configfs集成到gadget中。
 
 
 
@@ -365,6 +367,128 @@ echo "" > UDC
 
 
 https://www.cnblogs.com/wanglouxiaozi/p/15131949.html
+
+
+
+# USB gadget 具体是什么
+
+
+
+configfs是基于ram的文件系统，与sysfs的功能有所不同。
+
+sysfs是基于文件系统的==kernel对象视图==，
+
+虽然某些属性允许用户读写，但对象是在kernel中创建、注册、销毁，由kernel控制其生命周期。
+
+而configfs是一个基于文件系统的==内核对象管理器==（或称为config_items），
+
+config_items在用户空间通过mkdir显式的创建，使用rmdir销毁，
+
+==在mkdir之后会出现对应的属性==，可以在用户空间对这些属性进行读写，
+
+与sysfs不同的是，==这些对象的生命周期完全由用户空间控制==，kernel只需要响应用户空间的操作即可。
+
+configfs和sysfs两者可以共存，但不能相互取代。
+
+早期的USB只支持单一的gadget设备，使用场景较为简单，
+
+随后加入了composite framework，用来支持多个function的gadget设备，
+
+多个function的绑定在内核中完成，若需要修改，则需要修改内核，不灵活也不方便。
+
+
+
+Linux3.11版本引入了基于configfs的usb gadget configfs。
+
+usb gadget configfs重新实现了复合设备层，使用者可以在用户空间配置和组合内核的function，灵活的构成USB复合设备，极大了提高了工作效率。
+
+
+
+usb gadget configfs模块的初始化函数为gadget_cfs_init。
+
+该函数调用后，会向configfs注册一个子系统，子系统使用configfs_subsystem结构体描述。
+
+子系统中又可分为组，使用config_group描述，
+
+组内又有成员，使用config_item描述。
+
+usb gadget configfs就是configfs子系统中的一个成员，成员的名称为"usb_gadget"，
+
+成员的类型使用config_item_type描述，成员类型中包含了初始化函数gadgets_ops。
+
+因此usb gadget configfs子系统最终通过调用gadgets_make进行初始化。
+
+==当加载libcomposite.ko模块后，会在/sys/kernel/config/目录下生成一个usb_gadget目录。==
+
+
+
+下面是usb gadget configfs定义的几种config_item_type和configfs_group_operations。
+
+当在/sys/kernel/config/usb_gadget/目录下实例化一个新的gadget实例（g1）时，
+
+首先调用gadget_root_type，
+
+在g1目录下生成bDeviceClass、bDeviceSubClass、bDeviceProtocol、bMaxPacketSize0、idVendor、idProduct、bcdDevice、bcdUSB、UDC属性文件，
+
+使用者可以在用户空间进行配置；
+
+接着调用functions_type，
+
+在g1目录下生成functions目录，绑定function驱动后，
+
+会在该目录下导出function驱动的属性文件，供使用者修改；
+
+然后调用config_desc_type，在g1目录下生成configs目录；
+
+随后调用gadget_strings_strings_type，在g1目录下生成strings目录，
+
+包含了使用字符串表示的英语ID，开发商、产品和序列号等信息。
+
+最后调用os_desc_type，在g1目录下生成os_desc目录，包含了操作系统信息，一般不需要设置。
+
+
+
+
+
+如下图所示，当用户空间执行echo fe800000.dwc3 > /sys/kernel/config/usb_gadget/g1/UDC时，
+
+内核会调用USB gadget configfs的gadget_dev_desc_UDC_store函数。
+
+gadget_dev_desc_UDC_store函数的主要工作是将usb_gadget_driver和底层的USB控制器绑定，
+
+==usb_gadget_driver相当于一个桥梁，==
+
+==桥的两端分别是function驱动和UDC驱动。==
+
+执行流程如下：
+
+判断输入的USB控制器名称，
+
+==若输出为空或者是none，则解除usb_gadget_driver和底层USB控制器的绑定。==
+
+反之调用usb_udc_attach_driver函数进行匹配USB设备控制器。
+
+遍历udc_list链表，查找fe800000.dwc3 USB设备控制器。
+
+找到对应的USB设备控制器，则保存绑定的usb_gadget_driver，即configfs_driver_template。
+
+回调configfs_composite_bind函数。
+
+其主要的工作内容如下：
+
+分配端点的usb_request、分配缓冲区、设置usb_request的回调函数、复位所有端点，并将gadget的端点数量清零。
+function驱动保存对应的配置，并回调function驱动的bind函数，对于uac2则回调 afunc_bind 函数。
+如果使用os_string，则需要分配os_string requset。
+调用UDC驱动接口usb_gadget_udc_start使能USB设备控制器。
+调用UDC驱动接口usb_udc_connect_control连接USB主机控制器，这样USB主机就能识别并枚举USB设备。
+
+
+
+
+
+https://blog.csdn.net/u011037593/article/details/123698241
+
+https://www.cnblogs.com/blogs-of-lxl/p/16815102.html
 
 # 参考资料
 

@@ -1359,7 +1359,11 @@ def main():
 start_server(main, port=8081)
 ```
 
+# chatgpt写pywebio技巧
 
+就是给它一个pywebio的官方例子，让它仿写一个。效果不错。
+
+比自己描述要好。 
 
 # 参考资料
 

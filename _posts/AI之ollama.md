@@ -539,6 +539,61 @@ Llama Coder 使用 Ollama 和 codellama 提供在您的硬件上运行的自动�
 
 https://medium.com/mossfinance/better-pull-requests-using-ollama-and-llama2-f3fdc77874ec
 
+# maxkb搭建环境
+
+可以跑起来。
+
+但是效果并不好。
+
+```
+docker run -d --name=maxkb -p 8080:8080 -v ~/.maxkb:/var/lib/postgresql/data 1panel/maxkb
+
+# 用户名: admin
+# 密码: MaxKB@123..
+```
+
+这个运行起来。
+
+另外需要手动把ollama跑起来。
+
+然后ollama运行需要指定一下环境变量。
+
+```
+export OLLAMA_HOST="172.17.0.1:11434"
+```
+
+172.17.0.1这个地址是host的docker网卡地址。
+
+否则容器里的maxkb访问不到容器外面的ollama的api地址。
+
+（不过要注意，如果修改了OLLAMA_HOST为docker的网卡地址，host里通过ollama run就连接不上ollama server了，不过没关系，注意有这种情况就好了）
+
+服务器上运行，cpu负载比较高，效果不好。
+
+在有intel集显的ubuntu笔记本上运行，也是只能用cpu，负载也比较高。
+
+没有实际价值。
+
+# maxkb代码
+
+这个前端是vue，
+
+后端是django。
+
+组件库还是elementui。
+
+
+
+# llama.cpp
+
+这个是ollama的底层依赖。
+
+https://github.com/ggerganov/llama.cpp
+
+这个代码没有太多可看的。因为都是比较复杂的计算。
+
+
+
 
 # 参考资料
 

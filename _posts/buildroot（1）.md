@@ -584,6 +584,16 @@ output/graphs/build.hist-name.pdf
 
 非常多。
 
+一般是这样用的：
+
+```
+$  make -s printvars VARS='BR2_arm BR2_PACKAGE_AUDIOSERVICE'
+BR2_PACKAGE_AUDIOSERVICE=y
+BR2_arm=y
+```
+
+
+
 ## list-defconfigs
 
 这个是一个目标。
@@ -3446,6 +3456,48 @@ RELRO 是一种安全机制，用于防止攻击者滥用程序的全局偏移�
 通过设置 `GLOBAL_INSTRUMENTATION_HOOKS` 变量，可以实现一些特定的构建操作，比如在编译过程中添加额外的代码、执行静态分析、进行代码覆盖率测试等。
 
 具体的使用方式和操作内容会根据项目的需求和具体情况而有所不同，用户可以根据需要自定义和配置这个全局的编译器插桩钩子。
+
+
+
+
+
+# Config.in.host
+
+```
+utils/checkpackagelib/lib_config.py:93:                                 "package/Config.in.host",
+utils/checkpackagelib/lib_config.py:228:                                     "package/Config.in.host",
+
+```
+
+docs/manual/adding-packages-directory.txt
+
+读一下这个文件。
+
+Config.in.host的总文件是在package/Config.in.host。
+
+menuconfg里对应这里。
+
+![image-20240507193752377](images/random_name/image-20240507193752377.png)
+
+对于大部分的套件来说，几乎都是『目标包』（就是套件经过交叉编译，然后将其移到目标板上跑）。
+
+但是有些套件却是要在主机（host）端执行的，
+
+意思是就是在其他套件的构建过程中会用到这些主机包，
+
+官方想要固定住这些主机套件的版本，
+
+因为这几个版本的配置是官方测试过的，
+
+这些『主机包』在menuconfig中是不可见的，用户也非一定要知道这些套件。
+
+这些所谓的主机包的文件档都会在『Config.in.host』里面，和Config.in一样，
+
+最上层包裹在『package/Config.in.host』里面，而选项的名称必须是『BR2PACKAGE_HOST包裹 ”。
+
+
+
+
 
 # 参考资料
 

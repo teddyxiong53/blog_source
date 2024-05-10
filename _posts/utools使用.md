@@ -99,3 +99,42 @@ https://github.com/in3102/utools-python-doc
 
 
 https://github.com/jaywcjlove/linux-command
+
+# 跟utools类似的效率工具
+
+如果您在寻找类似于 uTools 的效率工具，可以考虑以下几个选项：
+1. **Rubick**：这是一款基于 Electron 开发的开源、免费桌面端效率工具箱。Rubick 的目标是通过一系列辅助插件来解决工作、学习、开发上的效率问题。它类似于微信 App，插件就是基于微信的小程序，但专注于效率工具。Rubick 支持搜索系统应用、安装使用插件，并且支持基于 WebDav 的数据多端同步。
+2. **Everything**：这是一个功能非常简单的搜索工具，特点是搜索速度极快。它支持正则表达式等进行搜索，被许多后来的效率工具作为插件使用。
+3. **Listary**：Listary 将搜索与运行等功能相结合，支持快速打开程序或进行计算。它有收费版和免费版，其中免费版功能有所限制。Listary 也支持在各类软件的“打开”窗口中工作，提供飞一般的搜索速度。
+4. **Quicker**：与 uTools 类似，Quicker 也提供丰富的插件和动作库。不过，Quicker 更侧重于通过鼠标操作，而 uTools 和 Listary 更多依赖键盘。Quicker 的动作库包含大量提高效率的小工具或动作。
+这些工具各有特色，您可以根据自己的需求选择最适合的工具。
+
+## rubick
+
+这个就是开源版本的utools。
+
+https://github.com/rubickCenter/rubick
+
+看开发还比较活跃。看readme里功能比较完备。
+
+先把代码下载下来看看。
+
+官网：
+
+https://rubick.vip/
+
+文档：
+
+https://rubickcenter.github.io/docs/
+
+作者顺便推广自己的一个electron教程：
+
+https://juejin.cn/book/7302990019642261567
+
+这个也是开源软件一个不错的盈利途径。
+
+值得学习。
+
+方案是electron+vue。
+
+https://zhuanlan.zhihu.com/p/395854488

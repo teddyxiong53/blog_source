@@ -12,11 +12,23 @@ tags:
 
 我的理解：
 
-本质上，vuex就是把对全局变量的修改集中到一个地方。方便进行跟踪对全局变量的修改情况。
+本质上，vuex就是把对全局变量的修改集中到一个地方。
 
-state和getters是对变量进行读取，getters里是对state的成员进行组合加工，得到一些更加符合要求的数据。例如state里放的是firstName和lastName，我们可以在getters里提供一个fullName方法，（没有必要在state里再提供一个fullName成员，这样是数据多余）
+方便进行跟踪对全局变量的修改情况。
 
-而mutations和actions，都是对变量来进行修改。直接操作都是在mutations里来进行，mutations里都是简单的操作state的，同步的，不能异步操作 。如果有异步需要，在actions里做，然后actions通过commit再调用mutations。
+state和getters是对变量进行读取，
+
+getters里是对state的成员进行组合加工，得到一些更加符合要求的数据。
+
+例如state里放的是firstName和lastName，
+
+我们可以在getters里提供一个fullName方法，（没有必要在state里再提供一个fullName成员，这样是数据多余）
+
+而mutations和actions，都是对变量来进行修改。
+
+直接操作都是在mutations里来进行，mutations里都是简单的操作state的，同步的，不能异步操作 。
+
+如果有异步需要，在actions里做，然后actions通过commit再调用mutations。
 
 
 

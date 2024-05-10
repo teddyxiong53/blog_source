@@ -12,7 +12,7 @@ tags:
 
 要注意，Django的不同版本之间，配置方式可能发生了一些改变。
 
-#1.host
+# 1.host
 
 ALLOWED_HOSTS的正常用途是这样的：
 
@@ -22,7 +22,7 @@ ALLOWED_HOSTS = ['*.besttome.com','www.ziqiangxuetang.com']
 
 不过我们一般用ALLOWED_HOSTS = ['*']就好了。
 
-#2.静态文件 
+# 2.静态文件 
 
 ```
 STATIC_URL = '/static/'
