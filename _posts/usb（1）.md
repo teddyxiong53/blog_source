@@ -118,3 +118,19 @@ https://blog.51cto.com/u_15315240/5109960
 
 https://www.cnblogs.com/cascle/p/4442787.html
 
+# Gadget模式说明
+
+Gadget模式是指USB设备在USB通信中的一种工作模式。在Linux内核中，Gadget模式通常用于实现Linux设备作为USB设备的功能，例如USB存储设备、USB串口设备、MTP设备等。以下是关于Gadget模式的一些说明：
+
+1. **作为USB设备**：在Gadget模式下，Linux设备被配置为一个USB设备，而不是USB主机。这意味着它能够与USB主机进行通信，响应USB主机的请求并执行相应的操作。
+
+2. **支持的功能**：通过Gadget模式，Linux设备可以实现各种USB设备功能，包括但不限于：
+   - USB存储设备（Mass Storage Gadget）：允许将Linux设备模拟为一个USB存储设备，使其能够提供文件存储和访问功能。
+   - USB串口设备（CDC ACM Gadget）：允许将Linux设备模拟为一个USB串口设备，使其能够提供串口通信功能。
+   - MTP设备（Media Transfer Protocol Gadget）：允许将Linux设备模拟为一个支持MTP协议的USB设备，使其能够与计算机进行媒体文件传输。
+
+3. **实现方式**：在Linux内核中，Gadget模式通常通过USB Gadget子系统来实现。USB Gadget子系统提供了一组API和框架，允许开发者在Linux设备上实现各种USB设备功能。
+
+4. **配置和管理**：通过USB Gadget子系统，开发者可以配置和管理Linux设备的Gadget功能。这包括选择要实现的Gadget功能、配置USB描述符、管理USB接口等。
+
+总的来说，Gadget模式使得Linux设备能够模拟各种USB设备功能，并通过USB通信与USB主机进行交互。通过配置和管理Gadget模式，开发者可以实现各种USB设备功能，并将Linux设备应用于各种嵌入式系统和物联网设备中。

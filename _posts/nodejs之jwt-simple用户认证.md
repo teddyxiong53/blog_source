@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 jwt是json web token的缩写。
 
@@ -24,9 +24,11 @@ jwt是json web token的缩写。
 
 
 
-JSON Web Token（缩写 JWT）是目前最流行的跨域认证解决方案，本文介绍它的原理和用法。
+JSON Web Token（缩写 JWT）是目前==最流行的跨域认证解决方案==，本文介绍它的原理和用法。
 
-互联网服务离不开用户认证。一般的流程是这样的：
+互联网服务离不开用户认证。
+
+一般的流程是这样的：
 
 1、用户提交username和password。
 
@@ -42,7 +44,9 @@ JSON Web Token（缩写 JWT）是目前最流行的跨域认证解决方案，�
 
 上面这种验证方式的问题是，扩展性不好。
 
-如果是服务器集群，或者的跨域的服务导向架构，就要求session数据共享。每台服务器都要能够读取session。
+如果是服务器集群，或者的跨域的服务导向架构，就要求session数据共享。
+
+每台服务器都要能够读取session。
 
 举例来说，A网站和B网站是同一家公司的关联业务。
 
@@ -50,11 +54,15 @@ JSON Web Token（缩写 JWT）是目前最流行的跨域认证解决方案，�
 
 这个应该怎么实现呢？
 
-一个解决方案是session数据持久化。把session写入到数据库或者其他的持久层。
+==一个解决方案是session数据持久化。==
+
+把session写入到数据库或者其他的持久层。
 
 各种服务收到请求后，都向持久层请求数据。
 
-这个方案的优点是架构清晰。缺点是工程量比较大。另外持久层如果挂了，就会单点失败。
+这个方案的优点是架构清晰。
+
+缺点是工程量比较大。另外持久层如果挂了，就会单点失败。
 
 **另外一种方案是，服务端索性就不保存session数据了。**
 
@@ -160,7 +168,7 @@ Base64 有三个字符`+`、`/`和`=`，在 URL 里面有特殊含义，所以�
 
 
 
-jwt的使用方式
+# jwt的使用方式
 
 客户端收到服务器返回的jwt数据，可以存放在cookie里，也可以存放在localStorage里。
 
@@ -250,9 +258,193 @@ Content-Type 填写：application/json
 const jwt = require('express-jwt');
 ```
 
+# 简介
 
+JWT（JSON Web Token）是一种开放标准（RFC 7519），
 
-参考资料
+用于在网络应用之间==传递声明式的身份信息。==
+
+它是一种轻量级、可自包含的认证方式，通常用于在客户端和服务器之间安全地传输信息。
+
+JWT由三部分组成，分别是头部（Header）、载荷（Payload）和签名（Signature）：
+
+1. **头部（Header）**：头部通常由两部分组成，令牌的类型（比如JWT）和使用的签名算法（比如HMAC SHA256或RSA）。例如：`{"alg": "HS256", "typ": "JWT"}`。
+
+2. **载荷（Payload）**：载荷包含了一些声明（claim），声明是关于实体（通常是用户）和其他数据的声明。声明可以是注册的声明、公共声明和私有声明。例如：`{"sub": "user123", "exp": 1619446104}`。其中`sub`是主题，表示令牌的主体，而`exp`表示令牌的过期时间。
+
+3. **签名（Signature）**：签名是由头部、载荷和一个密钥（secret）使用指定的算法计算而得。签名用于验证消息的完整性，以及消息发送者的身份。==签名通常是使用Base64编码的字符串，==用于验证令牌的真实性。
+
+JWT的工作流程通常是这样的：用户登录成功后，服务器生成一个JWT，然后将其返回给客户端。
+
+客户端在随后的请求中将JWT包含在HTTP头部的Authorization字段中发送给服务器。
+
+服务器接收到JWT后，会验证JWT的有效性，并根据其中的声明来进行相应的操作。
+
+JWT的优点包括了跨平台、可扩展性强、自包含性和安全性高等。
+
+它广泛应用于身份认证和授权，比如在Web应用程序、移动应用程序和微服务架构中。
+
+# HTTP头部的Authorization字段
+
+HTTP头部的Authorization字段用于在HTTP请求中传递身份验证信息。
+
+它通常用于对受保护的资源进行访问时，向服务器提供身份验证凭据。
+
+Authorization字段的值通常由两部分组成，
+
+即身份验证方案（Authentication Scheme）和凭据（Credentials），之间用空格分隔。
+
+常见的身份验证方案包括基本认证（Basic Authentication）、摘要认证（Digest Authentication）、Bearer Token认证等。
+
+例如，Bearer Token认证的Authorization字段的格式通常是这样的：
+
+```
+Authorization: Bearer <token>
+```
+
+其中 `<token>` 是一个JWT令牌或其他形式的访问令牌。服务器在接收到这样的请求时，会提取Authorization字段中的令牌，然后对令牌进行验证，以确定请求的发送者是否有权限访问所请求的资源。
+
+在使用基本认证时，Authorization字段的格式如下：
+
+```
+Authorization: Basic <credentials>
+```
+
+其中 `<credentials>` 是经过Base64编码的用户名和密码的组合，用冒号分隔，例如：`username:password`。
+
+需要注意的是，虽然Base64编码可以对凭据进行简单的编码，但它并不等同于加密。因此，在传输敏感信息时，应始终使用HTTPS来加密通信，以确保凭据的安全性。
+
+总之，Authorization字段提供了一种标准的机制，用于在HTTP请求中传递身份验证信息，从而实现对受保护资源的访问控制。
+
+# Python jwt使用举例
+
+以下是一个简单的Python示例，演示如何使用PyJWT库创建和验证JWT令牌：
+
+首先，确保你已经安装了PyJWT库。你可以通过以下命令来安装：
+
+```
+pip install PyJWT
+```
+
+接下来，让我们创建一个JWT令牌并验证它：
+
+```python
+import jwt
+from datetime import datetime, timedelta
+
+# 密钥，用于签名和验证JWT令牌
+secret_key = "your_secret_key"
+
+# 有效载荷（Payload），包含了要包含在JWT令牌中的信息
+payload = {
+    "user_id": 123,
+    "username": "user123",
+    "exp": datetime.utcnow() + timedelta(days=1)  # 设置过期时间为一天后
+}
+
+# 创建JWT令牌
+jwt_token = jwt.encode(payload, secret_key, algorithm="HS256")
+
+print("JWT Token:", jwt_token)
+
+# 验证JWT令牌
+try:
+    decoded_payload = jwt.decode(jwt_token, secret_key, algorithms=["HS256"])
+    print("Decoded Payload:", decoded_payload)
+except jwt.ExpiredSignatureError:
+    print("JWT Token has expired.")
+except jwt.InvalidTokenError:
+    print("Invalid JWT Token.")
+```
+
+在这个示例中，我们首先导入了PyJWT库。然后，我们定义了一个密钥（secret_key），用于签名和验证JWT令牌。接着，我们创建了一个有效载荷（payload），其中包含了一些用户信息和过期时间。然后，我们使用`jwt.encode()`函数将有效载荷编码为JWT令牌，并打印出来。最后，我们使用`jwt.decode()`函数验证JWT令牌，并解码其中的有效载荷。
+
+请注意，这只是一个简单的示例。在实际应用中，你可能需要更复杂的逻辑来处理身份验证和授权，并根据需要定制有效载荷的内容。
+
+# 配合flask用jwt来做一个完整的demo
+
+好的，下面是一个使用Flask和PyJWT库来实现基本JWT身份验证的示例：
+
+首先，确保你已经安装了Flask和PyJWT库：
+
+```
+pip install Flask PyJWT
+```
+
+然后，创建一个名为`app.py`的Python文件，内容如下：
+
+```python
+from flask import Flask, request, jsonify
+import jwt
+from functools import wraps
+from datetime import datetime, timedelta
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your_secret_key'
+
+# 用户数据库，实际应用中应该是真实的用户数据库
+users = {
+    'user123': 'password123'
+}
+
+# 用户登录接口
+@app.route('/login', methods=['POST'])
+def login():
+    auth = request.authorization
+
+    if not auth or not auth.username or not auth.password:
+        return jsonify({'message': 'Authorization required!'}), 401
+
+    username = auth.username
+    password = auth.password
+
+    if users.get(username) == password:
+        # 生成JWT令牌
+        token = jwt.encode({'username': username, 'exp': datetime.utcnow() + timedelta(minutes=30)}, app.config['SECRET_KEY'])
+        return jsonify({'token': token.decode('utf-8')})
+    else:
+        return jsonify({'message': 'Invalid username or password!'}), 401
+
+# 身份验证装饰器
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+
+        try:
+            # 验证JWT令牌
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+        except:
+            return jsonify({'message': 'Token is invalid!'}), 401
+
+        return f(*args, **kwargs)
+
+    return decorated
+
+# 受保护的路由
+@app.route('/protected', methods=['GET'])
+@token_required
+def protected():
+    return jsonify({'message': 'Protected endpoint!'})
+
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+
+在这个示例中，我们首先导入了Flask、PyJWT库以及一些其他必要的模块。然后，我们创建了一个Flask应用，并设置了一个随机的密钥作为配置。接着，我们定义了一个虚拟的用户数据库（在实际应用中应该是真实的用户数据库），然后创建了一个用于用户登录的接口`/login`。
+
+用户登录接口接收用户名和密码，并根据数据库中的用户信息生成JWT令牌。如果登录成功，将返回JWT令牌；否则，返回相应的错误消息。
+
+我们还定义了一个名为`token_required`的装饰器，用于验证JWT令牌。这个装饰器用于保护受保护的路由`/protected`，只有在提供有效的JWT令牌时才允许访问该路由。
+
+最后，我们定义了一个受保护的路由`/protected`，并应用了`token_required`装饰器来保护它。
+
+你可以运行这个示例，并使用POST请求来模拟用户登录，然后使用JWT令牌来访问受保护的路由。
+
+# 参考资料
 
 1、在Nodejs中使用JWT做用户认证
 

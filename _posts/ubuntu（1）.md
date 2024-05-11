@@ -117,3 +117,54 @@ Ubuntu通常可以在大多数笔记本上运行良好，但要确保完美的�
 - **Ctrl + Alt + 方向键**：在一些桌面环境中，这个组合键可以移动当前活动窗口到不同的显示器。
 
 请注意，这些快捷键可能会因你的桌面环境、版本或者自定义设置而略有不同。如果你使用的是非默认的桌面环境或定制的设置，你可能需要根据自己的情况来配置相应的快捷键。
+
+# ubuntu的快捷键跟windows的快捷键
+
+Ubuntu 和 Windows 有一些相似的快捷键，但也有一些不同。以下是一些常见的 Ubuntu 快捷键及其在 Windows 中对应的操作：
+
+1. **打开应用程序菜单**：
+   - Ubuntu：Super 键（通常是 Windows 键）
+   - Windows：Windows 键
+
+2. **切换应用程序**：
+   - Ubuntu：Alt + Tab
+   - Windows：Alt + Tab
+
+3. **关闭窗口**：
+   - Ubuntu：Alt + F4
+   - Windows：Alt + F4
+
+4. **复制文本**：
+   - Ubuntu：Ctrl + C
+   - Windows：Ctrl + C
+
+5. **剪切文本**：
+   - Ubuntu：Ctrl + X
+   - Windows：Ctrl + X
+
+6. **粘贴文本**：
+   - Ubuntu：Ctrl + V
+   - Windows：Ctrl + V
+
+7. **撤销**：
+   - Ubuntu：Ctrl + Z
+   - Windows：Ctrl + Z
+
+8. **保存**：
+   - Ubuntu：Ctrl + S
+   - Windows：Ctrl + S
+
+9. **打印**：
+   - Ubuntu：Ctrl + P
+   - Windows：Ctrl + P
+
+10. **打开系统设置**：
+    - Ubuntu：Super 键 + S
+    - Windows：Win + I
+
+这只是一些常见的示例。虽然有些快捷键在 Ubuntu 和 Windows 之间是相同的，但还有一些特定于操作系统的快捷键。希望这些对您有所帮助！如果您需要了解更多的快捷键，请告诉我。
+
+# 系统美化
+
+https://blog.csdn.net/qq_35395195/article/details/125266461
+
