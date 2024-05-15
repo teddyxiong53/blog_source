@@ -116,6 +116,20 @@ won't do 不做。
 
 
 
+# jira_clone
+
+https://github.com/Datlyfe/jira_clone
+
+这个项目是对jira进行clone。
+
+从界面上看起来很接近。
+
+这个技术栈我也比较感兴趣。
+
+但是直接下载下来运行会不行。
+
+使用的数据库是postgresql。
+
 
 
 

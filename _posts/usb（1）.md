@@ -134,3 +134,38 @@ Gadget模式是指USB设备在USB通信中的一种工作模式。在Linux内核
 4. **配置和管理**：通过USB Gadget子系统，开发者可以配置和管理Linux设备的Gadget功能。这包括选择要实现的Gadget功能、配置USB描述符、管理USB接口等。
 
 总的来说，Gadget模式使得Linux设备能够模拟各种USB设备功能，并通过USB通信与USB主机进行交互。通过配置和管理Gadget模式，开发者可以实现各种USB设备功能，并将Linux设备应用于各种嵌入式系统和物联网设备中。
+
+# endpoint
+
+USB控制器的endpoint指的是USB设备上可用的通信端点（endpoint）。
+
+USB设备与主机之间的通信是通过端点进行的，
+
+==端点用于发送和接收数据。==
+
+USB设备的端点分为控制端点（Control Endpoint）、批量传输端点（Bulk Endpoint）、中断端点（Interrupt Endpoint）和等时传输端点（Isochronous Endpoint）四种类型。
+
+要查看USB控制器支持的endpoint，可以通过以下几种方法之一：
+
+1. **通过/sys文件系统**：
+   - 在/sys/bus/usb/devices目录下，每个USB设备都有一个相应的目录。在该目录中，有关USB设备端点的信息通常可以在文件中找到。
+   - 你可以通过浏览这些文件并查找有关端点的信息来了解USB控制器支持的端点数量和类型。
+
+2. **使用USB调试工具**：
+   - 一些USB调试工具（如usbutils）可以提供有关USB设备的详细信息，包括端点信息。
+   - 你可以使用这些工具来查看USB控制器支持的端点数量和类型。
+
+3. **查看内核文档**：
+   - Linux内核文档通常包含有关USB控制器和USB设备的信息，包括端点的描述和配置。
+   - 你可以查阅相关的内核文档来了解USB控制器支持的端点数量和类型。
+
+通过以上方法，你可以查看USB控制器支持的端点数量和类型，从而了解USB控制器的能力和特性。
+
+
+
+# 全志的usb开发文档，不错
+
+https://bbs.aw-ol.com/assets/uploads/files/1648272341289-d1-tina-linux-usb-%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97.pdf
+
+
+

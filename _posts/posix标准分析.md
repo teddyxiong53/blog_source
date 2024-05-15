@@ -6,7 +6,11 @@ tags:
 
 ---
 
+--
 
+这里有一份翻译的文档。
+
+https://www.cnblogs.com/alexliu2360/p/5674345.html
 
 posix表示的是可移植的os接口。推出的目的是为了方便基于类UNIX os的应用的移植。目前提供的是C语言的版本。
 

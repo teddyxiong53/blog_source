@@ -123,6 +123,20 @@ int main(int argc, char **argv)
 
 # 简介
 
+下面是关于FFmpeg的简介：
+
+| 名称     | FFmpeg                                                       |
+| -------- | ------------------------------------------------------------ |
+| 类型     | 跨平台的多媒体处理工具和库                                   |
+| 特点     | - 支持多种音频、视频和多媒体格式<br>- 提供了丰富的音视频处理功能<br>- 可以用于格式转换、编解码、流媒体处理等 |
+| 主要组件 | - ffmpeg：用于命令行操作的主要工具<br>- ffplay：用于播放音视频的简单播放器<br>- ffprobe：用于检查多媒体文件信息的工具 |
+| 开发语言 | C语言                                                        |
+| 许可证   | 大多数情况下采用LGPL或GPL许可证                              |
+
+FFmpeg是一个非常强大的工具，被广泛用于视频处理、转码、流媒体等应用场景。
+
+
+
 ffmpeg是包括：
 
 1、录制。
@@ -196,7 +210,187 @@ nasm/yasm not found or too old. Use --disable-x86asm for a crippled build.
 
 生成的ffprobe_g，带调试信息的版本后面会_g后缀。
 
+# 发展历史
 
+以下是FFmpeg的主要发展历史：
+
+| 时间段 | 重要事件                                                     |
+| ------ | ------------------------------------------------------------ |
+| 2000年 | - FFmpeg项目由Fabrice Bellard创建<br>- 最初版本发布          |
+| 2003年 | - 项目由Michael Niedermayer接管<br>- FFmpeg开始支持更多的编解码器和格式 |
+| 2011年 | - FFmpeg与Libav分道扬镳，形成两个独立的项目                  |
+| 2015年 | - FFmpeg回归原始开发者Michael Niedermayer的领导下            |
+| 2020年 | - FFmpeg发布版本4.3，增加了对新的编解码器和格式的支持<br>- 持续改进性能和稳定性 |
+| 未来   | - FFmpeg项目预计将继续发展，支持更多新的编解码器和多媒体格式<br>- 可能会持续改进性能和优化代码 |
+
+FFmpeg经历了多个版本和领导层的变动，但一直保持着对多媒体处理领域的贡献和领导地位。
+
+# 代码架构
+
+FFmpeg的代码架构相当庞大，主要由多个模块组成，包括但不限于：
+
+1. **libavcodec**: 实现了音视频编解码器的库，支持多种编码和解码算法。
+2. **libavformat**: 实现了音视频格式的封装和解封装功能，支持多种容器格式。
+3. **libavfilter**: 提供了音视频过滤器的库，可以进行音视频的处理和过滤。
+4. **libavutil**: 包含一些常用的工具函数和数据结构，为其他模块提供支持。
+5. **libswscale**: 提供了图像格式转换和缩放的功能，用于处理视频帧。
+6. **ffmpeg/ffplay/ffprobe**: 命令行工具，用于进行音视频处理、播放和信息查看。
+7. **doc**: 文档目录，包含了FFmpeg的官方文档和使用手册。
+8. **tests**: 包含了用于测试和验证FFmpeg功能的测试代码。
+9. **compat**: 兼容性模块，用于处理不同操作系统和平台之间的差异。
+
+整个代码库结构清晰，模块化程度高，使得开发人员可以方便地定位和修改相关功能。
+
+# 写一个简单的mp3播放器
+
+以下是一个简单的使用FFmpeg库实现的MP3音频播放器的C语言版本示例代码：
+
+```c
+#include <stdio.h>
+#include <libavformat/avformat.h>
+#include <libavutil/opt.h>
+
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        printf("Usage: %s <input_file>\n", argv[0]);
+        return 1;
+    }
+
+    const char *file_path = argv[1];
+    av_register_all();
+
+    // 打开输入文件
+    AVFormatContext *format_ctx = NULL;
+    if (avformat_open_input(&format_ctx, file_path, NULL, NULL) != 0) {
+        printf("无法打开输入文件\n");
+        return 1;
+    }
+
+    // 查找音频流信息
+    if (avformat_find_stream_info(format_ctx, NULL) < 0) {
+        printf("无法获取音频流信息\n");
+        avformat_close_input(&format_ctx);
+        return 1;
+    }
+
+    // 查找第一个音频流
+    int audio_stream_index = -1;
+    for (int i = 0; i < format_ctx->nb_streams; i++) {
+        if (format_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
+            audio_stream_index = i;
+            break;
+        }
+    }
+
+    if (audio_stream_index == -1) {
+        printf("未找到音频流\n");
+        avformat_close_input(&format_ctx);
+        return 1;
+    }
+
+    // 分配音频解码器上下文
+    AVCodecContext *codec_ctx = avcodec_alloc_context3(NULL);
+    if (!codec_ctx) {
+        printf("无法分配解码器上下文\n");
+        avformat_close_input(&format_ctx);
+        return 1;
+    }
+
+    // 填充音频解码器参数
+    if (avcodec_parameters_to_context(codec_ctx, format_ctx->streams[audio_stream_index]->codecpar) < 0) {
+        printf("无法填充解码器参数\n");
+        avcodec_free_context(&codec_ctx);
+        avformat_close_input(&format_ctx);
+        return 1;
+    }
+
+    // 查找解码器
+    AVCodec *codec = avcodec_find_decoder(codec_ctx->codec_id);
+    if (!codec) {
+        printf("找不到解码器\n");
+        avcodec_free_context(&codec_ctx);
+        avformat_close_input(&format_ctx);
+        return 1;
+    }
+
+    // 打开解码器
+    if (avcodec_open2(codec_ctx, codec, NULL) < 0) {
+        printf("无法打开解码器\n");
+        avcodec_free_context(&codec_ctx);
+        avformat_close_input(&format_ctx);
+        return 1;
+    }
+
+    // 读取音频帧并播放
+    AVPacket packet;
+    av_init_packet(&packet);
+    while (av_read_frame(format_ctx, &packet) >= 0) {
+        if (packet.stream_index == audio_stream_index) {
+            AVFrame *frame = av_frame_alloc();
+            int ret = avcodec_send_packet(codec_ctx, &packet);
+            if (ret < 0) {
+                printf("发送音频数据包时出错\n");
+                break;
+            }
+            ret = avcodec_receive_frame(codec_ctx, frame);
+            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+                av_frame_free(&frame);
+                continue;
+            }
+            if (ret < 0) {
+                printf("从解码器接收音频帧时出错\n");
+                break;
+            }
+            printf("播放音频帧...\n");
+
+            av_frame_free(&frame);
+        }
+        av_packet_unref(&packet);
+    }
+
+    // 释放资源
+    avcodec_free_context(&codec_ctx);
+    avformat_close_input(&format_ctx);
+    return 0;
+}
+```
+
+这个C语言版本的播放器使用了FFmpeg的C API，打开输入文件并查找音频流信息。然后，它找到音频流并为其分配解码器上下文。最后，它循环读取音频帧并播放。你需要在编译时链接FFmpeg库。
+
+# 主要的api介绍
+
+以下是FFmpeg主要API的简要介绍：
+
+1. **libavformat**：这个库提供了音视频容器格式的封装和解封装功能。你可以使用它来读取和写入各种音视频格式的文件，以及处理流媒体数据。常用的函数包括：
+   - `avformat_open_input()`：打开输入文件。
+   - `avformat_find_stream_info()`：获取音视频流信息。
+   - `avformat_write_header()`：写入文件头。
+   - `av_read_frame()`：读取音视频帧数据。
+
+2. **libavcodec**：这个库提供了音视频编解码器的功能。你可以使用它来解码、编码各种音视频数据。常用的函数包括：
+   - `avcodec_find_decoder()`：查找解码器。
+   - `avcodec_find_encoder()`：查找编码器。
+   - `avcodec_open2()`：打开解码器或编码器。
+   - `avcodec_send_packet()`：发送音视频数据包。
+   - `avcodec_receive_frame()`：接收解码后的音视频帧。
+
+3. **libavfilter**：这个库提供了音视频过滤器的功能，用于处理和修改音视频流。常用的函数包括：
+   - `avfilter_graph_alloc()`：创建一个过滤器图。
+   - `avfilter_graph_parse2()`：解析过滤器图的描述字符串。
+   - `avfilter_graph_config()`：配置过滤器图。
+   - `av_buffersrc_write_frame()`：向输入过滤器发送音视频帧。
+   - `av_buffersink_get_frame()`：从输出过滤器获取处理后的音视频帧。
+
+4. **libavutil**：这个库包含了一些常用的工具函数和数据结构，为其他模块提供支持。常用的函数包括：
+   - `av_malloc()`：分配内存。
+   - `av_freep()`：释放内存。
+   - `av_gettime()`：获取当前时间。
+
+5. **libswscale**：这个库提供了图像格式转换和缩放的功能，用于处理视频帧。常用的函数包括：
+   - `sws_getContext()`：创建图像转换上下文。
+   - `sws_scale()`：进行图像转换和缩放。
+
+这些API提供了丰富的功能，使得开发人员可以进行各种复杂的音视频处理操作。
 
 # 帮助信息
 
@@ -455,7 +649,22 @@ av_dict_set(&options, "listen", 2, 0);//最后一个参数是flags。
 
 ```
 
+`AVDictionary`是FFmpeg中用于表示字典（键值对）的数据结构。它用于存储元数据、选项和参数等信息。`AVDictionary`结构的定义如下：
 
+```c
+typedef struct AVDictionary AVDictionary;
+```
+
+每个`AVDictionary`结构都包含了零个或多个键值对，每个键值对由一个键（key）和一个值（value）组成，都是字符串类型。在FFmpeg中，`AVDictionary`常用于传递选项和元数据，例如编码器的参数、文件的元数据等。
+
+以下是一些常用的`AVDictionary`相关的函数：
+
+- `av_dict_set()`: 用于向`AVDictionary`中添加或更新键值对。
+- `av_dict_get()`: 用于从`AVDictionary`中获取指定键对应的值。
+- `av_dict_count()`: 返回`AVDictionary`中键值对的数量。
+- `av_dict_free()`: 释放`AVDictionary`及其所有的键值对。
+
+`AVDictionary`在FFmpeg中广泛用于传递和管理参数和选项，对于处理音视频流时，特别是编解码和封装时，经常会用到。
 
 # AVClass
 

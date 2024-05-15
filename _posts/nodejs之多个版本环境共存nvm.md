@@ -5,7 +5,7 @@ tags:
 	- nodejs
 ---
 
-
+--
 
 nodejs的版本环境问题，比起python来说，更加严重，因为nodejs的版本更多。
 
@@ -26,7 +26,7 @@ git clone https://github.com/creationix/nvm.git ~/.nvm && cd ~/.nvm && git check
 在.bashrc里加上这一行。要配置淘宝的源。不然慢到怀疑人生。
 
 ```
-export NVM_NODEJS_ORG_MIRROR=http://npm.taobao.org/mirrors/node
+export NVM_NODEJS_ORG_MIRROR=http://npmmirror.com/mirrors/node
 source ~/.nvm/nvm.sh
 ```
 
@@ -120,9 +120,23 @@ nvm也同时解决了全局安装的问题。这样只在个人目录下操作�
 nvm alias default v10.14.0
 ```
 
+# node版本问题
+
+## ubuntu18.04上无法运行node v18以上版本
+
+有C库问题。
+
+```
+node: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by node)
+```
+
+https://github.com/nodesource/distributions/issues/1392
+
+看起来这个问题不好解决。
 
 
-参考资料
+
+# 参考资料
 
 1、使用 nvm 管理不同版本的 node 与 npm
 
