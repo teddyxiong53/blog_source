@@ -8,6 +8,24 @@ tags:
 
 --
 
+经典蓝牙中的数据传输协议是串行仿真协议RFCOMM。
+
+RFCOMM仿真了常见的串口连接。
+
+数据从一端输入，从另一端取出。
+
+经典蓝牙的开发非常简单。
+
+基于串口开发的有线键鼠程序，就可以直接用于RFCOMM连接的无线键鼠。
+
+此外，经典蓝牙可以快速传输数据。
+
+因此，诺基亚N95这样的早期智能手机，也用RFCOMM来互传图片和文件。
+
+
+
+
+
 看蓝牙相关资料，看到rfcomm这个东西。了解一下。
 
 rfcomm是蓝牙协议栈里的一个协议。
@@ -316,3 +334,7 @@ https://raspberrypi.stackexchange.com/questions/78155/using-dev-rfcomm0-in-raspb
 12、Ubuntu14.04 蓝牙适配器的连接
 
 https://www.cnblogs.com/li-yao7758258/p/5577401.html
+
+
+
+https://www.cnblogs.com/vamei/p/6753531.html

@@ -284,3 +284,28 @@ ChatGPT-4.0的上下文长度为8192个Token。
 
 
 https://blog.csdn.net/feihe0755/article/details/129698918
+
+# GPT-4o
+
+不过，有不少获得体验权限的小伙伴对此做了测试，有两种结果：
+
+其一：5次/3小时；
+其二：15-25次/天。
+
+相比于 5次/3小时的情况，15-25次/天，对于使用者来说反而更友好一些，因为单次互动次数太少，不足以解决一些相对复杂的问题。
+
+对于 Plus 和 ChatGPT Team 账号，官方给出了明确的回复：
+
+截至 2024 年 5 月 13 日，Plus 用户将能够在 GPT-4o 上每 3 小时最多发送 80 条消息。
+
+被灰度到的免费账号默认使用 GPT-4o，消息数量受到限制，当不可用时，免费用户将切换回 GPT-3.5。
+
+免费用户还可以使用高级工具对消息进行有限的访问，例如：
+
+- Data analysis （代码解释器）
+- File Uploads （文件上传）
+- Browse（联网）
+- Discovering and using GPTs（GPT 商店）
+- Vision（图像识别）
+
+https://zhuanlan.zhihu.com/p/697988203

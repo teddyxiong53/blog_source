@@ -3,10 +3,10 @@ title: 蓝牙之uuid
 date: 2018-12-13 17:18:35
 tags:
 	- 蓝牙
-typora-root-url:../
+
 ---
 
-
+--
 
 每个设备可以包含多个service，每个service对应一个uuid。
 
@@ -20,7 +20,7 @@ profile：规范
 
 service和characteristic都需要用uuid来进行标识。
 
-![](/images/蓝牙概念层次.png)
+![](../images/蓝牙概念层次.png)
 
 耳机不适合用ble，因为ble适合在数据量非常小的。而耳机的数据量很大。
 

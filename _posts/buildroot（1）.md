@@ -2200,6 +2200,24 @@ $(eval $(virtual-package))
 $(eval $(host-virtual-package))
 ```
 
+lua.mk也是这样的：
+
+```
+LUA_PROVIDES = luainterpreter
+```
+
+luajit也可以提供。
+
+```
+luajit/luajit.mk:15:LUAJIT_PROVIDES = luainterpreter
+```
+
+其他的包进行依赖。
+
+```
+lua-gd/lua-gd.mk:11:LUA_GD_DEPENDENCIES = luainterpreter gd
+```
+
 
 
 # 什么时候需要完全重新编译

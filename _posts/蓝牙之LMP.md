@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 看btstack代码，rfcomm部分，看到gap_security_level这个东西。
 

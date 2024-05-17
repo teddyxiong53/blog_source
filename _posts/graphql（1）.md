@@ -93,6 +93,37 @@ print(result.data['hello'])  # 输出: Hello Alice!
 
 这只是一个简单的示例，实际中可以根据需求定义更复杂的对象类型和查询。
 
+# vue里面使用graphql
+
+这行代码是在 Vue.js 中使用 `@vue/apollo-composable` 包中的 `useQuery` 函数。这个函数通常用于在 Vue 组件中执行 GraphQL 查询。
+
+`useQuery` 是组合式 API 的一部分，它是一个用于执行 GraphQL 查询的钩子函数。通过 `useQuery`，你可以在组件中发起 GraphQL 查询，并且轻松地获取查询结果、错误信息和加载状态等。
+
+通常的用法是在组件的 `setup` 函数中调用 `useQuery` 函数，然后在模板中使用返回的查询结果。例如：
+
+```javascript
+import { useQuery } from '@vue/apollo-composable';
+import { gql } from 'graphql-tag';
+
+export default {
+  setup() {
+    const { result, loading, error } = useQuery(gql`
+      query {
+        // Your GraphQL query here
+      }
+    `);
+
+    return {
+      result,
+      loading,
+      error
+    };
+  }
+};
+```
+
+在模板中，你可以根据 `loading` 状态来显示加载状态，根据 `error` 来显示错误信息，而 `result` 则是查询返回的结果，你可以根据具体的查询结果来渲染页面内容。
+
 # 参考资料
 
 https://medium.com/@ryk.kiel/graphql-and-fastapi-the-ultimate-combination-for-building-apis-with-python-f4391bf5505c

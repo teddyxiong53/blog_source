@@ -171,7 +171,33 @@ ACTION=="add", SUBSYSTEM=="usb", ATTRS{idVendor}=="1234", ATTRS{idProduct}=="567
 
 通过使用 `GOTO`，可以根据特定的条件在规则中创建分支和跳转，以便根据需要执行不同的操作或跳过一些规则。这提供了更灵活的控制流程和规则的执行顺序。
 
+# label和goto
 
+在udev规则中，`LABEL` 和 `GOTO` 是用于控制规则流程的两个关键字。
+
+- **LABEL**：`LABEL` 用于定义一个标签，它可以被 `GOTO` 关键字引用。在规则中，你可以使用 `LABEL` 来标记一个位置，以便在后续的规则中引用这个位置。
+
+- **GOTO**：`GOTO` 用于跳转到指定的标签位置。当某个条件满足时，你可以使用 `GOTO` 关键字跳转到之前定义的标签位置，以实现条件分支或者循环等控制逻辑。
+
+下面是一个简单的示例，展示了如何在udev规则中使用 `LABEL` 和 `GOTO`：
+
+```plaintext
+# /etc/udev/rules.d/99-example.rules
+
+# 定义一个标签
+LABEL="usb_rules"
+
+# 匹配 USB 设备的子系统为 usb，idVendor 属性为 1234，idProduct 属性为 5678 的设备
+SUBSYSTEM=="usb", ATTR{idVendor}=="1234", ATTR{idProduct}=="5678", MODE="0666"
+
+# 当设备名称为 ttyUSB0 时，跳转到之前定义的标签位置
+KERNEL=="ttyUSB0", GOTO="usb_rules"
+
+# 匹配设备类型为 disk，设备名称以 sd 开头的设备，设置权限为 0666
+SUBSYSTEM=="block", KERNEL=="sd*", ENV{ID_TYPE}=="disk", MODE="0666"
+```
+
+在这个示例中，我们首先定义了一个标签 `usb_rules`，然后在第三条规则中使用 `GOTO="usb_rules"` 来跳转到这个标签位置。当设备名称为 `ttyUSB0` 时，会跳转到定义的标签位置，继续执行标签位置之后的规则。
 
 # 参考资料
 
