@@ -1462,6 +1462,65 @@ SIGHUP 信号导致dbus-daemon重新去加载配置，如果你改变配置之�
 
 https://blog.csdn.net/u012385733/article/details/80881343
 
+
+
+# dbus的各种binding
+
+https://www.freedesktop.org/wiki/Software/DBusBindings
+
+## libdbus
+
+libdbus 是 dbus 的一部分，是 D-Bus 协议的参考实现。
+
+这并不意味着它是 D-Bus 的最佳实现，而且对于大多数用途而言，它也不是最佳的实现。
+
+其维护者建议使用 GDBus、sd-bus 或 QtDBus。
+
+## sd-bus 
+
+sd-bus 是 libsystemd 的一部分，是 D-Bus 协议的实现（不是绑定）。
+
+## pydbus
+
+pydbus 是一个现代的、Python 风格的 D-Bus 库，构建在 PyGI 和 GDBus 之上。
+
+# dbus-run-session作用
+
+`dbus-run-session` 是一个命令行工具，
+
+用于启动一个新的 D-Bus 会话总线并在该会话中运行指定的命令。
+
+它在临时会话中运行命令，结束后会话自动销毁，==非常适合测试和临时任务。==
+
+以下是 `dbus-run-session` 的主要作用和使用示例：
+
+| 功能                | 说明                                                         |
+| ------------------- | ------------------------------------------------------------ |
+| 启动新的 D-Bus 会话 | 为特定任务启动一个隔离的 D-Bus 会话，避免对系统全局会话的干扰。 |
+| 运行命令            | 在新的 D-Bus 会话中执行指定命令，确保命令可以访问该会话的 D-Bus 服务。 |
+| 自动清理            | 当命令执行完成或会话终止时，自动清理会话，释放资源。         |
+| 测试和调试          | 在独立的 D-Bus 会话中测试和调试应用程序，避免对当前用户或系统的影响。 |
+
+### 使用示例
+
+```bash
+dbus-run-session -- bash -c 'your-command'
+```
+
+例如，在新的 D-Bus 会话中运行 Gedit：
+
+```bash
+dbus-run-session -- gedit
+```
+
+### 详细说明
+
+1. **启动新会话**：创建一个临时的 D-Bus 会话，总线地址和会话 ID 将与全局的 D-Bus 会话不同。
+2. **运行命令**：在新会话环境中执行指定的命令，使其可以利用该会话中的 D-Bus 服务。
+3. **自动清理**：会话终止后，所有资源自动释放，不会影响全局会话。
+
+这种工具在开发和测试环境中特别有用，可以在不影响系统全局 D-Bus 服务的情况下，测试新应用程序或配置。
+
 # 参考资料
 
 1、DBus 入门与应用 －－ DBus 的 C 编程接口

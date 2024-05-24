@@ -44,6 +44,258 @@ PipeWire支持所有软件的信号IO。
 
 ![图片](images/random_name/640-1095.png)
 
+
+
+
+
+目前正在进行一项巨大的努力，
+
+以在 Flatpak 等容器化技术的帮助下将 Linux 桌面带入未来。
+
+本练习的目标之一是创建一个明确的安全屏障，
+
+将应用程序彼此之间以及与系统分开。
+
+媒体堆栈是应用程序通常无法与此模型协作的一个领域，
+
+需要直接访问硬件，
+
+因为需要交换大量数据，而低延迟通常至关重要。
+
+==PipeWire 是这个难题中缺失的一块，==
+
+==它允许应用程序以高效而安全的方式访问硬件设备。==
+
+PipeWire 最初创建时仅处理对视频资源的访问，并与 PulseAudio 共存。
+
+早期版本已经在 Fedora 中发布了一段时间，
+
+允许 Flatpak 应用程序访问摄像机并在 Wayland 上实现屏幕共享。
+
+==最终，PipeWire 最终可以处理任何类型的媒体，并计划在未来完全取代 PulseAudio。==
+
+新的 0.3 版本被标记为音频支持的预览版。
+
+
+
+但为什么要更换 PulseAudio？
+
+尽管 PulseAudio 已经提供了一个有效的中间层来访问音频设备，
+
+但 PipeWire 必须提供更多 PulseAudio 无法提供的功能，
+
+首先是更好的安全模型，
+
+该模型允许应用程序之间的隔离和容器内的安全访问。
+
+
+
+PipeWire 的另一个有趣的功能是它统一了桌面上使用的两个音频系统，
+
+JACK 用于低延迟专业音频，
+
+PulseAudio 用于普通桌面用例。
+
+PipeWire 旨在能够适应这两种用例，
+
+==提供非常低的延迟，同时不浪费 CPU 资源。==
+
+这种设计也使 PipeWire 成为比 PulseAudio 更高效的解决方案，使其也非常适合嵌入式用例。
+
+
+
+幸运的是，一旦 PipeWire 足够稳定，可以成为 Linux 上的默认音频服务，
+
+音频应用程序就不需要立即更新，
+
+==因为项目中还包含了 ALSA、PulseAudio 和 JACK 的兼容性 API，==
+
+使应用程序透明地连接到 PipeWire 守护程序，无需更改任何代码，甚至无需重新编译。
+
+但是，我们预计大多数应用程序最终将更新为使用 PipeWire 的本机 API 来清理其依赖项，
+
+并能够使用更高级的 PipeWire 功能。
+
+值得庆幸的是，使用 GStreamer 的应用程序可以轻松切换到使用 PipeWire 提供的 GStreamer 元素
+
+
+
+就像 PulseAudio 一样，
+
+==PipeWire 是一个在后台运行的守护程序，==
+
+==充当多媒体应用程序（客户端）和设备之间的中间层。==
+
+这个中间层的主要作用是将这些应用程序连接到设备，
+
+允许它们播放或捕获媒体，同时尊重访问权限。
+
+
+
+与 PulseAudio 的一个关键区别是 PipeWire 如何进行会话和策略管理。
+
+虽然 PulseAudio 有自己的预定义逻辑，
+
+即哪些应用程序连接到哪些设备以及何时连接到，
+
+但 PipeWire 本身对此无能为力。
+
+==PipeWire 仅提供创建媒体流的方法，==
+
+==而管理逻辑是在外部组件（会话管理器）中实现的。==
+
+由于此管理逻辑取决于平台和该平台正在处理的用例，
+
+因此拥有外部会话管理器可以让开发人员更轻松地使 PipeWire 的行为适应任何类型的情况。
+
+
+
+在 Collabora，作为我们汽车级 Linux 工作的一部分，
+
+我们一直在开发一个可扩展的会话管理器 WirePlumber。
+
+这对于将 PipeWire 集成到 AGL 中是必要的，
+
+因为 PipeWire 本身仅附带一个示例会话管理器，
+
+该会话管理器不会针对简单桌面用例以外的任何内容进行扩展。
+
+WirePlumber 目前专注于汽车和其他嵌入式用例，
+
+但我们很快将添加桌面支持，
+
+从而可以替换用于桌面测试的示例会话管理器。
+
+我们将来会在博客上写更多关于 WirePlumber 的文章，
+
+解释编写它的动机、我们的设计选择以及我们在开发过程中取得的进一步进展。
+
+
+
+# collabora公司介绍
+
+这家公司对pipewire贡献了一些代码。
+
+**公司名称:** Collabora  
+**总部地点:** 全球各地，总部位于英国剑桥  
+**成立时间:** 2005年  
+**主要业务:** 提供开源软件咨询和解决方案，专注于开源技术的开发和支持  
+
+**产品和服务:**
+
+- **Collabora Office Suite:** 基于LibreOffice技术的企业办公套件，支持文档处理和协作功能。
+- **Collabora Online:** 基于LibreOffice技术的在线文档编辑和协作平台，可嵌入到各种应用程序中。
+- **专业服务:** 为客户提供定制化的开源软件开发、咨询和支持服务，包括Linux内核开发、嵌入式系统、图形驱动程序开发等。
+- **培训服务:** 针对开源软件的培训课程，包括Linux、LibreOffice等。
+- **合作伙伴关系:** 与多家硬件厂商、软件开发商和Linux发行版提供商合作，为客户提供完整的开源解决方案。
+
+**公司特点:**
+- Collabora是开源软件领域的重要参与者，为客户提供开源软件的定制化解决方案。
+- 公司拥有广泛的开源软件开发经验和专业知识，致力于推动开源技术的发展和应用。
+- Collabora秉承开放、透明、合作的理念，与全球开源社区和合作伙伴共同推动开源软件的创新和普及。
+
+# pipewire和pulseaudio都是gnome的项目吗
+
+是的，PipeWire 和 PulseAudio 都是 GNOME 项目的一部分。PipeWire 最初由 GNOME 的开发者 Wim Taymans 开发，旨在替代 PulseAudio 和 JACK，并提供更全面的多媒体支持。PulseAudio 也是 GNOME 项目的一部分，它是一个音频服务器，最初设计为 Linux 桌面环境的音频系统。虽然两者都与 GNOME 相关，但它们也可以在其他 Linux 发行版和桌面环境中使用。
+
+# 如何使用pipewire
+
+在系统中使用 PipeWire 作为音频服务器，可以按照以下步骤进行配置。以下是以常见的 Linux 发行版（如 Ubuntu 或 Fedora）为例的设置步骤：
+
+### 步骤 1：安装 PipeWire
+
+首先，确保系统中已经安装了 PipeWire 及其相关组件。
+
+#### 对于 Ubuntu
+
+```sh
+sudo apt update
+sudo apt install pipewire pipewire-audio-client-libraries
+```
+
+#### 对于 Fedora
+
+```sh
+sudo dnf install pipewire pipewire-pulseaudio
+```
+
+### 步骤 2：安装 PulseAudio 兼容层
+
+为了确保兼容性，可以安装 PipeWire 的 PulseAudio 兼容层，使得大多数应用程序可以无缝过渡到使用 PipeWire。
+
+#### 对于 Ubuntu
+
+```sh
+sudo apt install pipewire-pulse
+```
+
+#### 对于 Fedora
+
+```sh
+sudo dnf install pipewire-pulseaudio
+```
+
+### 步骤 3：禁用 PulseAudio 并启用 PipeWire
+
+#### 对于 Ubuntu
+
+编辑 PulseAudio 配置以禁用其启动。
+
+```sh
+mkdir -p ~/.config/systemd/user
+ln -s /dev/null ~/.config/systemd/user/pulseaudio.service
+ln -s /dev/null ~/.config/systemd/user/pulseaudio.socket
+```
+
+启用并启动 PipeWire 服务。
+
+```sh
+systemctl --user enable pipewire
+systemctl --user start pipewire
+systemctl --user enable pipewire-pulse
+systemctl --user start pipewire-pulse
+```
+
+#### 对于 Fedora
+
+停止并禁用 PulseAudio。
+
+```sh
+systemctl --user stop pulseaudio.service
+systemctl --user disable pulseaudio.service
+systemctl --user mask pulseaudio.service
+```
+
+启用并启动 PipeWire 和其 PulseAudio 兼容层。
+
+```sh
+systemctl --user enable pipewire
+systemctl --user start pipewire
+systemctl --user enable pipewire-pulse
+systemctl --user start pipewire-pulse
+```
+
+### 步骤 4：验证 PipeWire 是否正常运行
+
+使用以下命令检查 PipeWire 服务状态。
+
+```sh
+systemctl --user status pipewire
+systemctl --user status pipewire-pulse
+```
+
+可以使用 `pw-cli` 工具查看 PipeWire 的详细信息。
+
+```sh
+pw-cli info all
+```
+
+### 步骤 5：调整和优化
+
+根据需要调整配置文件，通常位于 `/etc/pipewire/` 或 `~/.config/pipewire/` 目录下。可以修改 `pipewire.conf` 和 `pipewire-pulse.conf` 来定制 PipeWire 的行为。
+
+以上步骤应该能帮助你在系统中使用和配置 PipeWire。如果遇到任何问题或有特定需求，可以进一步调整配置文件或查阅相关文档。
+
 # 官网文档
 
 https://docs.pipewire.org/page_overview.html
@@ -170,111 +422,17 @@ SPA（Simple Plugin API）是 PipeWire 的核心组件之一，
 +----------------+            +----------------+
 ```
 
-### 使用示例
 
-#### 创建一个简单的 SPA 节点
 
-```c
-#include <pipewire/pipewire.h>
-#include <spa/param/param.h>
-#include <spa/node/node.h>
-#include <spa/support/plugin.h>
+## 以volume这个spa为例进行分析
 
-struct spa_node *create_simple_node() {
-    struct spa_node *node;
-    // 假设已经初始化 PipeWire 和 SPA 支持
-    // 创建并配置一个 SPA 节点
-    node = spa_node_new(...);  // 具体参数根据需求填写
-    return node;
-}
-```
-
-#### 配置和连接节点
-
-```c
-struct spa_node *source_node = create_simple_node();
-struct spa_node *sink_node = create_simple_node();
-
-spa_node_port_set_param(source_node, SPA_DIRECTION_OUTPUT, 0, ...);
-spa_node_port_set_param(sink_node, SPA_DIRECTION_INPUT, 0, ...);
-
-// 连接两个节点的端口
-spa_node_port_link(source_node, SPA_DIRECTION_OUTPUT, 0, sink_node, SPA_DIRECTION_INPUT, 0);
-```
-
-### 总结
-
-SPA（Simple Plugin API）是 PipeWire 的一个模块化框架，旨在高效处理多媒体数据流。通过插件、节点和端口等概念，SPA 提供了一种灵活的方式来实现和扩展音视频处理功能。POD 结构使得配置和参数化变得更加简便和动态。SPA 在 PipeWire 中扮演着关键角色，提供了底层的高性能媒体处理能力。
+spa\plugins\volume\volume.c
 
 
 
-在 Pipewire 中，SPA（Simple Plugin API）是一个插件架构，
-
-它允许开发者编写可以在运行时动态加载的模块。
-
-SPA 提供了一种方式来扩展 Pipewire 的功能，使其能够支持不同的协议、设备、编解码器等。
-
-SPA 插件可以分为几个主要类别：
-
-1. **Devices**: 这些插件用于处理音频和视频设备的接入，例如 ALSA、JACK、V4L2 等。
-2. **Protocol**: 这些插件允许 Pipewire 使用不同的协议进行通信，例如 RTP、RTSP、HTTP 等。
-3. **Formats**: 这些插件处理不同的音频和视频格式，包括编解码器。
-4. **Extensions**: 这些插件为 Pipewire 添加额外的功能，例如对特定应用程序或硬件的支持。
 
 
 
-SPA 插件架构使得 Pipewire 能够轻松地扩展和适应不同的使用场景，而无需重新编译或重启服务。
-
-开发者可以通过实现特定的接口来创建新的插件，从而为 Pipewire 生态系统贡献新的功能。
-
-  在配置和使用 Pipewire 时，您可能需要确保相关的 SPA 插件已安装并正确配置，以便 Pipewire 能够利用这些插件提供的功能。
-
-例如，如果您想要使用 Pipewire 来处理 JACK 应用程序的音频，您需要确保 JACK 相关的 SPA 插件已安装。
-
-## 如何创建SPA插件
-
-创建 SPA（Simple Plugin API）插件需要对 Pipewire 的内部结构和 API 有深入的了解。下面我将提供一个简化的例子，展示如何创建一个基本的 SPA 插件。
-首先，你需要确保你安装了 Pipewire 的开发包，这样你就可以包含必要的头文件和链接到 Pipewire 库。在基于 Debian 的系统上，你可以使用以下命令安装：
-```bash
-sudo apt install libpipewire-dev
-```
-接下来，我们将创建一个简单的 SPA 插件。这个插件不会做任何复杂的事情，只是展示了如何设置插件的基本结构和加载机制。
-1. **创建插件源文件** (`example_plugin.c`):
-```c
-#include <pipewire/pipewire.h>
-static const struct spa_handle_factory *factory;
-static int
-plugin_init(const struct spa_handle_factory *factory, const char *args)
-{
-    spa_handle_factory_log(&factory, "example plugin init with args '%s'\n", args);
-    return 0;
-}
-static void
-plugin_deinit(void)
-{
-    spa_handle_factory_log(&factory, "example plugin deinit\n");
-}
-static const struct spa_handle_info info = {
-    .type = SPA_HANDLE_TYPE_PLUGIN,
-    .version = SPA_VERSION_HANDLE_INFO,
-    .init = plugin_init,
-    .deinit = plugin_deinit,
-};
-const struct spa_handle_factory spa_handle_factory = {
-    .info = &info,
-    .size = sizeof(info),
-};
-```
-2. **编译插件**:
-   编译插件需要使用 `spa` 工具，这个工具通常随 Pipewire 一起安装。你可以使用以下命令来编译插件：
-```bash
-spa-build example_plugin.c -o example_plugin.so
-```
-3. **安装插件**:
-   编译完成后，你需要将生成的共享对象文件（`example_plugin.so`）复制到系统的插件目录中。在 Linux 系统上，这个目录通常是 `/usr/lib/spa/plugins`。
-4. **使用插件**:
-   一旦插件被安装到正确的目录，Pipewire 在启动时会自动加载它。你可以通过查看 Pipewire 的日志来确认插件是否被成功加载。
-请注意，这个例子非常基础，只是展示了如何创建一个可以被 Pipewire 加载的插件。实际的插件可能会更加复杂，需要实现特定的接口和功能。Pipewire 的官方文档和源代码中包含了更详细的示例和指南，可以帮助你深入了解如何为 Pipewire 开发更完整的插件。
 
 # pipewire和pulseaudio关系
 
@@ -944,6 +1102,73 @@ extension:start()
 
 这只是一个简单的示例，实际的混响效果处理可能会更加复杂，需要根据具体的需求和场景来实现。
 
+# pipewire支持leaudio
+
+自版本 0.3.59 起，PipeWire 支持 LE Audio 的基本音频配置文件 (BAP)，用于(LC3) 的连接同步流 (CIS)
+
+得益于 PipeWire 的模块化架构，它已为未来的编解码器做好了准备
+
+它支持双向音频，可以充当中央或外围设备。
+
+在前一种情况下，它允许最终用户选择新的音频配置文件，
+
+而在后一种情况下，它会自动将蓝牙音频流连接到本地音频输入和输出。
+
+这为 BlueZ 和 PipeWire 中的 Auracast 支持铺平了道路。
+
+如果您有兴趣尝试此操作，则必须安装 https://github.com/google/liblc3.git 中的 LC3 编解码器。 
+
+PipeWire 构建必须使用选项“-Dbluez5-codec-lc3=enabled”进行配置。
+
+
+
+
+
+https://www.bluez.org/le-audio-support-in-pipewire/
+
+# pipewire-alsa怎么使用
+
+pipewire-alsa\conf\99-pipewire-default.conf
+
+这个的内容：
+
+```
+pcm.!default {
+    type pipewire
+    playback_node "-1"
+    capture_node  "-1"
+    hint {
+        show on
+        description "Default ALSA Output (currently PipeWire Media Server)"
+    }
+}
+
+ctl.!default {
+    type pipewire
+}
+
+```
+
+就是把alsa的default录音和播放设备都设置为了pipewire设备。
+
+编写代码是这样：
+
+pipewire-alsa\tests\test-pipewire-alsa-stress.c
+
+对应的alsa插件的实现是：
+
+pipewire-alsa\alsa-plugins\pcm_pipewire.c
+
+# 跟bluez的对接
+
+从这些代码来看，这个功能跟bluealsa的代码类似。
+
+spa\plugins\bluez5\a2dp-codec-aac.c
+
+那是不是bluealsa实现了对liblc3的对接，也可以实现类似的leaudio播放功能？
+
+
+
 # 参考资料
 
 1、
@@ -957,3 +1182,7 @@ https://zhuanlan.zhihu.com/p/499803807
 3、什么是 PipeWire？PipeWire 的现状与未来
 
 https://www.nxrte.com/jishu/13839.html
+
+4、PipeWire，改变 Linux 多媒体格局的媒体服务
+
+https://www.collabora.com/news-and-blog/blog/2020/03/05/pipewire-the-media-service-transforming-the-linux-multimedia-landscape/

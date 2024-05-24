@@ -8,6 +8,32 @@ tags:
 
 --
 
+# 最新状态
+
+目前的现状是，为了从蓝牙设备传输音频或将音频传输到蓝牙设备，
+
+必须安装通用音频服务器，
+
+例如 PipeWire 或 PulseAudio，
+
+或者使用已弃用且无人维护的 BlueZ 版本 4。
+
+BlueALSA 专为小型、低功耗、专用音频或音频/视频系统而设计，
+
+在这些系统中不需要 PulseAudio 或 PipeWire 的高级音频管理功能。
+
+目标系统必须能够在其所有音频应用程序直接与 ALSA 连接的情况下正常运行，
+
+并且一次只有一个应用程序使用每个蓝牙音频流。
+
+在此类系统中，BlueALSA 在现有 ALSA 声卡支持的基础上添加了蓝牙音频支持。
+
+请注意，这意味着应用程序受到 ALSA API 功能的限制，并且无法使用 PulseAudio 和 PipeWire 等音频服务器的高级音频处理功能。
+
+
+
+# RK3308里的bluealsa
+
 用rk3308的做项目。
 
 eq_drc_process里，用到了bluealsa。看看这个是什么东西。
@@ -1129,7 +1155,68 @@ int asrsync_sync(struct asrsync *asr, unsigned int frames);
 
 通过调用`asrsync_sync`函数，可以在音频传输过程中实现时间同步，确保音频数据以恒定的采样率进行处理。这对于实现音频播放的同步和质量非常重要。
 
-# 资料
+# bluealsa 和bluealsa-aplay是什么关系
+
+`bluealsa`和`bluealsa-aplay`是两个相关的工具，它们一起构成了一个蓝牙音频播放解决方案，用于在Linux系统上通过蓝牙连接播放音频。
+
+- **bluealsa**：`bluealsa`是一个用户态的蓝牙音频服务，它充当了蓝牙音频设备的代理，允许通过蓝牙连接的音频源（如手机、平板电脑等）向Linux系统中的音频输出设备进行音频传输。`bluealsa`使用Advanced Audio Distribution Profile（A2DP）和Audio/Video Remote Control Profile（AVRCP）等蓝牙协议，以及Advanced Linux Sound Architecture（ALSA）框架来实现音频传输和控制。
+
+- **bluealsa-aplay**：`bluealsa-aplay`是一个用于从命令行播放音频的工具，它是`bluealsa`软件包的一部分。`bluealsa-aplay`允许用户将音频数据通过`bluealsa`服务传输到蓝牙音频设备，并在蓝牙音频设备上播放音频内容。用户可以使用`bluealsa-aplay`命令指定要播放的音频文件或音频流，并控制音频播放的行为。
+
+综上所述，`bluealsa`提供了一个用户态的蓝牙音频服务，允许Linux系统通过蓝牙连接播放音频，而`bluealsa-aplay`是一个用于从命令行播放音频的工具，它利用`bluealsa`服务来实现音频传输和播放。这两个工具共同构成了一个在Linux系统上通过蓝牙连接播放音频的解决方案。
+
+# bluealsa 命令参数说明
+
+`bluealsa`命令用于启动和管理蓝牙音频服务。以下是`bluealsa`命令的一些常用参数及其说明：
+
+```
+Usage: bluealsa [OPTION]...
+
+Options:
+  -h, --help              Display help message.
+  -V, --version           Display version information.
+
+  -i, --hci=hciX          HCI device to use.
+  -a, --address=XX:XX:XX:XX:XX:XX
+                          Local Bluetooth adapter address.
+  -p, --profile=NAME      Bluetooth profile:
+                            a2dp-sink   A2DP audio sink
+                            a2dp-source A2DP audio source
+                            hsp-sco     HSP/HFP audio gateway
+                            hfp-hf      HFP hands-free unit
+                            hfp-ag      HFP audio gateway
+  -n, --pcm-name=NAME    PCM device name.
+  -d, --pcm-dev=NAME     PCM device directory.
+  -t, --pcm-type=TYPE    PCM device type:
+                            null    Null (empty) PCM device
+                            pipe    Pipe PCM device
+                            shm     Shared memory PCM device
+                            file    File PCM device
+  -m, --mtu=SIZE          Set BT socket MTU.
+  -q, --quiet             Suppress any messages.
+  -D, --debug             Enable debugging messages.
+
+  -v, --verbose           Increase verbosity level.
+  -c, --config=FILE       Load configuration from FILE.
+```
+
+- `-h, --help`: 显示帮助信息。
+- `-V, --version`: 显示版本信息。
+- `-i, --hci=hciX`: 指定要使用的HCI设备。
+- `-a, --address=XX:XX:XX:XX:XX:XX`: 指定本地蓝牙适配器地址。
+- `-p, --profile=NAME`: 指定要使用的蓝牙音频配置文件。
+- `-n, --pcm-name=NAME`: 指定PCM设备名称。
+- `-d, --pcm-dev=NAME`: 指定PCM设备目录。
+- `-t, --pcm-type=TYPE`: 指定PCM设备类型。
+- `-m, --mtu=SIZE`: 设置蓝牙套接字的最大传输单元。
+- `-q, --quiet`: 静默模式，抑制所有消息。
+- `-D, --debug`: 启用调试消息。
+- `-v, --verbose`: 增加详细程度。
+- `-c, --config=FILE`: 从指定的配置文件加载配置。
+
+这些参数允许您配置`bluealsa`服务以满足特定的需求，例如选择蓝牙音频配置文件、指定PCM设备名称和类型，设置套接字MTU等。
+
+# 参考资料
 
 1、
 

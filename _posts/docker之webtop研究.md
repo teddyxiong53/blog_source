@@ -118,3 +118,29 @@ LinuxServer.io认为，一流的镜像应该配备一流的文档。
 无论是LinuxServer的新手还是老手，总会有团队或社区成员随时准备帮助解决任何问题。
 
 总的来说，LinuxServer.io是一个专注于提供高质量Docker镜像和文档的社区，致力于帮助用户轻松地使用Docker来部署各种服务。
+
+# ubuntu版本
+
+```
+docker run -d \
+  --name=webtop \
+  --privileged `#optional` \
+  -e PUID=9374 \
+  -e PGID=8000 \
+  -e TZ=Asia/Shanghai \
+  -e SUBFOLDER=/ `#optional` \
+  -p 3000:3000 \
+  -v /home/hanliang.xiong/work/webtop-config:/config \
+  --shm-size="10gb" `#optional` \
+  --restart unless-stopped \
+  linuxserver/webtop:ubuntu-xfce
+```
+
+
+
+中文乱码，只需要安装文泉驿的字体就可以了。
+
+```
+sudo apt-get install ttf-wqy-microhei
+```
+

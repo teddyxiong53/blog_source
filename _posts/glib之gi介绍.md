@@ -62,6 +62,18 @@ GI最常用于与GNOME桌面环境相关的库，如GLib和GTK+。
 
 总的来说，GObject-Introspection是一个有助于使多语言开发更加容易和高效的工具，它允许开发人员在不同编程语言中使用现有的C库，提高了跨语言开发的便利性和互操作性。
 
+# 支持 GObject Introspection 的语言
+
+支持 GObject Introspection（GI）的语言主要有以下几种：
+
+1. **Python**: GObject Introspection 提供了 Python 的绑定，使得可以在 Python 中方便地使用 GObject 基于的库。通过 GI，Python 开发者可以直接使用 GObject 基于的库的 API，而无需手动编写 C 扩展模块。
+
+2. **JavaScript**: GObject Introspection 同样提供了 JavaScript 的绑定，使得可以在 JavaScript 中使用 GObject 基于的库。这使得开发者可以在 Web 开发中使用 GNOME 生态系统中的库，例如 GTK+ 等。
+
+3. **Vala**: Vala 是一种基于 GObject 的面向对象语言，它本身就是为了简化 GNOME 开发而设计的。因此，Vala 与 GObject Introspection 高度集成，可以直接调用 GObject 基于的库的 API，而无需显式地编写 GObject 代码。
+
+4. **其他语言**: GObject Introspection 还支持其他一些语言，如 Ruby、Lua、Rust 等。虽然支持的程度可能不如 Python、JavaScript 和 Vala 那么完善，但也可以使用 GObject 基于的库的 API。
+
 # 官方文档
 
 https://gi.readthedocs.io/en/latest/

@@ -405,7 +405,22 @@ mcookie
 
 魔术 Cookie 在 X11 中是一种常见的身份验证机制，用于确保图形会话的安全性。通过使用随机生成的魔术 Cookie，可以有效地防止未经授权的客户端访问图形资源。
 
+# 用buildroot构建一个桌面系统用于研究
 
+```
+Target packages --->
+    Graphic libraries and applications --->
+        [*] x11r7
+        [*] xterm
+        [*] xdm
+        [*] twm
+```
+
+## xdm
+
+
+
+## twm
 
 # 参考资料
 

@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+--
 
 bluetoothd是一个daemon程序。作用是管理所有的蓝牙设备。
 
