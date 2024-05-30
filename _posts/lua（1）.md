@@ -770,7 +770,7 @@ https://blog.csdn.net/LF_2016/article/details/78272558
 
 lua把函数的参数放在一个叫arg的table里。
 
-arg的内容，出来参数本身，还有1个自带的成员：n。表示参数个数。
+arg的内容，除了参数本身，还有1个自带的成员：n。表示参数个数。
 
 例如我们实现一个接受可变参数的myprint函数。
 

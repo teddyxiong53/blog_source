@@ -63,6 +63,14 @@ sbc是SubBand Codec。次频带编码。
 #define SBC_SAMPLING_FREQ_48000		1
 ```
 
+# 代码
+
+https://github.com/pschatzmann/arduino-audio-tools/wiki/Encoding-and-Decoding-of-Audio
+
+https://github.com/pschatzmann/arduino-libsbc
+
+
+
 
 
 # 参考资料

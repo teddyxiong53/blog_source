@@ -148,7 +148,102 @@ service和characteristic的uuid都是通信之前双方约定好的。android端
 
 https://www.cnblogs.com/xiaorenwu702/p/4304378.html
 
+# ble地址类型
 
+BLE（蓝牙低功耗）设备的地址类型分为以下几种，每种地址类型有不同的用途和特性。理解这些地址类型有助于更好地管理和开发 BLE 设备。
+
+### BLE 地址类型
+
+1. **Public Device Address (公共设备地址)**
+   - **特征**：固定且全球唯一，由蓝牙设备地址 (BD_ADDR) 组成，包含一个 24 位公司标识符（OUI）和一个 24 位设备标识符。
+   - **用途**：用于需要唯一标识的设备，如手机或笔记本电脑。
+
+2. **Random Device Address (随机设备地址)**
+   - **分类**：
+     1. **Static Random Address (静态随机地址)**
+        - **特征**：设备启动时生成，除非设备重启或电池更换，否则不会改变。静态地址的最高两个位设置为 11。
+        - **用途**：提供稳定性，适用于隐私要求较低的设备。
+     2. **Private Random Address (私有随机地址)**
+        - **进一步分类**：
+          - **Resolvable Private Address (可解析的私有地址)**
+            - **特征**：使用一个由设备和配对设备共享的密钥生成，定期更改以提供隐私保护。配对设备可以解析地址以识别设备。
+            - **用途**：隐私保护，适用于定期广播的设备，如健身追踪器。
+          - **Non-Resolvable Private Address (不可解析的私有地址)**
+            - **特征**：随机生成且短时间内使用，不包含可用于识别设备的持久信息。
+            - **用途**：提供最高级别的隐私保护，适用于短时间广播的设备。
+
+### 地址类型的具体表示
+
+每种 BLE 地址类型在数据包中都有相应的表示方法。
+
+| 地址类型               | 表示方法 | 说明               |
+| ---------------------- | -------- | ------------------ |
+| Public                 | 0x00     | 公共设备地址       |
+| Random Static          | 0x01     | 静态随机地址       |
+| Private Resolvable     | 0x02     | 可解析的私有地址   |
+| Private Non-Resolvable | 0x03     | 不可解析的私有地址 |
+
+### 地址生成和使用示例
+
+1. **生成和使用公共设备地址**
+   公共设备地址由设备制造商分配，通常在设备出厂时已固定。
+
+2. **生成静态随机地址**
+   静态随机地址在设备首次启动时生成，并存储在设备的非易失性存储器中。
+   
+   ```c
+   // 生成静态随机地址示例（伪代码）
+   uint8_t random_address[6];
+   random_address[0] = random_byte();
+   random_address[1] = random_byte();
+   random_address[2] = random_byte();
+   random_address[3] = random_byte();
+   random_address[4] = random_byte();
+   random_address[5] = (random_byte() & 0x3F) | 0xC0;  // 设置最高两位为11
+```
+   
+3. **生成可解析的私有地址**
+   可解析的私有地址使用设备和配对设备共享的 IRK（Identity Resolving Key）生成。蓝牙协议栈通常会处理这个过程。
+
+### 使用示例
+
+假设你要实现一个 BLE 设备，并希望支持多种地址类型。以下是如何在代码中实现地址选择的示例：
+
+```c
+#include <stdio.h>
+#include <stdint.h>
+
+// 生成一个随机字节的示例函数
+uint8_t random_byte() {
+    return rand() % 256;
+}
+
+// 生成静态随机地址的函数
+void generate_static_random_address(uint8_t address[6]) {
+    for (int i = 0; i < 5; ++i) {
+        address[i] = random_byte();
+    }
+    address[5] = (random_byte() & 0x3F) | 0xC0;  // 设置最高两位为11
+}
+
+// 打印地址
+void print_address(const char *label, uint8_t address[6]) {
+    printf("%s: %02X:%02X:%02X:%02X:%02X:%02X\n", label, address[5], address[4], address[3], address[2], address[1], address[0]);
+}
+
+int main() {
+    uint8_t static_random_address[6];
+    generate_static_random_address(static_random_address);
+    print_address("Static Random Address", static_random_address);
+
+    // 其他地址类型的生成和使用可以类似实现
+    return 0;
+}
+```
+
+### 总结
+
+不同类型的 BLE 地址在不同的应用场景下有各自的优势和适用性。理解这些地址类型及其特性，可以帮助开发者更好地设计和实现 BLE 设备的通信和隐私保护功能。
 
 # 参考资料
 

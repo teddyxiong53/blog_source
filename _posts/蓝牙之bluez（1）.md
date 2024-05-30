@@ -400,6 +400,130 @@ static void parse_config(GKeyFile *config)
 }
 ```
 
+## 可用参数在代码里的实现
+
+```
+static const char *supported_options[] = {
+	"Name",
+	"Class",
+	"DiscoverableTimeout",
+	"AlwaysPairable",
+	"PairableTimeout",
+	"DeviceID",
+	"ReverseServiceDiscovery",
+	"NameResolving",
+	"DebugKeys",
+	"ControllerMode",
+	"MaxControllers",
+	"MultiProfile",
+	"FastConnectable",
+	"SecureConnections",
+	"Privacy",
+	"JustWorksRepairing",
+	"TemporaryTimeout",
+	"RefreshDiscovery",
+	"Experimental",
+	"Testing",
+	"KernelExperimental",
+	"RemoteNameRequestRetryDelay",
+	NULL
+};
+
+static const char *br_options[] = {
+	"PageScanType",
+	"PageScanInterval",
+	"PageScanWindow",
+	"InquiryScanType",
+	"InquiryScanInterval",
+	"InquiryScanWindow",
+	"LinkSupervisionTimeout",
+	"PageTimeout",
+	"MinSniffInterval",
+	"MaxSniffInterval",
+	NULL
+};
+
+static const char *le_options[] = {
+	"MinAdvertisementInterval",
+	"MaxAdvertisementInterval",
+	"MultiAdvertisementRotationInterval",
+	"ScanIntervalAutoConnect",
+	"ScanWindowAutoConnect",
+	"ScanIntervalSuspend",
+	"ScanWindowSuspend",
+	"ScanIntervalDiscovery",
+	"ScanWindowDiscovery",
+	"ScanIntervalAdvMonitoring",
+	"ScanWindowAdvMonitoring",
+	"ScanIntervalConnect",
+	"ScanWindowConnect",
+	"MinConnectionInterval",
+	"MaxConnectionInterval",
+	"ConnectionLatency",
+	"ConnectionSupervisionTimeout",
+	"Autoconnecttimeout",
+	"AdvMonAllowlistScanDuration",
+	"AdvMonNoFilterScanDuration",
+	"EnableAdvMonInterleaveScan",
+	NULL
+};
+
+static const char *policy_options[] = {
+	"ReconnectUUIDs",
+	"ReconnectAttempts",
+	"ReconnectIntervals",
+	"AutoEnable",
+	"ResumeDelay",
+	NULL
+};
+
+static const char *gatt_options[] = {
+	"Cache",
+	"KeySize",
+	"ExchangeMTU",
+	"Channels",
+	"Client",
+	NULL
+};
+
+static const char *csip_options[] = {
+	"SIRK",
+	"Encryption",
+	"Size",
+	"Rank",
+	NULL
+};
+
+static const char *avdtp_options[] = {
+	"SessionMode",
+	"StreamMode",
+	NULL
+};
+
+static const char *advmon_options[] = {
+	"RSSISamplingPeriod",
+	NULL
+};
+// 这个是支持的section有哪些。
+static const struct group_table {
+	const char *name;
+	const char **options;
+} valid_groups[] = {
+	{ "General",	supported_options },
+	{ "BR",		br_options },
+	{ "LE",		le_options },
+	{ "Policy",	policy_options },
+	{ "GATT",	gatt_options },
+	{ "CSIS",	csip_options },
+	{ "AVDTP",	avdtp_options },
+	{ "AdvMon",	advmon_options },
+	{ }
+};
+
+```
+
+
+
 # bluez的dbus服务说明
 
 BlueZ通过DBus（Desktop Bus）提供了一组服务，
@@ -412,17 +536,32 @@ DBus是Linux和Unix系统中用于进程间通信的一种机制，
 
 它允许不同的进程之间通过消息传递来进行通信。
 
-以下是BlueZ通过DBus提供的一些常见服务和功能：
+以下是 BlueZ D-Bus 服务的详细说明：
 
-1. **org.bluez.ServiceManager**：这是BlueZ提供的主要服务之一，用于管理和控制蓝牙服务。它提供了一组接口，允许应用程序注册、注销和查询蓝牙服务。通过该服务，应用程序可以获取有关已连接设备、发现设备、配对设备等信息。
+| D-Bus 服务                        | 描述                                                         |
+| --------------------------------- | ------------------------------------------------------------ |
+| `org.bluez.Service`               | BlueZ 的基本服务，用于管理蓝牙适配器、设备、服务等。         |
+| `org.bluez.Adapter1`              | 蓝牙适配器服务，提供了对蓝牙适配器的控制和管理功能。         |
+| `org.bluez.Device1`               | 蓝牙设备服务，提供了对蓝牙设备的控制和管理功能。             |
+| `org.bluez.GattService1`          | GATT 服务服务，用于控制和管理 GATT 服务。                    |
+| `org.bluez.GattCharacteristic1`   | GATT 特征服务，用于控制和管理 GATT 特征。                    |
+| `org.bluez.LEAdvertisingManager1` | 低功耗广播管理器服务，用于控制和管理低功耗广播。             |
+| `org.bluez.LEAdvertisement1`      | 低功耗广告服务，用于管理低功耗广告。                         |
+| `org.bluez.Media1`                | 媒体服务，用于管理蓝牙音频和视频传输。                       |
+| `org.bluez.MediaTransport1`       | 媒体传输服务，用于管理蓝牙音频和视频传输的传输参数。         |
+| `org.bluez.AgentManager1`         | 代理管理器服务，用于管理蓝牙代理。                           |
+| `org.bluez.ProfileManager1`       | 配置文件管理器服务，用于管理蓝牙配置文件。                   |
+| `org.bluez.MediaControl1`         | 媒体控制服务，用于控制蓝牙音频和视频传输的播放、暂停、停止等操作。 |
+| `org.bluez.MediaPlayer1`          | 媒体播放器服务，用于获取蓝牙音频和视频传输的播放状态、元数据等信息。 |
+| `org.bluez.Thermometer1`          | 温度计服务，用于获取蓝牙温度计的温度数据。                   |
+| `org.bluez.HeartRate1`            | 心率服务，用于获取蓝牙心率传感器的心率数据。                 |
+| `org.bluez.CyclingSpeed1`         | 自行车速度服务，用于获取蓝牙自行车速度传感器的速度数据。     |
+| `org.bluez.CyclingPower1`         | 自行车功率服务，用于获取蓝牙自行车功率传感器的功率数据。     |
+| `org.bluez.CyclingCadence1`       | 自行车踏频服务，用于获取蓝牙自行车踏频传感器的踏频数据。     |
+| `org.bluez.AlertAgent1`           | 警报代理服务，用于处理蓝牙警报事件。                         |
+| `org.bluez.DeviceWatcher1`        | 设备监视器服务，用于监视蓝牙设备的连接状态变化。             |
 
-2. **org.bluez.Adapter1**：这个服务用于管理和控制蓝牙适配器。它提供了一组接口，允许应用程序设置适配器的可见性、扫描设备、连接设备等操作。通过该服务，应用程序可以与蓝牙适配器进行交互，实现对蓝牙功能的控制。
 
-3. **org.bluez.Device1**：这个服务用于管理和控制蓝牙设备。它提供了一组接口，允许应用程序对已配对设备进行操作，如连接、断开连接、读取设备属性等。通过该服务，应用程序可以与蓝牙设备进行通信，实现对设备的控制和管理。
-
-4. **org.bluez.GattCharacteristic1**：这个服务用于管理和控制GATT（Generic Attribute Profile）特征。GATT是蓝牙4.0及以上版本中使用的协议，用于描述蓝牙设备之间的通信和数据交换。通过该服务，应用程序可以读取和写入GATT特征的值，实现对蓝牙设备的数据交换。
-
-总的来说，BlueZ通过DBus提供了一组服务，允许应用程序与蓝牙协议栈进行通信，从而实现对蓝牙功能的控制和管理。通过这些服务，应用程序可以实现蓝牙设备的发现、配对、连接，以及数据交换等功能。
 
 # bluez test例子
 
@@ -688,7 +827,949 @@ register_service函数分析
 
 gatt-service.c这个app，里面就一个dbus object，所有跟dbus打交道的东西，都是这个object的interface（相当于成员变量）。
 
+# bluez自己实现的gdbus
 
+bluez使用了glib。
+
+但是没有使用glib的gdbus。
+
+而是自己实现了一个简化版本的gdbus。
+
+在外观上的不同在于：
+
+```
+glib的gdbus接口：g_bus_xx
+bluez简化实现的gdbus接口：g_dbus_xx
+```
+
+多了一个字母d。
+
+同样对类型名字也是成立的，GDBus跟GBus的区别。
+
+对dbus进行了一层简单实用的封装。
+
+我觉得这个封装是不错的，可以在其他地方进行复用的。
+
+
+
+# 如何使用bluez来进行应用开发
+
+ 1. 安装必要的库
+
+确保安装了D-Bus开发库：
+
+```bash
+sudo apt-get install libdbus-1-dev libdbus-glib-1-dev
+```
+
+ 2. 使用Python与BlueZ交互
+
+可以使用`pydbus`库在Python中与BlueZ交互：
+
+```bash
+pip install pydbus
+```
+
+以下是一个简单的Python示例，用于扫描蓝牙设备：
+
+```python
+from pydbus import SystemBus
+import time
+
+bus = SystemBus()
+adapter = bus.get("org.bluez", "/org/bluez/hci0")
+
+adapter.StartDiscovery()
+
+time.sleep(5)
+
+devices = bus.get("org.bluez", "/")
+for path, interfaces in devices.GetManagedObjects().items():
+    if "org.bluez.Device1" in interfaces:
+        print(f"Device {interfaces['org.bluez.Device1']['Address']}: {interfaces['org.bluez.Device1']['Name']}")
+
+adapter.StopDiscovery()
+```
+
+ 3. 使用C与BlueZ交互
+
+也可以使用C语言与BlueZ的D-Bus接口进行交互。BlueZ提供了一个名为`libbluetooth`的C库。以下是一个简单的C代码示例，用于扫描蓝牙设备：
+
+```c
+include <bluetooth/bluetooth.h>
+include <bluetooth/hci.h>
+include <bluetooth/hci_lib.h>
+include <stdio.h>
+include <stdlib.h>
+
+int main(void)
+{
+    inquiry_info *ii = NULL;
+    int max_rsp, num_rsp;
+    int dev_id, sock, len, flags;
+    char addr[19] = { 0 };
+    char name[248] = { 0 };
+
+    dev_id = hci_get_route(NULL);
+    sock = hci_open_dev(dev_id);
+
+    if (dev_id < 0 || sock < 0) {
+        perror("opening socket");
+        exit(1);
+    }
+
+    len = 8;
+    max_rsp = 255;
+    flags = IREQ_CACHE_FLUSH;
+    ii = (inquiry_info*)malloc(max_rsp * sizeof(inquiry_info));
+
+    num_rsp = hci_inquiry(dev_id, len, max_rsp, NULL, &ii, flags);
+    if (num_rsp < 0) perror("hci_inquiry");
+
+    for (int i = 0; i < num_rsp; i++) {
+        ba2str(&(ii+i)->bdaddr, addr);
+        memset(name, 0, sizeof(name));
+        if (hci_read_remote_name(sock, &(ii+i)->bdaddr, sizeof(name), name, 0) < 0)
+            strcpy(name, "[unknown]");
+        printf("%s  %s\n", addr, name);
+    }
+
+    free(ii);
+    close(sock);
+    return 0;
+}
+```
+
+编译并运行上述代码：
+
+```bash
+gcc -o scan scan.c -lbluetooth
+sudo ./scan
+```
+
+这些示例展示了如何使用BlueZ进行蓝牙设备的扫描和管理。通过D-Bus接口，你可以进一步开发更复杂的蓝牙应用，例如连接设备、传输数据等。
+
+
+
+# 用bluez来实现基本的音乐播放功能
+
+要用BlueZ实现基本的音乐播放功能，通常需要以下几个步骤：
+
+1. **安装必要的工具和库**
+2. **配置BlueZ**
+3. **配对和连接蓝牙设备**
+4. **使用Bluetooth Audio Sink服务**
+
+以下是详细的步骤和相关命令：
+
+**1. 安装必要的工具和库**
+
+首先，确保你已经安装了BlueZ和PulseAudio（用于音频处理）。
+
+```sh
+sudo apt-get update
+sudo apt-get install bluez pulseaudio pulseaudio-module-bluetooth
+```
+
+**2. 配置BlueZ**
+
+确保蓝牙服务正在运行，并且PulseAudio加载了蓝牙模块。
+
+```sh
+sudo systemctl start bluetooth
+pactl load-module module-bluetooth-discover
+```
+
+**3. 配对和连接蓝牙设备**
+
+使用`bluetoothctl`进行蓝牙设备的配对和连接。
+
+```sh
+bluetoothctl
+```
+
+在`bluetoothctl`命令行界面中，输入以下命令：
+
+```sh
+power on
+agent on
+default-agent
+scan on
+```
+
+找到你的设备MAC地址后，配对和连接：
+
+```sh
+pair XX:XX:XX:XX:XX:XX
+connect XX:XX:XX:XX:XX:XX
+```
+
+**4. 使用Bluetooth Audio Sink服务**
+
+确保PulseAudio已经将蓝牙设备作为音频输出设备。在配对成功后，设备应该自动连接到音频源。
+
+可以使用以下命令检查设备状态：
+
+```sh
+pactl list short sinks
+```
+
+如果设备已经连接并作为音频输出，你可以通过音频播放器（如VLC、MPD等）播放音乐，音频将通过蓝牙设备输出。
+
+以下是简要步骤的总结表格：
+
+| 步骤                 | 命令/操作                                                    |
+| -------------------- | ------------------------------------------------------------ |
+| 安装工具和库         | `sudo apt-get install bluez pulseaudio pulseaudio-module-bluetooth` |
+| 启动蓝牙服务和模块   | `sudo systemctl start bluetooth`<br>`pactl load-module module-bluetooth-discover` |
+| 使用bluetoothctl     | `bluetoothctl`                                               |
+| 启动蓝牙设备         | `power on`                                                   |
+| 设置代理             | `agent on`<br>`default-agent`                                |
+| 扫描设备             | `scan on`                                                    |
+| 配对和连接设备       | `pair XX:XX:XX:XX:XX:XX`<br>`connect XX:XX:XX:XX:XX:XX`      |
+| 检查音频输出设备状态 | `pactl list short sinks`                                     |
+
+通过这些步骤，你应该能够使用BlueZ来实现基本的音乐播放功能。如果有任何具体的问题或错误信息，请告诉我，我可以提供进一步的帮助。
+
+
+
+# 编写bluez插件并使用
+
+要使用自定义的 BlueZ 插件，需确保插件已经正确编译、安装，并且 BlueZ 服务能够加载和调用该插件。以下是详细步骤，展示如何编写、编译、安装和使用插件。
+
+**1. 编写插件**
+
+假设我们编写一个简单的插件来演示基本功能。插件的源文件名为 `example_plugin.c`。
+
+```c
+#include <bluetooth/bluetooth.h>
+#include <bluetooth/plugin.h>
+#include <stdio.h>
+
+// 插件初始化函数
+static int example_init(void)
+{
+    printf("Example Bluetooth Plugin Initialized\n");
+    return 0;  // 返回0表示成功
+}
+
+// 插件退出函数
+static void example_exit(void)
+{
+    printf("Example Bluetooth Plugin Exited\n");
+}
+
+// 使用 BLUETOOTH_PLUGIN_DEFINE 宏定义和注册插件
+BLUETOOTH_PLUGIN_DEFINE(example, "1.0", BLUETOOTH_PLUGIN_PRIORITY_DEFAULT, example_init, example_exit)
+```
+
+**2. 编译插件**
+
+首先，确保你安装了必要的开发库。
+
+```sh
+sudo apt-get install libbluetooth-dev
+```
+
+然后，编译插件：
+
+```sh
+gcc -fPIC -shared -o example_plugin.so example_plugin.c `pkg-config --cflags --libs bluez`
+```
+
+**3. 安装插件**
+
+将编译好的插件复制到 BlueZ 的插件目录中，一般是 `/usr/lib/bluez/plugins`。
+
+```sh
+sudo cp example_plugin.so /usr/lib/bluez/plugins/
+```
+
+**4. 修改 BlueZ 配置**
+
+确保 BlueZ 配置文件允许加载你创建的插件。BlueZ 的配置文件通常位于 `/etc/bluetooth/main.conf`。编辑该文件，确保插件目录被正确包含，或者在插件加载部分添加你自定义的插件。
+
+```sh
+sudo nano /etc/bluetooth/main.conf
+```
+
+在 `main.conf` 中，确保 `PluginDir` 指向你安装插件的目录，并且插件名在 `LoadPlugins` 列表中。
+
+例如：
+
+```ini
+[General]
+# Default plugin directory
+PluginDir = /usr/lib/bluez/plugins
+# Load specified plugins (comma separated list)
+LoadPlugins = example
+```
+
+**5. 重启蓝牙服务**
+
+配置完成后，重启蓝牙服务使更改生效。
+
+```sh
+sudo systemctl restart bluetooth
+```
+
+**6. 验证插件**
+
+通过查看系统日志或蓝牙日志验证插件是否已成功加载。
+
+```sh
+sudo journalctl -u bluetooth
+```
+
+在日志中，你应该能看到插件初始化和退出时的打印信息：
+
+```plaintext
+Example Bluetooth Plugin Initialized
+Example Bluetooth Plugin Exited
+```
+
+**步骤总结表格：**
+
+| 步骤               | 命令/操作                                                    |
+| ------------------ | ------------------------------------------------------------ |
+| 编写插件           | 创建 `example_plugin.c` 并编写插件代码                       |
+| 安装开发工具和库   | `sudo apt-get install libbluetooth-dev`                      |
+| 编译插件           | `gcc -fPIC -shared -o example_plugin.so example_plugin.c \`pkg-config --cflags --libs bluez\`` |
+| 复制插件到插件目录 | `sudo cp example_plugin.so /usr/lib/bluez/plugins/`          |
+| 修改 BlueZ 配置    | 编辑 `/etc/bluetooth/main.conf` 确保插件目录和插件名正确     |
+| 重启蓝牙服务       | `sudo systemctl restart bluetooth`                           |
+| 验证插件           | `sudo journalctl -u bluetooth` 查看日志确认插件加载情况      |
+
+通过这些步骤，你应该能够成功编写、安装并使用自定义的 BlueZ 插件。如果你在任何步骤中遇到问题，请告诉我，我可以提供进一步的帮助。
+
+# 内核里蓝牙的socket有哪几种
+
+在 Linux 内核中，用于处理蓝牙通信的 socket 有以下几种：
+
+1. **SCO（Synchronous Connection-Oriented）Socket：**
+   - 用于同步连接导向通信，主要用于音频和语音传输。
+   - 对应于 `AF_BLUETOOTH` 和 `BTPROTO_SCO` 协议族。
+   - 可以通过 `socket()` 系统调用创建。
+   - 可以使用 `bind()` 绑定地址、`listen()` 监听连接请求、`accept()` 接受连接等操作。
+
+2. **L2CAP（Logical Link Control and Adaptation Protocol）Socket：**
+   - 用于传输数据包，支持可靠和不可靠的数据传输。
+   - 对应于 `AF_BLUETOOTH` 和 `BTPROTO_L2CAP` 协议族。
+   - 可以通过 `socket()` 系统调用创建。
+   - 可以使用 `bind()` 绑定地址、`listen()` 监听连接请求、`accept()` 接受连接等操作。
+
+3. **RFCOMM（Radio Frequency Communication）Socket：**
+   - 用于在蓝牙设备之间建立虚拟串口通信。
+   - 对应于 `AF_BLUETOOTH` 和 `BTPROTO_RFCOMM` 协议族。
+   - 可以通过 `socket()` 系统调用创建。
+   - 可以使用 `bind()` 绑定地址、`listen()` 监听连接请求、`accept()` 接受连接等操作。
+
+这些是 Linux 内核中用于蓝牙通信的主要 socket 类型。每种类型都有其特定的用途和特性，可以根据应用程序的需求选择合适的 socket 类型进行通信。
+
+## 示例代码
+
+以下是使用 Linux 内核蓝牙 socket 进行编程的简单示例代码，分别演示了 SCO、L2CAP 和 RFCOMM socket 的创建、绑定、监听、接受连接等操作。
+
+**1. SCO Socket 示例代码：**
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <bluetooth/bluetooth.h>
+#include <bluetooth/sco.h>
+
+int main() {
+    int sco_socket;
+    struct sockaddr_sco addr;
+
+    // 创建 SCO socket
+    sco_socket = socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_SCO);
+    if (sco_socket == -1) {
+        perror("SCO socket creation failed");
+        return 1;
+    }
+
+    // 绑定到本地地址
+    memset(&addr, 0, sizeof(addr));
+    addr.sco_family = AF_BLUETOOTH;
+    bacpy(&addr.sco_bdaddr, BDADDR_ANY);
+    addr.sco_channel = 0;
+    if (bind(sco_socket, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
+        perror("SCO socket bind failed");
+        close(sco_socket);
+        return 1;
+    }
+
+    // 监听连接请求
+    if (listen(sco_socket, 1) == -1) {
+        perror("SCO socket listen failed");
+        close(sco_socket);
+        return 1;
+    }
+
+    printf("SCO socket setup complete, waiting for connection...\n");
+
+    // 接受连接
+    int client_socket = accept(sco_socket, NULL, NULL);
+    if (client_socket == -1) {
+        perror("SCO socket accept failed");
+        close(sco_socket);
+        return 1;
+    }
+
+    printf("SCO socket connection accepted\n");
+
+    // 连接建立后的操作...
+    
+    // 关闭 socket
+    close(client_socket);
+    close(sco_socket);
+
+    return 0;
+}
+```
+
+**2. L2CAP Socket 示例代码：**
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <bluetooth/bluetooth.h>
+#include <bluetooth/l2cap.h>
+
+int main() {
+    int l2cap_socket;
+    struct sockaddr_l2 addr;
+
+    // 创建 L2CAP socket
+    l2cap_socket = socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
+    if (l2cap_socket == -1) {
+        perror("L2CAP socket creation failed");
+        return 1;
+    }
+
+    // 绑定到本地地址
+    memset(&addr, 0, sizeof(addr));
+    addr.l2_family = AF_BLUETOOTH;
+    bacpy(&addr.l2_bdaddr, BDADDR_ANY);
+    addr.l2_psm = htobs(0x1001); // 示例 PSM
+    if (bind(l2cap_socket, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
+        perror("L2CAP socket bind failed");
+        close(l2cap_socket);
+        return 1;
+    }
+
+    // 监听连接请求
+    if (listen(l2cap_socket, 1) == -1) {
+        perror("L2CAP socket listen failed");
+        close(l2cap_socket);
+        return 1;
+    }
+
+    printf("L2CAP socket setup complete, waiting for connection...\n");
+
+    // 接受连接
+    int client_socket = accept(l2cap_socket, NULL, NULL);
+    if (client_socket == -1) {
+        perror("L2CAP socket accept failed");
+        close(l2cap_socket);
+        return 1;
+    }
+
+    printf("L2CAP socket connection accepted\n");
+
+    // 连接建立后的操作...
+    
+    // 关闭 socket
+    close(client_socket);
+    close(l2cap_socket);
+
+    return 0;
+}
+```
+
+**3. RFCOMM Socket 示例代码：**
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <bluetooth/bluetooth.h>
+#include <bluetooth/rfcomm.h>
+
+int main() {
+    int rfcomm_socket;
+    struct sockaddr_rc addr;
+
+    // 创建 RFCOMM socket
+    rfcomm_socket = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+    if (rfcomm_socket == -1) {
+        perror("RFCOMM socket creation failed");
+        return 1;
+    }
+
+    // 绑定到本地地址
+    memset(&addr, 0, sizeof(addr));
+    addr.rc_family = AF_BLUETOOTH;
+    bacpy(&addr.rc_bdaddr, BDADDR_ANY);
+    addr.rc_channel = 1; // 示例通道号
+    if (bind(rfcomm_socket, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
+        perror("RFCOMM socket bind failed");
+        close(rfcomm_socket);
+        return 1;
+    }
+
+    // 监听连接请求
+    if (listen(rfcomm_socket, 1) == -1) {
+        perror("RFCOMM socket listen failed");
+        close(rfcomm_socket);
+        return 1;
+    }
+
+    printf("RFCOMM socket setup complete, waiting for connection...\n");
+
+    // 接受连接
+    int client_socket = accept(rfcomm_socket, NULL, NULL);
+    if (client_socket == -1) {
+        perror("RFCOMM socket accept failed");
+        close(rfcomm_socket);
+        return 1;
+    }
+
+    printf("RFCOMM socket connection accepted\n");
+
+    // 连接建立后的操作...
+    
+    // 关闭 socket
+    close(client_socket);
+    close(rfcomm_socket);
+
+    return 0;
+}
+```
+
+以上是分别针对 SCO、L2CAP 和 RFCOMM socket 的简单示例代码，演示了如何创建、绑定、监听和接受连接。在实际应用中，还需要根据具体需求进行进一步的数据交换和处理。
+
+## bluez里使用了哪些socket，分别实现了什么功能
+
+在 BlueZ 中，使用了以下几种类型的 socket，分别实现了不同的功能：
+
+1. **SCO Socket：**
+   - 实现了 SCO（Synchronous Connection-Oriented）连接功能，用于同步连接导向通信，主要用于音频和语音传输。SCO socket 通常用于实现蓝牙耳机、耳机麦克风等音频设备的通信。
+
+2. **L2CAP Socket：**
+   - 实现了 L2CAP（Logical Link Control and Adaptation Protocol）连接功能，用于在蓝牙设备之间进行数据传输。L2CAP socket 提供了底层的数据通道，可以支持可靠和不可靠的数据传输，以及面向连接和无连接的通信。
+
+3. **RFCOMM Socket：**
+   - 实现了 RFCOMM（Radio Frequency Communication）连接功能，用于在蓝牙设备之间建立虚拟串口通信。RFCOMM socket 提供了类似于串口的数据传输接口，可以方便地进行数据交换和通信。
+
+这些 socket 类型在 BlueZ 中扮演着不同的角色，用于支持不同类型的蓝牙设备和应用场景。例如，SCO socket 用于支持音频设备的传输，L2CAP socket 用于提供底层数据通道，RFCOMM socket 用于实现虚拟串口通信。
+
+总的来说，BlueZ 使用了这些 socket 类型来支持蓝牙设备之间的各种通信需求，从音频传输到数据交换都能够得到满足。
+
+# bluez的plugin有哪些
+
+BLUETOOTH_PLUGIN_DEFINE
+搜索这个字符串查看有哪些plugin。
+大概是29个。
+
+| 文件名              | 解释                                         |
+| ------------------- | -------------------------------------------- |
+| a2dp.c              | 与高级音频分发协议（A2DP）相关的实现。       |
+| admin.c             | 管理插件的实现。                             |
+| autopair.c          | 自动配对功能的实现。                         |
+| avrcp.c             | 与音频/视频远程控制协议（AVRCP）相关的实现。 |
+| bap.c               | 与基本音频配置协议（BAP）相关的实现。        |
+| bass.c              | 与广播音频同步服务（BASS）相关的实现。       |
+| battery.c           | 与电池服务相关的实现。                       |
+| ccp.c               | 与呼叫控制协议（CCP）相关的实现。            |
+| csip.c              | 与协调设置标识协议（CSIP）相关的实现。       |
+| deviceinfo.c        | 设备信息服务的实现。                         |
+| gas.c               | 与通用访问服务（GAS）相关的实现。            |
+| hdp_main.c          | 与健康设备配置文件（HDP）相关的实现。        |
+| hog.c               | 与人机接口设备（HOG）相关的实现。            |
+| hostname.c          | 主机名插件的实现。                           |
+| main.c              | 与SIM卡访问配置文件（SAP）相关的实现。       |
+| manager.c (input)   | 输入设备管理器的实现。                       |
+| manager.c (network) | 网络管理器的实现。                           |
+| mcp.c               | 与媒体控制协议（MCP）相关的实现。            |
+| micp.c              | 与麦克风控制协议（MICP）相关的实现。         |
+| midi.c              | 与MIDI配置文件相关的实现。                   |
+| neard.c             | 近距离通信（NFC）插件的实现。                |
+| policy.c            | 策略管理插件的实现。                         |
+| scan.c              | 扫描参数配置文件的实现。                     |
+| sixaxis.c           | 与Sixaxis手柄相关的实现。                    |
+| vcp.c               | 与音量控制协议（VCP）相关的实现。            |
+| wiimote.c           | 与Wiimote手柄相关的实现。                    |
+
+# bluez/peripheral/main.c 这个文件的作用是什么
+
+`bluez/peripheral/main.c` 文件是 BlueZ 项目中用于实现蓝牙外围设备（Peripheral）功能的主入口。这个文件通常包含程序的初始化代码、主循环和核心逻辑。在 BlueZ 中，外围设备模式主要用于设备充当被动角色，比如蓝牙耳机、扬声器等设备等待与中心设备（例如智能手机、电脑）连接。
+
+以下是 `bluez/peripheral/main.c` 文件的主要功能和作用：
+
+1. **初始化和配置**：
+   - **初始化蓝牙子系统**：设置蓝牙适配器的模式，使其能够作为外围设备工作。
+   - **加载配置文件**：读取和解析配置文件，以获取所需的参数和设置。
+
+2. **注册服务和特性**：
+   - **GATT（Generic Attribute Profile）服务**：注册 GATT 服务和特性，使外围设备能够提供蓝牙服务，例如电池状态、心率监测等。
+   - **Profile 注册**：注册 A2DP、HFP 等配置文件，使设备能够提供音频传输或其他服务。
+
+3. **事件循环**：
+   - **主循环**：运行主事件循环，处理来自蓝牙堆栈的事件，例如连接请求、数据传输等。
+   - **事件处理**：处理各种蓝牙事件，包括连接、断开连接、数据读取和写入等。
+
+4. **信号处理**：
+   - **信号处理程序**：处理系统信号（如 SIGINT、SIGTERM），确保在程序退出时能够正确地清理资源和关闭蓝牙连接。
+
+5. **日志和调试**：
+   - **日志记录**：记录程序的运行状态和错误信息，便于调试和维护。
+
+以下是一个简化的伪代码示例，展示了 `bluez/peripheral/main.c` 的可能结构：
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <bluetooth/bluetooth.h>
+#include <bluetooth/hci_lib.h>
+#include <bluetooth/gatt.h>
+
+// 初始化函数
+static void init_bluetooth() {
+    // 初始化蓝牙适配器、配置文件等
+}
+
+// 事件处理函数
+static void event_loop() {
+    // 主事件循环，处理蓝牙事件
+}
+
+// 信号处理程序
+static void signal_handler(int sig) {
+    // 清理资源并退出
+    exit(0);
+}
+
+int main(int argc, char *argv[]) {
+    // 注册信号处理程序
+    signal(SIGINT, signal_handler);
+    signal(SIGTERM, signal_handler);
+
+    // 初始化蓝牙子系统
+    init_bluetooth();
+
+    // 进入事件循环
+    event_loop();
+
+    return 0;
+}
+```
+
+### 主要步骤解释
+
+1. **初始化和配置**：初始化蓝牙适配器和外围设备所需的配置。
+2. **注册服务和特性**：注册蓝牙服务（例如 GATT 服务），以便外围设备能够提供服务。
+3. **事件循环**：进入主事件循环，处理蓝牙连接和数据传输事件。
+4. **信号处理**：处理系统信号，确保程序能够优雅地退出。
+
+`bluez/peripheral/main.c` 文件在 BlueZ 的外围设备实现中起着核心作用，负责初始化蓝牙子系统、注册服务、处理事件并确保资源的正确清理。
+
+# bluez/shared/mgmt.c的作用
+
+`bluez/shared/mgmt.c` 是 BlueZ 项目中管理蓝牙设备的核心文件之一。它实现了与蓝牙管理接口的交互，负责处理和发送管理命令（management commands）以及处理管理事件（management events）。这些管理接口通常用于配置蓝牙适配器、管理连接和控制蓝牙设备的行为。
+
+以下是 `bluez/shared/mgmt.c` 文件的主要功能和作用：
+
+1. **管理命令处理**：
+   - 发送各种管理命令到蓝牙适配器，例如设置设备可发现性、可连接性、启用或禁用蓝牙适配器等。
+   - 处理来自蓝牙适配器的响应，并进行相应的操作或状态更新。
+
+2. **事件处理**：
+   - 监听和处理来自蓝牙适配器的管理事件，例如设备连接、断开连接、属性变化等。
+   - 根据事件更新内部状态或触发相应的回调函数，以通知应用程序或其他模块。
+
+3. **命令和事件的封装**：
+   - 提供用于构建和解析管理命令和事件的函数，使得其他模块可以方便地与蓝牙管理接口进行交互。
+
+4. **回调机制**：
+   - 注册和调用回调函数，以便在接收到特定事件时通知应用程序或其他模块。
+   - 管理回调函数的注册和注销，确保在适当的时间触发和停止触发回调。
+
+### 主要结构和函数
+
+以下是 `bluez/shared/mgmt.c` 中的一些关键结构和函数的简要说明：
+
+1. **mgmt_command**：
+   - 用于构建和发送管理命令。
+   - 示例：`mgmt_command(int index, uint16_t opcode, uint16_t len, const void *param, mgmt_complete_func_t complete, void *user_data);`
+
+2. **mgmt_event**：
+   - 用于处理管理事件。
+   - 示例：`mgmt_event(uint16_t event, int index, const void *data, uint16_t len);`
+
+3. **回调机制**：
+   - 注册回调：`mgmt_register(mgmt_event_callback_t callback, void *user_data);`
+   - 注销回调：`mgmt_unregister(mgmt_event_callback_t callback, void *user_data);`
+
+### 代码示例
+
+下面是一个简化的示例，展示如何使用 `mgmt_command` 发送一个命令，以及如何处理回调：
+
+```c
+#include "mgmt.h"
+
+// 回调函数，用于处理命令完成
+static void cmd_complete(int index, uint16_t opcode, uint8_t status, void *user_data) {
+    if (status == 0) {
+        printf("Command completed successfully\n");
+    } else {
+        printf("Command failed with status: %d\n", status);
+    }
+}
+
+int main() {
+    int dev_index = 0;  // 蓝牙设备索引
+
+    // 初始化和发送管理命令
+    mgmt_command(dev_index, MGMT_OP_SET_POWERED, 1, &(uint8_t){ 1 }, cmd_complete, NULL);
+
+    // 事件循环（假设有一个事件循环在运行）
+    // ...
+
+    return 0;
+}
+```
+
+### 总结
+
+`bluez/shared/mgmt.c` 文件在 BlueZ 中扮演了与蓝牙管理接口交互的关键角色。它实现了发送管理命令、处理管理事件以及管理回调机制等功能，使得上层应用程序和其他模块可以方便地配置和控制蓝牙设备。
+
+# bluetoothd初始化过程
+
+```
+load_config
+connect_dbus
+adapter_init
+	mgmt_new_default 这个里面创建了一个HCI 的raw socket，
+btd_device_init
+btd_agent_init
+	org.bluez.AgentManager1
+btd_profile_init
+	org.bluez.ProfileManager1
+plugin_init
+	这个就是把所有注册的plugin都初始化一下。
+rfkill_init
+	通过/dev/rfkill来操作。
+mainloop_run_with_signal
+	这里死循环。
+	
+```
+
+
+
+# python bluez播放A2DP
+
+使用 Python 通过 BlueZ 实现 A2DP 音乐播放涉及几个步骤。我们需要使用 `pybluez` 库来处理蓝牙连接和 BlueZ 的 D-Bus API 来管理 A2DP 配置文件。以下是一个详细的步骤指南，展示如何实现这一功能。
+
+### 步骤 1: 安装所需的库
+
+首先，确保安装了 `pybluez` 和 `dbus-python` 库。你可以使用 `pip` 安装这些库：
+
+```bash
+pip install pybluez dbus-python
+```
+
+### 步骤 2: 连接到蓝牙设备
+
+使用 `pybluez` 库来扫描和连接到蓝牙设备。下面是一个简单的示例代码，用于扫描和连接到蓝牙设备：
+
+```python
+import bluetooth
+
+def find_devices():
+    print("Searching for devices...")
+    devices = bluetooth.discover_devices(duration=8, lookup_names=True, flush_cache=True, lookup_class=False)
+    print("Found {} devices.".format(len(devices)))
+
+    for addr, name in devices:
+        print("  {} - {}".format(addr, name))
+    
+    return devices
+
+def connect_device(address):
+    service_matches = bluetooth.find_service(address=address)
+
+    if len(service_matches) == 0:
+        print("Couldn't find the service on the device.")
+        return None
+
+    for match in service_matches:
+        if match["name"] == "A2DP":
+            port = match["port"]
+            name = match["name"]
+            host = match["host"]
+
+            print("Connecting to \"{}\" on {}...".format(name, host))
+
+            sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+            sock.connect((host, port))
+
+            print("Connected.")
+            return sock
+
+    return None
+
+if __name__ == "__main__":
+    devices = find_devices()
+    if devices:
+        addr, name = devices[0]  # Connect to the first found device
+        sock = connect_device(addr)
+        if sock:
+            # Do something with the connection
+            sock.close()
+```
+
+### 步骤 3: 使用 D-Bus 管理 A2DP 配置文件
+
+接下来，使用 D-Bus 通过 BlueZ 管理 A2DP 配置文件。以下是一个使用 `dbus-python` 来注册 A2DP 配置文件并进行音频播放的示例：
+
+```python
+import dbus
+import dbus.mainloop.glib
+from gi.repository import GLib
+
+def register_a2dp_profile(bus, path, profile):
+    manager = dbus.Interface(bus.get_object("org.bluez", "/org/bluez"),
+                             "org.bluez.ProfileManager1")
+
+    opts = {
+        "UUID": "0000110a-0000-1000-8000-00805f9b34fb",  # Audio Sink UUID
+        "Name": "A2DP Sink",
+        "Service": "audio",
+        "Role": "sink",
+        "PSM": dbus.UInt16(25),
+        "Channel": dbus.UInt16(10),
+        "Features": dbus.UInt16(0x0001)
+    }
+
+    manager.RegisterProfile(path, profile, opts)
+
+def main():
+    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+    bus = dbus.SystemBus()
+
+    # Register A2DP Profile
+    path = "/bluez/example/profile"
+    profile = "0000110a-0000-1000-8000-00805f9b34fb"  # Audio Sink UUID
+
+    register_a2dp_profile(bus, path, profile)
+
+    # Run the main loop
+    loop = GLib.MainLoop()
+    loop.run()
+
+if __name__ == "__main__":
+    main()
+```
+
+### 步骤 4: 播放音频
+
+要播放音频，你可以使用外部工具（如 `mpg123` 或 `aplay`）来将音频流发送到蓝牙设备。确保蓝牙设备已连接并且系统音频输出已配置为该设备。
+
+示例使用 `mpg123` 播放音频文件：
+
+```bash
+mpg123 -a bluetooth_device_name your_audio_file.mp3
+```
+
+### 完整的代码整合
+
+以下是整合上述步骤的完整 Python 示例代码：
+
+```python
+import bluetooth
+import dbus
+import dbus.mainloop.glib
+from gi.repository import GLib
+
+def find_devices():
+    print("Searching for devices...")
+    devices = bluetooth.discover_devices(duration=8, lookup_names=True, flush_cache=True, lookup_class=False)
+    print("Found {} devices.".format(len(devices)))
+
+    for addr, name in devices:
+        print("  {} - {}".format(addr, name))
+    
+    return devices
+
+def connect_device(address):
+    service_matches = bluetooth.find_service(address=address)
+
+    if len(service_matches) == 0:
+        print("Couldn't find the service on the device.")
+        return None
+
+    for match in service_matches:
+        if match["name"] == "A2DP":
+            port = match["port"]
+            name = match["name"]
+            host = match["host"]
+
+            print("Connecting to \"{}\" on {}...".format(name, host))
+
+            sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+            sock.connect((host, port))
+
+            print("Connected.")
+            return sock
+
+    return None
+
+def register_a2dp_profile(bus, path, profile):
+    manager = dbus.Interface(bus.get_object("org.bluez", "/org/bluez"),
+                             "org.bluez.ProfileManager1")
+
+    opts = {
+        "UUID": profile,
+        "Name": "A2DP Sink",
+        "Service": "audio",
+        "Role": "sink",
+        "PSM": dbus.UInt16(25),
+        "Channel": dbus.UInt16(10),
+        "Features": dbus.UInt16(0x0001)
+    }
+
+    manager.RegisterProfile(path, profile, opts)
+
+def main():
+    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+    bus = dbus.SystemBus()
+
+    # Register A2DP Profile
+    path = "/bluez/example/profile"
+    profile = "0000110a-0000-1000-8000-00805f9b34fb"  # Audio Sink UUID
+
+    register_a2dp_profile(bus, path, profile)
+
+    # Run the main loop
+    loop = GLib.MainLoop()
+    loop.run()
+
+if __name__ == "__main__":
+    devices = find_devices()
+    if devices:
+        addr, name = devices[0]  # Connect to the first found device
+        sock = connect_device(addr)
+        if sock:
+            # Do something with the connection
+            sock.close()
+    main()
+```
+
+### 总结
+
+通过上述步骤，你可以使用 Python 通过 BlueZ 实现蓝牙 A2DP 音乐播放功能。这个示例展示了如何扫描和连接蓝牙设备、注册 A2DP 配置文件以及使用外部工具播放音频。请根据实际需求调整代码和配置。
 
 # 参考资料
 

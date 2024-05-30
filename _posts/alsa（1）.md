@@ -667,6 +667,42 @@ https://stackoverflow.com/questions/35480928/alsa-unexpected-results-when-called
 
 如果你在使用 ALSA 并需要共享音频设备，你可能需要了解如何配置和使用 `aserver`。请注意，随着 Linux 和音频技术的发展，一些新的解决方案和工具可能会更适合你的需求。
 
+# aplay -L看到的设备怎么使用？
+
+这些设备实际上是 ALSA 提供的虚拟设备，用于将音频重定向到不同的通道或进行回路测试。
+
+==它们在测试音频系统或调试音频问题时非常有用。==
+
+你可以使用这些设备来播放音频文件，就像使用任何其他 ALSA 设备一样。
+
+例如，要使用 `sysdefault:CARD=AMLAUGESOUND` 设备播放音频文件，可以执行以下命令：
+
+```bash
+aplay -D sysdefault:CARD=AMLAUGESOUND your_audio_file.wav
+```
+
+类似地，你可以使用其他设备来播放音频文件。
+
+例如，如果要使用 `surround51:CARD=Loopback,DEV=0` 设备，可以执行以下命令：
+
+```bash
+aplay -D surround51:CARD=Loopback,DEV=0 your_audio_file.wav
+```
+
+这将使用指定的 ALSA 设备播放音频文件。根据你的需要和音频系统的配置，选择适当的设备来播放音频。
+
+## 这样播放有什么不一样？
+
+这些不同的设备配置提供了不同的音频输出通道和布局。这会影响音频在环绕声系统中的播放方式，以及在多声道环境中的声音定位和分布。
+
+举例来说：
+
+- `sysdefault:CARD=AMLAUGESOUND` 是默认的音频设备，它通常用于标准立体声输出。
+
+- `surround51:CARD=Loopback,DEV=0` 是一个环绕声设备，适用于 5.1 声道环绕音频系统。它会在前置、中央、后置和低音炮的不同位置播放声音，提供更加沉浸式的音频体验。
+
+根据你的音频需求和设备配置，选择合适的设备来播放音频会影响到你感知到的声音效果。
+
 # 参考资料
 
 1、深入了解ALSA

@@ -1157,13 +1157,40 @@ int asrsync_sync(struct asrsync *asr, unsigned int frames);
 
 # bluealsa 和bluealsa-aplay是什么关系
 
-`bluealsa`和`bluealsa-aplay`是两个相关的工具，它们一起构成了一个蓝牙音频播放解决方案，用于在Linux系统上通过蓝牙连接播放音频。
+bluealsa是一个后台进程。
 
-- **bluealsa**：`bluealsa`是一个用户态的蓝牙音频服务，它充当了蓝牙音频设备的代理，允许通过蓝牙连接的音频源（如手机、平板电脑等）向Linux系统中的音频输出设备进行音频传输。`bluealsa`使用Advanced Audio Distribution Profile（A2DP）和Audio/Video Remote Control Profile（AVRCP）等蓝牙协议，以及Advanced Linux Sound Architecture（ALSA）框架来实现音频传输和控制。
+bluealsa-aplay是前台的控制命令。
 
-- **bluealsa-aplay**：`bluealsa-aplay`是一个用于从命令行播放音频的工具，它是`bluealsa`软件包的一部分。`bluealsa-aplay`允许用户将音频数据通过`bluealsa`服务传输到蓝牙音频设备，并在蓝牙音频设备上播放音频内容。用户可以使用`bluealsa-aplay`命令指定要播放的音频文件或音频流，并控制音频播放的行为。
+他们通过自己定义的一套简单的协议进行通信。
 
-综上所述，`bluealsa`提供了一个用户态的蓝牙音频服务，允许Linux系统通过蓝牙连接播放音频，而`bluealsa-aplay`是一个用于从命令行播放音频的工具，它利用`bluealsa`服务来实现音频传输和播放。这两个工具共同构成了一个在Linux系统上通过蓝牙连接播放音频的解决方案。
+通信渠道是一个unix socket。
+
+通信协议就是简单的结构体。
+
+bluealsa-aplay发送消息给bluealsa，bluealsa再通过dbus发送dbus消息给bluez。这个就是通信的完整链路。
+
+通信协议部分的代码是在shared目录下：
+
+```
+ctl-client.h
+	提供了一些bluealsa_xx的接口，相当于给前台应用提供的API。
+	包括：open hci设备，subscribe事件。
+	open/close/pause/drain transport
+	set transport delay/volume
+ctl-proto.h
+	struce request 这个是主要的。
+	还有一些msg_xx。
+	msg_transport
+	msg_device
+	msg_status
+	等等
+ctl-socket.h
+	这个主要是给hfp用的。不管。
+```
+
+播放蓝牙音乐时，是创建了一个thread，把收到的数据write到pcm里。
+
+
 
 # bluealsa 命令参数说明
 

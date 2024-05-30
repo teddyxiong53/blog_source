@@ -146,9 +146,80 @@ mtu             <value>                        Exchange MTU for GATT/ATT
 
 ble连接需要一直保持吗？
 
+# 调试工具有哪些
 
+在调试和开发 Bluetooth Low Energy (BLE) 应用时，有许多实用的应用程序工具可以帮助你进行设备发现、连接、服务发现、特征读取和写入等操作。以下是一些常用的 BLE 调试工具：
 
-参考资料
+### 移动应用程序
+
+1. **nRF Connect (Nordic Semiconductor)**
+   - **平台**：iOS, Android
+   - **功能**：设备扫描、服务和特征发现、特征读写、通知和指示接收、自定义脚本等。
+   - **下载**：
+     - [iOS](https://apps.apple.com/us/app/nrf-connect/id1054362403)
+     - [Android](https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp)
+
+2. **LightBlue Explorer (Punch Through)**
+   - **平台**：iOS, Android
+   - **功能**：设备扫描、服务和特征发现、特征读写、模拟外设、自定义广告数据等。
+   - **下载**：
+     - [iOS](https://apps.apple.com/us/app/lightblue-explorer/id557428110)
+     - [Android](https://play.google.com/store/apps/details?id=com.punchthrough.lightblueexplorer)
+
+3. **BLE Scanner (Bluepixel Technologies)**
+   - **平台**：Android
+   - **功能**：设备扫描、服务和特征发现、特征读写、实时数据监测等。
+   - **下载**：[Android](https://play.google.com/store/apps/details?id=com.macdom.ble.blescanner)
+
+4. **BLE Hero (Savvysoft)**
+   - **平台**：iOS
+   - **功能**：设备扫描、服务和特征发现、特征读写、RSSI 测量等。
+   - **下载**：[iOS](https://apps.apple.com/us/app/ble-hero/id1492822055)
+
+### 桌面应用程序
+
+1. **Bluetooth LE Explorer (Microsoft)**
+   - **平台**：Windows
+   - **功能**：设备扫描、服务和特征发现、特征读写、通知和指示接收等。
+   - **下载**：[Microsoft Store](https://www.microsoft.com/store/apps/9N0ZTKF1QT99)
+
+2. **nRF Connect for Desktop (Nordic Semiconductor)**
+   - **平台**：Windows, macOS, Linux
+   - **功能**：设备扫描、服务和特征发现、特征读写、通知和指示接收、自定义脚本等。
+   - **下载**：[Nordic Semiconductor](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-desktop)
+
+3. **BlueSee (MTSoft)**
+   - **平台**：macOS
+   - **功能**：设备扫描、服务和特征发现、特征读写、实时数据监测等。
+   - **下载**：[Mac App Store](https://apps.apple.com/us/app/bluesee/id1485930076)
+
+### 使用方法
+
+以下是使用 `nRF Connect` 应用的基本步骤：
+
+1. **设备扫描**：
+   - 打开应用并启动扫描，查看附近的 BLE 设备。
+   - 选择你要调试的设备进行连接。
+
+2. **服务发现**：
+   - 连接设备后，应用会自动发现设备上的 GATT 服务和特征。
+   - 你可以浏览所有已发现的服务和特征。
+
+3. **特征读写**：
+   - 选择一个特征进行读取或写入操作。
+   - 你可以写入数据来触发特定的设备行为，或读取数据来查看设备状态。
+
+4. **接收通知**：
+   - 如果某个特征支持通知或指示，你可以订阅该特征以接收实时更新。
+
+5. **自定义脚本**（高级功能）：
+   - 一些应用如 `nRF Connect` 支持自定义脚本，你可以编写脚本以自动化复杂的调试流程。
+
+### 总结
+
+以上是一些常用的 BLE 调试工具，它们可以帮助你轻松进行 BLE 设备的调试和开发。选择合适的工具，可以大大提高你的调试效率。
+
+# 参考资料
 
 1、[BlueZ] 2、使用bluetoothctl搜索、连接、配对、读写、使能notify蓝牙低功耗设备
 

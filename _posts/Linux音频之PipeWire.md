@@ -8,7 +8,55 @@ tags:
 
 --
 
-# 简介
+# 资源收集
+
+bootlin的文章，非常好。高屋建瓴。
+
+https://bootlin.com/blog/an-introduction-to-pipewire/
+
+https://bootlin.com/doc/training/audio/audio-slides.pdf
+
+https://bootlin.com/blog/hands-on-installation-of-pipewire/
+
+arch wiki
+
+https://wiki.archlinuxcn.org/wiki/PipeWire
+
+官方仓库的wiki，这里算是最权威的最及时的信息了。
+
+https://gitlab.freedesktop.org/pipewire/pipewire/-/wikis/home
+
+尤其是这个QA，回答了很多我关心的问题。
+
+https://gitlab.freedesktop.org/pipewire/pipewire/-/wikis/FAQ
+
+这里说明了配置的详细含义。
+
+https://gitlab.freedesktop.org/pipewire/pipewire/-/wikis/Config-PipeWire
+
+# 简介1
+
+PipeWire 是一个服务器和 API，
+
+用于在 Linux 上处理多媒体。
+
+==它最常见的用途是为 Wayland 和 Flatpak 应用程序实现屏幕共享、远程桌面以及不同软件之间其他形式的音频和视频路由。==
+
+根据它的官方FAQ，“你可以把它看作是应用程序和库可以使用的驱动之上的多媒体路由层”。
+
+相较于 PulseAudio 专注于消费级音频和 JACK 专注于专业级音频，PipeWire 的目标是为所有级别的用户工作。
+
+在其他技术中，==PipeWire 通过提供在不同的缓冲区大小之间动态切换的能力来实现这一目标==，以适应不同音频应用的不同延迟要求。
+
+在 Debian 10 中，PipeWire 0.2.5 是可用的，它应该不需要手动安装，因为它通常被使用它的应用程序作为一个依赖项带入。
+
+在 Debian 11中，PipeWire 0.3.19 是可用的，并且可以试验性地用来替代 [ALSA](https://wiki.debian.org/ALSA) 用户空间库、[PulseAudio](https://wiki.debian.org/PulseAudio) 和 [JACK](https://wiki.debian.org/JACK)。这是一个存在文档但不支持的用例。
+
+在 Debian Testing 和 Debian Unstable 中有更新的 PipeWire 版本。对于这些分发的用户来说，PipeWire 应该更加可靠，在许多用例下可以很好地替代。
+
+
+
+# 简介2
 
 PipeWire 是一个用于处理音频和视频流的开源服务器。
 
@@ -170,6 +218,78 @@ WirePlumber 目前专注于汽车和其他嵌入式用例，
 
 解释编写它的动机、我们的设计选择以及我们在开发过程中取得的进一步进展。
 
+# buildroot下使用pipewire
+
+这篇文章非常不错。
+
+https://bootlin.com/blog/hands-on-installation-of-pipewire/
+
+在启动过程中，守护程序会尝试创建客户端将用来与其通信的 UNIX 套接字;
+
+其默认名称为 `pipewire-0` 。
+
+但是，如果没有特定的环境变量，PipeWire 不知道该把它放在哪里。
+
+因此，解决方法是 `pipewire` 使用 `XDG_RUNTIME_DIR` 变量集进行调用：
+
+```
+$ XDG_RUNTIME_DIR=/run pipewire
+[W][03032.468669] pw.context   | [       context.c:  353 pw_context_new()] 0x507978: can't load dbus library: support/libspa-dbus
+[E][03032.504804] pw.module    | [   impl-module.c:  276 pw_context_load_module()] No module "libpipewire-module-rt" was found
+[E][03032.530877] pw.module    | [   impl-module.c:  276 pw_context_load_module()] No module "libpipewire-module-portal" was found
+```
+
+仍然会出现一些警告，但它们不会阻止 PipeWire 的进程：
+
+第一行是意料之中的，因为我们编译了不支持 D-Bus 的 PipeWire。
+
+第二个原因是默认配置调用了一个 PipeWire 模块，该模块使用 setpriority（2） 使守护进程实时，并使用带有 SCHED_FIFO的 pthread_setschedparam（3） 使线程实时。直到最近，如果 D-Bus 支持不可用，该模块才被编译，因为它对 RTKit 有一个回退（D-Bus RPC 要求增强的进程优先级，用于避免为每个进程授予权限）。这在较新的版本中得到了修复，因为如果 D-Bus 不可用，该模块现在正在编译时没有 RTKit 回退，但我们使用的稳定 Buildroot 版本正在打包旧版本的 PipeWire。
+
+第三个指的是 xdg-desktop-portal 中的门户，这是一个基于 D-Bus 的接口，用于向 Flatpak 应用程序公开各种 API。对于嵌入式用途，这对我们来说无关紧要。
+
+可以覆盖默认的 PipeWire 守护程序配置以删除这些警告：
+
+ `support.dbus` in `context.properties` 控制 D-Bus 库的加载，要加载的模块在 中 `context.modules` 声明。
+
+默认配置位于 ， `/usr/share/pipewire/pipewire.conf` 
+
+覆盖的一个好方法是新建的 `/etc/pipewire` 同名文件。
+
+提示：PipeWire 的日志记录使用 `PIPEWIRE_DEBUG` 环境变量进行控制，如文档中所述。
+
+
+
+我们没有看到ALSA PCM设备的原因是
+
+PipeWire不负责监控 `/dev` 和向图形添加新节点;
+
+这是我们session manager的责任。
+
+WirePlumber 的配置需要从默认值更新，以避免由于缺少一些可选依赖项而崩溃。
+
+要更新它，推荐的方法与 PipeWire 相同：
+
+使用位于 中的 `/etc/wireplumber` 配置文件重载配置文件。
+
+以下是默认配置的问题：
+
+最后两个问题可以通过使用以下 Lua 配置脚本来解决 `/etc/wireplumber/main.lua.d/90-disable-dbus.lua` ：
+
+```
+alsa_monitor.properties["alsa.reserve"] = false
+default_access.properties["enable-flatpak-portal"] = false
+```
+
+完成所有操作后，WirePlumber 的守护程序将继续运行并成功连接到 PipeWire：
+
+
+
+就是这样
+
+WirePlumber 现在已经检测到我们的 ALSA 接收器和源，并将它们作为节点添加到 PipeWire 图中。
+
+它将检测我们添加到图形中的源节点，并将它们链接到 ALSA 接收器节点，输出音频供我们的耳朵欣赏。
+
 
 
 # collabora公司介绍
@@ -198,142 +318,9 @@ WirePlumber 目前专注于汽车和其他嵌入式用例，
 
 是的，PipeWire 和 PulseAudio 都是 GNOME 项目的一部分。PipeWire 最初由 GNOME 的开发者 Wim Taymans 开发，旨在替代 PulseAudio 和 JACK，并提供更全面的多媒体支持。PulseAudio 也是 GNOME 项目的一部分，它是一个音频服务器，最初设计为 Linux 桌面环境的音频系统。虽然两者都与 GNOME 相关，但它们也可以在其他 Linux 发行版和桌面环境中使用。
 
-# 如何使用pipewire
 
-在系统中使用 PipeWire 作为音频服务器，可以按照以下步骤进行配置。以下是以常见的 Linux 发行版（如 Ubuntu 或 Fedora）为例的设置步骤：
 
-### 步骤 1：安装 PipeWire
 
-首先，确保系统中已经安装了 PipeWire 及其相关组件。
-
-#### 对于 Ubuntu
-
-```sh
-sudo apt update
-sudo apt install pipewire pipewire-audio-client-libraries
-```
-
-#### 对于 Fedora
-
-```sh
-sudo dnf install pipewire pipewire-pulseaudio
-```
-
-### 步骤 2：安装 PulseAudio 兼容层
-
-为了确保兼容性，可以安装 PipeWire 的 PulseAudio 兼容层，使得大多数应用程序可以无缝过渡到使用 PipeWire。
-
-#### 对于 Ubuntu
-
-```sh
-sudo apt install pipewire-pulse
-```
-
-#### 对于 Fedora
-
-```sh
-sudo dnf install pipewire-pulseaudio
-```
-
-### 步骤 3：禁用 PulseAudio 并启用 PipeWire
-
-#### 对于 Ubuntu
-
-编辑 PulseAudio 配置以禁用其启动。
-
-```sh
-mkdir -p ~/.config/systemd/user
-ln -s /dev/null ~/.config/systemd/user/pulseaudio.service
-ln -s /dev/null ~/.config/systemd/user/pulseaudio.socket
-```
-
-启用并启动 PipeWire 服务。
-
-```sh
-systemctl --user enable pipewire
-systemctl --user start pipewire
-systemctl --user enable pipewire-pulse
-systemctl --user start pipewire-pulse
-```
-
-#### 对于 Fedora
-
-停止并禁用 PulseAudio。
-
-```sh
-systemctl --user stop pulseaudio.service
-systemctl --user disable pulseaudio.service
-systemctl --user mask pulseaudio.service
-```
-
-启用并启动 PipeWire 和其 PulseAudio 兼容层。
-
-```sh
-systemctl --user enable pipewire
-systemctl --user start pipewire
-systemctl --user enable pipewire-pulse
-systemctl --user start pipewire-pulse
-```
-
-### 步骤 4：验证 PipeWire 是否正常运行
-
-使用以下命令检查 PipeWire 服务状态。
-
-```sh
-systemctl --user status pipewire
-systemctl --user status pipewire-pulse
-```
-
-可以使用 `pw-cli` 工具查看 PipeWire 的详细信息。
-
-```sh
-pw-cli info all
-```
-
-### 步骤 5：调整和优化
-
-根据需要调整配置文件，通常位于 `/etc/pipewire/` 或 `~/.config/pipewire/` 目录下。可以修改 `pipewire.conf` 和 `pipewire-pulse.conf` 来定制 PipeWire 的行为。
-
-以上步骤应该能帮助你在系统中使用和配置 PipeWire。如果遇到任何问题或有特定需求，可以进一步调整配置文件或查阅相关文档。
-
-# 官网文档
-
-https://docs.pipewire.org/page_overview.html
-
-## 概述
-
-### 动机
-
-当前linux的多媒体框架存在多个分散的系统，实在有进行统一的必要：
-
-* 视频内容，是靠合成器compositor来处理的。
-* 视频录制，是靠直接连接硬件设备，这个带来了安全风险。而且很不灵活。
-* 消费类音频，使用PulseAudio来混音和处理多个流。
-* 专业音频，使用JACK。
-
-上面这些，都不能很好地跟FlatPak这些新的软件包方式兼容。
-
-Pipewire就是为了解决这个问题而存在的。
-
-## 配置
-
-有大量的配置项。
-
-### pipewire.conf
-
-### client.conf
-
-### pipewire-pulse.conf
-
-### jack.conf
-
-### filter-chain.conf
-
-### pipewire-devices
-
-### pipewire-pulse-modules
-
-### libpipewire-modules
 
 # 如何在没有桌面环境的情况下使用Pipewire？
 
@@ -368,65 +355,6 @@ Pipewire就是为了解决这个问题而存在的。
 
 6. **调试和故障排除**: 如果您遇到问题，Pipewire 提供了日志功能，您可以通过查看日志来诊断问题。可以使用 `journalctl -u pipewire.service` 和 `journalctl -u pipewire-pulse.service` 命令查看服务日志。
 在没有桌面环境的情况下使用 Pipewire 可能需要更多的手动配置，但是通过上述步骤，您应该能够在一个没有桌面环境的系统上设置和使用 Pipewire。如果您需要更具体的帮助，可以提供更多的信息，我会尽力为您提供指导。
-
-# pipewire的SPA是什么
-
-SPA（Simple Plugin API）是 PipeWire 的核心组件之一，
-
-专门用于高性能的多媒体处理。
-
-它提供了一个轻量级的、模块化的框架，用于实现各种插件，
-
-这些插件可以处理不同类型的媒体流。
-
-以下是关于 SPA 的详细说明：
-
-### SPA 的关键概念
-
-| 概念                      | 说明                                                         |
-| ------------------------- | ------------------------------------------------------------ |
-| **插件（Plugin）**        | 独立的模块，处理特定类型的媒体任务，如音频输入、输出、编码、解码等。 |
-| **节点（Node）**          | SPA 插件中的处理单元，类似于 PipeWire 中的 `pw_node`，直接处理数据流。 |
-| **端口（Port）**          | 节点的输入和输出接口，通过端口连接其他节点。                 |
-| **POD（Plain Old Data）** | 数据结构，用于描述插件和节点的属性和参数。                   |
-| **Buffer（缓冲区）**      | 用于存储和传输媒体数据块。                                   |
-
-### SPA 的结构
-
-1. **SPA 插件（spa_plugin）**
-    - 每个 SPA 插件都实现了特定的接口，用于创建和管理节点。
-    - 插件可以是音频输入/输出、视频处理、滤波器等。
-
-2. **SPA 节点（spa_node）**
-    - 每个节点执行具体的媒体处理任务，如音频采集、回放、编码、解码等。
-    - 节点包含输入端口和输出端口，通过这些端口与其他节点连接，形成数据流。
-
-3. **SPA 端口（spa_port）**
-    - 端口是节点的输入和输出接口，用于连接其他节点的端口，进行数据传输。
-    - 端口通过缓冲区（buffer）传输数据。
-
-4. **SPA POD（spa_pod）**
-    - 用于描述节点和端口的属性、参数和配置。
-    - POD 是一种灵活的二进制数据格式，支持动态类型，适合描述复杂的数据结构。
-
-### 示例结构图
-
-```
-+----------------+            +----------------+
-|  spa_plugin    |            |  spa_plugin    |
-|                |            |                |
-| +------------+ |            | +------------+ |
-| | spa_node   | | <--------> | | spa_node   | |
-| +------------+ |            | +------------+ |
-|                |            |                |
-+----------------+            +----------------+
-```
-
-
-
-## 以volume这个spa为例进行分析
-
-spa\plugins\volume\volume.c
 
 
 
@@ -479,44 +407,6 @@ PipeWire 和 PulseAudio 之间既有竞争关系，也有合作关系。具体�
 
 ### 总结
 虽然 PipeWire 和 PulseAudio 在功能上有竞争，但为了用户体验和迁移的平滑，PipeWire 也在一定程度上与 PulseAudio 合作，通过兼容层和工具支持现有应用程序。因此，它们之间是竞争与合作并存的关系。
-
-# pipewire简单使用方法说明，例如录音、播放
-
-Pipewire 是一个功能强大的多媒体处理框架，它支持音频和视频的录制、播放以及实时处理。以下是一些基本的命令行操作，用于说明如何使用 Pipewire 进行录音和播放。
-### 录音
-要使用 Pipewire 录制音频，你可以使用 `pw-record` 命令。这个命令会将音频录制到一个文件中。
-```bash
-pw-record output.wav
-```
-这里，`output.wav` 是录制的音频文件名。你可以指定不同的文件格式，例如 `.flac` 或 `.ogg`，但确保命令行工具支持你选择的格式。
-### 播放
-要使用 Pipewire 播放音频文件，你可以使用 `pw-play` 命令。这个命令会读取一个音频文件并将其播放到默认的音频输出设备。
-```bash
-pw-play input.wav
-```
-这里，`input.wav` 是要播放的音频文件名。同样，你可以使用其他支持的音频文件格式。
-### 选择设备和端口
-Pipewire 允许你选择特定的输入和输出设备以及端口。要列出所有可用的设备和端口，你可以使用 `pw-cli` 命令。
-```bash
-pw-cli list-devices
-```
-要指定设备或端口，可以使用 `-d`（设备）和 `-p`（端口）选项。
-```bash
-pw-record -d <device-name> -p <port-name> output.wav
-pw-play -d <device-name> -p <port-name> input.wav
-```
-请将 `<device-name>` 和 `<port-name>` 替换为实际的设备名称和端口名称。
-### 实时监控
-如果你想在录制或播放时监控 Pipewire 的活动，可以使用 `pw-cli monitor` 命令。
-```bash
-pw-cli monitor
-```
-这将显示 Pipewire 的实时事件，包括节点的创建、删除和属性的更改。
-### 注意事项
-- 确保你的系统已经安装了 Pipewire 相关的包，包括 `pipewire`, `pipewire-alsa`, `pipewire-pulse`, `pipewire-jack` 等。
-- 如果你在使用 Pipewire 的同时也在使用 PulseAudio，可能需要停止 PulseAudio 服务，以避免冲突。
-- `pw-record` 和 `pw-play` 命令可能需要你具有适当的权限，可能需要使用 `sudo`。
-这些是使用 Pipewire 进行基本录音和播放操作的基础步骤。Pipewire 的功能非常强大，支持更多的高级功能和复杂的配置，但这些基本的命令应该足以让你开始使用 Pipewire。如果你需要更多高级功能或遇到问题，可以查阅 Pipewire 的官方文档或社区论坛。
 
 
 
@@ -582,109 +472,6 @@ PipeWire 的通信基础机制主要基于以下几个关键组件和概念：
 ### 总结
 
 PipeWire 的通信基础机制通过结合图形化处理模型、共享内存、高效的 Unix 套接字通信和事件驱动架构，提供了一个高性能、低延迟的多媒体处理框架。这使得它在处理复杂音视频流时既高效又灵活，能够满足现代多媒体应用的需求。
-
-
-
-
-
-# pipewire的核心进程和主要命令怎样使用
-
-PipeWire 的核心进程和主要命令使用如下：
-
-### 核心进程
-
-1. **`pipewire`**
-    - 主服务进程，负责管理和调度 PipeWire 的所有资源，包括音频和视频流。
-    - 启动方法：
-      ```sh
-      pipewire &
-      ```
-
-2. **`pipewire-pulse`**
-    - PulseAudio 兼容层，使 PulseAudio 应用能够在 PipeWire 上运行。
-    - 启动方法：
-      ```sh
-      pipewire-pulse &
-      ```
-
-3. **`pipewire-media-session`**
-    - 媒体会话管理器，负责设备检测和配置管理。
-    - 启动方法：
-      ```sh
-      pipewire-media-session &
-      ```
-    - 未来可能被 `wireplumber` 所取代。
-
-### 主要命令
-
-1. **`pw-cli`**
-    - 通用命令行接口，用于与 PipeWire 服务交互和调试。
-    - 示例：
-      ```sh
-      # 列出所有对象
-      pw-cli ls
-
-      # 显示对象信息
-      pw-cli info <对象ID>
-      ```
-
-2. **`pw-top`**
-    - 实时监控工具，显示当前 PipeWire 的活动和性能数据。
-    - 启动方法：
-      ```sh
-      pw-top
-      ```
-
-3. **`pw-cat`**
-    - 简单的音频录制和播放工具，类似于 `aplay` 和 `arecord`。
-    - 示例：
-      ```sh
-      # 播放音频文件
-      pw-cat file.wav
-
-      # 录制音频
-      pw-cat -r > file.wav
-      ```
-
-4. **`pw-dump`**
-    - 导出 PipeWire 当前状态的工具，用于调试和分析。
-    - 示例：
-      ```sh
-      pw-dump > pipewire-state.json
-      ```
-
-### 使用示例
-
-#### 启动 PipeWire 及其相关服务
-
-在系统启动时自动启动这些进程，可以在 `.xinitrc` 或类似的启动脚本中添加以下内容：
-
-```sh
-#!/bin/sh
-pipewire &
-pipewire-pulse &
-pipewire-media-session &
-```
-
-#### 使用 `pw-cli` 列出当前对象
-
-```sh
-pw-cli ls
-```
-
-这会列出当前 PipeWire 中的所有对象，包括节点、设备和链接。
-
-#### 监控 PipeWire 活动
-
-```sh
-pw-top
-```
-
-这会显示 PipeWire 的实时活动，类似于 `top` 命令。
-
-### 总结
-
-PipeWire 提供了一组核心进程和命令行工具，帮助用户管理和调试音视频流。通过合理使用这些工具，可以高效地配置和监控 PipeWire 系统，确保音视频应用的稳定运行。
 
 
 
@@ -894,37 +681,7 @@ pw-cli connect simple-audio-player:output simple-audio-output:input
 
 PipeWire 使用了与 GStreamer 类似的 pipeline 设计模式，但在架构、数据类型支持和系统集成方面有所不同。PipeWire 的设计目标是提供一个统一的多媒体处理框架，涵盖音频、视频和其他数据类型，具有更高的性能和更低的延迟。
 
-# pipewire的代码架构设计分析，例如impl的机制
 
-PipeWire 的代码架构设计非常模块化和灵活，其中的一些关键设计特点包括：
-
-### 1. 模块化设计
-- PipeWire 的核心设计思想之一是模块化。它将功能划分为不同的模块，每个模块都有清晰的责任和接口。
-- 模块化设计使得 PipeWire 更易于扩展和定制，可以根据特定需求添加或删除模块，而不影响整体系统的稳定性。
-
-### 2. 实现（Impl）的机制
-- PipeWire 使用了一种常见的设计模式，即接口与实现（Interface and Implementation）分离。
-- 在 PipeWire 中，接口是公开的，而实现则是私有的，只对内部可见。这种设计使得接口与实现之间的耦合度降低，提高了代码的可维护性和可扩展性。
-- 典型的示例是通过隐藏结构体的成员来实现这种接口和实现的分离。
-
-### 3. 核心组件
-- PipeWire 的核心组件包括核心框架（Core Framework）、Session Management、Graph Management、Device Management 等。
-- 核心框架负责整体的调度和资源管理，Session Management 管理客户端会话，Graph Management 负责音视频图的管理，Device Management 则处理设备的发现和管理。
-
-### 4. 插件架构
-- PipeWire 支持插件架构，允许用户通过加载插件来扩展其功能。
-- 插件可以是节点（Nodes）、端口（Ports）、模块、设备驱动程序等。这种灵活的插件架构使得 PipeWire 可以适应不同的应用场景和需求。
-
-### 5. 跨平台支持
-- PipeWire 的设计充分考虑了跨平台支持。它可以在不同的操作系统上运行，并提供统一的接口和行为。
-- 这种跨平台支持使得 PipeWire 在各种嵌入式和桌面环境中都能够发挥作用，并提供一致的用户体验和开发体验。
-
-### 6. 架构演进
-- PipeWire 的架构是不断演进的。它持续吸收新的技术和思想，不断改进和优化，以满足不断变化的多媒体处理需求。
-- 这种架构演进保持了 PipeWire 在技术领域的领先地位，并确保它能够持续提供高性能、稳定可靠的多媒体处理服务。
-
-### 总结
-PipeWire 的代码架构设计充分体现了模块化、接口与实现分离、插件架构和跨平台支持等设计原则。这些设计特点使得 PipeWire 成为一个灵活、高性能的多媒体处理框架，适用于各种不同的应用场景和需求。
 
 # spa_handle_factory 是用的什么设计模式
 
@@ -951,156 +708,9 @@ SPA 是 PipeWire 中的一个核心组件，它提供了一种轻量级的、模
 
 `spa_handle_factory` 是 PipeWire 中用于创建和管理 SPA 插件实例的机制，它提供了一种统一的接口，用于请求插件的创建和销毁，并可能提供参数配置和错误处理等功能。虽然它不是一个特定的设计模式，但与工厂模式有一些相似之处，都是为了封装对象的创建过程，提供统一的接口。
 
-# wireplumber
 
-## 简介
 
-WirePlumber 是 PipeWire 生态系统中的一部分，它是一个灵活的会话管理器和策略引擎，旨在提供更高级的音频和视频设备管理以及媒体流路由功能。下面是关于 WirePlumber 的一些信息：
 
-### 功能和特点：
-
-1. **会话管理**：
-   - WirePlumber 可以管理多个音频和视频会话，包括应用程序、设备和系统级别的会话。
-   - 它可以跟踪会话的创建、销毁和状态变化，并提供相应的管理和控制功能。
-
-2. **设备管理**：
-   - WirePlumber 可以自动发现和管理系统中的音频和视频设备，包括声卡、摄像头、扬声器等。
-   - 它可以为每个设备创建一个相应的会话，并提供统一的接口用于设备的配置和控制。
-
-3. **流路由**：
-   - WirePlumber 可以根据用户定义的规则和策略来动态路由音频和视频流。
-   - 它可以根据应用程序、设备、会话等因素来自动选择合适的路由方案，以满足不同的需求和场景。
-
-4. **策略引擎**：
-   - WirePlumber 具有灵活的策略引擎，可以根据用户定义的规则和条件来动态调整路由和设备配置。
-   - 它可以根据不同的场景和需求自动执行相应的策略，以实现最佳的音视频体验。
-
-5. **与 PipeWire 的集成**：
-   - WirePlumber 是 PipeWire 生态系统的一部分，与 PipeWire 紧密集成。
-   - 它可以直接与 PipeWire 核心和其他组件进行通信和交互，利用 PipeWire 提供的功能和接口。
-
-### 使用场景：
-
-- **多媒体应用开发**：作为一个灵活的会话管理器，WirePlumber 可以帮助开发人员管理和控制多媒体应用程序的音视频会话，提供更好的用户体验。
-- **音视频设备管理**：WirePlumber 可以帮助系统管理员自动发现和管理系统中的音视频设备，简化设备配置和管理流程。
-- **音视频路由和策略控制**：WirePlumber 可以根据用户定义的规则和策略来动态路由音视频流，实现更灵活、智能的音视频路由和策略控制。
-
-### 总结：
-
-WirePlumber 是 PipeWire 生态系统中的一个重要组件，它为用户和开发人员提供了强大的会话管理、设备管理和流路由功能，使得多媒体应用开发和系统管理变得更加简单和灵活。
-
-# pipewire使用lua做了什么
-
-PipeWire 使用 Lua 作为配置和脚本语言，主要用于以下方面：
-
-1. **配置管理**：
-   - Lua 可以用来编写 PipeWire 的配置文件，配置文件中可以定义音视频设备、流路由、策略规则等。
-   - 使用 Lua 编写配置文件可以更灵活地定义复杂的配置规则，满足不同用户和应用的需求。
-
-2. **脚本扩展**：
-   - Lua 可以用来编写 PipeWire 的扩展脚本，实现自定义的音视频处理逻辑和功能。
-   - 用户可以编写 Lua 脚本来扩展 PipeWire 的功能，例如自定义的效果处理、自动化任务等。
-
-3. **动态控制**：
-   - Lua 脚本可以与 PipeWire 核心进行交互，动态控制音视频流的创建、连接、调度等操作。
-   - 使用 Lua 脚本可以实现动态的音视频流管理和控制，根据不同的条件和场景自动执行相应的操作。
-
-4. **策略引擎**：
-   - Lua 可以用来编写 PipeWire 的策略规则，根据不同的策略来调整音视频路由和设备配置。
-   - 用户可以编写 Lua 脚本来定义特定的策略规则，例如根据应用程序、设备类型、用户偏好等因素来动态调整音视频路由和配置。
-
-5. **事件处理**：
-   - Lua 脚本可以响应 PipeWire 发出的事件，实现特定的事件处理逻辑。
-   - 使用 Lua 脚本可以监听 PipeWire 的各种事件，如设备连接、流状态变化等，根据事件触发相应的处理逻辑。
-
-总的来说，PipeWire 使用 Lua 作为配置和脚本语言，主要用于实现灵活的配置管理、扩展功能、动态控制和事件处理等功能，使得 PipeWire 更加灵活和可定制。
-
-## lua编写pipewire配置文件示例
-
-以下是一个简单的 Lua 示例，用于编写 PipeWire 的配置文件。这个示例配置文件用于定义一些音频设备和流路由规则。
-
-```lua
--- 导入 PipeWire Lua API
-pw = require("pipewire")
-
--- 创建 PipeWire 上下文
-context = pw.Context.new()
-
--- 创建音频设备
-device1 = pw.Device.new(context, {
-    name = "Microphone",
-    description = "Built-in microphone",
-    direction = "Input",
-    priority = 100,
-    -- 其他设备属性
-})
-
-device2 = pw.Device.new(context, {
-    name = "Speakers",
-    description = "Built-in speakers",
-    direction = "Output",
-    priority = 100,
-    -- 其他设备属性
-})
-
--- 创建流路由规则
-route1 = pw.Route.new(context, {
-    match_device = "Microphone",
-    match_role = "Capture",
-    target_device = "Speakers",
-    target_role = "Playback",
-    -- 其他路由规则
-})
-
--- 添加设备和路由规则到 PipeWire 上下文
-context:add_device(device1)
-context:add_device(device2)
-context:add_route(route1)
-
--- 启动 PipeWire 上下文
-context:start()
-```
-
-在这个示例中，我们首先导入了 PipeWire Lua API，并创建了一个 PipeWire 上下文。然后，我们创建了两个音频设备（一个输入设备和一个输出设备），以及一个流路由规则。最后，我们将设备和路由规则添加到 PipeWire 上下文中，并启动了上下文。这样，PipeWire 就可以根据配置文件中定义的设备和路由规则来管理音频设备和流路由了。
-
-## lua编写pipewire扩展
-
-没问题！下面是一个简单的 Lua 示例，用于编写 PipeWire 的扩展脚本。这个示例展示了如何使用 Lua 来编写一个简单的 PipeWire 扩展，用于在音频流中添加混响效果。
-
-```lua
--- 导入 PipeWire Lua API
-pw = require("pipewire")
-
--- 注册 PipeWire 扩展
-extension = pw.Extension("reverb-extension", {
-    name = "Reverb Effect Extension",
-    version = "1.0",
-    author = "Your Name",
-    description = "Add reverb effect to audio streams",
-})
-
--- 定义混响效果函数
-function add_reverb(buffer)
-    -- 在这里添加混响效果的逻辑
-    -- 例如，将音频数据进行处理，添加混响效果
-end
-
--- 监听音频流事件
-extension:on("stream-added", function(stream)
-    -- 检查是否为音频流
-    if stream.media_type == "Audio" then
-        -- 如果是音频流，则为其添加混响效果
-        add_reverb(stream.buffer)
-    end
-end)
-
--- 启动扩展
-extension:start()
-```
-
-在这个示例中，我们首先导入了 PipeWire Lua API，并创建了一个 PipeWire 扩展。然后，我们定义了一个名为 `add_reverb` 的函数，用于在音频流中添加混响效果。接着，我们监听了 PipeWire 的 `stream-added` 事件，当有新的音频流加入时，我们会检查它是否为音频流，如果是的话，就调用 `add_reverb` 函数为其添加混响效果。最后，我们启动了扩展，使得它可以开始监听和处理音频流事件。
-
-这只是一个简单的示例，实际的混响效果处理可能会更加复杂，需要根据具体的需求和场景来实现。
 
 # pipewire支持leaudio
 
@@ -1122,9 +732,25 @@ PipeWire 构建必须使用选项“-Dbluez5-codec-lc3=enabled”进行配置。
 
 
 
+LE Audio 是蓝牙音频堆栈的全新实现，
+
+它取代了“经典音频”A2DP 和 HFP 配置文件。
+
+它的默认编解码器是 LC3，
+
+==但由于它是对所有内容的重写，因此编解码器只是更改的一小部分。==
+
+主要的Linux LE Audio实现由三个项目组成：（i）Linux内核，（ii）BlueZ，（iii）声音服务器部分，即Pipewire。
+
+LE Audio 实现的主体在 （i） 和 （ii） 中。Pipewire 部分 （iii） 相对较小且简单，主要负责编解码器支持以及与音响系统其余部分的集成。
+
+
+
 
 
 https://www.bluez.org/le-audio-support-in-pipewire/
+
+https://gitlab.freedesktop.org/pipewire/pipewire/-/wikis/LE-Audio-+-LC3-support
 
 # pipewire-alsa怎么使用
 
@@ -1159,13 +785,456 @@ pipewire-alsa\tests\test-pipewire-alsa-stress.c
 
 pipewire-alsa\alsa-plugins\pcm_pipewire.c
 
-# 跟bluez的对接
+## 跟alsa的具体对接
 
-从这些代码来看，这个功能跟bluealsa的代码类似。
+/usr/share/alsa/alsa.conf.d
 
-spa\plugins\bluez5\a2dp-codec-aac.c
+这个下面放了2个配置文件。
 
-那是不是bluealsa实现了对liblc3的对接，也可以实现类似的leaudio播放功能？
+```
+50-pipewire.conf          
+99-pipewire-default.conf
+```
+
+我在我的/etc/asound.conf的最前面加上这2行：
+
+```
+<confdir:alsa.conf.d/50-pipewire.conf>
+<confdir:alsa.conf.d/99-pipewire-default.conf>
+```
+
+现在aplay -L就能识别到了。
+
+
+
+# dbus
+
+PipeWire 需要活动的 D-Bus 用户会话总线。
+
+如果您的桌面环境、窗口管理器或 Wayland 合成器配置为提供此功能，则不需要进一步配置。
+
+否则，可能需要使用 `dbus-run-session(1)` .
+
+PipeWire 还要求在环境中定义 `XDG_RUNTIME_DIR` 环境变量才能正常工作。
+
+在 PipeWire 中，会话管理器负责互连媒体源和接收器以及强制执行路由策略。如果没有会话管理器，PipeWire 将无法运行。
+
+
+
+# 写一个pw node
+
+https://bootlin.com/blog/a-custom-pipewire-node/
+
+# 简单指导
+
+
+
+## 采样率
+
+默认情况下，PipeWire 启用 1 个采样率 （48000 Hz）。
+
+所有东西都将使用高质量的重采样器重新采样到这个速率。这足以提供良好的默认体验。
+
+你也可以启动多个采样率的支持。
+
+方法是在 `~/.config/pipewire/pipewire.conf.d/10-rates.conf` 创建一个包含以下内容的新文件：
+
+```
+# Adds more common rates
+context.properties = {
+    default.clock.allowed-rates = [ 44100 48000 88200 96000 ]
+}
+```
+
+您还可以强制采样率为 96000Hz，用于数据处理：
+
+```plaintext
+pw-metadata -n settings 0 clock.force-rate 96000
+```
+
+您可以切换回到动态采样率选择：
+
+```plaintext
+pw-metadata -n settings 0 clock.force-rate 0
+```
+
+
+
+如果您有一个 （Pro） 声卡，其中每个捕获通道都是不同的麦克风或乐器，则可以从每个通道中制作新的源。
+
+## 切分设备
+
+如果您有一个 （Pro） 声卡，其中每个捕获通道都是不同的麦克风或乐器，则可以从每个通道中制作新的源。
+
+以下示例创建 2 个新源，一个来自通道 1 （AUX0） 的麦克风，一个来自通道 2 （AUX1） 的吉他。请确保将 target.object 更改为卡的名称。
+
+`~/.config/pipewire/pipewire.conf.d/20-mic-split.conf` 创建一个包含以下内容的新文件：
+
+```
+context.modules = [
+    {   name = libpipewire-module-loopback
+        args = {
+            node.description = "Microphone"
+            capture.props = {
+                node.name = "capture.Mic"
+                audio.position = [ AUX0 ]
+                stream.dont-remix = true
+                target.object = "alsa_input.usb-BEHRINGER_UMC404HD_192k-00.pro-input-0"
+                node.passive = true
+            }
+            playback.props = {
+                node.name = "Mic"
+                media.class = "Audio/Source"
+                audio.position = [ MONO ]
+            }
+        }
+    }
+    {   name = libpipewire-module-loopback
+        args = {
+            node.description = "Guitar"
+            capture.props = {
+                node.name = "capture.Guitar"
+                audio.position = [ AUX1 ]
+                stream.dont-remix = true
+                target.object = "alsa_input.usb-BEHRINGER_UMC404HD_192k-00.pro-input-0"
+                node.passive = true
+            }
+            playback.props = {
+                node.name = "Guitar"
+                media.class = "Audio/Source"
+                audio.position = [ MONO ]
+            }
+        }
+    }
+]
+```
+
+
+
+以下示例创建了 2 个新的立体声接收器，一个来自通道 1-2 （AUX0-AUX1） 的扬声器，一个来自通道 3-4 （AUX2-AUX3） 的耳机。请确保将 target.object 更改为卡的名称。
+
+`~/.config/pipewire/pipewire.conf.d/20-playback-split.conf` 创建一个包含以下内容的新文件：
+
+```
+context.modules = [
+    {   name = libpipewire-module-loopback
+        args = {
+            node.description = "Speakers"
+            capture.props = {
+                node.name = "Speakers"
+                media.class = "Audio/Sink"
+                audio.position = [ FL FR ]
+            }
+            playback.props = {
+                node.name = "playback.Speakers"
+                audio.position = [ AUX0 AUX1 ]
+                target.object = "alsa_output.usb-BEHRINGER_UMC404HD_192k-00.pro-output-0"
+                stream.dont-remix = true
+                node.passive = true
+            }
+        }
+    }
+    {   name = libpipewire-module-loopback
+        args = {
+            node.description = "Headphones"
+            capture.props = {
+                node.name = "Headphones"
+                media.class = "Audio/Sink"
+                audio.position = [ FL FR ]
+            }
+            playback.props = {
+                node.name = "playback.Headphones"
+                audio.position = [ AUX2 AUX3 ]
+                target.object = "alsa_output.usb-BEHRINGER_UMC404HD_192k-00.pro-output-0"
+                stream.dont-remix = true
+                node.passive = true
+            }
+        }
+    }
+]
+```
+
+## upmix
+
+默认情况下，PipeWire 不会将立体声音频上混为多声道 5.1 或 7.1 音频，因为默认行为应该是按原样路由音频，而不是对音频应用滤波器。
+
+
+您需要在 PulseAudio 客户端、Native PipeWire 客户端和蓝牙设备中手动启用 umixing。
+
+当pipewire用作蓝牙接收器（扬声器）时，传入的立体声信号可以上混为多声道。
+
+要启用蓝牙输入的上混，请创建包含以下内容的文件 '~/.config/wireplumber/wireplumber.conf.d/40-upmix.conf：
+
+```
+# Enables upmixing
+stream.properties = {
+    channelmix.upmix      = true
+    channelmix.upmix-method = psd
+    channelmix.lfe-cutoff = 150
+    channelmix.fc-cutoff  = 12000
+    channelmix.rear-delay = 12.0
+}
+```
+
+## 音量
+
+客户端和其他应用程序能够更改流的音量。
+
+音量通常表示为 0.0（静音）、1.0（无消音）和 10.0（非常响亮）之间的值。
+
+您可以通过修改各个图层的 `channelmix.min-volume` 和 `channelmix.max-volume` stream 属性来禁用或限制此行为。
+
+将 channelmix.max-volume` 设置为 `channelmix.min-volume` 相同的值实质上是将音量锁定到特定值。
+
+其他最小值/最大值可用于限制音量。
+
+要限制本机客户端或 ALSA 客户端的volume，
+
+请创建一个文件 `~/.config/pipewire/client-rt.conf.d/50-volume-limit.conf` 
+
+```
+# Limits volume between 0.0 and 1.0
+stream.properties = {
+    channelmix.min-volume   = 0.0
+    channelmix.max-volume   = 1.0
+}
+```
+
+要启用蓝牙的音量限制，请创建一个包含以下内容的文件 `~/.config/wireplumber/wireplumber.conf.d/50-volume-limit.conf` ：
+
+```
+# Limits volume between 0.0 and 1.0
+stream.properties = {
+    channelmix.min-volume   = 0.0
+    channelmix.max-volume   = 1.0
+}
+```
+
+要为 wirelumber 制作的 ALSA 节点启用volume限制，请创建一个包含以下内容的文件 `~/.config/wireplumber/wireplumber.conf.d/60-volume-limit.conf` ：
+
+```
+monitor.alsa.rules = [
+  {
+    matches = [
+      # This matches the value of the 'node.name' property of the node.
+      {
+        node.name = "~alsa_.*"
+      }
+    ]
+    actions = {
+      update-props = {
+        channelmix.min-volume   = 0.0
+        channelmix.max-volume   = 1.0
+      }
+    }
+  }
+]
+```
+
+## 延迟控制
+
+PipeWire 处理图的延迟主要由缓冲区大小和处理图的采样率（称为量子）的组合决定。
+
+量子是每个图形处理周期处理的数据量（以时间为单位）。
+
+默认情况下，PipeWire将根据可用客户端和配置的限制和默认值选择最佳量程。
+
+您可以使用以下命令强制量子，例如 256：
+
+```plaintext
+pw-metadata -n settings 0 clock.force-quantum 256
+```
+
+您可以通过以下方式再次恢复动态行为：
+
+```plaintext
+pw-metadata -n settings 0 clock.force-quantum 0
+```
+
+ALSA 客户端使用额外的环形缓冲区，这可能会增加延迟。
+
+==使用 `PIPEWIRE_ALSA` 环境变量来控制 ALSA 客户端的缓冲区大小和周期大小：==
+
+```plaintext
+PIPEWIRE_ALSA='{ alsa.buffer-bytes=16384 alsa.period-bytes=128 }' aplay ...
+```
+
+# 环境变量
+
+https://docs.pipewire.org/page_man_pipewire_1.html
+
+这里列举了很多环境变量。
+
+`PIPEWIRE_LATENCY` 环境变量可用于配置应用程序的延迟：
+
+`PIPEWIRE_RUNTIME_DIR` `USERPROFILE` ， `XDG_RUNTIME_DIR` 用于查找服务器（和本机客户端）上的 PipeWire 套接字。
+
+
+ `PIPEWIRE_CORE` 是要创建的套接字的名称。
+
+
+ `PIPEWIRE_REMOTE` 是要连接到的套接字的名称。
+
+
+ `PIPEWIRE_DAEMON` 设置为 true，则进程将成为新的 PipeWire 服务器。
+
+`PIPEWIRE_CONFIG_DIR` `HOME` ， `XDG_CONFIG_HOME` 用于查找配置文件目录。
+
+
+ `PIPEWIRE_CONFIG_PREFIX` 并 `PIPEWIRE_CONFIG_NAME` 用于覆盖应用程序提供的配置前缀和配置名称。
+
+
+ `PIPEWIRE_NO_CONFIG` 启用 （false） 或禁用 （true） 覆盖默认配置。
+
+
+
+最小/最大/默认量子分别为 0.6ms （32/48000）、170.6ms （8192/48000） 和 21.3ms （1024/48000）。
+
+正如配置文件所解释的那样，配置选项可以拆分为单独的文件。数字表示它们的加载顺序，以下是示例：
+
+# client的配置
+
+客户端配置文件遵循通用 PipeWire 配置文件。
+
+对于客户端， `core.daemon` 该属性通常设置为 false。
+
+客户端通常只有一组有限的 `context.spa-libs` ，通常用于创建音频节点和轮询循环。
+
+# alsa插件
+
+ALSA 插件使用 client-rt.conf 文件。
+
+所有 ALSA 客户端都将创建一个流，因此流属性和规则将照常工作。
+
+指示 ALSA 客户端链接到特定的接收器或源 `object.serial` 或 `node.name` .
+
+例如：
+
+```plaintext
+PIPEWIRE_NODE=alsa_output.pci-0000_00_1b.0.analog-stereo aplay ...
+```
+
+
+在给定的音频接收器上播放播放。
+
+# so文件
+
+/usr/lib/pipewire-0.3目录下：
+
+```
+libpipewire-module-access.so
+libpipewire-module-adapter.so
+libpipewire-module-client-device.so
+libpipewire-module-client-node.so
+libpipewire-module-combine-stream.so
+libpipewire-module-echo-cancel.so
+libpipewire-module-fallback-sink.so
+libpipewire-module-filter-chain.so
+libpipewire-module-link-factory.so
+libpipewire-module-loopback.so
+libpipewire-module-metadata.so
+libpipewire-module-netjack2-driver.so
+libpipewire-module-netjack2-manager.so
+libpipewire-module-parametric-equalizer.so
+libpipewire-module-pipe-tunnel.so
+libpipewire-module-portal.so
+libpipewire-module-profiler.so
+libpipewire-module-protocol-native.so
+libpipewire-module-protocol-pulse.so
+libpipewire-module-protocol-simple.so
+libpipewire-module-raop-sink.so
+libpipewire-module-rt.so
+libpipewire-module-rtp-sap.so
+libpipewire-module-rtp-sink.so
+libpipewire-module-rtp-source.so
+libpipewire-module-session-manager.so
+libpipewire-module-spa-device-factory.so
+libpipewire-module-spa-device.so
+libpipewire-module-spa-node-factory.so
+libpipewire-module-spa-node.so
+libpipewire-module-vban-recv.so
+libpipewire-module-vban-send.so
+```
+
+
+
+# 为什么配置都是用libpipewire-module-loopback 这个
+
+`libpipewire-module-loopback` 是 PipeWire 中一个常用的模块，用于创建音频环回设备。
+
+它允许音频数据从一个源流到另一个目标，实现音频的重路由和环回。
+
+这在音频处理和配置中非常有用，特别是在需要将音频从一个输入设备传输到一个输出设备时。
+
+### 为什么使用 `libpipewire-module-loopback`
+
+1. **音频重路由**：可以将音频从一个源重路由到另一个目标，例如将麦克风输入重路由到扬声器输出，或将应用程序的音频输出重路由到另一个应用程序的音频输入。
+
+2. **实时音频处理**：在实时音频处理中，可以使用环回设备将音频流传输到处理模块进行处理，然后再输出到目的设备。
+
+3. **音频测试和调试**：在音频系统测试和调试过程中，环回设备可以帮助捕捉和分析音频流，确保音频数据传输的正确性。
+
+4. **灵活性**：通过配置 `libpipewire-module-loopback`，==可以实现复杂的音频路由方案，以满足不同的音频处理需求。==
+
+### 使用 `libpipewire-module-loopback` 的配置示例
+
+下面是一个如何配置 `libpipewire-module-loopback` 模块的示例配置文件：
+
+```ini
+context.modules = [
+    { name = libpipewire-module-loopback
+        args = {
+            node.name = "loopback-device"
+            capture.props = {
+                media.class = Audio/Source
+                node.description = "Loopback Source"
+            }
+            playback.props = {
+                media.class = Audio/Sink
+                node.description = "Loopback Sink"
+            }
+        }
+    }
+]
+```
+
+### 配置文件说明
+
+- `context.modules`：这是一个模块加载列表，PipeWire 在启动时会加载这些模块。
+- `name = libpipewire-module-loopback`：指定加载 `libpipewire-module-loopback` 模块。
+- `args`：提供模块的参数。
+  - `node.name`：设置环回设备的节点名称。
+  - `capture.props`：设置捕获端口的属性，例如媒体类和节点描述。
+  - `playback.props`：设置回放端口的属性，例如媒体类和节点描述。
+
+### 示例解释
+
+1. **加载模块**：加载 `libpipewire-module-loopback` 模块来创建一个环回设备。
+2. **设置节点名称**：将环回设备命名为 `loopback-device`。
+3. **捕获属性**：设置捕获端口的属性，使其显示为 `Audio/Source`，并描述为 `Loopback Source`。
+4. **回放属性**：设置回放端口的属性，使其显示为 `Audio/Sink`，并描述为 `Loopback Sink`。
+
+### 使用场景
+
+- **将麦克风输入重定向到虚拟设备**，从而使多个应用程序可以同时访问麦克风输入。
+- **创建虚拟音频设备**，将来自不同应用程序的音频流合并到一个虚拟输出设备中。
+- **实时音频效果处理**，将输入音频流传递到处理模块，再输出处理后的音频。
+
+通过配置 `libpipewire-module-loopback`，你可以灵活地管理和路由音频流，满足各种复杂的音频处理需求。这使得 PipeWire 在专业音频处理和一般桌面音频管理中都非常强大和灵活。
+
+# 1
+
+XDG_CONFIG_DIR的内容生成了这些：
+
+```
+# ls -lh
+total 0      
+drwx------    3 root     root          60 Jan  1 03:56 dbus-1
+srwxr-xr-x    1 root     root           0 Jan  1 03:56 pipewire-0
+srwxr-xr-x    1 root     root           0 Jan  1 03:56 pipewire-0-manager
+-rw-r-----    1 root     root           0 Jan  1 03:56 pipewire-0-manager.lock
+-rw-r-----    1 root     root           0 Jan  1 03:56 pipewire-0.lock
+```
 
 
 

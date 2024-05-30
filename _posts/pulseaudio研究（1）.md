@@ -543,6 +543,14 @@ https://freedesktop.org/software/pulseaudio/doxygen/
 
 https://blog.csdn.net/pengrui18/article/details/53747562
 
+# 怎样支持蓝牙播放的
+
+src\modules\bluetooth
+
+这里是对应的代码。
+
+
+
 # 参考资料
 
 1、

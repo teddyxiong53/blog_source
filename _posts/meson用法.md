@@ -85,6 +85,16 @@ Meson构建系统实际上在一些项目和社区中相当流行，但流行程
 
 尽管Meson可能没有像其他一些构建系统那样广泛流行，但它在一些项目中仍然得到了积极的评价，并且其简洁性和性能优势使其在一些场景下成为首选。随着时间的推移，Meson的流行度可能会增加，特别是如果它持续改进并吸引更多的社区支持。
 
+
+
+看起来在取代autotools的生态位。gnome生态在进行大量替换。
+
+GNOME 中的很多项目比如：GNOME Shell、GTK+、GLib、GStreamer 都抛弃Autotools，改为使用 Meson。
+
+Systemd 自从 234 版本开始依赖 Meson，并抛弃 Autotools。
+
+
+
 # HelloWorld
 
 现在看到不少的工程是用meson.build来做编译脚本的。

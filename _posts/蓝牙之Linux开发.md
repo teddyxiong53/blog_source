@@ -6,7 +6,7 @@ tags:
 
 ---
 
-
+--
 
 **bluez的代码基础部分都是由高通的Maxim来完成的。**
 
@@ -33,6 +33,55 @@ bluez是依托于socket的。
 
 
 # 内核里的蓝牙相关代码
+
+在 Linux 内核源代码中，与蓝牙协议相关的文件分布在几个目录中。
+
+主要涉及蓝牙协议栈的实现、驱动程序和用户空间接口。
+
+以下是主要的目录及其内容简介：
+
+1. **`net/bluetooth/`**：
+   - 这个目录包含了蓝牙协议栈的核心实现。
+   - 主要文件：
+     - `af_bluetooth.c`：蓝牙协议族的实现。
+     - `hci_core.c`：HCI（Host Controller Interface）核心处理。
+     - `hci_event.c`：HCI 事件处理。
+     - `hci_sock.c`：HCI 套接字处理。
+     - `l2cap_core.c`：L2CAP（Logical Link Control and Adaptation Protocol）核心处理。
+     - `l2cap_sock.c`：L2CAP 套接字处理。
+     - `sco.c`：SCO（Synchronous Connection-Oriented）链路处理。
+     - `mgmt.c`：蓝牙管理接口实现。
+
+2. **`drivers/bluetooth/`**：
+   - 这个目录包含了各种蓝牙设备的驱动程序。
+   - 主要文件：
+     - `btusb.c`：USB 蓝牙设备的驱动程序。
+     - `hci_ldisc.c`：HCI 线路规程驱动。
+     - `hci_uart.c`：HCI UART 驱动。
+     - 其他特定芯片的驱动程序文件（如 `hci_bcm.c`、`hci_intel.c`、`hci_qca.c` 等）。
+
+3. **`include/net/bluetooth/`**：
+   - 这个目录包含了蓝牙协议栈的头文件。
+   - 主要文件：
+     - `bluetooth.h`：蓝牙协议的通用定义。
+     - `hci_core.h`：HCI 核心定义。
+     - `l2cap.h`：L2CAP 协议定义。
+     - `sco.h`：SCO 协议定义。
+     - `mgmt.h`：蓝牙管理接口定义。
+
+4. **`include/uapi/linux/`**：
+   - 这个目录包含了用户空间 API 的头文件，蓝牙相关的头文件主要有：
+     - `bluetooth.h`：蓝牙协议的通用用户空间 API 定义。
+     - `hci.h`：HCI 用户空间 API 定义。
+     - `l2cap.h`：L2CAP 用户空间 API 定义。
+     - `sco.h`：SCO 用户空间 API 定义。
+
+5. **`net/bluetooth/hci_**` 相关文件：
+   - 这些文件具体处理 HCI 的各个方面，如 `hci_event.c` 处理 HCI 事件，`hci_conn.c` 处理 HCI 连接等。
+
+这些文件和目录共同实现了 Linux 内核中蓝牙协议的支持，包括底层驱动、协议栈、用户空间接口等各个方面。通过这些文件，Linux 能够支持多种蓝牙设备和协议，实现设备发现、连接、数据传输等功能。
+
+
 
 ## 头文件
 
@@ -145,9 +194,7 @@ struct bt_sock {
 };
 ```
 
-## 代码文件
 
-主要在net/bluetooth目录下。
 
 
 

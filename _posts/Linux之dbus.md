@@ -733,8 +733,6 @@ https://www.linumiz.com/bluetooth-list-available-controllers-using-dbus/
 
 ## dbus-launch
 
-
-
 ==`dbus-launch` 命令用于启动一个新的D-Bus会话总线，为当前用户的会话提供通信渠道。==
 
 一般情况下，您可以在终端中简单地运行 `dbus-launch` 命令，它会启动一个D-Bus会话总线，并设置相应的环境变量。以下是一些示例和说明：
@@ -1520,6 +1518,76 @@ dbus-run-session -- gedit
 3. **自动清理**：会话终止后，所有资源自动释放，不会影响全局会话。
 
 这种工具在开发和测试环境中特别有用，可以在不影响系统全局 D-Bus 服务的情况下，测试新应用程序或配置。
+
+
+
+# dbus-launch和dbus-run-session关系
+
+`dbus-launch` 和 `dbus-run-session` 是用于启动和管理 D-Bus 会话总线的工具。尽管它们有相似的用途，但它们的使用场景和机制略有不同。以下是它们之间的关系和区别：
+
+### `dbus-launch`
+
+`dbus-launch` 是一个用于启动新的 D-Bus 会话总线实例的工具，并在当前 shell 会话中设置相关的环境变量。它通常用于已经存在的会话中，例如在启动窗口管理器或桌面环境时。
+
+#### 用法示例
+
+```sh
+dbus-launch your_command
+```
+
+`dbus-launch` 会启动一个 D-Bus 会话总线，并运行 `your_command`。它会设置环境变量 `DBUS_SESSION_BUS_ADDRESS`，使得 `your_command` 以及它启动的任何子进程都能找到并使用该 D-Bus 会话总线。
+
+你也可以使用 `dbus-launch` 直接在 shell 中启动并设置环境变量：
+
+```sh
+eval $(dbus-launch --sh-syntax)
+```
+
+这条命令会启动 D-Bus 会话总线，并在当前 shell 中设置适当的环境变量，以便随后的命令可以使用该 D-Bus 会话。
+
+#### 特点
+
+- `dbus-launch` 通常用于现有的会话中来启动 D-Bus 会话总线。
+- 适用于手动设置和启动 D-Bus 会话总线的场景。
+
+### `dbus-run-session`
+
+`dbus-run-session` 是一个相对较新的工具，提供了一种更简洁的方式来启动一个新的 D-Bus 会话总线，并运行一个命令或会话。它不仅启动 D-Bus 会话总线，还管理该会话的生命周期。当命令或会话结束时，`dbus-run-session` 会自动关闭 D-Bus 会话总线。
+
+#### 用法示例
+
+```sh
+dbus-run-session -- your_command
+```
+
+例如，要启动一个带有 D-Bus 会话的 shell，可以使用：
+
+```sh
+dbus-run-session -- bash
+```
+
+这条命令会启动一个新的 D-Bus 会话总线，然后启动一个新的 `bash` 会话。所有在该 `bash` 会话中运行的命令都可以使用该 D-Bus 会话。当 `bash` 会话结束时，`dbus-run-session` 会自动关闭 D-Bus 会话总线。
+
+#### 特点
+
+- `dbus-run-session` 是一种启动 D-Bus 会话总线并管理整个会话生命周期的更简便的方法。
+- 适用于启动短暂的命令或会话，确保 D-Bus 会话总线在会话期间可用。
+
+### 比较与总结
+
+| 特点         | `dbus-launch`                                           | `dbus-run-session`                                  |
+| ------------ | ------------------------------------------------------- | --------------------------------------------------- |
+| 用途         | 启动新的 D-Bus 会话总线，并设置环境变量                 | 启动新的 D-Bus 会话总线，并运行命令或会话           |
+| 使用场景     | 手动设置和启动 D-Bus 会话总线，适用于长期会话           | 启动短暂的命令或会话，并管理 D-Bus 会话总线生命周期 |
+| 环境变量设置 | 需要手动设置（如使用 `eval $(dbus-launch --sh-syntax)`) | 自动设置并管理环境变量                              |
+| 结束时的行为 | 会话结束后需要手动处理 D-Bus 会话总线的生命周期         | 命令或会话结束时自动关闭 D-Bus 会话总线             |
+
+### 选择使用哪一个
+
+- **`dbus-launch`** 适合在更复杂的环境中使用，尤其是当你需要在现有会话中启动 D-Bus 会话总线，并确保在该会话期间它始终可用。
+- **`dbus-run-session`** 更适合简化脚本或临时会话，确保在该会话期间有一个 D-Bus 会话总线可用，并在会话结束后自动清理。
+
+根据具体需求选择适合的工具可以简化开发和部署过程，确保 D-Bus 会话总线的正确管理和使用。
 
 # 参考资料
 

@@ -8,6 +8,14 @@ tags:
 
 --
 
+# 资源收集
+
+官网文档
+
+https://pipewire.pages.freedesktop.org/wireplumber/
+
+# 简介
+
 PipeWire 的主要目的是充当应用程序和设备之间的中间层。
 
 为此，它为应用程序提供了一种创建媒体流的通用方法，
@@ -338,7 +346,7 @@ WirePlumber 首先读取主配置文件。
 
 WirePlumber 使用 Lua 版本 5.4 来实现其引擎。对于较旧的系统，还支持 Lua 5.3。
 
-可以使用该 `wpexec` 工具运行脚本。
+==可以使用该 `wpexec` 工具运行脚本。==
 
 WirePlumber 的脚本引擎将 lua 脚本沙盒到一个安全的环境中。
 
@@ -401,6 +409,138 @@ Commands:
   set-mute ID 1|0|toggle
   set-profile ID INDEX
   clear-default [ID]
+```
+
+## status
+
+没有播放音乐的时候，
+
+```
+PipeWire 'pipewire-0' [1.1.81, root@buildroot, cookie:4213201345]
+ └─ Clients:
+        32. WirePlumber                         [1.1.81, root@buildroot, pid:4004]
+        33. WirePlumber [export]                [1.1.81, root@buildroot, pid:4004]
+        54. wpctl                               [1.1.81, root@buildroot, pid:5921]
+
+Audio
+ ├─ Devices:
+ │      36. Built-in Audio                      [alsa]
+ │      37. Built-in Audio                      [alsa]
+ │  
+ ├─ Sinks:
+ │      38. Built-in Audio Stereo               [vol: 0.74]
+ │  *   40. Built-in Audio Analog Stereo        [vol: 0.74]
+ │  
+ ├─ Sink endpoints:
+ │  
+ ├─ Sources:
+ │      39. Built-in Audio Stereo               [vol: 0.74]
+ │  *   41. Built-in Audio Analog Stereo        [vol: 0.74]
+ │  
+ ├─ Source endpoints:
+ │  
+ └─ Streams:
+
+Video
+ ├─ Devices:
+ │  
+ ├─ Sinks:
+ │  
+ ├─ Sink endpoints:
+ │  
+ ├─ Sources:
+ │  
+ ├─ Source endpoints:
+ │  
+ └─ Streams:
+
+Settings
+ └─ Default Configured Node Names:
+```
+
+用pw-play播放音乐后
+
+```
+# wpctl status
+PipeWire 'pipewire-0' [1.1.81, root@buildroot, cookie:4213201345]
+ └─ Clients:
+        32. WirePlumber                         [1.1.81, root@buildroot, pid:4004]
+        33. WirePlumber [export]                [1.1.81, root@buildroot, pid:4004]
+        54. pw-cat                              [1.1.81, root@buildroot, pid:13101]
+        56. wpctl                               [1.1.81, root@buildroot, pid:13116]
+
+Audio
+ ├─ Devices:
+ │      36. Built-in Audio                      [alsa]
+ │      37. Built-in Audio                      [alsa]
+ │  
+ ├─ Sinks:
+ │      38. Built-in Audio Stereo               [vol: 0.74]
+ │  *   40. Built-in Audio Analog Stereo        [vol: 0.74]
+ │  
+ ├─ Sink endpoints:
+ │  
+ ├─ Sources:
+ │      39. Built-in Audio Stereo               [vol: 0.74]
+ │  *   41. Built-in Audio Analog Stereo        [vol: 0.74]
+ │  
+ ├─ Source endpoints:
+ │  
+ └─ Streams:
+        55. pw-play                                                     
+
+Video
+ ├─ Devices:
+ │  
+ ├─ Sinks:
+ │  
+ ├─ Sink endpoints:
+ │  
+ ├─ Sources:
+ │  
+ ├─ Source endpoints:
+ │  
+ └─ Streams:
+
+Settings
+ └─ Default Configured Node Names:
+```
+
+## inspect
+
+```
+# wpctl inspect 36
+id 36, type PipeWire:Interface:Device
+    alsa.card = "0"
+    alsa.card_name = "AML-AUGESOUND"
+    alsa.driver_name = "amlogic_snd_soc"
+    alsa.id = "AMLAUGESOUND"
+    alsa.long_card_name = "AML-AUGESOUND"
+    api.acp.auto-port = "false"
+    api.acp.auto-profile = "false"
+    api.alsa.card = "0"
+    api.alsa.card.longname = "AML-AUGESOUND"
+    api.alsa.card.name = "AML-AUGESOUND"
+    api.alsa.path = "hw:0"
+    api.alsa.use-acp = "true"
+    api.dbus.ReserveDevice1 = "Audio0"
+  * client.id = "33"
+  * device.api = "alsa"
+    device.bus-path = "/sys/devices/platform/auge_sound/sound/card0"
+  * device.description = "Built-in Audio"
+    device.enum.api = "udev"
+    device.form-factor = "internal"
+    device.icon-name = "audio-card-analog"
+  * device.name = "alsa_card._sys_devices_platform_auge_sound_sound_card0"
+  * device.nick = "AML-AUGESOUND"
+    device.plugged.usec = "3764562"
+    device.string = "0"
+    device.subsystem = "sound"
+    device.sysfs.path = "/devices/platform/auge_sound/sound/card0"
+  * factory.id = "15"
+  * media.class = "Audio/Device"
+    object.path = "alsa:acp:AMLAUGESOUND"
+  * object.serial = "36"
 ```
 
 

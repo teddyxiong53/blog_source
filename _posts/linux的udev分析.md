@@ -55,9 +55,7 @@ SUBSYSTEM=="usb", ATTR{idVendor}=="1234", ATTR{idProduct}=="5678", SYMLINK+="my_
 | `/etc/udev/rules.d/`  | 用户自定义规则文件目录 |
 | `/lib/udev/rules.d/`  | 系统默认规则文件目录   |
 
-### 小结
 
-udev 是一个强大的工具，可以根据设备的属性自动执行各种操作，从而简化设备管理和提高系统的灵活性。如果你有更多关于 udev 的具体问题或需要深入了解某个功能，请告诉我！
 
 # 发展历史
 
@@ -234,6 +232,8 @@ KERNEL=="ttyS0", PROGRAM="/bin/sh -c '\
 
 在/etc/init.d/S10udev里进行的。往proc/sys/kernel/hotplug   写入了0，是说明不支持热插拔吗？
 
+向 `/proc/sys/kernel/hotplug` 文件写入四个 null 字节的目的通常是清空该文件中的内容。在某些情况下，系统可能会期望该文件为空，因此通过写入 null 字节来实现清空操作是一种常见的做法。
+
 ```
  printf "Populating %s using udev: " "${udev_root:-/dev}"      
  printf '\000\000\000\000' > /proc/sys/kernel/hotplug          
@@ -253,9 +253,52 @@ rules.d   空的
 udev.conf  这个是空的
 ```
 
+buildroot的udev是一个virtual-package，实际的实现是eudev。
+
+```
+EUDEV_PROVIDES = udev
+```
+
+我找个板子udev打开看看。
 
 
-udev是一个通用的内核设备管理器。它以守护进程的方式运行于Linux系统，并监听在新设备初始化或设备从系统中移除时，内核（通过netlink socket）所发出的uevent。
+
+```
+BR2_PACKAGE_EUDEV=y
+BR2_PACKAGE_PROVIDES_UDEV="eudev"
+# BR2_PACKAGE_EUDEV_RULES_GEN is not set
+BR2_PACKAGE_EUDEV_ENABLE_HWDB=y
+BR2_PACKAGE_HAS_UDEV=y
+BR2_PACKAGE_KMOD=y
+BR2_PACKAGE_HOST_EUDEV=y
+```
+
+需要修改cpio/init，里面不要用mdev的。
+
+
+
+# eudev和udev关系
+
+eudev 是一个udev的分支项目，它最初是由 Gentoo Linux 社区发起的。
+
+==它的目标是提供一个独立于 systemd 的udev实现，使得udev能够在非 systemd 系统中使用。==
+
+它们之间的关系可以总结如下：
+
+1. **共同点**：
+   - 两者都是 Linux 系统中用于设备管理的重要组件，负责管理设备的插拔、命名、权限等方面。
+   - 两者都提供类似的功能，包括设备的自动识别、创建符号链接、设置设备权限等。
+
+2. **区别**：
+   - **依赖关系**：udev是 systemd 的一部分，因此它的设计和发展与systemd密切相关。而eudev是独立于 systemd 的udev实现，可以在非 systemd 系统中使用。
+   - **社区支持**：udev由 systemd 社区维护和开发，而eudev则主要由 Gentoo 社区维护和开发。
+   - **发行版本**：udev通常作为systemd的一部分发布，而eudev则独立发布，可以在各种Linux发行版中使用。
+
+3. **选用建议**：
+   - 如果你的系统基于 systemd，通常建议使用系统默认的udev实现。
+   - 如果你的系统不依赖于 systemd，或者你想在非 systemd 环境中使用udev，那么可以考虑使用eudev。
+
+总的来说，eudev和udev在功能上非常相似，但由于其不同的依赖和维护者，适用于不同的使用场景。
 
 # udev系统架构：
 
@@ -320,9 +363,7 @@ E: SUBSYSTEM=misc
 
 
 
-# buildroot里的udevd
 
-是在eudev目录下，而不是udevd目录下。
 
 # udev和mdev比较
 
@@ -400,6 +441,106 @@ SUBSYSTEM=="usb", ATTR{idVendor}=="1234", ATTR{idProduct}=="5678", SYMLINK+="my_
 这个规则会在系统中创建一个名为 `my_usb_device` 的符号链接，指向匹配的USB设备。
 
 编写udev规则需要一定的经验和理解，但一旦掌握了基本的语法和原理，就可以轻松地管理系统中的设备。
+
+# udev.conf
+
+`udev.conf` 是 udev 的配置文件，用于定义 udev 守护进程的全局配置选项。下面是一个典型的 `udev.conf` 文件的说明及其示例配置：
+
+### `udev.conf` 文件的主要选项
+
+1. **`udev_log`**：设置日志级别。常见的值包括 `err`（错误）、`info`（信息）、`debug`（调试）。
+2. **`udev_rules`**：设置 udev 规则文件的目录路径。
+3. **`udev_log`**：设置 udev 守护进程的日志级别。
+4. **`udev_event_timeout`**：设置 udev 事件的超时时间，以秒为单位。
+5. **`udev_children_max`**：设置 udev 同时处理的最大事件数。
+6. **`udev_timeout`**：设置 udev 事件处理的超时时间（秒）。
+
+### 示例 `udev.conf` 文件
+
+以下是一个示例的 `udev.conf` 文件内容：
+
+```ini
+# udev.conf
+#
+# See udev(7) for details.
+
+# udevd is started in the following default log priority. Valid values are:
+# err, info, debug
+udev_log="info"
+
+# path to udev rules
+udev_rules="/etc/udev/rules.d"
+
+# path to udev log
+udev_log="/var/log/udev.log"
+
+# maximum number of events udevd can handle at the same time
+udev_children_max=8
+
+# udev event processing timeout in seconds
+udev_timeout=180
+```
+
+### 详细说明
+
+- **`udev_log="info"`**：设置日志级别为 `info`。可以改为 `err` 或 `debug`，具体取决于需要的日志详细程度。
+- **`udev_rules="/etc/udev/rules.d"`**：指定 udev 规则文件所在的目录。默认路径通常是 `/etc/udev/rules.d`。
+- **`udev_log="/var/log/udev.log"`**：指定 udev 守护进程的日志文件路径。如果需要查看 udev 日志，可以检查这个文件。
+- **`udev_children_max=8`**：设置 udev 可以同时处理的最大事件数。可以根据系统性能和需求调整这个值。
+- **`udev_timeout=180`**：设置 udev 事件处理的超时时间，单位为秒。可以根据具体需求调整这个值。
+
+### 修改 `udev.conf`
+
+要修改 `udev.conf` 文件，按照以下步骤进行：
+
+1. 打开 `udev.conf` 文件：
+
+   ```bash
+   sudo nano /etc/udev/udev.conf
+   ```
+
+2. 根据需要编辑配置选项，例如修改日志级别：
+
+   ```ini
+   udev_log="debug"
+   ```
+
+3. 保存文件并退出编辑器（在 nano 中按 `Ctrl+X`，然后按 `Y` 确认保存）。
+
+4. 重启 `udevd` 守护进程以使配置生效：
+
+   ```bash
+   sudo systemctl restart udev
+   ```
+
+或者在一些系统中，使用以下命令：
+
+   ```bash
+   sudo service udev restart
+   ```
+
+通过以上步骤，您可以配置和调整 udev 的全局行为，以适应系统的具体需求。
+
+# udev默认的规则文件
+
+```
+# cd /lib/udev/rules.d/
+# ls
+50-udev-default.rules             60-sensor.rules
+60-block.rules                    60-serial.rules
+60-cdrom_id.rules                 64-btrfs.rules
+60-drm.rules                      70-joystick.rules
+60-evdev.rules                    70-mouse.rules
+60-input-id.rules                 70-touchpad.rules
+60-persistent-alsa.rules          75-net-description.rules
+60-persistent-input.rules         75-probe_mtd.rules
+60-persistent-storage-tape.rules  78-sound-card.rules
+60-persistent-storage.rules       80-drivers.rules
+60-persistent-v4l.rules           80-net-name-slot.rules
+# 
+```
+
+
 
 # 参考资料
 
