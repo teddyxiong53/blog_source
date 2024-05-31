@@ -380,6 +380,120 @@ if __name__ == "__main__":
 - 确保设备固件和操作系统都是最新版本，以支持最新的蓝牙功能。
 - 某些功能可能需要设备制造商提供的软件支持，例如固件更新或专用管理应用程序。
 
+# android leaudio
+
+https://developer.android.com/develop/connectivity/bluetooth/ble-audio/overview?hl=zh-cn
+
+蓝牙低功耗音频 (LEA) 可确保用户能够接收高保真音频，而不会牺牲电池续航时间，并可让用户在不同的使用情形之间无缝切换。Android 13（API 级别 33）包含对 LEA 的内置支持。
+
+在 LEA 源设备市场份额不断扩大之前，
+
+大多数 LEA 耳机都将采用双模式。
+
+用户应该能够在其双模式耳机上配对和设置这两种传输方式。
+
+# stm32 leaudio
+
+https://wiki.st.com/stm32mcu/wiki/Connectivity:Introduction_to_Bluetooth_LE_Audio
+
+
+
+音频框架的基础是音频流管理，由基本音频配置文件 (BAP) [[7\]](https://wiki.st.com/stm32mcu/wiki/Connectivity:Introduction_to_Bluetooth_LE_Audio#cite_note-bap-7) 定义。它是蓝牙®低功耗音频的强制性配置文件。它定义了流类型、配置、功能、质量、延迟等。
+
+
+BAP 与三种服务一起使用：
+
+- 发布的音频功能服务 (PACS)：用于公开设备的音频功能。
+- 音频流控制服务（ASCS）：启用配置单播流。
+- 广播音频扫描服务（BASS）：允许请求客户端代表服务器扫描广播音频流。
+
+
+BAP 定义了两种类型的流：单播和广播，
+
+## 单播
+
+单播是基于连接的同步流 (CIS) 的连接音频流。
+
+这意味着通过单播，您可以通过 CIS 创建连接的音频流。
+
+==要创建单播流，首先需要一个 ACL 连接来通过 GATT 和 LLCP 交换所有有用信息。==
+
+单播分为两个角色：
+
+单播客户端：建立与单播服务器的连接，发现其功能并配置音频流。该角色由智能手机、笔记本电脑、电视等使用。
+
+单播服务器：通告其角色，公开其功能，接受单播服务器配置音频流。耳机、扬声器、某些助听器、某些耳塞甚至麦克风都可以使用此角色。
+
+此外，单播客户端可以同步流式传输到两个单播服务器。
+
+为了通过 ACL 连接启动单播音频流，单播客户端和服务器交换有关流质量、重传、音频通道数量（单声道/立体声）和延迟的信息。
+
+stream可以是：
+
+1、单向的（用于音乐），双向的（用于通话）。这个是client根据server列出的服务里挑选执行。
+
+2、低质量的，也可以是高质量的。
+
+3、低延迟，或者高可靠。
+
+主要的usecase是：
+
+1、一个手机连接到一个耳机。
+
+![Figure 5.1 Unicast with a headphone](images/random_name/800px-Connectivity_introduction_ble_audio_unicast_headphone.png)
+
+2、一个手机连接到2个耳机。
+
+![Figure 5.2 Unicast with some earbuds](images/random_name/800px-Connectivity_introduction_ble_audio_unicast_earbuds.png)
+
+## 广播
+
+广播是一种非连接的stream。
+
+发送方通过BIS广播音频数据。
+
+通过扩展广告和定期广告来发布广播信息。
+
+任何可以扫描到这个stream的设备都可以收听。
+
+这个是一个新的usecase，允许的接收设备数量无限。
+
+这个stream一般是没有加密的，但是你可以加密。
+
+只能是单向传播。
+
+因为广播是没有连接的，用户需要一种方式来同步到stream的状态。
+
+而耳机这类设备一般是没有屏幕的。
+
+所以蓝牙协议在这里增加了一个新的role。
+
+这个role被叫做广播助理。
+
+这个role一般是手机来实现。
+
+手机来扫描发现广播stream，并把它发送到耳机上。
+
+广播定义了4种角色。
+
+1、广播源。发出广播的设备。
+
+2、广播接收器。接收广播的设备，一般是耳机。
+
+3、扫描委托者。暴露一些信息，等待广播助手。
+
+4、广播助手，一般是手机。
+
+
+
+主要是usecase是：
+
+1、一个手机或者电脑把音频发送给多个设备。
+
+2、在公共场所发布公告。
+
+3、翻译。
+
 
 
 # 参考资料

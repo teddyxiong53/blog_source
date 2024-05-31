@@ -342,6 +342,153 @@ WirePlumber 首先读取主配置文件。
 
 否则，如果要添加新配置，则应以大于 50 的数字（例如 `51-my-config.conf` ）开头，因为默认配置主要以字母数字顺序等于或低于 50 完成。
 
+# 配置
+
+WirePlumber 是一个高度模块化的守护进程。
+
+==就其本身而言，除了加载其配置的组件之外，它不执行任何操作。==
+
+实际的管理逻辑是在这些组件内部实现的。
+
+启动时，WirePlumber 读取其配置文件（与其可能具有的所有片段相结合）并加载所选配置文件中指定的组件。
+
+这配置了操作上下文。
+
+==然后，这些组件接管并驱动整个守护进程的操作。==
+
+## 配置文件
+
+从 WirePlumber 0.5 开始，这是 WirePlumber 读取以加载配置的唯一文件（及其片段 - 见下文）。
+
+过去，WirePlumber 还用来读取从 `wireplumber.conf` 引用的 Lua 配置文件，所有繁重的工作都是在 Lua 中完成的。
+
+现在情况不再是这样，并且不再支持 Lua 配置文件。请参阅从 0.4 迁移配置。
+
+请注意，Lua 仍然是 WirePlumber 的脚本语言，但它仅用于实际脚本编写，而不用于配置。
+
+### spa json格式
+
+此配置文件的格式是 JSON 的变体，
+
+也用于 PipeWire 配置文件（也称为 SPA-JSON）。
+
+该文件由一个未显式键入的全局 JSON 对象和一个部分列表组成，
+
+这些部分本质上是该全局 JSON 对象的键值对。
+
+每个部分通常是一个 JSON 对象，但也可以是一个 JSON 数组。
+
+SPA-JSON 是标准 JSON 的超集，因此任何有效的 JSON 文件也是有效的 SPA-JSON 文件。但是，它比标准 JSON 更宽松。首先，它允许输入不带引号的字符串（ `"` ），除了标准的 `:` 作为键和值之间的分隔符 。这可以使其看起来类似于 INI 文件或人们熟悉的其他自定义配置格式，从而使用户更容易阅读和编辑。
+
+
+
+就像 PipeWire 一样，WirePlumber 支持配置片段。
+
+这意味着主配置文件可以拆分为多个文件，
+
+所有这些文件都将被加载并合并在一起。
+
+==这对于允许用户自定义其配置而无需修改主文件非常有用。==
+
+## 配置的section
+
+| 配置名字         | 说明                                          |
+| ---------------- | --------------------------------------------- |
+| components       | 一个数组，列出了 WirePlumber 可以加载的组件。 |
+| componetns.rules | 也是数组，里面是修改components的一些规则      |
+| profiles         | 可以加载的配置文件                            |
+| settings         | 修改wireplumber的行为                         |
+| settings.schema  | 验证修改                                      |
+| 其他             |                                               |
+
+另外，还有libpipewire来读取并发送给pipewire的部分。
+
+```
+context.properties
+context.spa-libs
+context.modules
+
+```
+
+
+
+添加片段以修改默认配置的最简单方法是创建一个名为 `~/.config/wireplumber/wireplumber.conf.d` 的目录并将片段放置在那里。
+
+所有片段文件都需要具有 `.conf` 扩展名，并且必须是有效的 SPA-JSON 文件。片段按字母数字顺序加载，因此您可以通过相应命名来控制它们的加载顺序。建议使用数字前缀作为文件名，例如 `10-my-fragment.conf` 、 `20-my-other-fragment.conf` 等，以便您可以轻松控制它们的加载顺序。
+
+如果您不想附加新规则，而是用新规则覆盖整个数组，则可以通过在数组名称上使用 `override.` 前缀来实现：
+
+```
+override.monitor.alsa.rules = [
+  {
+    matches = [
+      {
+        device.name = "~alsa_card.*"
+      }
+    ]
+    actions = {
+      update-props = {
+        api.alsa.use-ucm  = false
+      }
+    }
+  }
+]
+```
+
+## alsa配置
+
+ALSA 监视器是 WirePlumber 的组件之一。
+
+该监视器负责为系统上可用的所有 ALSA 卡创建 PipeWire 设备和节点。
+
+它还管理这些设备的配置。
+
+ALSA 监视器默认启用，可以使用配置文件中的 `monitor.alsa` 功能禁用。
+
+与所有设备监视器一样，该监视器作为 SPA 插件实现，
+
+并且是 PipeWire 的一部分。 
+
+**WirePlumber 只是加载插件并让它完成工作。**
+
+然后，该插件监视 UDev 并为系统上可用的所有 ALSA 卡创建设备和节点对象。
+
+> 这里值得记住的一件事是，在 ALSA 中，“卡”代表物理声音控制器设备，而“设备”是逻辑访问点，代表卡的一部分的一组输入和/或输出。在 PipeWire 中，“设备”直接相当于 ALSA“卡”，而“节点”几乎相当于（接近，但不完全）ALSA“设备”。
+
+## 蓝牙配置
+
+# 会话管理
+
+PipeWire 会话管理器是一个负责做很多事情的工具。许多人将“会话管理器”一词理解为负责管理节点之间链接的工具，但这只是众多任务之一。要了解其整个操作，我们需要首先讨论 PipeWire 的工作原理。
+
+当 PipeWire 启动时，它会加载在其配置文件中定义的一组模块。这些模块为 PipeWire 提供功能，否则它只是一个不执行任何操作的空进程。正常情况下，PipeWire启动时加载的模块包含对象工厂，以及允许进程间通信的本机协议模块。除此之外，PipeWire 并不真正加载或执行任何其他操作。这是会话管理开始的地方。
+
+会话管理基本上就是设置 PipeWire 来做一些有用的事情。这是通过利用 PipeWire 公开的对象工厂来创建一些有用的对象，然后使用它们的方法来修改并随后销毁它们来实现的。这些对象包括设备、节点、端口、链路等。这项任务需要持续监控和采取行动，对系统使用过程中发生的大量不同事件做出反应。
+
+
+
+WirePlumber 构建在 libwireplumber 库之上，该库提供了用于表达所有会话管理逻辑的基本构建块。 Libwireplumber是用C语言编写的，基于GObject，包装了PipeWire API，并提供了更高级别和更方便的API。虽然 WirePlumber 守护程序实现会话管理逻辑，但也可以在 WirePlumber 守护程序范围之外使用底层库。这允许创建与 PipeWire 交互的外部工具和 GUI。
+
+该库基于 GObject，具有自省功能，可以在任何支持 GObject 自省的语言中使用。该库还可以作为 C API 提供。
+
+
+
+PipeWire 通过 IPC 协议公开多个对象，例如节点和端口，其方式很难使用标准面向对象原理进行交互，因为它是异步的。例如，当创建一个对象时，它的存在是通过协议宣布的，但其属性稍后在辅助消息上宣布。如果某些东西需要对此对象创建事件做出反应，它通常需要访问对象的属性，因此它必须等到属性被发送。这样做可能听起来很简单，而且确实如此，但是在任何地方都这样做而不是专注于编写实际的事件处理逻辑，这会成为一个乏味的重复过程。
+
+WirePlumber 的库通过创建代理对象来解决这个问题，这些代理对象在每个对象的生命周期中缓存从 PipeWire 接收的所有信息和更新。然后，它通过 WpObjectManager API 使它们可用，该 API 能够等到某些信息（例如属性）已缓存在每个对象上后再宣布。
+
+
+
+Lua 脚本实现了大部分会话管理。 libwireplumber API 在 Lua 中提供，具有惯用的绑定，这使得编写会话管理逻辑变得非常容易。
+
+选择Lua是因为它是一种非常轻量级的脚本语言，适合嵌入。它也非常容易学习和使用，并将其绑定到 C 代码。然而，WirePlumber 可以轻松扩展以支持 Lua 以外的脚本语言。整个Lua脚本系统是作为一个模块实现的。
+
+
+
+会话管理就是对事件做出反应并采取必要的操作。这就是为什么 WirePlumber 的逻辑全部构建在事件和钩子上。
+
+
+
 # lua
 
 WirePlumber 使用 Lua 版本 5.4 来实现其引擎。对于较旧的系统，还支持 Lua 5.3。
@@ -542,6 +689,33 @@ id 36, type PipeWire:Interface:Device
     object.path = "alsa:acp:AMLAUGESOUND"
   * object.serial = "36"
 ```
+
+# 板端配置文件分析
+
+在板端的文件，跟在output/target下面的文件还不一样。
+
+感觉像是执行期间生成的。
+
+```
+wireplumber.components = [
+  #{ name = <component-name>, type = <component-type> }
+  #
+  # WirePlumber components to load
+  #
+
+  # The lua scripting engine
+  { name = libwireplumber-module-lua-scripting, type = module }
+
+  # The lua configuration file(s)
+  # Other components are loaded from there
+  { name = main.lua, type = config/lua }
+  { name = policy.lua, type = config/lua }
+  { name = bluetooth.lua, type = config/lua }
+]
+
+```
+
+不是，这个应该就是老的方案的。
 
 
 
