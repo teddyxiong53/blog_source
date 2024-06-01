@@ -16,3 +16,16 @@ C:\Users\Administrator\AppData\Roaming\Typora\draftsRecover
 
 typora的备份机制跟notepad++的类似，很简单，但是还是可以有作用的。
 
+
+
+typora过期启动方法
+https://note.sunfeilong.com/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E5%85%B7/Typora/Typora%20Mac-0.11.18%E7%89%88%E6%9C%AC%E8%BF%87%E6%9C%9F%E5%90%AF%E5%8A%A8/
+
+
+
+最后一个免费版本。
+
+https://iswbm.com/600.html
+
+解压密码是：iswbm.com
+
