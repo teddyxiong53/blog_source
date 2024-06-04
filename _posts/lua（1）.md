@@ -1638,7 +1638,7 @@ Lua 中的栈由 Lua 虚拟机维护，C 可以通过 Lua C API 来访问和操�
    ````lua
    local result = CFunction("Hello", 123)
    ```
-
+   
    在 Lua 中调用 C 函数 `CFunction` 并获取其返回值。
 
 这些示例展示了如何在 Lua 和 C 之间进行栈操作。推送和获取值时，栈顶的位置非常重要，可以使用正数索引（从栈底开始）或负数索引（从栈顶开始）来访问栈上的元素。在进行栈操作时，需要注意栈的平衡，确保在函数调用结束时栈的状态正确。
@@ -1770,14 +1770,14 @@ C 函数 `cFunction` 和 `cFunction2` 分别从 Lua 栈上获取参数，执行�
    local function myFunction(a, b)
        return a + b
    end
-
+   
    local result = myFunction(10, 20)
    ```
-
+   
    在 Lua 中，函数也可以被推送到栈上，并通过调用 `lua_call` 或 `lua_pcall` 来执行。
-
+   
    在 C 中，可以使用 Lua C API 的函数来推送函数并调用：
-
+   
    ````c
    lua_pushcfunction(L, myFunction);  // 推送 C 函数到栈上
    lua_pushinteger(L, 10);
@@ -3557,7 +3557,251 @@ LuaDist 主要包含以下几个方面的功能和特点：
 | luasql                   | 提供数据库访问的库                                           |
 | luasyslog                | 提供系统日志功能                                             |
 
+
+
+# C LUA 混合编程
+
+这个思路不错的。
+
+
+
+```C
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
+
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+
+void error(lua_State *L, const char *fmt, ...)
+{
+    va_list argp;
+    va_start(argp, fmt);
+    vfprintf(stderr, fmt, argp);
+    va_end(argp);
+    lua_close(L);
+    exit(EXIT_FAILURE);
+}
+
+static void stackDump(lua_State *L)
+{
+
+}
+
+void call_va(lua_State *L, const char *func, const char *sig, ...)
+{
+    va_list vl;
+    int narg;
+    int nres;
+    va_start(vl, sig);
+    lua_getglobal(L, func);
+    for (narg=0; *sig; narg++) {
+        luaL_checkstack(L, 1, "too many arguments");
+        switch(*sig++) {
+            case 'd':
+                lua_pushnumber(L, va_arg(vl, double));
+                break;
+            case 'i':
+                lua_pushinteger(L, va_arg(vl, int));
+                break;
+            case 's':
+                lua_pushstring(L, va_arg(vl, char *));
+                break;
+            case '>':
+                goto endargs;
+            default:
+                error(L, "invalid option (%c)\n", *(sig - 1));
+        }
+    }
+endargs:
+    nres = strlen(sig);
+    if (lua_pcall(L, narg, nres, 0) != 0) {
+        error(L, "error calling '%s':%s \n", func, lua_tostring(L, -1));
+    }
+    nres = -nres;
+    int isnum;
+    double dn;
+    int in;
+    const char *s;
+    while (*sig) {
+        switch (*sig++)
+        {
+        case 'd':
+            
+            dn  = lua_tonumberx(L, nres, &isnum);
+            if (!isnum) {
+                error(L, "wrong result type\n");
+            }
+            *va_arg(vl, double *) = dn;
+            break;
+        case 'i':
+            
+            in = lua_tointegerx(L, nres, &isnum);
+            if (!isnum) {
+                error(L, "wrong result type\n");
+            }
+            *va_arg(vl, int *) = in;
+            break;
+        case 's':
+            s = lua_tostring(L, nres);
+            if (s == NULL) {
+                error(L, "wrong result type\n");
+            }
+            *va_arg(vl, const char **) = s;
+            break;
+        
+        default:
+            error(L, "invalid option (%c) \n", *(sig - 1));
+            break;
+        }
+        nres ++;
+    }
+    va_end(vl);
+}
+
+int main(int argc, char const *argv[])
+{
+    printf("hello lua\n");
+    lua_State *L = luaL_newstate();
+    luaL_openlibs(L);
+    int x = 3, y= 4, z;
+    char *s1 = "this is test line";
+    char *s = "and next line";
+    char *new_str;
+    printf("%s %d\n", __func__, __LINE__);
+    if (luaL_dofile(L, './lua_func.lua')) {
+        printf("%s %d\n", __func__, __LINE__);
+        error(L, "can not run lua file %s\n", lua_tostring(L, -1));
+    }
+    printf("%s %d\n", __func__, __LINE__);
+    call_va(L, "add", "ii>i", x, y, &z);
+    lua_pop(L, -1);
+    printf("z is:%d\n", z);
+    stackDump(L);
+    lua_close(L);
+    return 0;
+}
+
+```
+
+
+
+https://my.oschina.net/yumm007/blog/1797989
+
+# macos下安装lua
+
+If you need to have lua@5.3 first in your PATH, run:
+
+```
+ echo 'export PATH="/usr/local/opt/lua@5.3/bin:$PATH"' >> /Users/teddy/.bash_profile
+```
+
+For compilers to find lua@5.3 you may need to set:
+
+```
+ export LDFLAGS="-L/usr/local/opt/lua@5.3/lib"
+
+ export CPPFLAGS="-I/usr/local/opt/lua@5.3/include"
+```
+
+
+
+For pkg-config to find lua@5.3 you may need to set:
+
+```
+ export PKG_CONFIG_PATH="/usr/local/opt/lua@5.3/lib/pkgconfig"
+```
+
+# 在真实的项目中是怎么在C语言中嵌入lua，以c为主还是lua为主？
+
+在真实的项目中，C 和 Lua 的集成方式通常取决于项目的需求和设计目标。一般来说，有两种主要方式来嵌入 Lua：
+
+1. **以 C 为主，嵌入 Lua**：
+   - **用途**：这种方法通常用于需要高性能和底层控制的项目，其中 C 或 C++ 是主要编程语言，而 Lua 被用作脚本语言来提供灵活性和可扩展性。
+   - **示例**：游戏开发中，游戏引擎通常用 C++ 编写，而游戏逻辑和配置用 Lua 编写。这样开发者可以快速迭代和调试游戏逻辑，而不需要重新编译整个引擎。
+   - **实现方式**：
+     1. **初始化 Lua 环境**：在 C 代码中创建一个 Lua 状态。
+     2. **加载并执行 Lua 脚本**：从文件或字符串加载 Lua 脚本，并在 C 代码中执行。
+     3. **绑定 C 函数到 Lua**：通过注册 C 函数，使它们可以在 Lua 中调用。
+     4. **数据交换**：在 C 和 Lua 之间传递数据。
+
+   ```c
+   #include <lua.h>
+   #include <lualib.h>
+   #include <lauxlib.h>
+   
+   int main() {
+       lua_State *L = luaL_newstate();  // 创建一个新的 Lua 状态
+       luaL_openlibs(L);                // 打开标准库
+   
+       // 加载并执行 Lua 文件
+       if (luaL_loadfile(L, "script.lua") || lua_pcall(L, 0, 0, 0)) {
+           printf("Error: %s\n", lua_tostring(L, -1));
+           return -1;
+       }
+   
+       lua_close(L);  // 关闭 Lua 状态
+       return 0;
+   }
+   ```
+
+2. **以 Lua 为主，嵌入 C**：
+   - **用途**：这种方法通常用于需要高灵活性和快速开发的项目，其中 Lua 是主要编程语言，而 C 用于实现性能关键或复杂的功能。
+   - **示例**：嵌入式系统或插件系统中，Lua 被用作主要脚本语言，而 C 库提供底层操作和扩展功能。
+   - **实现方式**：
+     1. **编写 C 库**：实现需要的功能并暴露给 Lua。
+     2. **编写 Lua 脚本**：使用这些 C 库函数，并进行主要的程序控制和逻辑处理。
+     3. **集成 C 库到 Lua**：通过 Lua 的 `require` 或直接注册，使 Lua 能够调用 C 库函数。
+
+   ```c
+   // C 库文件 mylib.c
+   #include <lua.h>
+   #include <lauxlib.h>
+   
+   static int my_function(lua_State *L) {
+       lua_pushstring(L, "Hello from C");
+       return 1;  // 返回一个结果
+   }
+   
+   static const struct luaL_Reg mylib[] = {
+       {"my_function", my_function},
+       {NULL, NULL}
+   };
+   
+   int luaopen_mylib(lua_State *L) {
+       luaL_newlib(L, mylib);
+       return 1;
+   }
+   ```
+
+   ```lua
+   -- Lua 脚本文件 script.lua
+   local mylib = require "mylib"
+   print(mylib.my_function())  -- 输出 "Hello from C"
+   ```
+
+### 总结
+
+- **以 C 为主，嵌入 Lua**：适用于需要高性能和底层控制的项目，Lua 用于实现灵活的脚本逻辑。
+- **以 Lua 为主，嵌入 C**：适用于需要高灵活性和快速开发的项目，C 用于实现性能关键或复杂的功能。
+
+实际项目中，选择哪种方式取决于具体需求。例如，在游戏开发中，通常以 C++ 为主，嵌入 Lua；而在嵌入式系统中，可能以 Lua 为主，嵌入 C 库以进行底层操作。
+
+# lua游戏编程
+
+
+
+https://blog.csdn.net/m0_65012566/article/details/137640317
+
 # 参考资料
 
-1、
+https://blog.csdn.net/qq_42317817/article/details/120666327
+luajit还是比较有用的。
+https://luajit.org/ext_buffer.html
+lua与c++的完全交互解析
+https://www.cnblogs.com/wellbye/archive/2013/05/03/3052880.html
+https://www.cnblogs.com/wellbye/archive/2013/05/01/3025277.html
+这篇非常好。
 

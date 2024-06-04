@@ -214,9 +214,67 @@ brew install nano
 
 
 
+# brew国内加速
 
+为了在中国大陆加速 Homebrew 的使用，可以配置 Homebrew 使用国内镜像源。以下是详细的配置步骤：
 
-参考资料
+**1. 替换 Homebrew 源**
+
+```bash
+# 替换 Homebrew 源
+git -C "$(brew --repo)" remote set-url origin https://mirrors.ustc.edu.cn/brew.git
+```
+
+**2. 替换 Homebrew Core 源**
+
+```bash
+# 替换 Homebrew Core 源
+brew tap --custom-remote --force-auto-update homebrew/core https://mirrors.ustc.edu.cn/homebrew-core.git
+```
+
+**3. 替换 Homebrew Bottles 源**
+
+```bash
+# 替换 Homebrew Bottles 源
+echo 'export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.ustc.edu.cn/homebrew-bottles' >> ~/.bash_profile
+source ~/.bash_profile
+```
+
+**4. 更新 Homebrew 配置**
+
+```bash
+# 更新 Homebrew 配置
+brew update
+```
+
+**5. 验证配置**
+
+可以通过以下命令来验证配置是否正确：
+
+```bash
+# 查看 Homebrew 源
+git -C "$(brew --repo)" remote -v
+
+# 查看 Homebrew Core 源
+brew tap
+
+# 查看环境变量
+echo $HOMEBREW_BOTTLE_DOMAIN
+```
+
+通过以上步骤，可以有效加速 Homebrew 在中国大陆的使用。以下是步骤的简要总结：
+
+| **步骤**                    | **命令**                                                     |
+| --------------------------- | ------------------------------------------------------------ |
+| 1. 替换 Homebrew 源         | `git -C "$(brew --repo)" remote set-url origin https://mirrors.ustc.edu.cn/brew.git` |
+| 2. 替换 Homebrew Core 源    | `brew tap --custom-remote --force-auto-update homebrew/core https://mirrors.ustc.edu.cn/homebrew-core.git` |
+| 3. 替换 Homebrew Bottles 源 | `echo 'export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.ustc.edu.cn/homebrew-bottles' >> ~/.bash_profile` |
+| 4. 更新 Homebrew 配置       | `brew update`                                                |
+| 5. 验证配置                 | `git -C "$(brew --repo)" remote -v` `brew tap` `echo $HOMEBREW_BOTTLE_DOMAIN` |
+
+这样配置后，Homebrew 会使用国内镜像源来加速软件包的下载和安装。
+
+# 参考资料
 
 1、
 
