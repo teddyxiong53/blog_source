@@ -380,3 +380,19 @@ int main() {
 ```
 
 通过使用`setsockopt()`函数，可以灵活地配置套接字的各种行为，以满足不同的网络编程需求。
+
+# MSG_NOSIGNAL
+
+```
+static void ctl_thread_cmd_ping(const struct request *req, int fd) {
+	(void)req;
+	static const struct msg_status status = { STATUS_CODE_PONG };
+	send(fd, &status, sizeof(status), MSG_NOSIGNAL);
+}
+
+```
+
+**send()函数中的MSG_NOSIGNAL标志**
+
+在Linux网络编程中，使用`send()`函数发送数据时可以设置一些标志（flags），`MSG_NOSIGNAL`就是其中之一。该标志的作用是防止在向已经关闭的套接字（socket）写入数据时，程序收到`SIGPIPE`信号，导致程序异常终止。
+

@@ -16,6 +16,169 @@ tags:
 
 相关配置工具都写得很全面，值得学习研究一下。
 
+# 简介
+
+当然，以下是关于Zephyr的快速入门指南，适合有RTOS和Linux背景的开发者。
+
+**1. Zephyr简介**
+
+| **特点**           | **描述**                                |
+| ------------------ | --------------------------------------- |
+| **轻量级**         | 适用于资源受限的设备，如MCU和小型MPU    |
+| **模块化**         | 可根据需求裁剪，减少不必要的功能        |
+| **实时性**         | 提供精确的实时调度和低延迟              |
+| **开源**           | 由Linux基金会主导，采用Apache 2.0许可证 |
+| **广泛的硬件支持** | 支持多种架构，如ARM、x86、RISC-V等      |
+
+**2. 基本概念**
+
+| **概念**           | **描述**                                     |
+| ------------------ | -------------------------------------------- |
+| **Kernel**         | 核心调度和内存管理机制，支持抢占和协作式调度 |
+| **线程 (Threads)** | 轻量级进程，用于任务调度和执行               |
+| **同步机制**       | 提供信号量、互斥锁和队列等用于线程间同步     |
+| **设备驱动模型**   | 提供统一的设备驱动接口，支持多种外设         |
+| **文件系统**       | 支持小型嵌入式文件系统，如LittleFS和FatFS    |
+| **网络协议栈**     | 提供IPV4/IPV6、TCP/UDP等协议支持             |
+| **安全性**         | 包括堆栈保护、地址空间布局随机化等安全特性   |
+
+**3. 开发环境**
+
+| **工具**        | **描述**                              |
+| --------------- | ------------------------------------- |
+| **Zephyr SDK**  | 提供编译工具链和调试工具              |
+| **West**        | Zephyr的官方构建和管理工具            |
+| **CMake**       | 构建系统，负责生成编译文件            |
+| **Device Tree** | 用于硬件描述，配置外设和资源          |
+| **Kconfig**     | 配置系统，用于启用/禁用内核和驱动特性 |
+
+**4. 快速上手**
+
+1. **安装Zephyr SDK**：下载并安装[Zephyr SDK](https://docs.zephyrproject.org/latest/getting_started/index.html)。
+2. **配置环境**：
+    ```sh
+    export ZEPHYR_BASE=<zephyr路径>
+    source <zephyr路径>/zephyr-env.sh
+    ```
+3. **创建新项目**：
+    ```sh
+    west init -m https://github.com/zephyrproject-rtos/zephyr
+    cd zephyr
+    west update
+    west zephyr-export
+    ```
+4. **构建和运行示例**：
+    ```sh
+    west build -b <board_name> samples/hello_world
+    west flash
+    ```
+
+**5. 常用命令**
+
+| **命令**      | **描述**           |
+| ------------- | ------------------ |
+| `west build`  | 构建项目           |
+| `west flash`  | 烧录程序到目标板   |
+| `west debug`  | 调试程序           |
+| `west update` | 更新Zephyr和模块   |
+| `menuconfig`  | 配置内核和驱动选项 |
+
+# west怎么关联cmake和kconfig的
+
+West 是 Zephyr 项目官方推荐的构建和管理工具，它集成了 CMake 和 Kconfig，简化了项目的管理和构建过程。以下是 West 如何与 CMake 和 Kconfig 关联起来的简要说明：
+
+**1. West 概览**
+
+| **功能**       | **描述**                               |
+| -------------- | -------------------------------------- |
+| **项目管理**   | 初始化、更新和管理Zephyr项目的依赖关系 |
+| **构建管理**   | 调用 CMake 和 Ninja 构建系统           |
+| **板级支持**   | 支持多种开发板，通过命令指定目标板     |
+| **调试和烧录** | 提供调试和烧录工具的便捷命令           |
+
+**2. West 与 CMake 的关联**
+
+West 使用 CMake 作为构建系统，具体流程如下：
+
+1. **初始化构建环境**：West 初始化 Zephyr 项目并配置环境变量。
+    ```sh
+    west init
+    west update
+    west zephyr-export
+    ```
+
+2. **构建项目**：West 调用 `west build` 命令，实际上是对 CMake 构建系统的封装。
+    ```sh
+    west build -b <board_name> <path_to_sample>
+    ```
+
+   这个命令会执行以下步骤：
+   - 创建构建目录（build directory）
+   - 调用 CMake 配置步骤 (`cmake -Bbuild -H<path_to_sample> -DBOARD=<board_name>`)
+   - 运行 Ninja 构建步骤 (`ninja -C build`)
+
+3. **CMakeLists.txt**：Zephyr 项目中的 `CMakeLists.txt` 文件定义了构建规则和依赖关系，West 会自动调用这些文件。
+
+**3. West 与 Kconfig 的关联**
+
+Kconfig 是用于配置内核和驱动特性的工具，West 通过调用 Kconfig 来管理配置。
+
+1. **配置内核和驱动**：West 提供了 `menuconfig` 命令，调用 Kconfig 图形界面工具。
+    ```sh
+    west build -t menuconfig
+    ```
+
+   这个命令会：
+   - 读取 `Kconfig` 文件定义的配置选项
+   - 启动 Kconfig 图形界面，允许用户进行配置
+   - 生成 `.config` 文件，包含所有选项的配置结果
+
+2. **配置文件**：`prj.conf` 文件用于项目级别的配置，West 在构建过程中会自动读取并应用这些配置。
+    ```sh
+    # prj.conf 示例
+    CONFIG_GPIO=y
+    CONFIG_I2C=y
+    ```
+
+**4. 关联流程示意图**
+
+```plaintext
+West Commands
+    ↓
+CMake Configuration (CMakeLists.txt)
+    ↓
+Build System (Ninja)
+    ↓
+Kconfig Configuration (menuconfig, prj.conf)
+    ↓
+Zephyr Build Artifacts
+```
+
+**5. 示例命令流程**
+
+1. 初始化并更新项目：
+    ```sh
+    west init
+    west update
+    ```
+
+2. 配置环境：
+    ```sh
+    west zephyr-export
+    ```
+
+3. 构建项目：
+    ```sh
+    west build -b nrf52840dk_nrf52840 samples/hello_world
+    ```
+
+4. 配置项目：
+    ```sh
+    west build -t menuconfig
+    ```
+
+通过 West，开发者可以更方便地管理 Zephyr 项目的构建和配置，减少手动调用 CMake 和 Kconfig 的复杂性。
+
 # 快评
 
 1. Zephyr的内核模式是宏内核，不是微内核；设备驱动都被集成在内核中；内核编译采用Kconfig脚本配置，资源配置也通过它在编译时指定

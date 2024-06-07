@@ -32,6 +32,31 @@ acl，既可以支持对称连接，也可以支持不对称连接（也就是�
 
 
 
+蓝牙物理链路ACL(Asynchronous Connectionless), 
+
+另外的一种链路是SCO(Synchronous Connection Oriented)主要用来传输对时间要求很高的数据通信。
+
+​    蓝牙基带技术支持两种连接类型：
+
+同步定向连接(SCO)类型和异步无连接(ACL)类型。
+
+前者主要用于同步话音传送，后者主要用于分组数据传送。
+
+​    SCO连接为对称连接，利用保留时隙传送数据包。连接建立后，主设备和从设备可以不被选中就发送SCO数据包。SCO数据包既可以传送话音，也可以传送数据，但在传送数据时，只用于重发被损坏的那部分的数据。
+​    ACL链路就是定向发送数据包，它既支持对称连接，也支持不对称连接（既可以一对一，也可以一对多）。主设备负责控制链路带宽，并决定微微网中的每个从设备可以占用多少带宽和连接的对称性。从设备只有被选中时才能传送数据。ACL链路也支持接收主设备发给微微网中所有从设备的广播消息。
+
+  在主单元和从单元之间，可以确定不同的类型链接关系。如下定义了两种链接类：
+
+● 同步定向链接（SCO，Synchronous Connection Oritened）
+
+● 异步无链接（ACL,Asynchronous Connection Less）
+
+  (可以参照TCP/IP协议的 TCP 连接和UDP 连接，当然TCP/IP的连接方式不止这两种，还有SCTP； 蓝牙协议的理解还是要参照TCP/IP协议进行的)
+
+
+
+
+
 上一篇博文介绍的是inquiry的整个过程中HCI层的command和event。
 
 **在寻找到有效的远端蓝牙设备后，开始建立ACL连接，**这里仅仅反应HCI层的数据包，对于LM层和Baseband层的数据可能需要抓取FW的log进行查看。
@@ -63,3 +88,7 @@ https://blog.csdn.net/jonch_hzc/article/details/80570826
 4、蓝牙ACL链路和SCO链路的最大个数
 
 https://blog.csdn.net/software_wyq/article/details/103456464
+
+5、
+
+https://blog.csdn.net/u010698858/article/details/43566451

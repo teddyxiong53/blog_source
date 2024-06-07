@@ -1243,6 +1243,14 @@ Options:
 
 这些参数允许您配置`bluealsa`服务以满足特定的需求，例如选择蓝牙音频配置文件、指定PCM设备名称和类型，设置套接字MTU等。
 
+# 音频传输过程
+
+```
+(w->pcm_fd = bluealsa_open_transport(w->ba_fd, &w->transport)) 
+```
+
+
+
 # 参考资料
 
 1、

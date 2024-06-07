@@ -6,7 +6,22 @@ tags:
 
 ---
 
-1
+
+
+# wireshark lua插件编写
+
+Wireshark内置了对Lua脚本的支持，可以直接编写Lua脚本，无需配置额外的环境，使用起来还是非常方便的。 [Wireshark Developer's Guide]里的第10章和第11章都是关于Lua支持的文档，有需要的话可以详细查阅。
+
+使用Lua编写Wireshark协议解析插件，有几个比较重要的概念:
+
+1. Dissector，中文直译是解剖器，就是用来解析包的类，我们最终要编写的，也是一个Dissector。
+2. DissectorTable，解析器表是Wireshark中解析器的组织形式，是某一种协议的子解析器的一个列表，其作用是把所有的解析器组织成一种树状结构，便于Wireshark在解析包的时候自动选择对应的解析器。例如TCP协议的子解析器 http, smtp, sip等都被加在了"tcp.port"这个解析器表中，可以根据抓到的包的不同的tcp端口号，自动选择对应的解析器。
+
+
+
+https://www.cnblogs.com/little-kwy/p/14888454.html
+
+# 抓包方法
 
 哪种网络情况下能够抓取到包呢？下面结合网络原理讲解。网络抓包主要存在三种情况：本机环境、集线器环境和交换机环境。
 

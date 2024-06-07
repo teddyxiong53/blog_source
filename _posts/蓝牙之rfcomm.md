@@ -285,6 +285,95 @@ l2cap_init();
 
 
 
+# bluez rfcomm命令用法
+
+把板端作为rfcomm 服务端，让手机上的rfcomm客户端连接过去
+
+要在板子上使用BlueZ的`rfcomm`命令创建一个RFCOMM服务器，并让手机作为RFCOMM客户端连接，下面是详细的步骤和示例：
+
+### 步骤1：配置蓝牙设备
+
+确保蓝牙适配器已启用并处于可发现模式：
+
+```sh
+sudo hciconfig hci0 up
+sudo hciconfig hci0 piscan
+```
+
+### 步骤2：创建RFCOMM服务
+
+使用`rfcomm`命令创建一个RFCOMM服务器。这可以通过以下步骤完成：
+
+1. **启动`bluetoothd`守护进程**：
+    确保`bluetoothd`正在运行，可以通过以下命令启动：
+
+    ```sh
+    sudo systemctl start bluetooth
+    ```
+
+2. **创建RFCOMM服务**：
+
+    使用`sdptool`添加一个RFCOMM通道。这里我们将服务名称设为`rfcomm-server`，并使用通道1：
+
+    ```sh
+    sudo sdptool add --channel=1 SP
+    ```
+
+3. **启动RFCOMM服务器**：
+
+    使用`rfcomm`命令在指定的通道上绑定RFCOMM服务器：
+
+    ```sh
+    sudo rfcomm listen /dev/rfcomm0 1
+    ```
+
+### 步骤3：配置手机连接
+
+确保手机的蓝牙已启用，并且可以发现你的蓝牙设备。然后使用一个支持RFCOMM连接的应用程序（如`BlueTerm`或自定义的应用）来连接到蓝牙设备的RFCOMM服务器。
+
+### 示例：完整过程
+
+以下是一个完整的过程示例：
+
+1. **在板子上执行以下命令**：
+
+    ```sh
+    sudo hciconfig hci0 up
+    sudo hciconfig hci0 piscan
+    sudo sdptool add --channel=1 SP
+    sudo rfcomm listen /dev/rfcomm0 1
+    ```
+
+2. **在手机上**：
+
+    - 打开蓝牙并搜索设备。
+    - 找到并连接到板子的蓝牙设备。
+    - 使用RFCOMM客户端应用程序（如`BlueTerm`）连接到通道1。
+    - 连接成功后，你应该能够在手机和板子之间进行数据传输。
+
+### 注意事项
+
+- **权限**：某些命令可能需要root权限，确保你以`sudo`运行。
+- **兼容性**：确保你的设备和手机支持RFCOMM协议。
+- **调试**：如果遇到连接问题，可以查看板子的系统日志以获取更多信息：
+
+    ```sh
+    sudo journalctl -u bluetooth -f
+    ```
+
+### 小结
+
+以下是一个表格，总结了关键步骤和命令：
+
+| 步骤             | 命令                                |
+| ---------------- | ----------------------------------- |
+| 启用蓝牙适配器   | `sudo hciconfig hci0 up`            |
+| 设置蓝牙可发现   | `sudo hciconfig hci0 piscan`        |
+| 添加RFCOMM服务   | `sudo sdptool add --channel=1 SP`   |
+| 启动RFCOMM服务器 | `sudo rfcomm listen /dev/rfcomm0 1` |
+
+通过这些步骤和命令，你可以成功地将板子设置为RFCOMM服务器，并让手机连接到它，从而实现数据通信。
+
 # 参考资料
 
 1、RFCOMM

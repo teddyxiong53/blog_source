@@ -310,24 +310,6 @@ WirePlumber 首先读取主配置文件。
 
 
 
-主配置文件位于 `/usr/share/wireplumber/main.conf` .
-
-这将加载 WirePlumber 内核所需的模块和组件，并从 `*config-dir*/main.lua.d/` 加载 Lua 配置文件 
-
-蓝牙配置文件位于 `/usr/share/wireplumber/bluetooth.conf` .
-
-这适用于处理核心进程的蓝牙连接的 WirePlumber 进程。
-
-这会从 `*config-dir*/bluetooth.lua.d/` 加载 Lua 文件。
-
-策略配置文件位于 `/usr/share/wireplumber/policy.conf` 。
-
-这封装了策略功能，这就是 WirePlumber 做出有关移动和更改节点的决策的方式。
-
-这将从 Lua 文件加载 `*config-dir*/policy.lua.d/`
-
-
-
 配置 WirePlumber 的推荐方法
 
 是将 SPA-JSON 文件添加到 
@@ -341,6 +323,18 @@ WirePlumber 首先读取主配置文件。
 如果要覆盖现有配置，请将其从 `/usr/share/wireplumber/` 目标复制到目标，同时保持其名称相同。具有相同名称但位于较低优先级位置的配置文件将被忽略。
 
 否则，如果要添加新配置，则应以大于 50 的数字（例如 `51-my-config.conf` ）开头，因为默认配置主要以字母数字顺序等于或低于 50 完成。
+
+# wireplumber的启动方式
+
+**context.exec**
+
+字典数组。数组中的每个条目都是字典，其中包含要在启动时执行的程序的路径和可选参数。
+
+此数组曾经包含用于启动会话管理器的条目，但此后此操作模式已降级为开发辅助。避免在生产环境中以这种方式启动会话管理器。
+
+==就直接手动执行wireplumber命令启动就可以。==
+
+
 
 # 配置
 
@@ -392,14 +386,14 @@ SPA-JSON 是标准 JSON 的超集，因此任何有效的 JSON 文件也是有�
 
 ## 配置的section
 
-| 配置名字         | 说明                                          |
-| ---------------- | --------------------------------------------- |
-| components       | 一个数组，列出了 WirePlumber 可以加载的组件。 |
-| componetns.rules | 也是数组，里面是修改components的一些规则      |
-| profiles         | 可以加载的配置文件                            |
-| settings         | 修改wireplumber的行为                         |
-| settings.schema  | 验证修改                                      |
-| 其他             |                                               |
+| 配置名字         | 说明                                                         |
+| ---------------- | ------------------------------------------------------------ |
+| components       | 一个数组，列出了 WirePlumber 可以加载的组件。                |
+| componetns.rules | 也是数组，里面是修改components的一些规则                     |
+| profiles         | 可以加载的配置文件，就类似蓝牙的profile那种概念，是一系列配置的组合。目前只有一个main profile。 |
+| settings         | 修改wireplumber的行为                                        |
+| settings.schema  | 验证修改                                                     |
+| 其他             |                                                              |
 
 另外，还有libpipewire来读取并发送给pipewire的部分。
 
@@ -409,6 +403,30 @@ context.spa-libs
 context.modules
 
 ```
+
+### 组件类型
+
+组件的主要类型有：
+
+script/lua
+
+一种 Lua 脚本，通常包含一个或多个事件挂钩和/或其他自定义逻辑。这是主要的组件类型，因为 WirePlumber 的业务逻辑主要是用 Lua 编写的。
+
+module
+
+WirePlumber 模块，它是一个可以动态加载的共享库。模块通常提供一些供脚本使用的捆绑逻辑或 WirePlumber 与外部服务之间的一些集成。
+
+pw-module
+
+PipeWire 模块，也是一个可以动态加载的共享库，但扩展了底层 libpipewire 库的功能。在 WirePlumber 上下文中加载 PipeWire 模块对于加载自定义协议扩展或从 PipeWire 守护程序卸载某些功能非常有用。
+
+virtual
+
+虚拟组件只是加载目标，可用于通过定义依赖关系来引入其他组件。它们本身不提供任何功能。请注意，此类组件没有“名称”。
+
+built-in
+
+这些组件是已内置到 WirePlumber 库中的功能部件。他们主要提供内部支持元素和检查。
 
 
 
@@ -439,7 +457,7 @@ override.monitor.alsa.rules = [
 
 ALSA 监视器是 WirePlumber 的组件之一。
 
-该监视器负责为系统上可用的所有 ALSA 卡创建 PipeWire 设备和节点。
+==该监视器负责为系统上可用的所有 ALSA 卡创建 PipeWire 设备和节点。==
 
 它还管理这些设备的配置。
 
@@ -459,33 +477,195 @@ ALSA 监视器默认启用，可以使用配置文件中的 `monitor.alsa` 功�
 
 # 会话管理
 
-PipeWire 会话管理器是一个负责做很多事情的工具。许多人将“会话管理器”一词理解为负责管理节点之间链接的工具，但这只是众多任务之一。要了解其整个操作，我们需要首先讨论 PipeWire 的工作原理。
+PipeWire 会话管理器是一个负责做很多事情的工具。
 
-当 PipeWire 启动时，它会加载在其配置文件中定义的一组模块。这些模块为 PipeWire 提供功能，否则它只是一个不执行任何操作的空进程。正常情况下，PipeWire启动时加载的模块包含对象工厂，以及允许进程间通信的本机协议模块。除此之外，PipeWire 并不真正加载或执行任何其他操作。这是会话管理开始的地方。
+许多人将“会话管理器”一词理解为负责管理节点之间链接的工具，
 
-会话管理基本上就是设置 PipeWire 来做一些有用的事情。这是通过利用 PipeWire 公开的对象工厂来创建一些有用的对象，然后使用它们的方法来修改并随后销毁它们来实现的。这些对象包括设备、节点、端口、链路等。这项任务需要持续监控和采取行动，对系统使用过程中发生的大量不同事件做出反应。
+但这只是众多任务之一。
+
+要了解其整个操作，我们需要首先讨论 PipeWire 的工作原理。
+
+当 PipeWire 启动时，
+
+它会加载在其配置文件中定义的一组模块。
+
+这些模块为 PipeWire 提供功能，
+
+否则它只是一个不执行任何操作的空进程。
 
 
 
-WirePlumber 构建在 libwireplumber 库之上，该库提供了用于表达所有会话管理逻辑的基本构建块。 Libwireplumber是用C语言编写的，基于GObject，包装了PipeWire API，并提供了更高级别和更方便的API。虽然 WirePlumber 守护程序实现会话管理逻辑，但也可以在 WirePlumber 守护程序范围之外使用底层库。这允许创建与 PipeWire 交互的外部工具和 GUI。
+正常情况下，PipeWire启动时加载的模块包含对象工厂，
+
+以及允许进程间通信的本机协议模块。
+
+==除此之外，PipeWire 并不真正加载或执行任何其他操作。==
+
+==这是会话管理开始的地方。==
+
+
+
+会话管理基本上就是设置 PipeWire 来做一些有用的事情。
+
+这是通过利用 PipeWire 公开的对象工厂来创建一些有用的对象，
+
+然后使用它们的方法来修改并随后销毁它们来实现的。
+
+这些对象包括设备、节点、端口、链路等。
+
+==这项任务需要持续监控和采取行动，==
+
+==对系统使用过程中发生的大量不同事件做出反应。==
+
+
+
+WirePlumber 构建在 libwireplumber 库之上，
+
+该库提供了用于表达所有会话管理逻辑的基本构建块。
+
+ Libwireplumber是用C语言编写的，
+
+基于GObject，包装了PipeWire API，
+
+并提供了更高级别和更方便的API。
+
+虽然 WirePlumber 守护程序实现会话管理逻辑，
+
+但也可以在 WirePlumber 守护程序范围之外使用底层库。
+
+这允许创建与 PipeWire 交互的外部工具和 GUI。
+
+
 
 该库基于 GObject，具有自省功能，可以在任何支持 GObject 自省的语言中使用。该库还可以作为 C API 提供。
 
 
 
-PipeWire 通过 IPC 协议公开多个对象，例如节点和端口，其方式很难使用标准面向对象原理进行交互，因为它是异步的。例如，当创建一个对象时，它的存在是通过协议宣布的，但其属性稍后在辅助消息上宣布。如果某些东西需要对此对象创建事件做出反应，它通常需要访问对象的属性，因此它必须等到属性被发送。这样做可能听起来很简单，而且确实如此，但是在任何地方都这样做而不是专注于编写实际的事件处理逻辑，这会成为一个乏味的重复过程。
+PipeWire 通过 IPC 协议公开多个对象，
 
-WirePlumber 的库通过创建代理对象来解决这个问题，这些代理对象在每个对象的生命周期中缓存从 PipeWire 接收的所有信息和更新。然后，它通过 WpObjectManager API 使它们可用，该 API 能够等到某些信息（例如属性）已缓存在每个对象上后再宣布。
+例如节点和端口，
+
+其方式很难使用标准面向对象原理进行交互，因为它是异步的。
+
+例如，当创建一个对象时，它的存在是通过协议宣布的，但其属性稍后在辅助消息上宣布。
+
+如果某些东西需要对此对象创建事件做出反应，它通常需要访问对象的属性，
+
+因此它必须等到属性被发送。
+
+这样做可能听起来很简单，而且确实如此，
+
+但是在任何地方都这样做而不是专注于编写实际的事件处理逻辑，这会成为一个乏味的重复过程。
 
 
 
-Lua 脚本实现了大部分会话管理。 libwireplumber API 在 Lua 中提供，具有惯用的绑定，这使得编写会话管理逻辑变得非常容易。
+==WirePlumber 的库通过创建代理对象来解决这个问题，==
 
-选择Lua是因为它是一种非常轻量级的脚本语言，适合嵌入。它也非常容易学习和使用，并将其绑定到 C 代码。然而，WirePlumber 可以轻松扩展以支持 Lua 以外的脚本语言。整个Lua脚本系统是作为一个模块实现的。
+这些代理对象在每个对象的生命周期中缓存从 PipeWire 接收的所有信息和更新。
+
+然后，它通过 WpObjectManager API 使它们可用，该 API 能够等到某些信息（例如属性）已缓存在每个对象上后再宣布。
+
+
+
+Lua 脚本实现了大部分会话管理。 
+
+libwireplumber API 在 Lua 中提供，具有惯用的绑定，这使得编写会话管理逻辑变得非常容易。
+
+选择Lua是因为它是一种非常轻量级的脚本语言，适合嵌入。
+
+它也非常容易学习和使用，并将其绑定到 C 代码。
+
+然而，WirePlumber 可以轻松扩展以支持 Lua 以外的脚本语言。
+
+==整个Lua脚本系统是作为一个模块实现的。==
 
 
 
 会话管理就是对事件做出反应并采取必要的操作。这就是为什么 WirePlumber 的逻辑全部构建在事件和钩子上。
+
+## session管理的内容
+
+### 设备启用
+
+启用设备是操作的一个基本领域。
+
+它是通过使用设备监视器对象（或简称“监视器”）来实现的，
+
+这些对象通常作为 PipeWire 中的 SPA 插件实现，
+
+但由 WirePlumber 加载。
+
+他们的任务是发现可用的媒体设备并在 PipeWire 中创建提供与它们交互的方式的对象。
+
+### 设备配置
+
+从计算机的角度来看，大多数设备都具有复杂的功能，
+
+需要对其进行管理才能提供简单流畅的用户体验。
+
+例如，出于这个原因，音频设备被组织成配置文件和路由，
+
+这允许将它们设置为服务于特定的用例。
+
+这些需要由会话管理器进行配置和管理。
+
+### 权限控制
+
+当客户端应用程序连接到 PipeWire 时，
+
+它们需要获得权限才能访问 PipeWire 公开的对象并与其交互。
+
+在某些情况和配置中，会话管理器还负责决定应向每个客户端授予哪些权限。
+
+### node配置
+
+节点是媒体处理的基本元素。
+
+==它们通常由设备监视器或客户端应用程序创建。==
+
+当它们被创建时，它们处于无法链接的状态。
+
+链接它们需要一些配置，
+
+例如配置媒体格式以及随后应公开的端口的数量和类型。
+
+此外，可能需要根据用户偏好设置与节点相关的一些属性和元数据。
+
+所有这些都由会话管理器负责。
+
+### link管理
+
+当节点最终准备好使用时，
+
+会话管理器还负责决定如何将它们链接在一起以便媒体能够流动。
+
+例如，音频播放流节点很可能需要链接到默认音频输出设备节点。
+
+然后，会话管理器还需要==创建所有这些链接并监视可能影响它们的所有条件，==
+
+以便在发生变化时（例如，如果设备断开连接）可以进行动态重新链接。
+
+在某些情况下，由于创建或销毁链路，设备和节点配置也可能需要更改。
+
+### 元数据管理
+
+在操作过程中，PipeWire 和 WirePlumber 都将有关对象及其操作的一些附加属性
+
+存储在这些对象外部的存储中。
+
+这些属性称为“元数据”，
+
+它们存储在“元数据对象”中。
+
+该元数据可以通过 pw-metadata 等工具从外部进行更改，也可以通过其他工具进行更改。
+
+在某些情况下，此元数据需要与会话管理器内部的逻辑进行交互。
+
+最值得注意的是，
+
+选择默认音频和视频输入和输出是通过设置元数据来完成的。
+
+然后，会话管理器需要验证此信息，存储它并在下次重新启动时恢复它，但还要确保在动态插入和拔出设备时默认输入和输出保持有效和合理。
 
 
 
@@ -690,32 +870,278 @@ id 36, type PipeWire:Interface:Device
   * object.serial = "36"
 ```
 
+## set-default
+
+https://forum.manjaro.org/t/how-do-i-permanently-set-the-default-audio-device-in-manjaro-xfce-with-pipewire/117967/18
+
+这个人想要做的事情跟我的一样，就是想用wpctl来设置默认的sink设备。
+
+但是看起来他没有得到答案。
+
+## settings
+
+```
+wpctl settings --save device.routes.default-sink-volume 0.5
+```
+
+可以在配置文件里写：
+
+```
+wireplumber.settings = {
+  device.routes.default-sink-volume = 0.5
+}
+```
+
+
+
+# wpexec
+
+这个是用来执行lua脚本的。相当于一个lua解释器。
+
+随便写一个test.lua，
+
+```
+print("hello pw")
+```
+
+wpexec test.lua
+
+可以打印，但是会卡住不会自动退出。
+
+
+
+# debug 日志
+
+```
+wpctl set-log-level D     # enable debug logging for Wireplumber
+wpctl set-log-level -     # restore default logging for Wireplumber
+
+wpctl set-log-level 0 4   # enable debug logging for Pipewire daemon
+wpctl set-log-level 0 -   # restore default logging for Pipewire daemon
+```
+
+
+
+```
+WIREPLUMBER_DEBUG=2,wp-registry:4,pw.*:4,m-*:4
+```
+
+从 WirePlumber 0.3 开始，不再使用 `G_MESSAGES_DEBUG` ，因为 libwireplumber 替换了默认的日志处理程序。
+
+这样启动日志打印比较详细。
+
+```
+WIREPLUMBER_DEBUG=4 wireplumber
+```
+
+
+
+# 运行多个实例
+
+WirePlumber 能够作为单个实例守护程序或多个实例运行，这意味着可以有多个进程，每个进程执行不同的任务。
+
+为了实现多实例设置，可以多次启动 WirePlumber，并在每个实例中加载不同的配置文件。这可以通过使用 `--profile` 命令行选项来选择要加载的配置文件来实现：
+
+```
+$ wireplumber --profile=custom
+```
+
+当未指定特定配置文件时，将加载 `main` 配置文件。
+
+为了使其更易于使用，提供了一个模板 systemd 单元，该单元以配置文件的名称作为模板参数启动：
+
+```
+$ systemctl --user disable wireplumber # disable the "main" instance
+
+$ systemctl --user enable wireplumber@policy
+$ systemctl --user enable wireplumber@audio
+$ systemctl --user enable wireplumber@camera
+$ systemctl --user enable wireplumber@bluetooth
+```
+
+
+
+
+
 # 板端配置文件分析
 
-在板端的文件，跟在output/target下面的文件还不一样。
 
-感觉像是执行期间生成的。
+
+# wireplumber优点和缺点
+
+## 优点
+
+WirePlumber是专门为GNOME设计的，
+
+这使得它在与GNOME桌面环境集成方面表现出色。
+
+它能够更好地支持GNOME的特性和用户体验。
+
+==WirePlumber支持使用LUA脚本来实现设置和配置规则，==
+
+==这使得用户可以根据自己的需求进行高度定制。==
+
+这种灵活性对于需要复杂配置的用户来说是一个显著优势。
+
+WirePlumber被认为是PipeWire的新一代会话管理器，它结合了PulseAudio和JACK的功能，并增加了视频处理的能力。
+
+WirePlumber可以在多种Linux发行版上安装和配置，包括基于Arch、Ubuntu/Debian等系统的支持。这使得它能够覆盖更多用户群体。
+
+WirePlumber支持蓝牙MIDI设备，这是其在多媒体设备支持方面的一个重要优势。此外，它还支持压缩解码离载，这可以在某些设备上提高性能。
+
+## 缺点
+
+尽管WirePlumber提供了高度的自定义能力，但这也可能导致较高的学习曲线。对于不熟悉LUA脚本的用户来说，配置和维护可能会比较困难。
+
+WirePlumber是为GNOME设计的，因此它可能不适用于所有类型的Linux系统，特别是那些不使用GNOME桌面环境的系统。
+
+相比于一些成熟的框架，如Phonon，WirePlumber可能在社区和文档支持方面还有待提升。新用户可能需要花费更多时间来解决问题。
+
+WirePlumber在灵活性、集成度和功能性方面具有显著优势，但同时也存在一定的局限性和挑战。
+
+
+
+
+
+
+
+WirePlumber 使用 Lua 脚本来实现节点和连接管理的方式
+
+主要体现在其对 Lua 的集成和应用上。
+
+这种集成允许 WirePlumber 利用 Lua 的灵活性和高效性来进行复杂的配置和管理任务。
+
+WirePlumber 的设计包括了对 Lua 脚本的使用，
+
+这些脚本可以用于实现设置和配置规则，
+
+如设备和流的设置和配置，以及基于流的元数据和系统的管理 。
+
+这表明 Lua 脚本在 WirePlumber 中扮演着核心角色，特别是在处理和管理 PipeWire 会话方面。
+
+通过这些 API，开发者可以编写自定义的 Lua 脚本来满足特定的需求，从而实现更细粒度的控制和管理。
+
+总结来说，WirePlumber 中的 Lua 脚本通过提供一个强大且灵活的编程环境，使得用户和开发者能够有效地管理节点和连接。
+
+
+
+
+
+
+
+就是这样！WirePlumber 现在已经检测到我们的 ALSA 接收器和源，并将它们作为节点添加到 PipeWire 图中。它将检测我们添加到图形中的源节点，并将它们链接到 ALSA 接收器节点，输出音频供我们的耳朵欣赏。
+
+
+
+与 WirePlumber 的交互将使用 `wpctl` CLI 工具完成。它允许人们使用 `wpctl status` .WirePlumber 控制输出音频的主要方法是设置默认接收器，这可以使用 `wpctl set-default $ID` . `set-volume` 和 `get-volume` `set-mute` 命令公开音量控制。例如，以下是将当前输出音量提高 10% 所需的命令： `wpctl set-volume @DEFAULT_SINK@ 10%+` 。
+
+
+
+这2个命令可以用的。有效果。
 
 ```
-wireplumber.components = [
-  #{ name = <component-name>, type = <component-type> }
-  #
-  # WirePlumber components to load
-  #
+wpctl set-volume @DEFAULT_SINK@ 10%+
 
-  # The lua scripting engine
-  { name = libwireplumber-module-lua-scripting, type = module }
+wpctl get-volume @DEFAULT_SINK@ 
+```
 
-  # The lua configuration file(s)
-  # Other components are loaded from there
-  { name = main.lua, type = config/lua }
-  { name = policy.lua, type = config/lua }
-  { name = bluetooth.lua, type = config/lua }
-]
+
+
+把wireplumber里跟alsa有关系的日志拷贝出来分析。
+
+
+
+```
+opening fragment file:  /usr/share/wireplumber/wireplumber.conf.d/alsa-vm.conf
+	打开这个配置片段文件。看里面内容是就是一个match pci的声卡的。
+map factory regex 'api.alsa.*' to 'alsa/libspa-alsa
+	映射factory，来自于context.spa-libs配置
+ loaded plugin:'/usr/lib/spa-0.2/alsa/libspa-alsa.so'
+ 	然后就把so载入了。
+  loading component 'monitor.alsa.reserve-device [virtual]'
+    这个是因为被alsa wants了。
+ s-monitors alsa.lua:351:createMonitor: Activating ALSA monitor
+ 	lua脚本里创建alsa monitor。
+ 	查找到路径是/usr/share/wireplumber/scripts/monitors/alsa.lua
+  section 'monitor.alsa.rules' is used as-is from '/usr/share/wireplumber/wireplumber.conf.d/alsa-vm.conf'
+  	从这里读取rules
+load lib:'alsa/libspa-alsa' factory-name:'api.alsa.enum.udev'
+loaded plugin:'/usr/lib/spa-0.2/alsa/libspa-alsa.so'
+../spa/plugins/alsa/alsa-udev.c:712:check_access: /dev/snd/pcmC0D4c accessible:1
+	C0D4是loopback-a。为什么最先是这个？
+check_access: /dev/snd/pcmC0D4c accessible:1
+check_pcm_device_availability: card 0 has 8 PCM device(s)
+check_pcm_device_availability: card 0 pcm device pcm0c free
+check_pcm_device_availability: card 0 pcm device pcm0p free
+check_pcm_device_availability: card 0 pcm device pcm1c free
+check_pcm_device_availability: card 0 pcm device pcm1p free
+check_pcm_device_availability: card 0 pcm device pcm2c free
+check_pcm_device_availability: card 0 pcm device pcm3c free
+check_pcm_device_availability: card 0 pcm device pcm3p free
+check_pcm_device_availability: card 0 pcm device pcm4c free
+emit_added_object_info:     device.bus-path = "/sys/devices/platform/auge_sound/sound/card0"
+find_match: 'node.name' fail '(null)' < > '~alsa_input.pci.*'
+	这个是不是因为不存在pci接口的声卡？是的。但是没有关系。
+Enabling the use of ACP on alsa_card._sys_devices_platform_auge_sound_sound_card0
+check_access: /dev/snd/pcmC1D1c accessible:1
+emit_added_object_info:     device.bus-path = "/sys/devices/platform/snd_aloop.0/sound/card1"
+	loopback声卡的。
+Enabling the use of ACP on alsa_card._sys_devices_platform_snd_aloop.0_sound_card1
+../spa/plugins/alsa/alsa-acp-device.c:1065:impl_init: probe card hw:0
+Unable to find the top-level configuration file '/usr/share/alsa/ucm2/ucm.conf'.
+snd_use_case_mgr_open: error: failed to import AML-AUGESOUND use case configuration -2
+
+pa_config_parse: Parsing configuration file '/usr/share/alsa-card-profile/mixer/profile-sets/default.conf'
+	这个文件是存在的，是ini格式的。
+ spa.alsa confmisc.c:1377:snd_func_refer: Unable to find definition 'cards.0.pcm.front.0:CARD=0'
+ 	然后接下来就是根据从default.conf读取的各种配置进行解析。
+ 	大部分都是无效的。
+ pa_alsa_open_by_device_string: Trying hw:0,0 with SND_PCM_NO_AUTO_FORMAT 
+ 	这样依次打开关闭所有的设备。
+```
+
+```
+Registering DBus media endpoint: /MediaEndpointLE/BAPSource/lc3
+Registering DBus media endpoint: /MediaEndpointLE/BAPSink/lc3
+Registering DBus media endpoint: /MediaEndpointLE/BAPBroadcastSource/lc3
+Registering DBus media endpoint: /MediaEndpointLE/BAPBroadcastSink/lc3
+Registering DBus media endpoint: /MediaEndpoint/A2DPSource/aac
+Registering DBus media endpoint: /MediaEndpoint/A2DPSink/aac
+Registering DBus media endpoint: /MediaEndpoint/A2DPSource/sbc
+Registering DBus media endpoint: /MediaEndpoint/A2DPSink/sbc
+Registering DBus media endpoint: /MediaEndpoint/A2DPSource/sbc_xq
+Registering DBus media endpoint: /MediaEndpoint/A2DPSink/sbc_xq
+Registering DBus media endpoint: /MediaEndpoint/A2DPSource/faststream
+Registering DBus media endpoint: /MediaEndpoint/A2DPSource/faststream_duplex
+
+
+wp_state_save: <WpState:0x13df5d0> saving state into /.local/state/wireplumber/default-routes
+
 
 ```
 
-不是，这个应该就是老的方案的。
+# /.local/state/wireplumber/
+
+```
+/ # ls /.local/state/wireplumber/
+default-routes     stream-properties
+```
+
+这里列出的 `/.local/state/wireplumber/` 目录包含了 WirePlumber 的一些状态信息和配置文件。让我们看一下这些文件的含义：
+
+- **default-routes**: 这个文件可能包含 WirePlumber 当前的默认路由配置。默认路由是指当没有特定路由配置时，WirePlumber 将音频流路由到的默认目的地。可以在这个文件中查看或修改默认路由配置。
+
+- **stream-properties**: 这个文件可能包含了 WirePlumber 当前正在运行的音频流的属性信息。音频流属性描述了每个音频流的特征和配置。你可以在这个文件中查看或修改音频流的属性。
+
+这些文件可能是 WirePlumber 在运行过程中生成和维护的。通过查看这些文件，你可以了解当前 WirePlumber 的配置和状态信息，以及对其进行必要的调整和管理。
+
+# @DEFAULT_SINK@
+
+```
+src/tools/wpctl.c:124:  if (allow_def_audio && (g_strcmp0(arg, "@DEFAULT_SINK@") == 0 ||
+```
+
+所以这个不是什么特殊的语法，就是一个写死的字符串而已。
 
 
 

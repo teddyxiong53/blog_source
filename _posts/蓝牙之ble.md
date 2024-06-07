@@ -245,6 +245,437 @@ int main() {
 
 不同类型的 BLE 地址在不同的应用场景下有各自的优势和适用性。理解这些地址类型及其特性，可以帮助开发者更好地设计和实现 BLE 设备的通信和隐私保护功能。
 
+
+
+# BLE 标准的配对和绑定过程
+
+BLE（低能耗蓝牙）标准的配对和绑定过程涉及设备发现、密钥交换、身份验证和加密等多个步骤。以下是详细步骤：
+
+### 1. 设备发现
+
+在配对过程开始之前，两个 BLE 设备需要相互发现对方。
+
+- **扫描设备**：一个设备（通常是中心设备，如手机）会扫描周围的设备。
+- **广播设备**：另一个设备（通常是外围设备，如智能手环）会广播其存在。
+
+### 2. 配对过程
+
+配对过程包括密钥交换和身份验证，用于建立加密链接。配对过程有三种主要方法，分别是“Just Works”、“Passkey Entry”和“Numeric Comparison”。
+
+1. **Just Works**：不需要用户输入任何信息，适用于低安全性需求的场景。
+2. **Passkey Entry**：一方输入另一个设备显示的6位数密码，用于中等安全性需求。
+3. **Numeric Comparison**：双方显示6位数数字，用户确认数字是否相同，用于高安全性需求。
+
+### 3. 密钥分配
+
+配对过程中，设备会生成和交换密钥，用于保护后续的数据传输。
+
+1. **临时密钥（TK）**：用于生成短期会话密钥的临时密钥。
+2. **短期会话密钥（STK）**：配对过程中生成的会话密钥。
+3. **长时间密钥（LTK）**：生成并存储用于后续连接的长期密钥。
+4. **身份信息**：设备可能会交换身份信息（IRK，Identity Resolving Key）和设备地址。
+
+### 4. 加密链接的建立
+
+配对过程成功后，设备会使用生成的会话密钥来加密传输链路。
+
+### 5. 绑定过程
+
+绑定是指设备在配对后保存密钥，以便后续连接时能够快速建立加密链路。绑定过程确保了设备在断开连接后重新连接时能够安全地通信。
+
+### 配对示例代码
+
+以下是一个简化的示例代码，展示了如何在嵌入式系统中使用 BLE 堆栈进行配对和绑定过程。注意，这是一个伪代码示例，实际实现将依赖于具体的 BLE 堆栈和硬件平台。
+
+```c
+#include <ble.h>
+
+// 初始化BLE配对
+void init_ble_pairing() {
+    // 设置配对参数
+    ble_gap_sec_params_t sec_params;
+    memset(&sec_params, 0, sizeof(sec_params));
+    sec_params.bond = 1; // 启用绑定
+    sec_params.mitm = 0; // 关闭MITM保护
+    sec_params.io_caps = BLE_GAP_IO_CAPS_NONE; // 配对方式
+    sec_params.min_key_size = 7; // 最小密钥长度
+    sec_params.max_key_size = 16; // 最大密钥长度
+
+    // 启动配对过程
+    sd_ble_gap_sec_params_reply(conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &sec_params, NULL);
+}
+
+// 处理配对请求
+void on_ble_gap_evt_sec_params_request(ble_gap_evt_sec_params_request_t *p_sec_params_request) {
+    // 回复安全参数请求
+    ble_gap_sec_keyset_t sec_keyset;
+    memset(&sec_keyset, 0, sizeof(sec_keyset));
+    sec_keyset.keys_periph.ltk_len = 16;
+
+    sd_ble_gap_sec_params_reply(conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &sec_params, &sec_keyset);
+}
+
+// 处理加密状态变化
+void on_ble_gap_evt_auth_status(ble_gap_evt_auth_status_t *p_auth_status) {
+    if (p_auth_status->auth_status == BLE_GAP_SEC_STATUS_SUCCESS) {
+        // 配对和加密成功
+    } else {
+        // 配对或加密失败
+    }
+}
+
+int main() {
+    // 初始化BLE堆栈
+    ble_stack_init();
+
+    // 初始化配对过程
+    init_ble_pairing();
+
+    // 主循环
+    while (1) {
+        // 处理BLE事件
+        ble_evt_t evt;
+        if (ble_evt_get(&evt)) {
+            switch (evt.header.evt_id) {
+                case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
+                    on_ble_gap_evt_sec_params_request(&evt.evt.gap_evt.params.sec_params_request);
+                    break;
+                case BLE_GAP_EVT_AUTH_STATUS:
+                    on_ble_gap_evt_auth_status(&evt.evt.gap_evt.params.auth_status);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    return 0;
+}
+```
+
+这个示例展示了如何初始化配对过程、处理配对请求和处理加密状态变化。实际实现中需要处理更多的事件和错误，并根据具体的 BLE 堆栈和硬件平台进行调整。
+
+# 使用bluez的api，让板子作为ble server，手机可以搜索并连接到ble server上
+
+以下是一个简单的示例代码，展示如何使用BlueZ的API将嵌入式Linux设备作为BLE Server，使手机可以搜索并连接到该BLE Server。
+
+**步骤1：安装BlueZ**
+确保你的板子上已经安装了BlueZ。可以通过以下命令安装：
+
+```sh
+sudo apt-get update
+sudo apt-get install bluez
+```
+
+**步骤2：编写BLE Server代码**
+
+下面是一个Python示例代码，使用`pydbus`库（BlueZ的DBus接口）来创建一个BLE Server。
+
+```python
+from gi.repository import GLib
+from pydbus import SystemBus
+import dbus
+import dbus.service
+import dbus.mainloop.glib
+
+# 定义BLE服务UUID和特征UUID
+SERVICE_UUID = '12345678-1234-5678-1234-56789abcdef0'
+CHARACTERISTIC_UUID = '12345678-1234-5678-1234-56789abcdef1'
+
+class BLEAdvertisement(dbus.service.Object):
+    PATH = '/org/bluez/example/advertisement'
+
+    def __init__(self, bus):
+        self.path = self.PATH
+        self.bus = bus
+        self.ad_type = 'peripheral'
+        self.service_uuid = SERVICE_UUID
+        dbus.service.Object.__init__(self, bus, self.path)
+
+    @dbus.service.method('org.freedesktop.DBus.Properties', in_signature='s', out_signature='a{sv}')
+    def GetAll(self, interface):
+        return {
+            'Type': self.ad_type,
+            'ServiceUUIDs': [self.service_uuid]
+        }
+
+    @dbus.service.method('org.freedesktop.DBus.Properties', in_signature='ss', out_signature='v')
+    def Get(self, interface, property):
+        return self.GetAll(interface)[property]
+
+    @dbus.service.method('org.freedesktop.DBus.Properties', in_signature='ssv')
+    def Set(self, interface, property, value):
+        pass
+
+    @dbus.service.method('org.freedesktop.DBus.ObjectManager', out_signature='a{oa{sa{sv}}}')
+    def GetManagedObjects(self):
+        return {
+            self.path: {
+                'org.freedesktop.DBus.Properties': {
+                    'Type': self.ad_type,
+                    'ServiceUUIDs': [self.service_uuid]
+                }
+            }
+        }
+
+class BLEApplication(dbus.service.Object):
+    PATH = '/org/bluez/example/service'
+
+    def __init__(self, bus):
+        self.path = self.PATH
+        self.bus = bus
+        self.service = None
+        self.characteristic = None
+        dbus.service.Object.__init__(self, bus, self.path)
+
+        self.add_service()
+        self.add_characteristic()
+
+    def add_service(self):
+        self.service = BLEService(self.bus, self.path, 0, SERVICE_UUID, True)
+        self.bus.register_object(self.service)
+
+    def add_characteristic(self):
+        self.characteristic = BLECharacteristic(self.bus, self.service.path, 0, CHARACTERISTIC_UUID, ['read', 'write'])
+        self.bus.register_object(self.characteristic)
+
+class BLEService(dbus.service.Object):
+    def __init__(self, bus, path, index, uuid, primary):
+        self.path = f"{path}/service{index}"
+        self.bus = bus
+        self.uuid = uuid
+        self.primary = primary
+        dbus.service.Object.__init__(self, bus, self.path)
+
+    @dbus.service.method('org.freedesktop.DBus.Properties', in_signature='s', out_signature='a{sv}')
+    def GetAll(self, interface):
+        return {
+            'UUID': self.uuid,
+            'Primary': self.primary
+        }
+
+class BLECharacteristic(dbus.service.Object):
+    def __init__(self, bus, path, index, uuid, flags):
+        self.path = f"{path}/char{index}"
+        self.bus = bus
+        self.uuid = uuid
+        self.flags = flags
+        dbus.service.Object.__init__(self, bus, self.path)
+
+    @dbus.service.method('org.freedesktop.DBus.Properties', in_signature='s', out_signature='a{sv}')
+    def GetAll(self, interface):
+        return {
+            'UUID': self.uuid,
+            'Flags': self.flags
+        }
+
+    @dbus.service.method('org.freedesktop.DBus.Properties', in_signature='ss', out_signature='v')
+    def Get(self, interface, property):
+        return self.GetAll(interface)[property]
+
+    @dbus.service.method('org.freedesktop.DBus.Properties', in_signature='ssv')
+    def Set(self, interface, property, value):
+        pass
+
+dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+bus = SystemBus()
+
+ad_manager = bus.get("org.bluez", "/org/bluez/hci0")
+ad_manager.RegisterAdvertisement(BLEAdvertisement(bus), {}, reply_handler=print("Advertisement registered"), error_handler=print("Advertisement register failed"))
+
+app = BLEApplication(bus)
+mainloop = GLib.MainLoop()
+mainloop.run()
+```
+
+**步骤3：运行BLE Server**
+
+```sh
+sudo python3 ble_server.py
+```
+
+**说明：**
+
+1. **BLEAdvertisement**类负责BLE广告。
+2. **BLEApplication**类负责管理BLE服务和特征。
+3. **BLEService**类表示一个BLE服务。
+4. **BLECharacteristic**类表示一个BLE特征。
+
+运行代码后，你的设备将成为一个BLE Server，可以被手机搜索到并连接。
+
+**注意：**
+你可能需要修改`SERVICE_UUID`和`CHARACTERISTIC_UUID`以适应你的需求。这些UUID应当是符合BLE规范的128位UUID。
+
+# 板端做le audio cis sink
+
+为了将板子配置为LE Audio CIS（Connected Isochronous Stream）Sink，以下是如何使用BlueZ API实现的步骤和示例代码。请注意，LE Audio和CIS是蓝牙5.2及以上版本的新特性，可能需要更新的BlueZ版本和内核支持。
+
+### 步骤1：确保系统支持
+
+1. **内核**：确保使用支持蓝牙5.2及以上的内核。
+2. **BlueZ**：安装最新版本的BlueZ。可以从源码编译安装。
+
+### 步骤2：安装必要的依赖
+
+确保安装了必要的Python包：
+
+```sh
+sudo apt-get install python3-dbus
+sudo apt-get install python3-gi
+sudo pip3 install pydbus
+```
+
+### 步骤3：编写CIS Sink示例代码
+
+以下Python代码展示了如何设置LE Audio CIS Sink：
+
+```python
+from gi.repository import GLib
+from pydbus import SystemBus
+import dbus
+import dbus.service
+import dbus.mainloop.glib
+
+# 定义LE Audio服务UUID和特征UUID
+LE_AUDIO_SERVICE_UUID = '00001850-0000-1000-8000-00805f9b34fb'
+LE_AUDIO_CHARACTERISTIC_UUID = '00002bb1-0000-1000-8000-00805f9b34fb'
+
+class LEAudioAdvertisement(dbus.service.Object):
+    PATH = '/org/bluez/example/advertisement'
+
+    def __init__(self, bus):
+        self.path = self.PATH
+        self.bus = bus
+        self.ad_type = 'peripheral'
+        self.service_uuid = LE_AUDIO_SERVICE_UUID
+        dbus.service.Object.__init__(self, bus, self.path)
+
+    @dbus.service.method('org.freedesktop.DBus.Properties', in_signature='s', out_signature='a{sv}')
+    def GetAll(self, interface):
+        return {
+            'Type': self.ad_type,
+            'ServiceUUIDs': [self.service_uuid]
+        }
+
+    @dbus.service.method('org.freedesktop.DBus.Properties', in_signature='ss', out_signature='v')
+    def Get(self, interface, property):
+        return self.GetAll(interface)[property]
+
+    @dbus.service.method('org.freedesktop.DBus.Properties', in_signature='ssv')
+    def Set(self, interface, property, value):
+        pass
+
+    @dbus.service.method('org.freedesktop.DBus.ObjectManager', out_signature='a{oa{sa{sv}}}')
+    def GetManagedObjects(self):
+        return {
+            self.path: {
+                'org.freedesktop.DBus.Properties': {
+                    'Type': self.ad_type,
+                    'ServiceUUIDs': [self.service_uuid]
+                }
+            }
+        }
+
+class LEAudioApplication(dbus.service.Object):
+    PATH = '/org/bluez/example/service'
+
+    def __init__(self, bus):
+        self.path = self.PATH
+        self.bus = bus
+        self.service = None
+        self.characteristic = None
+        dbus.service.Object.__init__(self, bus, self.path)
+
+        self.add_service()
+        self.add_characteristic()
+
+    def add_service(self):
+        self.service = LEAudioService(self.bus, self.path, 0, LE_AUDIO_SERVICE_UUID, True)
+        self.bus.register_object(self.service)
+
+    def add_characteristic(self):
+        self.characteristic = LEAudioCharacteristic(self.bus, self.service.path, 0, LE_AUDIO_CHARACTERISTIC_UUID, ['read', 'notify'])
+        self.bus.register_object(self.characteristic)
+
+class LEAudioService(dbus.service.Object):
+    def __init__(self, bus, path, index, uuid, primary):
+        self.path = f"{path}/service{index}"
+        self.bus = bus
+        self.uuid = uuid
+        self.primary = primary
+        dbus.service.Object.__init__(self, bus, self.path)
+
+    @dbus.service.method('org.freedesktop.DBus.Properties', in_signature='s', out_signature='a{sv}')
+    def GetAll(self, interface):
+        return {
+            'UUID': self.uuid,
+            'Primary': self.primary
+        }
+
+class LEAudioCharacteristic(dbus.service.Object):
+    def __init__(self, bus, path, index, uuid, flags):
+        self.path = f"{path}/char{index}"
+        self.bus = bus
+        self.uuid = uuid
+        self.flags = flags
+        dbus.service.Object.__init__(self, bus, self.path)
+
+    @dbus.service.method('org.freedesktop.DBus.Properties', in_signature='s', out_signature='a{sv}')
+    def GetAll(self, interface):
+        return {
+            'UUID': self.uuid,
+            'Flags': self.flags
+        }
+
+    @dbus.service.method('org.freedesktop.DBus.Properties', in_signature='ss', out_signature='v')
+    def Get(self, interface, property):
+        return self.GetAll(interface)[property]
+
+    @dbus.service.method('org.freedesktop.DBus.Properties', in_signature='ssv')
+    def Set(self, interface, property, value):
+        pass
+
+    @dbus.service.method('org.bluez.GattCharacteristic1', in_signature='', out_signature='ay')
+    def ReadValue(self):
+        return dbus.ByteArray(b'\x01')
+
+    @dbus.service.method('org.bluez.GattCharacteristic1', in_signature='ay')
+    def WriteValue(self, value):
+        print(f"Received value: {value}")
+
+dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+bus = SystemBus()
+
+ad_manager = bus.get("org.bluez", "/org/bluez/hci0")
+ad_manager.RegisterAdvertisement(LEAudioAdvertisement(bus), {}, reply_handler=print("Advertisement registered"), error_handler=print("Advertisement register failed"))
+
+app = LEAudioApplication(bus)
+mainloop = GLib.MainLoop()
+mainloop.run()
+```
+
+### 步骤4：运行LE Audio CIS Sink服务
+
+```sh
+sudo python3 le_audio_cis_sink.py
+```
+
+### 说明
+
+1. **LEAudioAdvertisement**类负责LE Audio广告。
+2. **LEAudioApplication**类管理LE Audio服务和特征。
+3. **LEAudioService**类表示一个LE Audio服务。
+4. **LEAudioCharacteristic**类表示一个LE Audio特征。
+
+这段代码将把你的设备设置为一个LE Audio CIS Sink，允许手机搜索和连接。你可以根据需求修改UUID和特征值。请确保BlueZ和内核支持LE Audio特性。
+
+**注意：**
+LE Audio和CIS是相对较新的特性，实际实现过程中可能需要调整配置和调试。确保你的设备固件和驱动程序支持这些特性。
+
+# bluetoothctl控制ble
+
+
+
 # 参考资料
 
 1、普及一下什么是蓝牙和BLE，看完让你秒懂

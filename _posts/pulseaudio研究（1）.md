@@ -8,6 +8,184 @@ tags:
 
 --
 
+# 对pulseaudio的一篇全面论述文章
+
+https://gavv.net/articles/pulseaudio-under-the-hood/
+
+现有的文档没有提供鸟瞰图和对 PulseAudio 功能和设计的解释，也没有涵盖许多实现细节。
+
+因此，总体情况仍然不明朗。高级配置看起来很神秘，因为首先需要了解引擎盖下发生的事情。模块编写器的学习曲线也很高。
+
+本文档试图填补这一空白，并概述了 PulseAudio 的功能、架构和内部结构。更准确地说，它有三个目标：
+
+- 描述可用功能
+- 解释其底层设计和重要的实现细节
+- 提供编写客户机和服务器模块的起点
+
+它没有提供 PulseAudio 配置和 API 的详细参考或教程。
+
+PulseAudio 是 POSIX 操作系统（主要针对 Linux）的声音服务器，
+
+充当单个或多个主机上的硬件设备驱动程序和应用程序之间的代理和路由器。
+
+## PulseAudio 旨在实现许多目标。
+
+**桌面音频的抽象层**
+
+PulseAudio 管理所有音频应用程序、本地和网络流、设备、滤波器和音频 I/O。它提供了一个抽象层，将所有这些东西组合在一个地方。
+
+**可编程行为**
+
+丰富的 API 提供了用于检查和控制所有可用对象及其持久性和运行时属性的方法。这样就可以用 GUI 工具替换配置文件。许多桌面环境都提供此类工具。
+
+**自动设置**
+
+PulseAudio 设计为开箱即用。它自动检测和配置本地网络中可用的本地设备和声音服务器。它还实现了许多用于自动音频管理和路由的策略。
+
+**灵活性**
+
+PulseAudio 为用户提供了高度的灵活性。可以将任何应用程序的任何流连接到任何本地或远程设备，配置每个流和每个设备的volume，构建声音处理链等。
+
+**扩展**
+
+PulseAudio 为服务器扩展提供了一个框架，许多内置功能都以模块的形式实现。非官方的第三方模块也存在，但是，上游并不能保证树外模块的稳定 API。
+
+
+
+## 以下列表介绍了 PulseAudio 中实现的功能。
+
+**协议和网络**
+
+PulseAudio 支持多种网络协议，可与客户端、远程服务器和第三方软件进行通信。
+
+**设备驱动程序**
+
+PulseAudio 支持多个后端与硬件设备和控件进行交互。它支持热插拔并自动配置新设备。
+
+**声音处理**
+
+PulseAudio 实现了各种声音处理工具，如混音、采样率转换和回声消除，可以手动或自动使用。
+
+**sample缓存**
+
+PulseAudio 为命名的短批次样本实现了内存存储，这些样本可以上传到服务器一次，然后播放多次。
+
+**流管理**
+
+PulseAudio 管理所有桌面应用程序的所有输入和输出流，为它们提供时钟、缓冲和倒带等功能。
+
+**时间管理**
+
+PulseAudio 实现了基于每设备计时器的调度程序，可在声卡域中提供时钟，保持最佳延迟，并降低播放故障的可能性。
+
+**省电**
+
+PulseAudio 采用多种技术来减少 CPU 和电池使用量。
+
+**自动设置和路由**
+
+PulseAudio 自动设置卡、设备和流的参数，将流路由到设备，并执行其他内务操作。
+
+**桌面集成**
+
+PulseAudio 实现了将其集成到桌面环境中的多项功能。
+
+**兼容层**
+
+与其他音响系统有几个兼容层，因此现有应用程序无需修改即可自动在 PulseAudio 上运行。
+
+## usecase
+
+以下是如何在桌面上使用 PulseAudio 功能的一些实际示例：
+
+- 智能热插拔处理。例如，在连接蓝牙或 USB 耳机时自动设置耳机，或者在耳机插入插孔时自动切换到耳机。
+- 用于在立体声、环绕声或 S/PDIF 等各种模式之间轻松切换声卡的 GUI。
+- 一个 GUI，用于轻松将音频流切换到任何可用的音频设备，如内置扬声器、有线耳机、蓝牙耳机或 HDMI 输出。
+- 一个 GUI，用于使单个应用程序比其他应用程序更响亮，或将其静音，并在下次应用程序出现时记住此决定。
+- 用于将音频路由到 LAN 中可用的远程设备的 GUI。例如，将笔记本电脑上播放音乐的浏览器连接到连接到 Raspberry Pi 的扬声器。
+- 自动将音乐或语音从蓝牙播放器或移动电话路由到声卡或蓝牙扬声器或耳机。
+- 透明地将各种声音处理工具添加到正在运行的应用程序中，例如向 VoIP 客户端添加回声消除。
+- 通过自动动态调整延迟到当前正在运行的应用程序可接受的最大值，并禁用当前不必要的声音处理（如重新采样）来减少 CPU 和电池使用量。
+- 智能 I/O 调度，可以结合播放的高延迟（以避免故障并降低 CPU 使用率）和用户操作（如音量更改）的低延迟（以提供更流畅的用户体验）。
+- 自动将现有桌面应用程序集成到 PulseAudio 工作流程中，即使它们不知道 PulseAudio。
+
+
+
+## 问题和缺点
+
+使用 PulseAudio 有几个已知的缺点，包括基本问题和将来可能解决的实现问题：
+
+- 额外的复杂性、开销和 bug（更多的代码总是意味着更多的 bug）
+- 缺乏全面的文档
+- 非直观的命令行工具和配置
+- 奇怪的功能，如自动生成和内置看门狗
+- 更高的最小延迟
+- 在 802.11 （WiFi） 等不可靠的网络上服务质量差
+- 没有硬件混合和重采样
+- 使用 ALSA UCM 时没有硬件volume
+
+## 高级组件
+
+下图演示了示例 PulseAudio 设置的简化视图。
+
+它显示了三个客户端（使用三个不同的 API）、一个本地 PulseAudio 服务器、两个远程 PulseAudio 服务器（通过“本机”和 RTP 协议连接）、一个远程 RTP 接收器、ALSA 后端以及为此设置提供服务所需的一组模块。
+
+![img](images/random_name2/components.png)
+
+
+
+## 关键抽象
+
+本节讨论关键的服务器端对象类型。
+
+###  Devices and streams 
+
+PulseAudio 是围绕连接到流（源输出和接收器输入）的设备（源和接收器）构建的。下图说明了这些连接。
+
+![img](images/random_name2/devices_and_streams.png)
+
+
+
+### 对象层次结构
+
+下图显示了服务器端对象的层次结构。
+
+![img](images/random_name2/object_hierarchy.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 简介
+
 ubuntu里，默认启动的pulseaudio是这样的：
 
 ```
@@ -25,7 +203,7 @@ PulseAudio是用于[Linux](https://so.csdn.net/so/search?from=pc_blog_highlight&
 
 
 
-实时和高优先级计划
+# 实时和高优先级计划
 
 为了最大程度地降低播放过程中丢失的风险，
 
@@ -159,32 +337,239 @@ PulseAudio是用于[Linux](https://so.csdn.net/so/search?from=pc_blog_highlight&
 |                          |                |
 |                          |                |
 
+以下是一些常用的 `pactl` 命令，帮助你管理和调试 PulseAudio。
 
+**1. 列出所有加载的模块**
+
+```bash
+pactl list modules
+```
+
+**2. 加载一个模块**
+
+```bash
+pactl load-module <module-name> [arguments]
+# 示例：加载 ALSA 输出模块
+pactl load-module module-alsa-sink device=hw:1,0
+```
+
+**3. 卸载一个模块**
+
+```bash
+pactl unload-module <module-id>
+# 示例：卸载模块 ID 为 12 的模块
+pactl unload-module 12
+```
+
+**4. 列出所有设备**
+
+```bash
+pactl list sinks          # 列出所有输出设备
+pactl list sources        # 列出所有输入设备
+pactl list sink-inputs    # 列出所有输出设备的输入流
+pactl list source-outputs # 列出所有输入设备的输出流
+```
+
+**5. 设置默认设备**
+
+```bash
+pactl set-default-sink <sink-name>
+pactl set-default-source <source-name>
+# 示例：设置默认输出设备
+pactl set-default-sink alsa_output.pci-0000_00_1b.0.analog-stereo
+```
+
+**6. 调整音量**
+
+```bash
+pactl set-sink-volume <sink-name> <volume>
+pactl set-source-volume <source-name> <volume>
+# 示例：将输出设备的音量设置为 50%
+pactl set-sink-volume 0 50%
+```
+
+**7. 静音/取消静音**
+
+```bash
+pactl set-sink-mute <sink-name> <mute>
+pactl set-source-mute <source-name> <mute>
+# 示例：静音输出设备
+pactl set-sink-mute 0 1
+# 取消静音
+pactl set-sink-mute 0 0
+```
+
+**8. 移动音频流**
+
+```bash
+pactl move-sink-input <sink-input-id> <sink-name>
+pactl move-source-output <source-output-id> <source-name>
+# 示例：将 sink-input 3 移动到 alsa_output.pci-0000_00_1b.0.analog-stereo
+pactl move-sink-input 3 alsa_output.pci-0000_00_1b.0.analog-stereo
+```
+
+**9. 列出客户端和服务器信息**
+
+```bash
+pactl list clients   # 列出所有客户端
+pactl info           # 显示服务器信息
+```
+
+**10. 重新加载 PulseAudio 配置**
+
+```bash
+pactl unload-module module-cli-protocol-unix && pactl load-module module-cli-protocol-unix
+```
+
+这些命令应该能帮助你更好地管理 PulseAudio。如果你有特定需求或问题，请告诉我！
 
 ## pacmd
 
-这个是在运行时动态调整pulseaudio的配置。
+`pacmd` 是 PulseAudio 的另一个命令行工具，用于与 PulseAudio 服务器交互。以下是一些常用的 `pacmd` 命令：
 
-描述
-该工具可用于在运行期间自省(introspect)或重新配置正在运行的PulseAudio声音服务器。
+**1. 获取 PulseAudio 信息**
 
-它连接到声音服务器，并提供了一个简单的实时shell，
+```bash
+pacmd stat
+```
 
-可用于输入在default.pa配置脚本中也可以理解的命令。
+**2. 列出所有加载的模块**
 
-要退出活动shell，请使用ctrl + d。
+```bash
+pacmd list-modules
+```
 
-请注意，shell程序内的“exit”命令将告知PulseAudio守护程序本身关闭！
+**3. 加载和卸载模块**
 
-如果在命令行上传递了任何参数，它们将被传递到活动shell中，该shell将处理命令并退出。
+```bash
+# 加载模块
+pacmd load-module <module-name> [arguments]
+# 示例：加载 ALSA 输出模块
+pacmd load-module module-alsa-sink device=hw:1,0
 
+# 卸载模块
+pacmd unload-module <module-id>
+# 示例：卸载模块 ID 为 12 的模块
+pacmd unload-module 12
+```
 
+**4. 列出所有设备**
 
-PulseAudio 是在GNOME 或 KDE等桌面环境中广泛使用的音频服务。
+```bash
+pacmd list-sinks          # 列出所有输出设备
+pacmd list-sources        # 列出所有输入设备
+pacmd list-sink-inputs    # 列出所有输出设备的输入流
+pacmd list-source-outputs # 列出所有输入设备的输出流
+```
 
-它在内核音频组件（比如ALSA 和 OSS）和应用程序之间充当代理的角色。
+**5. 设置默认设备**
 
-由于Arch Linux默认包含ALSA，PulseAudio经常和ALSA协同使用。
+```bash
+pacmd set-default-sink <sink-name>
+pacmd set-default-source <source-name>
+# 示例：设置默认输出设备
+pacmd set-default-sink alsa_output.pci-0000_00_1b.0.analog-stereo
+```
+
+**6. 调整音量**
+
+```bash
+pacmd set-sink-volume <sink-name> <volume>
+pacmd set-source-volume <source-name> <volume>
+# 示例：将输出设备的音量设置为 50%
+pacmd set-sink-volume 0 32768  # 32768 = 50% (65536 is 100%)
+```
+
+**7. 静音/取消静音**
+
+```bash
+pacmd set-sink-mute <sink-name> <mute>
+pacmd set-source-mute <source-name> <mute>
+# 示例：静音输出设备
+pacmd set-sink-mute 0 1
+# 取消静音
+pacmd set-sink-mute 0 0
+```
+
+**8. 移动音频流**
+
+```bash
+pacmd move-sink-input <sink-input-id> <sink-name>
+pacmd move-source-output <source-output-id> <source-name>
+# 示例：将 sink-input 3 移动到 alsa_output.pci-0000_00_1b.0.analog-stereo
+pacmd move-sink-input 3 alsa_output.pci-0000_00_1b.0.analog-stereo
+```
+
+**9. 列出客户端和服务器信息**
+
+```bash
+pacmd list-clients  # 列出所有客户端
+pacmd info          # 显示服务器信息
+```
+
+**10. 重新加载 PulseAudio 配置**
+
+```bash
+pacmd unload-module module-cli-protocol-unix && pacmd load-module module-cli-protocol-unix
+```
+
+以下是一个简单的表格，列出了一些常用命令：
+
+| **命令**                                 | **说明**                   |
+| ---------------------------------------- | -------------------------- |
+| `pacmd stat`                             | 获取 PulseAudio 服务器状态 |
+| `pacmd list-modules`                     | 列出所有加载的模块         |
+| `pacmd load-module <module-name>`        | 加载指定模块               |
+| `pacmd unload-module <module-id>`        | 卸载指定模块               |
+| `pacmd list-sinks`                       | 列出所有输出设备           |
+| `pacmd list-sources`                     | 列出所有输入设备           |
+| `pacmd list-sink-inputs`                 | 列出所有输出设备的输入流   |
+| `pacmd list-source-outputs`              | 列出所有输入设备的输出流   |
+| `pacmd set-default-sink <sink-name>`     | 设置默认输出设备           |
+| `pacmd set-default-source <source-name>` | 设置默认输入设备           |
+| `pacmd set-sink-volume <sink-name>`      | 设置输出设备音量           |
+| `pacmd set-source-volume <source-name>`  | 设置输入设备音量           |
+| `pacmd set-sink-mute <sink-name>`        | 静音/取消静音输出设备      |
+| `pacmd set-source-mute <source-name>`    | 静音/取消静音输入设备      |
+| `pacmd move-sink-input <id> <sink>`      | 移动音频流到指定输出设备   |
+| `pacmd move-source-output <id> <source>` | 移动音频流到指定输入设备   |
+| `pacmd list-clients`                     | 列出所有客户端             |
+| `pacmd info`                             | 显示服务器信息             |
+
+## pactl和pacmd关系
+
+`pactl` 和 `pacmd` 是 PulseAudio 提供的两个命令行工具，用于管理和控制 PulseAudio 服务器。它们在功能上有一些重叠，但也有一些区别。
+
+**1. pactl**
+
+- **用途**：`pactl`（PulseAudio Control）==主要用于发送简单的控制命令==给 PulseAudio 服务器。
+- **适用场景**：适合用于脚本中自动化管理和控制 PulseAudio，如调整音量、切换设备、加载/卸载模块等。
+- **接口**：基于 PulseAudio 的命令协议，通过 UNIX 套接字与服务器通信。
+- **常用命令**：`pactl list`、`pactl load-module`、`pactl set-sink-volume` 等。
+
+**2. pacmd**
+
+- **用途**：`pacmd`（PulseAudio Command Line Interface）==提供一个更高级的交互式命令行界面==，用于实时管理 PulseAudio 服务器。
+- **适用场景**：适合调试和实时管理 PulseAudio，特别是需要详细信息和更复杂操作时。
+- **接口**：直接与 PulseAudio 的内部命令接口通信，提供更强大的功能。
+- **常用命令**：`pacmd list-sinks`、`pacmd set-default-sink`、`pacmd load-module` 等。
+
+**关系和区别**
+
+| **特性**     | **pactl**                                 | **pacmd**                      |
+| ------------ | ----------------------------------------- | ------------------------------ |
+| **适用场景** | 简单控制命令，适合脚本自动化              | 高级调试和管理，适合实时交互   |
+| **接口**     | PulseAudio 命令协议，通过 UNIX 套接字通信 | PulseAudio 内部命令接口        |
+| **交互方式** | 非交互式命令行工具，适合一次性命令        | 交互式命令行界面，适合实时操作 |
+| **功能**     | 调整音量、切换设备、加载/卸载模块等       | 提供更多详细信息和高级操作     |
+| **复杂度**   | 简单，适合常规操作                        | 复杂，适合调试和高级管理       |
+
+**总结**
+
+- **pactl**：适合需要简单控制和自动化操作的场景。
+- **pacmd**：适合需要详细信息和高级管理的场景，尤其是在调试时非常有用。
+
+如果你是开发者，并且已经有 ALSA 背景，可以根据具体需求选择使用 `pactl` 或 `pacmd`。对于简单的日常管理和脚本控制，`pactl` 可能更方便；而在需要深入调试和管理时，`pacmd` 会提供更强大的功能和更详细的信息。
 
 
 

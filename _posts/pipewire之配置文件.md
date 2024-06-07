@@ -65,6 +65,182 @@ https://bootlin.com/blog/an-introduction-to-pipewire/
 
 https://wiki.debian.org/zh_CN/PipeWire
 
+# 配置文件的搜索路径
+
+安装下面的顺序依次搜索。XDG_CONFIG_HOME是~/.config目录。
+
+```
+$XDG_CONFIG_HOME/pipewire/pipewire.conf
+
+/etc/pipewire/pipewire.conf
+
+/usr/share/pipewire/pipewire.conf
+
+/usr/share/pipewire/pipewire.conf.d/
+
+/etc/pipewire/pipewire.conf.d/
+
+$XDG_CONFIG_HOME/pipewire/pipewire.conf.d/
+```
+
+环境变量 `PIPEWIRE_CONFIG_DIR` 和 `PIPEWIRE_CONFIG_PREFIX` `PIPEWIRE_CONFIG_NAME` 可用于分别指定备用配置目录、子目录和文件。
+
+
+
+`pipewire.conf.d/` 目录中的所有 `*.conf` 文件都将加载并合并到配置中。
+
+==字典部分被合并，覆盖属性（如果它们已存在），并将数组部分追加到。==
+
+插入式文件的格式与主配置文件相同，但仅包含要修改的设置。
+
+建议使用配置片段的方式进行配置定制。
+
+
+
+https://docs.pipewire.org/page_man_pipewire_conf_5.html
+
+# pw-config列出配置文件的加载情况
+
+```
+# pw-config 
+{
+  "config.path": "/usr/share/pipewire/pipewire.conf",
+  "override.2.0.config.path": "/etc/pipewire/pipewire.conf.d/10-default-sink.conf",
+  "override.2.1.config.path": "/etc/pipewire/pipewire.conf.d/10-wireplumber.conf"
+}
+```
+
+
+
+# 使用aplay进行播放的时候，会使用哪个配置文件的？
+
+`aplay` 是 ALSA (Advanced Linux Sound Architecture) 的命令行音频播放工具。在使用 `aplay` 播放音频时，PipeWire 会充当中间层，因此涉及到 PipeWire 和 ALSA 的配置文件。
+
+
+
+当你使用 `aplay` 播放音频时，PipeWire 会涉及以下几个配置文件：
+
+1. **PipeWire 主配置文件 (`pipewire.conf`)**：
+   - 配置全局设置和模块加载。
+   - 位置：`/etc/pipewire/pipewire.conf` 或 `~/.config/pipewire/pipewire.conf`。
+
+2. **PipeWire ALSA 配置文件 (`pipewire-alsa.conf`)**：
+   - 配置 ALSA 兼容层的具体参数。
+   - 位置：`/etc/pipewire/pipewire-alsa.conf` 或 `~/.config/pipewire/pipewire-alsa.conf`。
+
+3. **ALSA 配置文件 (`.asoundrc` 和 `asound.conf`)**：
+   - 传统 ALSA 配置文件，可以定义 ALSA 设备、插件等。
+   - 用户级位置：`~/.asoundrc`。
+   - 系统级位置：`/etc/asound.conf`。
+
+主要配置文件说明
+
+1. **`pipewire.conf`**：
+   - 定义 PipeWire 的全局设置和模块加载顺序。
+   - 配置示例：
+     ```ini
+     context.properties = {
+         log.level = 2
+         default.clock.rate = 48000
+         default.clock.quantum = 1024
+     }
+     
+     context.modules = [
+         { name = libpipewire-module-rt
+           args = { }
+         }
+         { name = libpipewire-module-protocol-native
+           args = { }
+         }
+         { name = libpipewire-module-client-node
+           args = { }
+         }
+     ]
+     ```
+
+2. **`pipewire-alsa.conf`**：
+   
+   - 配置 PipeWire 的 ALSA 兼容层，用于处理 `aplay` 请求。
+   - 配置示例：
+     ```ini
+     context.properties = {
+         log.level = 2
+     }
+     
+     context.modules = [
+         { name = libpipewire-module-alsa
+           args = {
+               # Set the default ALSA device
+               alsa.device = "default"
+           }
+         }
+     ]
+     ```
+   
+3. **`.asoundrc` 和 `asound.conf`**：
+   - 定义 ALSA 设备、插件和设置。
+   - 示例 `.asoundrc` 文件：
+     ```ini
+     pcm.!default {
+         type plug
+         slave.pcm {
+             type hw
+             card 0
+         }
+     }
+     
+     ctl.!default {
+         type hw
+         card 0
+     }
+     ```
+
+如何确定 `aplay` 使用的配置
+
+1. **确认 `aplay` 使用的 ALSA 设备**：
+   - 查看 `aplay` 使用的 ALSA 设备：
+     ```sh
+     aplay -l
+     ```
+   - 查看当前默认 ALSA 设备：
+     ```sh
+     aplay -L
+     ```
+
+2. **检查 PipeWire ALSA 配置**：
+   - 打开并检查 `pipewire-alsa.conf` 中的设置：
+     ```sh
+     nano /etc/pipewire/pipewire-alsa.conf
+     ```
+   - 确认 ALSA 设备配置是否正确。
+
+3. **验证配置是否生效**：
+   
+   - 修改配置文件后，重启 PipeWire 服务：
+     ```sh
+     systemctl --user restart pipewire
+     ```
+
+示例修改
+
+如果你需要将 `aplay` 的默认输出设备改为特定的 PipeWire ALSA 设备，可以在 `pipewire-alsa.conf` 中进行设置：
+
+```ini
+context.properties = {
+    log.level = 2
+}
+
+context.modules = [
+    { name = libpipewire-module-alsa
+      args = {
+          alsa.device = "default"
+      }
+    }
+]
+```
+
+通过这种方式，你可以确保 `aplay` 在使用 PipeWire ALSA 兼容层时，按照指定的配置进行音频播放。
+
 # pipewire默认提供的配置文件
 
 下面是 PipeWire 配置文件的说明
@@ -213,3 +389,50 @@ pipewire.conf
    ```
 
 通过这些层级关系和示例配置，你可以更好地理解和管理 PipeWire 的各种配置文件，以满足不同的音频处理需求。
+
+# client使用的配置
+
+普通的工具是加载 client.conf，
+
+pw-cat 特别一点，它需要实时性，它加载 client-rt.conf。
+
+/etc/pipewire/client.conf.d/ 和/etc/pipewire/client-rt.conf.d/下面可以放自己定义的配置。
+
+客户端配置文件写法跟 PipeWire 配置文件是一样的语法。
+
+对于客户端， `core.daemon` 该属性通常设置为 false。
+
+客户端通常只有一组有限的 `context.spa-libs` ，通常用于创建音频节点和loop。
+
+客户端配置文件包含一个 stream.properties 部分，用于配置客户端流的选项：
+
+任何流都可以将原始样本写入 WAV 文件来进行调试 
+
+```plaintext
+debug.wav-path = ""
+```
+
+ALSA 插件使用 client-rt.conf 文件。
+
+
+
+例如：
+
+```plaintext
+PIPEWIRE_ALSA='{ alsa.buffer-bytes=16384 node.name=foo }' aplay ...
+```
+
+
+使用自定义属性开始播放。
+
+
+
+首先，您需要找到要更改的 `pw-cli ls Node` 源或接收器。
+
+具有该属性的 `media.class = "Audio/Sink"` 节点是音频接收器。
+
+用于 `pw-cli e <id> Props` 列出接收器的可用属性。查找一个 `params` 属性，它有一个可以在运行时更改的键/值对列表。
+
+`pw-dump <id>` 对于ALSA设备，它看起来像这样：
+
+请注意，任何会话管理器（尚未）保存这些新设置。每次会话管理器重新启动时，都应重新应用它们。

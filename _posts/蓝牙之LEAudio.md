@@ -178,6 +178,44 @@ https://www.bluez.org/le-audio-support/
 
 现在就是相关资料太少，无论哪个系统的，我都要看一看。
 
+LE Audio 堆栈的整体设计是实现尽可能严格地遵循规范，
+
+无论是在结构方面还是在命名方面。
+
+大多数 API 函数都以规范首字母缩略词为前缀（例如，bt_bap 表示基本音频配置文件 （BAP），bt_vcp 表示音量控制配置文件 （VCP））。
+
+然后，在适用的情况下，每个配置文件中的特定角色为前缀（例如和 `bt_bap_unicast_client_discover()` `bt_vcp_vol_rend_set_vol()` ）。
+
+通常每个过程都有一个由配置文件或服务规范定义的函数，
+
+以及与过程不对应的其他帮助程序或元函数。
+
+文件的结构通常也遵循这一点，其中 BAP 相关文件以 bap 为前缀，VCP 相关文件以 vcp 为前缀。如果文件特定于配置文件角色，则该角色也会嵌入到文件名中。
+
+通用音频框架 （GAF） 被视为蓝牙 LE 音频体系结构的中间件。
+
+GAF 包含配置文件和服务，允许更高层的应用程序和配置文件设置流、更改音量、控制媒体和电话等。
+
+GAF 建立在 GATT、GAP 和同步通道 （ISO） 之上。
+
+GAF 使用 GAP 连接、通告和同步到其他设备。
+
+GAF 使用 GATT 来配置流、将流与内容（例如媒体或电话）相关联、控制音量等。
+
+GAF 将 ISO 用于音频流本身，既可以作为单播（连接）音频流，也可以作为广播（未连接）音频流。
+
+![image-20240606162147726](images/random_name2/image-20240606162147726.png)
+
+
+
+![image-20240606162201787](images/random_name2/image-20240606162201787.png)
+
+GAF 已在 Zephyr 中实现，结构如下
+
+![image-20240606162233297](images/random_name2/image-20240606162233297.png)
+
+
+
 https://docs.zephyrproject.org/latest/connectivity/bluetooth/api/audio/bluetooth-le-audio-arch.html
 
 # LE audio BIS 音频播放
@@ -494,7 +532,327 @@ stream可以是：
 
 3、翻译。
 
+# bluez里的bap
 
+看这个测试的写法。
+
+unit\test-bap.c
+
+有6000多行代码。看起来内容非常多。
+
+
+
+# leaudio的连接和传输过程，以CIS单播为例
+
+LE Audio（低能耗音频）是蓝牙技术的一项新标准，它使用低能耗蓝牙（BLE）来传输音频数据。CIS（Connected Isochronous Stream）单播是 LE Audio 中用于单个设备之间音频传输的一种模式。以下是使用 CIS 单播进行 LE Audio 连接和传输的过程：
+
+### 1. 设备发现与配对
+
+在传输音频数据之前，设备需要进行发现和配对：
+
+1. **设备发现**：音频源设备（如智能手机）和音频接收设备（如耳机）进行扫描和广播。
+2. **配对**：使用 BLE 标准的配对和绑定过程，确保设备之间的通信是安全的。
+
+### 2. 建立连接
+
+一旦设备成功配对，音频源设备和接收设备之间将建立 BLE 连接。
+
+### 3. ISO 链路的建立
+
+建立连接后，需要建立 ISO（Isochronous）链路，以便传输实时音频数据。
+
+1. **创建 CIS 请求**：音频源设备向音频接收设备发送创建 CIS 的请求。请求中包含 CIS 的参数，如帧间隔、最大传输单元（MTU）等。
+2. **创建 CIS 响应**：音频接收设备响应创建 CIS 的请求，确认可以接受这些参数。
+
+### 4. 数据传输
+
+建立 ISO 链路后，音频数据通过 CIS 单播通道进行传输。
+
+1. **配置音频编解码器**：配置使用的音频编解码器（如 LC3 编解码器）。
+2. **开始音频传输**：音频源设备开始通过 CIS 通道发送音频数据包，接收设备解码并播放音频。
+
+### 5. 连接的管理
+
+在传输过程中，设备需要管理和维护连接，以确保音频流的稳定性。
+
+1. **链路保持**：定期发送链路保持消息，以确保连接的持续性。
+2. **错误恢复**：处理和恢复传输错误，确保音频流的质量。
+
+### 6. 断开连接
+
+当音频传输完成或需要终止时，设备之间将断开 CIS 连接。
+
+1. **终止 CIS 请求**：音频源设备发送终止 CIS 请求。
+2. **终止 CIS 响应**：音频接收设备响应请求并终止连接。
+
+### 示例代码
+
+以下是一个简化的示例代码，展示了如何使用 C 语言来处理 BLE 连接和 CIS 单播音频传输。注意，这只是一个伪代码示例，实际实现将依赖于具体的 BLE 堆栈和硬件平台。
+
+```c
+#include <stdio.h>
+#include <bluetooth/bluetooth.h>
+#include <bluetooth/l2cap.h>
+#include <bluetooth/iso.h>
+
+// 初始化 BLE 连接
+int init_ble_connection() {
+    // 设置 BLE 连接参数
+    struct sockaddr_l2 src, dst;
+    int sock;
+    sock = socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
+    if (sock < 0) {
+        perror("socket");
+        return -1;
+    }
+
+    // 绑定到本地蓝牙适配器
+    memset(&src, 0, sizeof(src));
+    src.l2_family = AF_BLUETOOTH;
+    src.l2_bdaddr = *BDADDR_ANY;
+    bind(sock, (struct sockaddr *)&src, sizeof(src));
+
+    // 连接到远程设备
+    memset(&dst, 0, sizeof(dst));
+    dst.l2_family = AF_BLUETOOTH;
+    str2ba("XX:XX:XX:XX:XX:XX", &dst.l2_bdaddr); // 替换为目标设备的地址
+    connect(sock, (struct sockaddr *)&dst, sizeof(dst));
+
+    return sock;
+}
+
+// 建立 CIS 连接
+int establish_cis_connection(int sock) {
+    // 设置 CIS 参数
+    struct iso_conn_params params;
+    memset(&params, 0, sizeof(params));
+    params.interval = 10; // 帧间隔
+    params.latency = 20;  // 延迟
+    params.pkt_len = ISO_DEFAULT_MTU;
+
+    // 发送创建 CIS 请求
+    if (ioctl(sock, IOCTL_CREATE_CIS, &params) < 0) {
+        perror("ioctl");
+        return -1;
+    }
+
+    return 0;
+}
+
+// 传输音频数据
+int transmit_audio_data(int sock, const uint8_t *data, size_t len) {
+    // 发送音频数据包
+    if (send(sock, data, len, 0) < 0) {
+        perror("send");
+        return -1;
+    }
+
+    return 0;
+}
+
+int main() {
+    int sock;
+    uint8_t audio_data[ISO_DEFAULT_MTU];
+
+    // 初始化 BLE 连接
+    sock = init_ble_connection();
+    if (sock < 0) {
+        return -1;
+    }
+
+    // 建立 CIS 连接
+    if (establish_cis_connection(sock) < 0) {
+        close(sock);
+        return -1;
+    }
+
+    // 模拟音频数据传输
+    while (1) {
+        // 生成或读取音频数据
+        memset(audio_data, 0, sizeof(audio_data));
+        // 传输音频数据
+        if (transmit_audio_data(sock, audio_data, sizeof(audio_data)) < 0) {
+            break;
+        }
+    }
+
+    // 关闭连接
+    close(sock);
+    return 0;
+}
+```
+
+这个示例展示了 BLE 连接的初始化、CIS 连接的建立和音频数据的传输过程。实际实现中需要处理更多的错误和状态管理，并根据具体的 BLE 堆栈和硬件平台进行调整。
+
+# CIS
+
+这篇文章画图比较好。
+
+https://blog.csdn.net/sinat_21154803/article/details/122136201
+
+# MCP：Media Controller Profile
+
+https://blog.csdn.net/weixin_42884925/article/details/132850775
+
+# 低功耗蓝牙LE Audio Profile 详细介绍
+
+https://blog.csdn.net/HaaSTech/article/details/119565156
+
+# LE Audio PTS dongle破解和调试方法
+
+ 目前市面上支持LE Audio的USB dongle很少，如果要在Ubuntu Sim上调试LE Audio，基本只能用蓝牙官方PTS Dongle，但目前国内很难买到。本文介绍一种破解PTS Dongle的方法，以及如何在ubuntu上用bluez + zephyr调试LE Audio。
+
+执行west build -t run 运行zephyr，然后在shell终端执行下面命令初始化le audio，发送le audio广播
+
+```
+bt init
+
+audio init
+
+mcc init
+
+vcs init
+
+bt adv-create conn-nscan ext-adv name
+
+bt adv-data discov
+
+bt adv-start
+```
+
+https://blog.csdn.net/fan_hang/article/details/135423795
+
+# zephyr leaudio
+
+https://fanhang.blog.csdn.net/article/details/135582605
+
+# 实测Qaulcomm LE Audio低延迟
+
+Bluetooth LE Audio 是蓝牙标准的最新技术，
+
+相对于传统蓝牙技术，提供了一系列的改进。
+
+其中一个显著的改进是音频延迟。
+
+==Bluetooth LE Audio 通过改进编解码器==
+
+==和引入一个名为LE等时通道的新功能来实现低延迟。==
+
+实际上延迟到底是多少呢?
+
+我们就拿Qualcoomm QCC3086 开发板当发射端和QCC5181 开发板当接收端实际量测给大家看。
+
+第一种验证: 
+
+使用一个USB sound card搭配Audacity音讯编辑软体
+
+首先量测USB sound card本身的延迟，
+
+使用Audacity音讯编辑软体拨放和录音功能，
+
+将拨放和录音装置皆设为USB sound card。
+
+接着将一条音源线分别插入耳机和麦克风的音源孔按下录音键，这时Audacity就会拨放音档并且做录音动作。
+
+量测拨放音档和录音音档的起始位置，就可以大概得到约0.008秒(8毫秒)的延迟。
+
+# 蓝牙5.2新特性 LE Audio - Isochronous channel
+
+Isochronous channel 是蓝牙5.2发布的新特性，
+
+可以翻译为同步通道，
+
+主要应用在LE Audio上。
+
+它定义了一个有时间依赖的数据的传输通道和传输策略。
+
+首先是定义了一个对于多接收方同步获取数据的机制；
+
+==其次是定义了发送方在允许的时间外丢弃数据，==
+
+从而保证接收方收取的数据满足时效要求。
+
+同步通道分为连接同步通道和广播同步通道。
+
+看名字就可以知道，
+
+连接同步通道是需要两个设备建立gatt连接之后才可以使用的用来传输音频的通道，
+
+广播同步通道则是使用广播来传输音频流。
+
+为什么需要同步通道？
+
+   ble 的传统的gatt也可以同时连接多个slaver设备，但是master与多个slaver建立连接的后，master与每个slaver建立的连接通道都是相互独立的，使用的是不同的时间基准，并且每个gatt通道的连接间隔可能也不一样，所以master在给不同的slaver发送数据的时候无法做到精确的时间同步。
+
+   这也是ble之前的应用场景所决定的，ble传统的gatt连接通道适合进行数据流的传输，并且通过调整连接interval来提高ble数据传输的峰值速率，这样的设计满足了大部分的数据流的传输要求。
+
+但是音频流和数据流对传输速率的要求是不一样的，
+
+音频流的数据码率是固定的，
+
+比如128bps， 192bps， 
+
+所以音频流并不追求绝对的峰值速率，
+
+而是稳定的、实时的传输通道，
+
+并且音频流通常有多个声道，需要让多个声道的数据有很好的同步性。
+
+就这样，在音频流传输的需求背景下，Isochronous channel 同步通道应运而生。
+
+
+
+连接同步通道有两个新的概念，分别是CIG （Connected Isochronous Group） 和 CIS （Connected Isochronous Stream）。
+
+连接同步通道也有连接间隔，称为ISO_Interval，这个和ble传统的gatt连接的interval有些类似，但是ISO_Interval把时序分的更加细一些。
+
+CIG：是由master建立的，建立CIG的时候interval已经确认好了。 建立连接后， master可以向slaver发送建立CIG请求，一个CIG最多可以建立31个CIS。
+
+CIS： CIS表示每个连接的音频流，可以简单理解为每个CIS就是TWS耳机中的一个设备。每个CIS最多可以包含31个subevent，依次轮流发送， 每个subevent最小的间隔是400us。
+
+连接同步通道又分为两种模式，sequential模式和interleave模式
+
+
+
+总结
+
+- 连接同步通道是基于蓝牙连接的，首先要先建立ble连接
+- 基于时间同步的音频传输机制，可以实现多个设备的数据同步
+- 一个master可以建立多个CIG
+- 每个CIG可以最多31个CIS
+- 每个CIS里面最多有31个subevent
+- 链路层有LL_CIS_REQ 和 LL_CIS_RSP来创建CIS
+
+
+
+# 使用蓝牙 LE 的助听器音频支持
+
+针对助听器使用 CoC 时，
+
+网络拓扑会假设存在一个中央设备和两个外围设备（一个在左侧，一个在右侧），
+
+如**图 1** 所示。
+
+蓝牙音频系统会将左右外围设备分别视为一个音频接收器。
+
+如果由于单耳选配或连接中断而导致某个外围设备缺失，则中央设备会混合左右声道，并将音频传输到剩余的那个外围设备。
+
+如果中央设备与这两个外围设备之间的连接均中断，则中央设备会认为指向音频接收器的链接发生中断。
+
+在这些情况下，中央设备会将音频路由到其他输出设备。
+
+![img](images/random_name2/bt_asha_topology.png)
+**图 1.**用于使用支持 BLE 的 CoC 将助听器与 Android 移动设备配对的拓扑
+
+如果中央设备未将音频数据流式传输到外围设备，且可以保持 BLE 连接，那么中央设备应该不会与外围设备断开连接。保持连接可以与位于外围设备上的 GATT 服务器进行数据通信。
+
+
+
+https://source.android.com/docs/core/connect/bluetooth/asha?hl=zh-cn
+
+# **LE Audio BIS 模式流程解析**
+
+https://www.nordicsemi.cn/news/le-audio-bis/
 
 # 参考资料
 

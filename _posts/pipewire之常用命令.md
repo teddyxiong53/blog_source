@@ -289,6 +289,23 @@ pw-metadata -n settings 0                # list server settings
 pw-metadata -n settings 0 log.level 2    # modify a server setting
 ```
 
+
+
+```
+# pw-metadata -n settings
+Found "settings" metadata 30
+update: id:0 key:'log.level' value:'2' type:''
+update: id:0 key:'clock.rate' value:'48000' type:''
+update: id:0 key:'clock.allowed-rates' value:'[ 48000 ]' type:''
+update: id:0 key:'clock.quantum' value:'1024' type:''
+update: id:0 key:'clock.min-quantum' value:'32' type:''
+update: id:0 key:'clock.max-quantum' value:'2048' type:''
+update: id:0 key:'clock.force-quantum' value:'0' type:''
+update: id:0 key:'clock.force-rate' value:'0' type:''
+```
+
+
+
 # pw-cat
 
 pw-cat 是一个简单的工具，
