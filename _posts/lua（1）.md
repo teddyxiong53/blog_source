@@ -40,6 +40,10 @@ sudo apt install lua5.3
 
 H7 TOOL的方案，这个就是单片机加lua的方式，做得很强大。写法也很朴实。
 
+这个是风格比较现代化的lua文档网站。
+
+https://luavel.com/docs/
+
 
 
 # lua发展历史
@@ -3903,6 +3907,450 @@ For pkg-config to find lua@5.3 you may need to set:
 
 
 https://blog.csdn.net/m0_65012566/article/details/137640317
+
+
+
+# c调用lua
+
+本篇主要讲解下c如何调用Lua的，即c作为宿主语言，Lua为附加语言。
+
+c和Lua之间是通过Lua堆栈交互的，基本流程是：
+
+把元素入栈——从栈中弹出元素——处理——把结果入栈。
+
+关于Lua堆栈介绍以及Lua如何调用c参考其他两篇。
+
+## 加载运行脚本
+
+在c中加载运行Lua脚本的流程通常是，luaL_newstate、luaL_openlibs、luaL_loadfile、lua_pcall
+
+```
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+
+int main(int argc, char const *argv[])
+{
+    lua_State *L = luaL_newstate();
+    luaL_openlibs(L);
+    int ret = luaL_loadfile(L, "c2lua.lua");
+    if (ret != LUA_OK) {
+        char *err = lua_tostring(L, -1);
+        printf("load error:%s\n", err);
+        lua_close(L);
+        return 0;
+    }
+    ret = lua_pcall(L, 0, 0, 0);
+    if (ret != LUA_OK) {
+        char *err = lua_tostring(L, -1);
+        printf("error %s\n", err);
+        lua_close(L);
+        return -1;
+    }
+    lua_close(L);
+    return 0;
+}
+
+```
+
+## 操作lua全局变量
+
+
+
+```
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+
+void test_global(lua_State *L)
+{
+    lua_getglobal(L, "var");
+    int var = lua_tonumber(L, -1);
+    printf("var = %d\n", var);
+    lua_pushnumber(L, 10);
+    lua_setglobal(L, "var");
+    lua_pushstring(L, "c str");
+    lua_setglobal(L, "var2");
+    lua_getglobal(L, "f");
+    lua_pcall(L, 0, 0, 0);
+}
+
+int main(int argc, char const *argv[])
+{
+    lua_State *L = luaL_newstate();
+    luaL_openlibs(L);
+    int ret = luaL_loadfile(L, "c2lua.lua");
+    if (ret != LUA_OK) {
+        char *err = lua_tostring(L, -1);
+        printf("load error:%s\n", err);
+        lua_close(L);
+        return 0;
+    }
+    lua_pcall(L,0,0,0);
+    test_global(L);
+    lua_close(L);
+    return 0;
+}
+
+```
+
+## 调用lua中的函数
+
+通过lua_pcall这个api在保护模式下调用一个Lua函数
+
+```
+int lua_pcall (lua_State *L, int nargs, int nresults, int msgh);
+```
+
+nargs是函数参数的个数，nresults是函数返回值的个数。
+
+约定：调用前需要依次把函数，nargs个参数（从左向右）压栈（此时最后一个参数在栈顶位置），然后函数和所有参数都出栈，并调用指定的Lua函数。
+
+如果调用过程没有发生错误，会把nresults个结果（从左向右）依次压入栈中（此时最后一个结果在栈顶位置），并返回成功LUA_OK。
+
+**如果发生错误，lua_pcall会捕获它，把唯一返回值（错误信息）压栈，然后返回特定的错误码。**
+
+此时，如果设置msgh不为0，则会指定栈上索引msgh指向的位置为错误处理函数，然后以错误信息作为参数调用该错误处理函数，最后把返回值作为错误信息压栈。
+
+### lua stack top查看
+
+![image-20240608185907359](images/random_name2/image-20240608185907359.png)
+
+```
+#define TOP() printf("%s %d top:%d\n", __func__, __LINE__, lua_gettop(L))
+void test_function(lua_State *L)
+{
+    TOP();
+    lua_getglobal(L, "f1");
+    TOP();
+    lua_pcall(L, 0, 0,0);
+    TOP();
+    lua_getglobal(L, "f2");
+    TOP();
+    lua_pushnumber(L, 100);
+    TOP();
+    lua_pushnumber(L, 10);
+    TOP();
+    lua_pcall(L, 2, 2, 0);
+    TOP();
+    lua_getglobal(L, "f3");
+    TOP();
+    char *str = "c";
+    lua_pushstring(L, str);
+    TOP();
+    lua_pcall(L, 1, 1, 0);
+    TOP();
+}
+```
+
+打印：
+
+```
+teddy@teddydeMBP lua % ./test
+test_function 8 top:0
+test_function 10 top:1
+this is f1
+test_function 12 top:0
+test_function 14 top:1
+test_function 16 top:2
+test_function 18 top:3
+test_function 20 top:2
+test_function 22 top:3
+test_function 25 top:4
+test_function 27 top:3
+```
+
+这个跟我想的是一样的。
+
+## 操作lua中的table
+
+对表的操作主要有查找t[k]、赋值t[k]=v以及遍历表。
+
+```
+//c2lua.lua
+t = {1, 2, ["a"] = 3, ["b"] = {["c"] = 'd'}}
+int lua_getfield (lua_State *L, int index, const char *k);
+```
+
+查找，把t[k]的值压栈，t为栈上索引index指向的位置，跟Lua一样该api可能触发"index"事件对应的元方法，等价于lua_pushstring(L,const char*k)和lua_gettable(L, int index)两步，所以通常用lua_getfield在表中查找某个值。
+
+```
+void lua_setfield (lua_State *L, int index, const char *k);
+```
+
+ 赋值，等价于t[k]=v，将栈顶的值(v)出栈，其中t为栈上索引index指向的位置，跟Lua一样该api可能触发“newindex”事件对应的元方法。需先调用lua_pushxxx(L,v)将v入栈，再调用lua_setfield赋值。
+
+```
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+
+#define TOP() printf("%s %d top:%d\n", __func__, __LINE__, lua_gettop(L))
+
+void dump_table(lua_State *L, int index)
+{
+    if (lua_type(L, index) != LUA_TTABLE) {
+        return;
+    }
+    lua_pushnil(L);//nil 入栈，相当于从表的第一个元素开始遍历
+    while (lua_next(L, index) != 0) {
+        printf("%s - %s\n", lua_typename(L, lua_type(L, -2)), lua_typename(L, lua_type(L, -1)));
+        lua_pop(L, 1);
+    }
+}
+void test_table(lua_State *L)
+{
+    TOP();
+    lua_getglobal(L, "t");
+    TOP();
+    lua_getfield(L, 1, "a");
+    TOP();
+    printf("t.a:%d\n", lua_tointeger(L, -1));
+    lua_getfield(L, 1, "b");
+    lua_getfield(L, -1, "c");
+
+    lua_settop(L, 1);//把栈的位置设置为1，则当前栈里只剩下 t 
+    lua_pushnumber(L, 10);
+    lua_setfield(L, 1, "a");//t.a = 10
+    TOP();
+    lua_pushstring(L, "hello aaa");
+    lua_setfield(L, 1, "e");//t.e = "hello aaa"
+    dump_table(L, 1);
+
+}
+int main(int argc, char const *argv[])
+{
+    lua_State *L = luaL_newstate();
+    luaL_openlibs(L);
+    int ret = luaL_loadfile(L, "c2lua.lua");
+    if (ret != LUA_OK) {
+        char *err = lua_tostring(L, -1);
+        printf("load error:%s\n", err);
+        lua_close(L);
+        return 0;
+    }
+    lua_pcall(L,0,0,0);
+    test_table(L);
+    lua_close(L);
+    return 0;
+}
+
+```
+
+
+
+# lua调用c
+
+本篇主要讲解Lua是如何调用c的，Lua是宿主语言，c是附加语言，关于c如何调用Lua参考其他两篇。
+
+Lua调用c有几种不同方式，这里只讲解最常用的一种：
+
+将c模块编译成so库，然后供Lua调用。
+
+```
+gcc mylib.c -fPIC -shared -o mylib.so -I/usr/local/include/
+```
+
+约定：
+
+c模块需提供luaopen_xxx接口，xxx与文件名必须一致，比如"mylib"；
+
+还需提供一个注册数组（55-60行），该数组必须命名为luaL_Reg，每一项是{lua函数名，c函数名}，最后一项是{NULL, NULL}；
+
+通过luaL_newlib创建新的表入栈，然后将数组中的函数注册进去，这样Lua就可以调用到。
+
+
+
+Lua文件里，需将so库加入cpath路径里，通过require返回栈上的表，Lua就可以调用表中注册的接口，比如，add、sub、avg等
+
+Lua调用c api的过程：Lua将api需要的参数入栈——c提取到参数——处理——c将结果入栈——Lua提取出结果
+
+```
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+
+#define TYPE_BOOLEAN 1
+#define TYPE_NUMBER 2
+#define TYPE_STRING 3
+
+static int ladd(lua_State *L)
+{
+    double a = luaL_checknumber(L, -2);
+    double b  = luaL_checknumber(L, -1);
+    lua_pushnumber(L, a+b);
+    return 1;
+}
+static int lsub(lua_State *L)
+{
+    double a = luaL_checknumber(L, -2);
+    double b  = luaL_checknumber(L, -1);
+    lua_pushnumber(L, a-b);
+    return 1;
+}
+
+static int lavg(lua_State *L)
+{
+    double avg = 0.0;
+    int n = lua_gettop(L);
+    printf("top:%d\n", n);
+    if (n == 0) {
+        lua_pushnumber(L, 0);
+        return 1;
+    }
+    int i;
+    for (i=1; i<=n; i++) {//注意这里是1开始。
+        avg += luaL_checknumber(L, i);
+    }
+    avg = avg/n;
+    lua_pushnumber(L, avg);
+    return 1;
+}
+
+static int fn(lua_State *L )
+{
+    int type = lua_type(L, -1);
+    printf("type:%d\n",type);
+    if (type == LUA_TBOOLEAN) {
+        lua_pushvalue(L, lua_upvalueindex(TYPE_BOOLEAN));
+    } else if (type == LUA_TNUMBER) {
+        lua_pushvalue(L, lua_upvalueindex(TYPE_NUMBER));
+    } else if (type == LUA_TSTRING) {
+        lua_pushvalue(L, lua_upvalueindex(TYPE_STRING));
+    }
+    return 1;
+}
+
+int luaopen_mylib(lua_State *L)
+{
+    luaL_Reg l[] = {
+        {"add", ladd},
+        {"sub", lsub},
+        {"avg", lavg},
+        {NULL, NULL},
+    };
+    luaL_newlib(L, l);
+    lua_pushliteral(L, "BOOLEAN");
+    lua_pushliteral(L, "NUMBER");
+    lua_pushliteral(L, "STRING");
+    lua_pushcclosure(L, fn, 3);
+    lua_setfield(L, -2, "fn");
+    return 1;
+}
+
+```
+
+测试用的lua代码：
+
+```
+package.cpath = "./?.so"
+local mylib = require("mylib")
+
+local a, b = 1.0, 2.0
+print(mylib.add(a,b), mylib.sub(a,b))
+print(mylib.avg())
+print(mylib.avg(1,2,3,4))
+print(mylib.fn(true), mylib.fn(10), mylib.fn("abc"))
+
+```
+
+
+
+
+
+# 统计一个进程里的lua虚拟机个数
+
+统计一个进程中的Lua虚拟机个数，可以通过遍历进程内存中的Lua状态（Lua state）结构体来实现。下面是一个简要的方案：
+
+**1. 在C代码中嵌入Lua**
+
+首先，我们需要一个C程序，该程序包含一个或多个Lua虚拟机（lua_State）。
+
+**2. 使用调试工具（如GDB）**
+
+使用GDB（GNU调试器）来检查内存中的Lua虚拟机实例。
+
+**示例代码**
+
+```c
+#include <stdio.h>
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
+
+int main() {
+    lua_State *L1 = luaL_newstate();
+    luaL_openlibs(L1);
+
+    lua_State *L2 = luaL_newstate();
+    luaL_openlibs(L2);
+
+    // 防止程序立即退出，以便有时间使用GDB检查
+    getchar();
+
+    lua_close(L1);
+    lua_close(L2);
+    return 0;
+}
+```
+
+**3. 编译并运行**
+
+```sh
+gcc -o luatest luatest.c -llua
+./luatest
+```
+
+**4. 使用GDB进行调试**
+
+```sh
+gdb ./luatest
+```
+
+在GDB中，使用以下命令查找`lua_State`实例：
+
+```sh
+(gdb) info proc mappings
+(gdb) x/1000x <memory_address_range>
+```
+
+可以通过分析`info proc mappings`输出中的内存地址范围来找到可能的`lua_State`实例。
+
+**5. 编写脚本自动化检测**
+
+可以编写一个GDB脚本，自动化查找`lua_State`结构体。
+
+```sh
+(gdb) define find_lua_states
+>    set $addr = <starting_address>
+>    while $addr < <ending_address>
+>        if (*(int*)$addr == 0x1B4C616C)  # 0x1B4C616C是Lua标识符
+>            printf "Found lua_State at: %p\n", $addr
+>        end
+>        set $addr += <size_of_pointer>
+>    end
+>end
+```
+
+执行自定义脚本：
+
+```sh
+(gdb) source find_lua_states
+```
+
+这样，GDB将遍历指定的内存区域，查找`lua_State`实例，并打印它们的内存地址。
+
+**总结**
+
+上述方法通过GDB调试工具和特定的内存地址查找，实现统计进程中的Lua虚拟机个数。这个过程需要对C语言和调试工具有一定的了解。
+
+# 待整理
+
+https://www.cnblogs.com/sevenyuan/p/4511808.html
+
+
+
+
 
 
 # 参考资料

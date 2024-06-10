@@ -22,3 +22,7 @@ touch ./stage4/SKIP_IMAGES ./stage5/SKIP_IMAGES
 sudo ./build.sh  # or ./build-docker.sh
 ```
 
+
+
+看起来不是像buildroot那样的从源代码编译的方式。而是基于debian来做镜像而已。
+

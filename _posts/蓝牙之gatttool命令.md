@@ -7,7 +7,7 @@ tags:
 
 --
 
-hcitool是wield对设备连接进行管理。
+hcitool是对设备连接进行管理。
 
 gatttool则是对ble进行各种细致操作。
 
@@ -73,7 +73,5 @@ gatttool这个工具已经过时了。很快会被bluetoothctl命令替换。
 
 
 
-参考资料
-
-1、
+https://blog.csdn.net/u010764600/article/details/119685484
 

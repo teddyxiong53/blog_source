@@ -274,6 +274,26 @@ echo $HOMEBREW_BOTTLE_DOMAIN
 
 这样配置后，Homebrew 会使用国内镜像源来加速软件包的下载和安装。
 
+# brew的一些术语
+
+https://chuquan.me/2023/08/27/understand-the-design-of-homebrew/
+
+# brew打开详细的打印
+
+经常安装就是需要进行源代码编译。
+
+但是默认又没有什么打印，有什么卡住很久，不知道发生了什么。
+
+所以最好是可以看到详细的安装打印。
+
+```
+brew install --verbose --debug xx
+```
+
+这样就可以了。
+
+
+
 # 参考资料
 
 1、
