@@ -210,6 +210,118 @@ Tkinter提供了三种主要的布局管理器：`pack`、`grid`和`place`。这
 
 在实际应用中，通常会根据布局的需求选择适当的管理器。有时，也可以混合使用这些布局管理器，以实现更复杂的界面布局。布局的选择通常取决于个人偏好、项目需求以及开发者对每个管理器的熟悉程度。
 
+# 跟wxpython对比
+
+当然可以！让我们从比较wxPython和Tkinter的基本概念开始，然后一步步了解如何使用Tkinter。
+
+### 1. 安装与导入
+**wxPython**：
+```python
+import wx
+
+app = wx.App(False)
+frame = wx.Frame(None, wx.ID_ANY, "Hello World")
+frame.Show(True)
+app.MainLoop()
+```
+
+**Tkinter**：
+```python
+import tkinter as tk
+
+root = tk.Tk()
+root.title("Hello World")
+root.mainloop()
+```
+
+### 2. 创建窗口
+**wxPython**使用`wx.Frame`，而**Tkinter**使用`tk.Tk()`。
+
+### 3. 控件与布局
+**wxPython**：
+```python
+panel = wx.Panel(frame)
+button = wx.Button(panel, label="Click Me", pos=(50,50))
+```
+
+**Tkinter**：
+```python
+button = tk.Button(root, text="Click Me")
+button.pack(padx=50, pady=50)
+```
+- **布局**：`wxPython`通常使用位置参数，而`Tkinter`有多种布局管理器（如`pack`、`grid`和`place`）。
+
+### 4. 事件处理
+**wxPython**：
+```python
+def on_button_click(event):
+    print("Button clicked")
+
+button.Bind(wx.EVT_BUTTON, on_button_click)
+```
+
+**Tkinter**：
+```python
+def on_button_click():
+    print("Button clicked")
+
+button.config(command=on_button_click)
+```
+- **事件绑定**：`wxPython`使用`Bind`，而`Tkinter`使用`command`属性。
+
+### 5. 更多控件
+| 控件类型   | wxPython                                     | Tkinter          |
+| ---------- | -------------------------------------------- | ---------------- |
+| 标签       | `wx.StaticText`                              | `tk.Label`       |
+| 文本框     | `wx.TextCtrl`                                | `tk.Entry`       |
+| 多行文本框 | `wx.TextCtrl` (with `style=wx.TE_MULTILINE`) | `tk.Text`        |
+| 单选按钮   | `wx.RadioButton`                             | `tk.Radiobutton` |
+| 复选框     | `wx.CheckBox`                                | `tk.Checkbutton` |
+
+### 6. 综合示例
+**wxPython**：
+```python
+import wx
+
+class MyApp(wx.App):
+    def OnInit(self):
+        frame = wx.Frame(None, wx.ID_ANY, "Hello World")
+        panel = wx.Panel(frame)
+        button = wx.Button(panel, label="Click Me", pos=(50, 50))
+        button.Bind(wx.EVT_BUTTON, self.on_button_click)
+        frame.Show(True)
+        return True
+
+    def on_button_click(self, event):
+        wx.MessageBox("Button clicked", "Info", wx.OK | wx.ICON_INFORMATION)
+
+app = MyApp(False)
+app.MainLoop()
+```
+
+**Tkinter**：
+```python
+import tkinter as tk
+from tkinter import messagebox
+
+def on_button_click():
+    messagebox.showinfo("Info", "Button clicked")
+
+root = tk.Tk()
+root.title("Hello World")
+button = tk.Button(root, text="Click Me", command=on_button_click)
+button.pack(padx=50, pady=50)
+root.mainloop()
+```
+
+### 7. 总结
+- **安装**：两者的安装方式相似。
+- **窗口创建**：wxPython 使用`wx.Frame`，Tkinter 使用`tk.Tk()`。
+- **控件与布局**：wxPython 控件多通过位置参数设置，Tkinter 有更灵活的布局管理器。
+- **事件处理**：wxPython 使用`Bind`，Tkinter 使用`command`属性。
+
+希望这些对比能帮助你快速掌握Tkinter的用法！
+
 # HelloWorld
 
 ```

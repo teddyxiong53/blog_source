@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 看lua的文档，里面提到lua是用Clean C实现的。
 
