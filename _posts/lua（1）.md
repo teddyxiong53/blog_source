@@ -38,13 +38,13 @@ sudo apt install lua5.3
 
 # 资源收集
 
-H7 TOOL的方案，这个就是单片机加lua的方式，做得很强大。写法也很朴实。
+这篇文章一气呵成，面面俱到，对lua的语法讲解很到位。
 
-这个是风格比较现代化的lua文档网站。
+http://www.huahuaxie.com/lua-study-overview/
 
-https://luavel.com/docs/
+这篇图片画得可以。
 
-
+https://www.miaoerduo.com/2020/02/26/lua-state-tutorial/
 
 # lua发展历史
 
