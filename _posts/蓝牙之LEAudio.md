@@ -30,6 +30,18 @@ https://wiki.st.com/stm32mcu/wiki/Connectivity:Introduction_to_Bluetooth_LE_Audi
 
 LE Audio标准的推出为蓝牙音频设备带来了许多新的机会和功能，使得蓝牙技术在音频领域有了更广泛的应用。
 
+![image-20240612105458121](images/random_name2/image-20240612105458121.png)
+
+
+
+
+
+![img](images/random_name2/d9d933c4888c4bc2a16a5ae2a6238356.png)
+
+https://blog.csdn.net/ppc_dragon/article/details/135902404
+
+
+
 # 我应该怎么学习leaudio的开发
 
 学习LE Audio的开发可以通过以下步骤进行：
@@ -138,6 +150,62 @@ Experimental = true
 # Defaults to false.
 KernelExperimental = 6fbaf188-05e0-496a-9885-d6ddfdb4e03e
 ```
+
+
+
+BAP为LE Audio设备提供了基本的互操作性。
+
+即使两个LE Audio设备具有不同的上层profile，
+
+它们也应该能够使用BAP设置音频流。
+
+这意味着BAP为所有LE Audio设备提供了一个共同的基础，
+
+使得不同品牌和型号的设备之间可以更容易地进行音频传输和协作。
+
+
+
+LE Audio的Basic Audio Profile（BAP）是实现单播音频和广播音频的核心技术规范，它定义了实现这些音频传输的基本流程和配置。所有支持LE Audio的产品都必须支持BAP。
+
+#### 单播音频配置方案
+
+对于单播音频，BAP定义了16种音频配置方案，这些方案对应不同的产品形态。例如，一些配置方案适用于不带麦克风的单声道耳机，而其他配置方案则适用于带有麦克风的单声道设备。这些配置方案涵盖了从简单的单声道音频流到复杂的多通道音频流的各种场景。
+
+#### 广播音频配置方案
+
+对于广播音频，BAP定义了3种音频配置方案，这些方案对应不同的产品形态。例如，一些配置方案适用于广播两路音频流，其中一路是左声道，另一路是右声道；而其他配置方案则适用于广播单一声道音频或多语言音频流。
+
+#### 音频配置的特点
+
+LE Audio BAP支持的音频配置方案具有高度的灵活性和适应性，能够满足不同产品和应用场景的需求。这些配置方案不仅支持传统的音频传输，还支持新型的音频应用，如多房间音频、3D音效等。
+
+综上所述，LE Audio BAP支持的音频配置方案非常丰富，能够满足现代音频产品的多样化需求。随着LE Audio技术的不断发展和完善，未来可能会有更多新的音频配置方案出现，以支持更加先进和创新的音频应用.
+
+
+
+为了区分不同的音频流，BAP利用了一系列的服务和状态机。
+
+其中，PACS（Published Audio Capabilities Service）负责发布音频能力，
+
+ASCS（Audio Stream Control Service）则定义了用于设置和维护单播音频流的状态机。
+
+BASS（Broadcast Audio Scan Service）则负责发现和连接广播音频流以及分发广播加密密钥的过程。
+
+
+
+在实际操作中，BAP通过这些服务和状态机来管理音频流。
+
+例如，当一个设备想要广播音频时，
+
+它会首先配置BAP，然后建立一个广播音频流。
+
+在这个过程中，BAP会根据预设的参数来创建一个BIG（Broadcast Information Group），
+
+这个BIG包含了所有需要广播的音频数据。
+
+接着，设备会通过周期性广播（PA）来传播这个BIG，
+
+其他设备则可以通过扫描广播信息来找到并连接到这个音频流。
 
 
 

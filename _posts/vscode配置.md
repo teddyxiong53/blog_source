@@ -520,6 +520,24 @@ https://devpress.csdn.net/cloud/6325abf36213ca4d56909c68.html
 
 https://blog.csdn.net/qq_43827595/article/details/105613954
 
+# 绘制drawio图
+
+搜索drawio，安装插件。
+
+然后新建test.drawio，打开，就会自动进入绘图界面。
+
+# 绘制脑图
+
+搜索mindmap。安装插件。
+
+新建test.km文件。打开，就可以进入脑图编辑界面。
+
+脑图内容是以json格式保存的。
+
+跟百度脑图是一个开源方案的。
+
+
+
 # 参考资料
 
 1、
