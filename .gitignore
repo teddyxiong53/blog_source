@@ -1,3 +1,4 @@
 *.~ml
 *.dtmp
 *.bkp
+.DS_Store
