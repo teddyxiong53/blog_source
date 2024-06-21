@@ -5,7 +5,7 @@ tags:
 	- openwrt
 ---
 
-1
+
 
 系列文章
 
@@ -17,7 +17,5 @@ https://blog.csdn.net/qq_41453285/category_9376523.html
 
 https://www.right.com.cn/forum/
 
-参考资料
 
-1、
 

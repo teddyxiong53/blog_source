@@ -52,11 +52,25 @@ make package/rokid/flora/compile V=s -j1
 
 
 
+# yodaos的openwrt sdk值得学习的点
+
+整个目录层次结构，还是可以的，跟我们当前的buildroot的一个层次。
+
+```
+openwrt
+kernel
+uboot
+vendor
+toolchains
+hardware
+application
+frameworks
+3rd
+```
+
+看起来还支持了配置片段。
 
 
 
 
-参考资料
-
-1、
 

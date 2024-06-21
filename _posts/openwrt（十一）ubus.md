@@ -95,7 +95,7 @@ ubus可以用于2个进程之间的通信，数据用类似json的格式进行�
 
 # 在Ubuntu上安装ubus
 
-## 安装libubus。
+## 安装libubus
 
 1、下载。
 

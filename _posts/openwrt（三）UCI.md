@@ -16,7 +16,7 @@ UCI是Unified Configuration Interface。统一配置接口。
 
 UCI是用C语言写的小工具。另外用shell包装了一下。
 
-是用来对对openwrt设备进行集中配置的。
+是用来对openwrt设备进行集中配置的。
 
 **所有配置文件都在/etc/config目录里下。**
 

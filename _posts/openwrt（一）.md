@@ -206,7 +206,7 @@ devpts on /dev/pts type devpts (rw,nosuid,noexec,relatime,mode=600)
 debugfs on /sys/kernel/debug type debugfs (rw,noatime)
 ```
 
-#openwrt通过路由器联网
+# openwrt通过路由器联网
 
 其实这里要做的，就是让openwrt成为一个中间节点。拓扑结构是这样的：
 
