@@ -354,7 +354,7 @@ send(connectfd, bts, sizeof(bts), 0);
 
 
 
-#C和C++对比
+# C和C++对比
 
 simple.proto
 
@@ -608,9 +608,11 @@ typedef struct _AddressBook {
 
 所以还是要深入分析一下protobuf。
 
+# 使用protobuf来搭建自己的rpc框架
 
+https://mp.weixin.qq.com/s?__biz=MzU5MzcyMjI4MA==&mid=2247495267&idx=2&sn=e1608af6323a82f492a1e37726738b4d&chksm=fe0e80a4c97909b2cb0c7260b28413797c1b1e3efe4e06273ff433c948959145a040fe569ce6&token=996850369&lang=zh_CN&scene=21#wechat_redirect
 
-参考资料
+# 参考资料
 
 1、更小、更快、更简单Google ProtoBuf 跨语言通信协议
 
