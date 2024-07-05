@@ -517,6 +517,29 @@ Buildroot知道许多著名的交叉编译工具链(来自用于 ARM 的 Linaro�
 
 https://www.cnblogs.com/kele-dad/p/13125808.html
 
+
+
+## buildroot\toolchain\toolchain-buildroot\Config.in
+
+toolchain-buildroot的编译。
+
+这个Config.in就是包含了：
+
+```
+source "package/linux-headers/Config.in.host"
+source "package/linux-headers/Config.in"
+source "package/musl/Config.in"
+source "package/uclibc/Config.in"
+source "package/glibc/Config.in"
+source "package/binutils/Config.in.host"
+source "package/gcc/Config.in.host"
+source "package/gcc/Config.in"
+```
+
+这也说明工具链的本质是linux-header + libc + binutils + gcc。
+
+
+
 # toolchain-wrapper 
 
 `toolchain-wrapper` 是一个工具链包装器，用于在构建软件时管理和使用交叉编译工具链。它的主要作用是将交叉编译工具链的路径和参数传递给编译器、链接器和其他构建工具，以确保正确地生成目标体系结构上的可执行文件和库。

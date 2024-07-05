@@ -711,6 +711,73 @@ BR2_ROOTFS_POST_IMAGE_SCRIPT
 
 显示编译的顺序。
 
+```
+host-skeleton
+host-m4
+host-bison
+host-gawk
+host-binutils
+host-gmp
+host-mpfr
+host-mpc
+host-gcc-initial
+skeleton-init-common
+skeleton-init-sysv
+skeleton
+linux-headers
+glibc
+host-gcc-final
+gcc-final
+toolchain-buildroot
+toolchain
+busybox
+host-pkgconf
+host-libtool
+host-autoconf
+host-automake
+host-libzlib
+host-zlib
+host-util-linux
+host-e2fsprogs
+ifupdown-scripts
+initscripts
+host-kmod
+host-patchelf
+host-gettext-tiny
+host-gettext
+host-flex
+host-dtc
+host-libffi
+host-ninja
+host-autoconf-archive
+host-expat
+host-python3
+host-python-flit-core
+host-python-installer
+host-python-packaging
+host-python-pyproject-hooks
+host-python-pypa-build
+host-python-wheel
+host-python-setuptools
+host-meson
+host-pcre2
+host-libglib2
+host-pixman
+host-python-distlib
+host-slirp
+host-qemu
+urandom-scripts
+host-libopenssl
+host-openssl
+linux
+host-attr
+host-acl
+host-fakeroot
+host-makedevs
+```
+
+
+
 ## prepare-kconfig
 
 ```
@@ -1238,7 +1305,7 @@ host-virtual-package
 	参数4：host
 ```
 
-最后是掉inner-generic-package。
+最后是调用inner-generic-package。
 
 
 
@@ -3514,6 +3581,59 @@ menuconfg里对应这里。
 最上层包裹在『package/Config.in.host』里面，而选项的名称必须是『BR2PACKAGE_HOST包裹 ”。
 
 
+
+# Config.in.legacy
+
+这个文件的作用：
+
+当一个Config.in的符号被删掉后，就会放到这里。
+
+如果要添加符号到这个文件，往最前面加，因为规则是后面的会先被删除。
+
+下面是一个例子，有2个选项BR2_FOO_1和BR2_FOO_2
+
+```
+# [Example: renaming a bool option that is part of a choice from FOO to BAR]
+# original choice:
+# 	choice
+# 		prompt "Choose foobar"
+# 	config BR2_FOO_1
+#		bool "foobar 1"
+# 	config BR2_FOO_2
+# 		bool "foobar 2"
+# 	endchoice
+#
+```
+
+现在被重新命名为BR2_BAR_1和BR2_BAR_2
+
+```
+#   choice
+#   	prompt "Choose foobar"
+#   	default BR2_BAR_1 if BR2_FOO_1 # legacy
+#   	default BR2_BAR_2 if BR2_FOO_2 # legacy
+#   config BR2_BAR_1
+#		bool "foobar 1"
+#   config BR2_BAR_2
+#   	bool "foobar 2"
+#   endchoice
+```
+
+在Config.in.legacy里会这样进行提示：
+
+```
+#   config BR2_FOO_1
+#   	bool "foobar 1 has been renamed"
+#   	help
+#   	  <suitable help text>
+#   # Note: BR2_FOO_1 is still referenced from package/foo/Config.in
+#   config BR2_FOO_2
+#   	bool "foobar 2 has been renamed"
+#   	help
+#   	  <suitable help text>
+#   # Note: BR2_FOO_2 is still referenced from package/foo/Config.in
+#
+```
 
 
 

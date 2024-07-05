@@ -13,3 +13,16 @@ tags:
 
 
 https://hazhuzhu.com/embedded/notes-of-porting-openharmony-on-raspberrypi-4b.html
+
+# 下载代码编译
+
+https://blog.csdn.net/u010018991/article/details/109100925
+
+```
+cd ~/harmony
+repo init -u https://gitee.com/openharmony/manifest.git -b master --no-repo-verify
+repo sync -j16
+```
+
+有488个仓库。
+
