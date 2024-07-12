@@ -60,7 +60,47 @@ home/ubuntu/gitea_dir/data/gitea.db
 
 
 
-参考资料
+# 把一个github上的项目提交到自己的gitea服务器上
 
-1、
+将一个GitHub上的项目提交到自己的Gitea服务器上，可以按照以下步骤操作：
+
+1. **从GitHub克隆项目**
+2. **在Gitea上创建一个新的仓库**
+3. **将项目推送到Gitea仓库**
+
+### 详细步骤
+
+#### 1. 从GitHub克隆项目
+
+```bash
+git clone https://github.com/username/repository.git
+cd repository
+```
+
+#### 2. 在Gitea上创建一个新的仓库
+
+1. 登录到你的Gitea服务器。
+2. 创建一个新的仓库，记住仓库的URL，例如 `http://gitea.example.com/username/repository.git`。
+
+#### 3. 将项目推送到Gitea仓库
+
+```bash
+# 添加Gitea仓库为远程仓库
+git remote add gitea http://gitea.example.com/username/repository.git
+
+# 推送到Gitea仓库
+git push -u gitea master
+```
+
+### 总结
+
+| 步骤              | 命令/操作                                                    |
+| ----------------- | ------------------------------------------------------------ |
+| 克隆GitHub项目    | `git clone https://github.com/username/repository.git`       |
+| 进入项目目录      | `cd repository`                                              |
+| 在Gitea上创建仓库 | 在Gitea上手动创建新仓库，并记住其URL                         |
+| 添加Gitea远程仓库 | `git remote add gitea http://gitea.example.com/username/repository.git` |
+| 推送到Gitea仓库   | `git push -u gitea master`                                   |
+
+这样，你就可以将GitHub上的项目提交到自己的Gitea服务器上了。
 

@@ -37,7 +37,7 @@ jffs2跟ubifs是一个类型的。
 
 
 
-mtd device和block device的区别：
+# mtd device和block device的区别
 
 1、mtd device代表flash device，它们由相当大的eraseblock组成（一般是128KB）。
 
@@ -63,7 +63,7 @@ block device支持2种主要操作：
 
 5、eraseblock可能坏掉（只是对nand），软件必须处理坏块。block则不需要软件处理，硬件会自动处理掉。
 
-
+# ubifs和ubi关系
 
 ubifs工作在ubi之上。
 
@@ -77,7 +77,7 @@ ubi提供的volume概念是比mtd device更高层的抽象。
 
 ubi device没有磨损和坏块的限制。
 
-在某种意义上，ubifs是下一代的jffs2 。
+==在某种意义上，ubifs是下一代的jffs2 。==
 
 但是它跟jffs2很不一样，也不兼容。
 
@@ -467,6 +467,12 @@ ROOTFS_UBI_DEPENDENCIES = rootfs-ubifs
 ```
 
 所以是先生成rootfs.ubifs文件。然后生成的rootfs.ubi文件。
+
+![UBI_UBIFS_structure_2_Web](images/random_name2/UBI_UBIFS_structure_2_Web.jpg)
+
+
+
+http://velep.com/archives/909.html
 
 
 
@@ -1001,6 +1007,180 @@ vol_flags = autoresize
 
 
 https://lore.kernel.org/linux-mtd/66b982ef-c446-e0e7-9d44-41597695dc72@sigma-star.at/t/
+
+
+
+# buildroot/package/mtd分析
+
+这个目录下有不少的工具。
+
+值得一个个分析一下。
+
+## mtdinfo
+
+执行效果。
+
+```
+# mtd
+mtd_debug  mtdinfo
+# mtdinfo
+Count of MTD devices:           8
+Present MTD devices:            mtd0, mtd1, mtd2, mtd3, mtd4, mtd5, mtd6, mtd7
+Sysfs interface supported:      yes
+```
+
+代码分析
+
+对应的结构体在libmtd.h里：
+
+```
+struct mtd_info
+{
+	int mtd_dev_cnt;
+	int lowest_mtd_num;
+	int highest_mtd_num;
+	unsigned int sysfs_supported:1;
+};
+```
+
+刚好可以跟上面打印的信息对应起来。
+
+选项有这些：
+
+```
+-a
+	打印所有。
+	
+```
+
+### mtdinfo -a
+
+```
+# mtdinfo -a
+Count of MTD devices:           8
+Present MTD devices:            mtd0, mtd1, mtd2, mtd3, mtd4, mtd5, mtd6, mtd7
+Sysfs interface supported:      yes
+
+mtd0
+Name:                           bootloader
+Type:                           nand
+Eraseblock size:                131072 bytes, 128.0 KiB
+Amount of eraseblocks:          16 (2097152 bytes, 2.0 MiB)
+Minimum input/output unit size: 2048 bytes
+Sub-page size:                  2048 bytes
+OOB size:                       64 bytes
+Character device major/minor:   90:0
+Bad blocks are allowed:         true
+Device is writable:             true
+
+mtd1
+Name:                           tpl
+Type:                           nand
+Eraseblock size:                131072 bytes, 128.0 KiB
+Amount of eraseblocks:          64 (8388608 bytes, 8.0 MiB)
+Minimum input/output unit size: 2048 bytes
+Sub-page size:                  2048 bytes
+OOB size:                       64 bytes
+Character device major/minor:   90:2
+Bad blocks are allowed:         true
+Device is writable:             true
+
+mtd2
+Name:                           misc
+Type:                           nand
+Eraseblock size:                131072 bytes, 128.0 KiB
+Amount of eraseblocks:          16 (2097152 bytes, 2.0 MiB)
+Minimum input/output unit size: 2048 bytes
+Sub-page size:                  2048 bytes
+OOB size:                       64 bytes
+Character device major/minor:   90:4
+Bad blocks are allowed:         true
+Device is writable:             true
+
+mtd3
+Name:                           logo
+Type:                           nand
+Eraseblock size:                131072 bytes, 128.0 KiB
+Amount of eraseblocks:          16 (2097152 bytes, 2.0 MiB)
+Minimum input/output unit size: 2048 bytes
+Sub-page size:                  2048 bytes
+OOB size:                       64 bytes
+Character device major/minor:   90:6
+Bad blocks are allowed:         true
+Device is writable:             true
+
+mtd4
+Name:                           recovery
+Type:                           nand
+Eraseblock size:                131072 bytes, 128.0 KiB
+Amount of eraseblocks:          128 (16777216 bytes, 16.0 MiB)
+Minimum input/output unit size: 2048 bytes
+Sub-page size:                  2048 bytes
+OOB size:                       64 bytes
+Character device major/minor:   90:8
+Bad blocks are allowed:         true
+Device is writable:             true
+
+mtd5
+Name:                           boot
+Type:                           nand
+Eraseblock size:                131072 bytes, 128.0 KiB
+Amount of eraseblocks:          120 (15728640 bytes, 15.0 MiB)
+Minimum input/output unit size: 2048 bytes
+Sub-page size:                  2048 bytes
+OOB size:                       64 bytes
+Character device major/minor:   90:10
+Bad blocks are allowed:         true
+Device is writable:             true
+
+mtd6
+Name:                           system
+Type:                           nand
+Eraseblock size:                131072 bytes, 128.0 KiB
+Amount of eraseblocks:          2243 (293994496 bytes, 280.3 MiB)
+Minimum input/output unit size: 2048 bytes
+Sub-page size:                  2048 bytes
+OOB size:                       64 bytes
+Character device major/minor:   90:12
+Bad blocks are allowed:         true
+Device is writable:             true
+
+mtd7
+Name:                           data
+Type:                           nand
+Eraseblock size:                131072 bytes, 128.0 KiB
+Amount of eraseblocks:          1445 (189399040 bytes, 180.6 MiB)
+Minimum input/output unit size: 2048 bytes
+Sub-page size:                  2048 bytes
+OOB size:                       64 bytes
+Character device major/minor:   90:14
+Bad blocks are allowed:         true
+Device is writable:             true
+```
+
+### mtdinfo -M /dev/mtd0
+
+```
+# mtdinfo -M /dev/mtd0
+mtd0
+Name:                           bootloader
+Type:                           nand
+Eraseblock size:                131072 bytes, 128.0 KiB
+Amount of eraseblocks:          16 (2097152 bytes, 2.0 MiB)
+Minimum input/output unit size: 2048 bytes
+Sub-page size:                  2048 bytes
+OOB size:                       64 bytes
+Character device major/minor:   90:0
+Bad blocks are allowed:         true
+Device is writable:             true
+Eraseblock map:
+  0: 00000000          1: 00020000          2: 00040000          3: 00060000        
+  4: 00080000          5: 000a0000          6: 000c0000          7: 000e0000        
+  8: 00100000          9: 00120000         10: 00140000         11: 00160000        
+ 12: 00180000         13: 001a0000         14: 001c0000         15: 001e0000       
+```
+
+
 
 # 参考资料
 

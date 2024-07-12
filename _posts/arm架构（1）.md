@@ -200,7 +200,11 @@ Cortex-A55 支持ARMv8.1，并采用最新的 ARMv8.2 架构，并在其前代�
 
 
 
-参考资料
+# ARM架构相关学习归纳总结
+
+https://www.cnblogs.com/arnoldlu/p/7864856.html
+
+# 参考资料
 
 1、
 

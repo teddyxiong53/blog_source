@@ -3635,6 +3635,15 @@ menuconfg里对应这里。
 #
 ```
 
+# 编译时查找dbus和glib
+
+```
+CFLAGS += $(shell  $(TARGET_CONFIGURE_OPTS) pkg-config --cflags dbus-1 glib-2.0)
+LDFLAGS += $(shell $(TARGET_CONFIGURE_OPTS) pkg-config --libs dbus-1 glib-2.0)
+```
+
+TARGET_CONFIGURE_OPTS这个是需要加上的，不然就找到系统的了。
+
 
 
 # 参考资料

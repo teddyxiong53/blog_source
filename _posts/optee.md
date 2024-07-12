@@ -192,6 +192,431 @@ https://confluence.amlogic.com/display/SW/2022+TEE+Special+Training
 
 https://www.cnblogs.com/arnoldlu/p/14245834.html
 
+# 学习思路
+
+要掌握ARM TrustZone和OP-TEE开发，可以按照以下步骤进行：
+
+1. **基础知识**
+   - 学习ARM TrustZone的概念和架构。
+   - 阅读ARM TrustZone技术白皮书和相关文档。
+
+2. **开发环境准备**
+   - 设置开发环境，包括安装必要的工具链（如GCC ARM Toolchain）。
+   - 获取并编译OP-TEE源代码。
+
+3. **运行环境搭建**
+   - 使用QEMU模拟器或实际的开发板（如HiKey、Raspberry Pi）来测试TrustZone应用。
+   - 配置并启动OP-TEE OS和TEE（Trusted Execution Environment）。
+
+4. **编写TA（Trusted Application）**
+   - 学习如何编写和部署Trusted Application（TA）。
+   - 熟悉TA的生命周期、调用和调试方法。
+
+5. **调试与测试**
+   - 使用调试工具（如GDB）调试TA和OP-TEE OS。
+   - 编写测试用例，验证TA功能和安全性。
+
+6. **安全审计**
+   - 审核TA代码，确保没有安全漏洞。
+   - 了解常见的TrustZone攻击和防御方法。
+
+7. **高级主题**
+   - 探索更多高级特性，如动态TA、跨平台开发等。
+   - 参与社区讨论，贡献代码。
+
+以下是一个简要的学习计划表：
+
+| 阶段       | 目标                                     | 资源                         |
+| ---------- | ---------------------------------------- | ---------------------------- |
+| 基础知识   | 理解TrustZone和OP-TEE架构                | 官方文档、白皮书             |
+| 开发环境   | 设置并编译OP-TEE                         | 官方仓库、编译指南           |
+| 运行环境   | 在QEMU或开发板上运行OP-TEE               | QEMU文档、开发板指南         |
+| 编写TA     | 编写、部署和调试Trusted Application      | 示例代码、开发者手册         |
+| 调试与测试 | 使用调试工具调试TA和OP-TEE，编写测试用例 | GDB、调试教程、测试框架      |
+| 安全审计   | 审核TA代码，了解常见的攻击和防御方法     | 安全指南、审计工具           |
+| 高级主题   | 学习动态TA、跨平台开发，参与社区贡献     | 高级教程、社区论坛、贡献指南 |
+
+通过逐步完成上述步骤，你可以系统地掌握ARM TrustZone和OP-TEE的开发。
+
+# 用树莓派学习optee的方法
+
+使用树莓派学习OP-TEE是一种非常好的实践方法。以下是一个详细的步骤指南：
+
+### 环境准备
+
+1. **硬件准备**
+   - 树莓派3或4
+   - SD卡（建议16GB以上）
+   - 电源和相关配件（显示器、键盘、鼠标）
+
+2. **软件准备**
+   - Linux开发环境（Ubuntu或其他发行版）
+   - 安装必要的软件包：
+     ```bash
+     sudo apt-get update
+     sudo apt-get install git gcc-aarch64-linux-gnu device-tree-compiler build-essential python3-pyelftools python3-serial python3-pycryptodome python3-pycryptodomex uuid-dev python3-pip
+     ```
+
+### 下载源码
+
+1. **下载OP-TEE源码**
+   ```bash
+   mkdir -p $HOME/devel/optee
+   cd $HOME/devel/optee
+   repo init -u https://github.com/OP-TEE/manifest.git -m rpi3_default.xml
+   repo sync -j4
+   ```
+
+### 编译OP-TEE
+
+1. **编译OP-TEE OS**
+   ```bash
+   cd $HOME/devel/optee/build
+   make -j2 PLATFORM=rpi3
+   ```
+
+2. **编译其他组件（如OP-TEE Client和Examples）**
+   ```bash
+   make -j2 toolchains
+   make -j2 ta-targets
+   ```
+
+### 配置并运行
+
+1. **创建SD卡镜像**
+   ```bash
+   cd $HOME/devel/optee/build
+   sudo make all run PLATFORM=rpi3
+   ```
+
+2. **烧录镜像到SD卡**
+   ```bash
+   sudo dd if=out/debian.img of=/dev/sdX bs=4M
+   sync
+   ```
+
+   替换`/dev/sdX`为你的SD卡设备名。
+
+3. **启动树莓派**
+   - 将SD卡插入树莓派，连接显示器和键盘，然后上电启动。
+
+### 编写和测试TA
+
+1. **编写TA**
+   
+   - 在`optee_examples`目录下编写你的TA，参考现有的示例。
+   
+2. **编译并部署TA**
+   
+   ```bash
+   cd $HOME/devel/optee/optee_examples/hello_world
+   make -j2
+   cp out/ta/eb9xxxx.ta /lib/optee_armtz/
+   ```
+   
+3. **运行TA**
+   - 在树莓派终端上运行：
+     ```bash
+     /usr/bin/tee-supplicant &
+     /usr/bin/xtest
+     ```
+
+通过这些步骤，你可以在树莓派上学习和开发OP-TEE。以下是简要的步骤表：
+
+| 步骤         | 说明                                      |
+| ------------ | ----------------------------------------- |
+| 环境准备     | 硬件和软件准备，安装必要的软件包          |
+| 下载源码     | 使用repo工具下载OP-TEE源码                |
+| 编译OP-TEE   | 编译OP-TEE OS及其他必要组件               |
+| 配置并运行   | 创建SD卡镜像并烧录，启动树莓派            |
+| 编写和测试TA | 编写、编译、部署和运行Trusted Application |
+
+如果遇到问题，可以查阅OP-TEE的官方文档和社区资源获取帮助。
+
+# trustzone的原理是什么
+
+ARM TrustZone是一种硬件安全技术，通过在处理器上创建两个独立的执行环境（Secure World和Normal World），实现了安全性隔离。以下是TrustZone的基本原理：
+
+| 特性           | 说明                                                         |
+| -------------- | ------------------------------------------------------------ |
+| **分区**       | 将系统划分为Secure World和Normal World两个独立的执行环境。   |
+| **处理器模式** | 处理器在两个世界之间切换，通过设置一个专门的寄存器（NS bit）来区分。 |
+| **内存隔离**   | 使用内存控制器将内存划分为安全内存和非安全内存，防止未经授权的访问。 |
+| **外设隔离**   | 控制外设的访问权限，确保安全外设只能被Secure World访问。     |
+| **信任链**     | 通过安全启动过程，确保从硬件到操作系统和应用程序的完整性和可信性。 |
+| **安全服务**   | Secure World运行可信操作系统（如OP-TEE），提供安全服务和存储敏感数据。 |
+
+### 工作机制
+
+1. **处理器模式切换**
+   - 处理器通过NS（Non-Secure）位切换模式，0表示Secure World，1表示Normal World。
+
+2. **中断处理**
+   - 安全中断只能由Secure World处理，非安全中断可以由Normal World处理。
+
+3. **内存保护**
+   - 使用TrustZone Address Space Controller（TZASC）等硬件模块，实现内存访问控制。
+
+4. **外设访问**
+   - 使用TrustZone Protection Controller（TZPC）等硬件模块，实现外设访问控制。
+
+### 应用场景
+
+| 场景             | 说明                                                 |
+| ---------------- | ---------------------------------------------------- |
+| **数字版权管理** | 保护内容的版权，防止非法复制和分发。                 |
+| **移动支付**     | 确保支付过程的安全，防止支付信息被窃取。             |
+| **设备认证**     | 验证设备身份，防止伪造设备接入网络。                 |
+| **安全启动**     | 确保系统启动过程不被篡改，从硬件到操作系统的信任链。 |
+| **安全存储**     | 提供安全存储区域，保护敏感数据如加密密钥和用户凭证。 |
+
+### TrustZone架构图
+
+| 模块           | 描述                                              |
+| -------------- | ------------------------------------------------- |
+| **处理器**     | 处理器支持TrustZone，分为Secure和Non-Secure模式。 |
+| **内存控制器** | 管理内存的安全属性，确保Secure内存的隔离。        |
+| **外设控制器** | 管理外设的访问权限，确保安全外设的隔离。          |
+| **中断控制器** | 管理中断，区分Secure和Non-Secure中断。            |
+
+ARM TrustZone通过硬件级别的隔离和控制，为系统提供了强大的安全保护。
+
+# 怎样编写ta和ca
+
+编写Trusted Application (TA) 和 Client Application (CA) 是使用OP-TEE进行开发的重要部分。以下是详细的步骤和示例代码。
+
+### 准备工作
+
+1. **设置开发环境**
+   - 确保已经设置好OP-TEE开发环境，并能够编译和运行OP-TEE。
+
+2. **目录结构**
+   - 创建一个新的项目目录，例如`my_tee_project`。
+   - 在项目目录下创建两个子目录：`ta`和`ca`。
+
+### 编写Trusted Application (TA)
+
+1. **TA主代码** (`ta/hello_world_ta.c`)
+
+   ```c
+   #include <tee_internal_api.h>
+   #include <tee_internal_api_extensions.h>
+   #include <hello_world_ta.h>
+
+   TEE_Result TA_CreateEntryPoint(void) {
+       DMSG("TA CreateEntryPoint has been called");
+       return TEE_SUCCESS;
+   }
+
+   void TA_DestroyEntryPoint(void) {
+       DMSG("TA DestroyEntryPoint has been called");
+   }
+
+   TEE_Result TA_OpenSessionEntryPoint(uint32_t param_types,
+                                       TEE_Param __maybe_unused params[4],
+                                       void __maybe_unused **sess_ctx) {
+       uint32_t exp_param_types = TEE_PARAM_TYPES(TEE_PARAM_TYPE_NONE,
+                                                  TEE_PARAM_TYPE_NONE,
+                                                  TEE_PARAM_TYPE_NONE,
+                                                  TEE_PARAM_TYPE_NONE);
+
+       if (param_types != exp_param_types)
+           return TEE_ERROR_BAD_PARAMETERS;
+
+       DMSG("Hello World!\n");
+       return TEE_SUCCESS;
+   }
+
+   void TA_CloseSessionEntryPoint(void __maybe_unused *sess_ctx) {
+       DMSG("TA CloseSessionEntryPoint has been called");
+   }
+
+   TEE_Result TA_InvokeCommandEntryPoint(void __maybe_unused *sess_ctx,
+                                         uint32_t cmd_id,
+                                         uint32_t param_types,
+                                         TEE_Param params[4]) {
+       switch (cmd_id) {
+           case TA_HELLO_WORLD_CMD_INC_VALUE:
+               return inc_value(param_types, params);
+           default:
+               return TEE_ERROR_BAD_PARAMETERS;
+       }
+   }
+
+   static TEE_Result inc_value(uint32_t param_types, TEE_Param params[4]) {
+       uint32_t exp_param_types = TEE_PARAM_TYPES(TEE_PARAM_TYPE_VALUE_INOUT,
+                                                  TEE_PARAM_TYPE_NONE,
+                                                  TEE_PARAM_TYPE_NONE,
+                                                  TEE_PARAM_TYPE_NONE);
+
+       if (param_types != exp_param_types)
+           return TEE_ERROR_BAD_PARAMETERS;
+
+       params[0].value.a++;
+       DMSG("Incremented value to %d\n", params[0].value.a);
+
+       return TEE_SUCCESS;
+   }
+   ```
+
+2. **TA头文件** (`ta/hello_world_ta.h`)
+
+   ```c
+   #ifndef TA_HELLO_WORLD_H
+   #define TA_HELLO_WORLD_H
+
+   #define TA_HELLO_WORLD_UUID \
+       { 0x8aaaf200, 0x2450, 0x11e4, \
+           { 0x8c, 0x21, 0x08, 0x00, 0x20, 0x0c, 0x9a, 0x66 } }
+
+   #define TA_HELLO_WORLD_CMD_INC_VALUE 0
+
+   #endif /*TA_HELLO_WORLD_H*/
+   ```
+
+3. **TA清单文件** (`ta/hello_world_ta.lds.S`)
+
+   ```assembly
+   OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
+   OUTPUT_ARCH(arm)
+   ENTRY(TA_CreateEntryPoint)
+   SECTIONS
+   {
+       . = 0x0;
+       .ta_head :
+       {
+           KEEP(*(.ta_head .ta_head.*))
+       }
+       .text :
+       {
+           *(.text .text.*)
+       }
+       .rodata :
+       {
+           *(.rodata .rodata.*)
+       }
+       .data : 
+       {
+           *(.data .data.*)
+       }
+       .bss :
+       {
+           *(.bss .bss.*)
+       }
+       /DISCARD/ :
+       {
+           *(.note.gnu.arm.ident)
+       }
+   }
+   ```
+
+4. **Makefile** (`ta/Makefile`)
+
+   ```makefile
+   CROSS_COMPILE ?= aarch64-linux-gnu-
+   TA_DEV_KIT_DIR ?= $(OPTEE_CLIENT_EXPORT)/ta
+   
+   TA_NAME = hello_world_ta
+   TA_UUID = $(shell cat hello_world_ta.h | grep '#define TA_HELLO_WORLD_UUID' | awk '{print $$3}')
+   
+   srcs-y += hello_world_ta.c
+   
+   include $(TA_DEV_KIT_DIR)/mk/ta_dev_kit.mk
+   ```
+
+### 编写Client Application (CA)
+
+1. **CA主代码** (`ca/hello_world.c`)
+
+   ```c
+   #include <stdio.h>
+   #include <stdlib.h>
+   #include <string.h>
+   #include <err.h>
+   #include <tee_client_api.h>
+   #include <hello_world_ta.h>
+
+   int main(void) {
+       TEEC_Result res;
+       TEEC_Context ctx;
+       TEEC_Session sess;
+       TEEC_Operation op;
+       TEEC_UUID uuid = TA_HELLO_WORLD_UUID;
+       uint32_t err_origin;
+
+       res = TEEC_InitializeContext(NULL, &ctx);
+       if (res != TEEC_SUCCESS)
+           errx(1, "TEEC_InitializeContext failed with code 0x%x", res);
+
+       res = TEEC_OpenSession(&ctx, &sess, &uuid,
+                              TEEC_LOGIN_PUBLIC, NULL, NULL, &err_origin);
+       if (res != TEEC_SUCCESS)
+           errx(1, "TEEC_OpenSession failed with code 0x%x origin 0x%x",
+                res, err_origin);
+
+       printf("Invoking TA to increment a value\n");
+       memset(&op, 0, sizeof(op));
+       op.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_INOUT, TEEC_NONE,
+                                        TEEC_NONE, TEEC_NONE);
+       op.params[0].value.a = 42;
+
+       res = TEEC_InvokeCommand(&sess, TA_HELLO_WORLD_CMD_INC_VALUE, &op, &err_origin);
+       if (res != TEEC_SUCCESS)
+           errx(1, "TEEC_InvokeCommand failed with code 0x%x origin 0x%x",
+                res, err_origin);
+
+       printf("Value incremented to: %d\n", op.params[0].value.a);
+
+       TEEC_CloseSession(&sess);
+       TEEC_FinalizeContext(&ctx);
+
+       return 0;
+   }
+   ```
+
+2. **Makefile** (`ca/Makefile`)
+
+   ```makefile
+   CROSS_COMPILE ?= aarch64-linux-gnu-
+   OPTEE_CLIENT_EXPORT ?= /path/to/optee_client_export
+   
+   BINARY = hello_world
+   
+   INCLUDES += -I$(OPTEE_CLIENT_EXPORT)/include
+   LIBS += -L$(OPTEE_CLIENT_EXPORT)/lib -lteec -lpthread
+   
+   $(BINARY): hello_world.c
+       $(CROSS_COMPILE)gcc $(INCLUDES) $< -o $@ $(LIBS)
+   
+   clean:
+       rm -f $(BINARY)
+   ```
+
+### 编译和运行
+
+1. **编译TA**
+   ```bash
+   cd ta
+   make
+   ```
+
+2. **编译CA**
+   ```bash
+   cd ca
+   make
+   ```
+
+3. **部署TA**
+   - 将编译生成的TA文件（例如`hello_world_ta.bin`）复制到OP-TEE的TA目录，通常为`/lib/optee_armtz`。
+
+4. **运行CA**
+   - 在目标设备上运行编译生成的CA可执行文件。
+   ```bash
+   ./hello_world
+   ```
+
+通过上述步骤，你可以编写并运行一个简单的Trusted Application和Client Application。
+
 # 参考资料
 
 1、
