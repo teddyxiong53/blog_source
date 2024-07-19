@@ -17,6 +17,18 @@ stm32官网这篇文章很好，对各个usecase描述简单清晰。
 
 https://wiki.st.com/stm32mcu/wiki/Connectivity:Introduction_to_Bluetooth_LE_Audio
 
+官方的简介文档，中文的
+
+https://www.bluetooth.com/wp-content/uploads/2020/03/LE-Audio_FAQ_Chinese.pdf
+
+BAP 文档
+
+https://blog.csdn.net/HaaSTech/article/details/119565156
+
+https://www.nordicsemi.cn/news/le-audio-bis/
+
+http://bbs.apkplus.com/?t/185.html
+
 # 简介
 
 下面是关于蓝牙LE Audio的简介：

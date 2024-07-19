@@ -571,7 +571,6 @@ DBus是Linux和Unix系统中用于进程间通信的一种机制，
 
 ```
 ├── bluezutils.py
-├── bluezutils.pyc
 ├── dbusdef.py
 ├── example-advertisement
 ├── example-gatt-client
@@ -604,6 +603,10 @@ DBus是Linux和Unix系统中用于进程间通信的一种机制，
 ├── test-profile
 └── test-sap-server
 ```
+
+理解这些的关键，是把dbus-Python的基本逻辑理解清楚。
+
+bluezutils.py 这个里面定义了
 
 ## test-device
 

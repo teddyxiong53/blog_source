@@ -2250,6 +2250,55 @@ src/modules/module-protocol-pulse/module.c:308: spa_assert(info == __stop_pw_mod
 
 现在pw-play、aplay、paplay都可以正常出声了。
 
+# 指定hw:0,1这样的设备
+
+https://wiki.archlinux.org/title/PipeWire
+
+这个需求看起来在alsa里很简单，但是我在pipewire这边找了很久就是没有找到简单有效的做法。
+
+pipewire的alsa-monitor这模块使用alsa-card-profiles（简称为acp）来自动探测alsa设备。
+
+如果acp对你来说不可用。你可以禁用这个功能，转而使用ucm。
+
+/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf 里修改：
+
+```
+monitor.alsa.properties = {
+	# alsa.use-acp = true
+	alsa.use-ucm = true
+}
+```
+
+```
+pw-record --list-targets
+```
+
+
+
+```
+/etc/pipewire/pipewire.conf.d/microphone.conf (or ~/.config/pipewire/pipewire.conf.d/microphone.conf)
+context.objects = [
+    { factory = adapter
+        args = {
+            factory.name           = api.alsa.pcm.source
+            node.name              = "hw01"
+            node.description       = "Undetected Microphone"
+            media.class            = "Audio/Source"
+            api.alsa.path          = "hw:0,1"
+        }
+    }
+```
+
+测试了，的确是可以的。
+
+```
+pw-play --target alsa-hw01 /data/1.wav
+```
+
+可以看到的确是可以从我们预期的设备进行播放了。
+
+alsa-hw01对应node.name生成的名字。
+
 
 
 # 参考资料

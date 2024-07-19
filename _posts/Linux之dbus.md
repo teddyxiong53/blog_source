@@ -1589,6 +1589,122 @@ dbus-run-session -- bash
 
 根据具体需求选择适合的工具可以简化开发和部署过程，确保 D-Bus 会话总线的正确管理和使用。
 
+# org.freedesktop.DBus.Properties 说明
+
+`org.freedesktop.DBus.Properties`接口是D-Bus协议的一部分，用于对象属性的获取、设置和更改通知。它提供了一组标准的方法，让D-Bus对象可以通过统一的方式暴露和操作其属性。
+
+### 方法
+
+| 方法     | 说明               |
+| -------- | ------------------ |
+| `Get`    | 获取单个属性的值。 |
+| `GetAll` | 获取所有属性的值。 |
+| `Set`    | 设置单个属性的值。 |
+
+### 信号
+
+| 信号                | 说明                     |
+| ------------------- | ------------------------ |
+| `PropertiesChanged` | 当属性值发生变化时发出。 |
+
+### 详细描述
+
+#### `Get`方法
+
+- **说明**：获取指定属性的值。
+- **参数**：
+  - `in STRING interface_name`：接口名称。
+  - `in STRING property_name`：属性名称。
+- **返回**：
+  - `out VARIANT value`：属性值。
+
+```python
+variant_value = dbus_interface.Get("interface.name", "property.name")
+```
+
+#### `GetAll`方法
+
+- **说明**：获取所有属性的值。
+- **参数**：
+  - `in STRING interface_name`：接口名称。
+- **返回**：
+  - `out DICT<STRING, VARIANT> properties`：属性名和值的字典。
+
+```python
+all_properties = dbus_interface.GetAll("interface.name")
+```
+
+#### `Set`方法
+
+- **说明**：设置指定属性的值。
+- **参数**：
+  - `in STRING interface_name`：接口名称。
+  - `in STRING property_name`：属性名称。
+  - `in VARIANT value`：新的属性值。
+
+```python
+dbus_interface.Set("interface.name", "property.name", new_value)
+```
+
+#### `PropertiesChanged`信号
+
+- **说明**：当属性值发生变化时发出。
+- **参数**：
+  - `STRING interface_name`：接口名称。
+  - `DICT<STRING, VARIANT> changed_properties`：改变的属性名和值。
+  - `ARRAY<STRING> invalidated_properties`：无效的属性名数组。
+
+### 示例
+
+假设我们有一个实现了`org.freedesktop.DBus.Properties`接口的D-Bus服务对象，并且接口名为`com.example.MyInterface`。
+
+#### 获取属性值
+
+```python
+import dbus
+
+bus = dbus.SystemBus()
+proxy = bus.get_object('com.example.Service', '/com/example/Object')
+interface = dbus.Interface(proxy, 'org.freedesktop.DBus.Properties')
+
+property_value = interface.Get('com.example.MyInterface', 'MyProperty')
+print(f"MyProperty value: {property_value}")
+```
+
+#### 设置属性值
+
+```python
+new_value = dbus.String('newValue')
+interface.Set('com.example.MyInterface', 'MyProperty', new_value)
+```
+
+#### 获取所有属性
+
+```python
+all_properties = interface.GetAll('com.example.MyInterface')
+for prop, value in all_properties.items():
+    print(f"{prop}: {value}")
+```
+
+#### 监听`PropertiesChanged`信号
+
+```python
+def properties_changed(interface_name, changed_properties, invalidated_properties):
+    print(f"Interface: {interface_name}")
+    print("Changed properties:")
+    for prop, value in changed_properties.items():
+        print(f"  {prop}: {value}")
+    print("Invalidated properties:")
+    for prop in invalidated_properties:
+        print(f"  {prop}")
+
+bus.add_signal_receiver(properties_changed,
+                        dbus_interface='org.freedesktop.DBus.Properties',
+                        signal_name='PropertiesChanged')
+```
+
+通过`org.freedesktop.DBus.Properties`接口，D-Bus对象可以方便地管理和操作其属性，并在属性发生变化时通知其他监听者。这使得开发者可以更灵活地设计和实现D-Bus服务和客户端。
+
 # 参考资料
 
 1、DBus 入门与应用 －－ DBus 的 C 编程接口

@@ -25,6 +25,81 @@ dbus-python 是 dbus 的原始 Python 绑定，是 D-Bus 协议的参考实现�
 | 导出对象       | 使用`dbus.service.Object`类创建DBus服务对象，并通过`export()`方法将其导出。 |
 | 调用方法       | 通过获取DBus对象并调用其方法来调用其他应用程序的DBus方法。   |
 
+你可以在一个程序里同时连接SessionBus和SystemBus。
+
+这个是自由的。
+
+为了进行连接并进行方法调用，你需要这些东西：
+
+1、bus名字。也就是你要连接的应用。是一个反写的域名。典型的例如org.bluez。表示你要跟bluez通信。
+
+2、object path。在bluez里有很多个对象你可以进行通信的，例如Device、MediaPlayer，所以你需要指定你想跟谁进行通信。这个是用斜杠划分的。
+
+
+
+代理对象
+
+你想要跟远程对象通信的时候，你可以使用代理对象，代理对象就是远程对象的替身。你跟它说话，就等价于跟远程对象说话。
+
+怎么拿到一个远程对象的代理？这样：
+
+```
+bus = dbus.SystemBus()
+proxy = bus.get_object('org.bluez', '/xx/yy')
+```
+
+这里的proxy的类型是：dbus.proxies.ProxyObject
+
+dbus这里的接口和方法的关系：
+
+就类似面向对象编程里的接口和方法的关系：接口是给方法提供命名空间的。
+
+接口里包括了方法和信号。
+
+接口跟path有点像，只是写法是点分反写域名的方式。
+
+接口举例：org.freedesktop.NetworkManager.Devices，它里面有个方法getProperties。
+
+调用接口上的方法：
+
+```
+dbus = dbus.SystemBus()
+eth0 = bus.get_object("org.freedesktop.NetworkManager", "/org/freedesktop/NetworkManager/Devices/eth0")
+props = eth.getProperties(dbus_interface='org.freedesktop.NetworkManger.Devices')
+```
+
+可以看到，上面的写法是有些繁琐的。
+
+有个快捷方式的写法：
+
+就是使用同一个接口调用多个方法，可以构造一个dbus.Interface对象。
+
+然后直接在这个接口对象上调用方法，而不用多次指定。
+
+如下：
+
+```
+dbus = dbus.SystemBus()
+eth0 = bus.get_object("org.freedesktop.NetworkManager", "/org/freedesktop/NetworkManager/Devices/eth0")
+eth0_dev_iface = dbus.Interface(eth0, dbus_interface='org.freedesktop.NetworkManger.Devices')
+props = eth0_dev_iface.getProperties()
+```
+
+## 进行异步方法调用
+
+异步调用首先需要一个事件循环。
+
+dbus-python当前唯一支持的事件循环是GLib的。
+
+```
+from dbus.mainloop.glib import DBusGMainLoop
+DBusGMainLoop(set_as_de)
+```
+
+
+
+https://dbus.freedesktop.org/doc/dbus-python/tutorial.html
+
 # 客户端和服务器的例子
 
 好的，下面是一个简单的示例，演示了如何创建一个DBus服务器和一个DBus客户端进行通信。

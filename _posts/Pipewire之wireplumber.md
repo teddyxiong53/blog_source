@@ -1145,6 +1145,58 @@ src/tools/wpctl.c:124:  if (allow_def_audio && (g_strcmp0(arg, "@DEFAULT_SINK@")
 
 
 
+
+
+WirePlumber 首先读取主配置文件。
+
+这是一个类似 JSON 的文件，
+
+用于设置 PipeWire 上下文、SPA 插件、模块和组件。
+
+==在这些组件中，Lua 脚本引擎用于动态修改全局对象。==
+
+单实例配置文件位于 `/usr/share/wireplumber/wireplumber.conf` .这是默认配置，它包括一个进程中所有其他配置的功能。
+
+配置 WirePlumber 的推荐方法是将 SPA-JSON 文件添加到 或 `~/.config/wireplumber/` 中的 `/etc/wireplumber/` 相应 `wireplumber.conf.d/` 目录。需要考虑的一些事项是：
+
+如果要覆盖现有配置，请将其从 `/usr/share/wireplumber/` 目标复制到目标，同时保持其名称相同。具有相同名称但位于较低优先级位置的配置文件将被忽略
+
+否则，如果要添加新配置，则应以大于 50 的数字（例如 `51-my-config.conf` ）开头，
+
+因为默认配置主要以字母数字顺序等于或低于 50 的文件中完成。
+
+```
+wpctl status
+查看到默认的sink是48
+然后用 wpctl inspect 48 查看信息
+```
+
+选择 `device.name` or `node.name` 属性以用于 Lua 配置脚本中 `matches` 的规则。
+
+避免使用 `device.id` ，它是动态的，经常变化。
+
+例如，要更改 ALSA 节点的描述，您需要创建一个文件，例如：
+
+```
+/etc/wireplumber/wireplumber.conf.d/51-device-rename.conf (or ~/.config/wireplumber/wireplumber.conf.d/51-device-rename.conf)
+monitor.alsa.rules = [
+  {
+    matches = [
+      {
+        node.name = "alsa_output.pci-0000_00_1f.3.output_analog-stereo"
+      }
+    ]
+    actions = {
+      update-props = {
+        node.description = "Laptop"
+      }
+    }
+  }
+]
+```
+
+
+
 # 参考资料
 
 1、arch wiki

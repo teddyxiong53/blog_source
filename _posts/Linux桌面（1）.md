@@ -215,3 +215,58 @@ GNOME基金会的运作模式主要包括以下几个方面：
 5. **标准制定**：GNOME基金会参与制定和推广一些开放标准，以确保GNOME项目与其他开源软件项目和标准的兼容性，并促进生态系统的发展和互通性。
 
 总的来说，GNOME基金会是一个由社区驱动的非营利组织，致力于推动自由桌面环境的发展和普及，通过社区参与、项目管理、商业合作、标准制定等方式来支持和推广GNOME项目的发展。
+
+# desktop描述文件
+
+在Linux桌面环境中，桌面描述文件（.desktop 文件）用于定义如何在图形用户界面（GUI）中启动应用程序。它们通常位于 `/usr/share/applications/` 或 `~/.local/share/applications/` 目录中。
+
+### .desktop 文件示例
+```ini
+[Desktop Entry]
+Name=My Application
+Comment=This is my custom application
+Exec=/path/to/my/application %U
+Icon=myapplication
+Terminal=false
+Type=Application
+Categories=Utility;Application;
+```
+
+### 关键字段解释
+
+| 字段         | 描述                                                  |
+| ------------ | ----------------------------------------------------- |
+| `Name`       | 应用程序的名称                                        |
+| `Comment`    | 应用程序的简短描述                                    |
+| `Exec`       | 启动应用程序的命令，可以包含参数（例如 `%U` 表示URL） |
+| `Icon`       | 应用程序的图标文件名称                                |
+| `Terminal`   | 是否在终端中运行（`true` 或 `false`）                 |
+| `Type`       | 文件类型（通常为 `Application`）                      |
+| `Categories` | 应用程序所属的分类，用于在菜单中归类                  |
+
+### 常见的Exec字段参数
+| 参数 | 描述                                       |
+| ---- | ------------------------------------------ |
+| `%f` | 单个文件名                                 |
+| `%F` | 多个文件名                                 |
+| `%u` | 单个URL                                    |
+| `%U` | 多个URL                                    |
+| `%i` | 与 `Icon` 字段指定的图标名称相同的图标     |
+| `%c` | 与 `Name` 字段指定的应用程序名称相同的名称 |
+| `%k` | .desktop 文件的路径                        |
+
+### 使用示例
+假设你有一个自定义脚本 `/home/user/my_script.sh`，你可以创建一个桌面描述文件 `my_script.desktop`，内容如下：
+
+```ini
+[Desktop Entry]
+Name=My Script
+Comment=Runs my custom script
+Exec=/home/user/my_script.sh
+Icon=utilities-terminal
+Terminal=true
+Type=Application
+Categories=Utility;
+```
+
+将该文件保存到 `~/.local/share/applications/` 目录后，刷新桌面环境，你应该可以在应用程序菜单中看到并启动这个脚本。
