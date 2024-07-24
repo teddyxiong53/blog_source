@@ -6,7 +6,7 @@ tags:
 typora-root-url: ../
 ---
 
-
+# 简介
 
 L2CAP是Logic Link Control Adapter Protocol。
 
@@ -16,15 +16,57 @@ L2CAP是Logic Link Control Adapter Protocol。
 
 主要的作用是：
 
-1、协议信道复用。
+1、协议信道复用。Logical Link是有限的，但要用它来传输数据的上层协议却不止一个（例如ATT和SMP协议），multiplexing便是用过复用的方法来解决这个问题。类似于电脑上IP用同一个，但端口号可以有很多个，不用的应用协议用不同的端口来进行通信。
 
-2、分段与重组。
+2、分段与重组。上层的数据可能有很多，但底层设备的处理能力是有限的，分段便是将上层庞大的数据进行切割，让底层方便处理。而重组便是反过来，将底层分散的数据重新组合，传回给上层协议。
 
-3、信道流控。
+3、信道流控。当多个数据流通过不同的逻辑通道流经同一个控制器的时候，每一个通道需要单独的流控制
 
-4、error control。
+4、error control。对数据传输出现错误时进行重传，保证数据准确
 
 
+
+由于历史发展的原因，
+
+传统蓝牙将数据传输的方式方法抽象为一条条数据链路（data link），
+
+每条链路代表着一种使用着某种传输逻辑（Logic）和传输实体（Physic）的链路。
+
+并由L2CAP进行管理和控制。
+
+
+
+OSI 7层模型是通信的基本模型，
+
+蓝牙的协议层次和OSI 7层模型也是可以一一对应的。
+
+蓝牙的LL层和PHY层和OSI模型的数据链路层和物理层基本一一对应，而在LL层之后则区别较大。
+
+
+
+首先对于蓝牙这种拓扑结构为最简单的一对一直连应用，
+
+它没有也不需要OSI定义的网络层来为它进行组网和传输路径规划。（不需要网络层）
+
+而到传输层这以块，蓝牙则设计的相对复杂一些。（传输层更加麻烦）
+
+在蓝牙协议中，它主要通过L2CAP协议来共同实现OSI传输层所需求的作用。（L2CAP来实现传输层）
+
+
+
+https://www.cnblogs.com/simpleGao/p/17491546.html
+
+
+
+# L2CAP在BLE中的实现
+
+L2CAP协议支持很多功能，但BLE用的是简化版本，
+
+和前面说的没太大关系，可以把前面讲的都忘掉。
+
+对于BLE，L2CAP他基本只使用了通道复用（channel multiplexing）功能
+
+# psm
 
 PSM是Protocol Service Multiplexer。协议服务复用。
 
@@ -55,10 +97,11 @@ CID我可以理解为tcp端口号。
 
 基于信息采集的需求，BLE抽象出一个协议：Attribute protocol，该协议将这些“信息”以“Attribute（属性）”的形式抽象出来，并提供一些方法，供远端设备（remote device）读取、修改这些属性的值（Attribute value）。
 
-
 Attribute Protocol的主要思路包括：
-1）基于L2CAP，使用固定的Channel ID。就是0x0004。
+**1）基于L2CAP，使用固定的Channel ID。就是0x0004。**
+
 2）采用client-server的形式。提供信息（以后都称作Attribute）的一方称作ATT server（一般是那些传感器节点），访问信息的一方称作ATT client。
+
 3）一个Attribute由Attribute Type、Attribute Handle和Attribute Value组成。
 
 
@@ -103,7 +146,7 @@ ChannelID，缩写为CID。
 
 0x0040到0xFFFF：这些信道是动态分配的。
 
-如果是BLE设备，那么0x0005信道是作为BLE的信令通道。而0x0004和0x0006页会被强制分配给BLE，作为ATT和SecurityManager信道。
+==如果是BLE设备，那么0x0005信道是作为BLE的信令通道。而0x0004和0x0006页会被强制分配给BLE，作为ATT和SecurityManager信道。==
 
 这些在btstack的源代码里，都可以看到的。
 
@@ -120,7 +163,7 @@ ChannelID，缩写为CID。
 
 
 
-信道模式
+# 信道模式
 
 逻辑信道有5种模式。
 
@@ -173,6 +216,36 @@ L2CAP 基于 通道(channel) 的概念。 通道 (Channel) 是位于基带 (base
 
 
 L2CAP编程非常重要，它和HCI基本就是Linux Bluetooth编程的基础了。几乎所有协议的连接，断连，读写都是用L2CAP连接来做的。
+
+
+
+# L2CAP 和 ACL 的关系
+
+第一个提示是 Vol.3 Part.A 中的第 7.2 节“分段和重组”，“逻辑链路控制和适应协议 （L2CAP）”。
+
+本节的图 7.2（见下文）显示了从 L2CAP 层开始到无线数据包结束的数据路径图。
+
+发送到 L2CAP 层的数据传输请求被分解成多个 HCI 数据包并发送到硬件（蓝牙芯片）。
+
+固件（嵌入式软件）重新组装数据包，重新分割成多段帧，并将其作为无线数据包传输。
+
+![Example of fragmentation process.png](/_posts/images/random_name2/Example of fragmentation process.pngwidth=674&height=553&name=Example of fragmentation process.png)
+
+从这图中我们还可以看出，
+
+HCI和无线数据包不是一一对应的，
+
+单个HCI数据包可以拆分为多个无线数据包，
+
+这些操作都是在Link Manager链路控制器层执行的。
+
+该规范表明，该层可以通过仅通过说“适当地组装 1、3 和 5 插槽数据包类型”来选择数据包类型，但没有明确指定什么是“合适的”。
+
+抛开模糊的选择逻辑不谈，我们可以说“芯片固件选择ACL帧类型。在这个阶段，上层似乎不想这样做。
+
+
+
+https://www.silextechnology.com/unwired/basics-of-asynchronous-connection-less-acl-bluetooth-communication-protocol
 
 # 参考资料
 

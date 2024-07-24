@@ -29,6 +29,20 @@ https://www.nordicsemi.cn/news/le-audio-bis/
 
 http://bbs.apkplus.com/?t/185.html
 
+这个系列可以
+
+https://blog.csdn.net/m0_47580899/category_11800316.html
+
+mathworks网站的leaudio写得不错。我不知道为什么mathworks会关注蓝牙。
+
+https://ww2.mathworks.cn/help/bluetooth/ug/bluetooth-le-audio.html
+
+
+
+Bluetooth_LE_Primer_Paper，这个是中文的，很好。值得反复细读。
+
+https://www.cnblogs.com/likent/p/17328427.html
+
 # 简介
 
 下面是关于蓝牙LE Audio的简介：
@@ -48,7 +62,7 @@ LE Audio标准的推出为蓝牙音频设备带来了许多新的机会和功能
 
 
 
-![img](images/random_name2/d9d933c4888c4bc2a16a5ae2a6238356.png)
+<img src="images/random_name2/d9d933c4888c4bc2a16a5ae2a6238356.png" alt="img" style="zoom: 67%;" />
 
 https://blog.csdn.net/ppc_dragon/article/details/135902404
 
@@ -452,6 +466,7 @@ if __name__ == "__main__":
 在安卓手机上进行LE Audio连接，需要确保手机的蓝牙堆栈和硬件支持蓝牙5.2及以上版本，同时安卓操作系统要支持LE Audio功能。以下是步骤和关键点：
 
 **1. 确认设备支持**
+
 - **硬件支持**：确保你的安卓手机硬件支持蓝牙5.2及以上版本。
 - **软件支持**：安卓系统版本需要支持LE Audio，通常是Android 13及以上版本。
 
@@ -806,6 +821,20 @@ https://blog.csdn.net/fan_hang/article/details/135423795
 
 https://fanhang.blog.csdn.net/article/details/135582605
 
+LE Audio 堆栈的整体设计是实现尽可能严格地遵循规范，
+
+无论是在结构方面还是在命名方面。
+
+大多数 API 函数都以规范首字母缩略词为前缀（例如，bt_bap 表示基本音频配置文件 （BAP），bt_vcp 表示音量控制配置文件 （VCP））。
+
+然后，在适用的情况下，以每个配置文件中的特定角色为前缀（例如和 `bt_bap_unicast_client_discover()` `bt_vcp_vol_rend_set_vol()` ）。
+
+文件的结构通常也遵循这一点，其中 BAP 相关文件以 bap 为前缀，VCP 相关文件以 vcp 为前缀。
+
+通用音频框架 （GAF） 被视为蓝牙 LE 音频体系结构的中间件。GAF 包含配置文件和服务，允许更高层的应用程序和配置文件设置流、更改音量、控制媒体和电话等。GAF 建立在 GATT、GAP 和同步通道 （ISO） 之上。
+
+
+
 # 实测Qaulcomm LE Audio低延迟
 
 Bluetooth LE Audio 是蓝牙标准的最新技术，
@@ -933,6 +962,1052 @@ https://source.android.com/docs/core/connect/bluetooth/asha?hl=zh-cn
 # **LE Audio BIS 模式流程解析**
 
 https://www.nordicsemi.cn/news/le-audio-bis/
+
+
+
+# ISO音频流
+
+如果过去你的工作主要是蓝牙应用程序，
+
+那么你可能专注于配置文件，
+
+几乎没有看核心规范。 
+
+一个可能的原因是蓝牙经典音频配置文件的接口配置已经跟核心设规范绑定好了，
+
+因此没有太多需要了解配置文件下面发生的事情或其相关协议。
+
+但对于低功耗音频配置文件却不同了，
+
+==你可能会改变核心规范的工作方式。==
+
+
+
+核心规范为了支持起更灵活的应用系统，
+
+而必须允许更大程度的灵活，
+
+该应用系统不仅满足当今的音频需求，
+
+还可以满足我们甚至还没有考虑过的需求，
+
+==为了实现这点，做出了一个基本的架构层面的修改—把音频流和控制流分开。==
+
+这意味着定义了一套新的ISO同步物理信道传输音频流，
+
+ISO同步物理信道与BLE ACL链路分开且同时存在。
+
+核心规范中的ISO物理信道可以同时创建很多ISO音频流，
+
+这些音频流可以传输所有类型的音频，
+
+从非常低音质到难以置信的高音质类型。
+
+ISO数据流不包含控制信息，它完成只传输音频流，
+
+控制信息是被BLE ACL链路传输的。
+
+共同存在的BLE ACL信道被用来创建ISO信道，打开，关闭，添加音频和媒体控制，以及其他我们需要的所有功能等，以上这些操作都是基于使用BLE规范中标准的GATT规范来完成的。
+
+
+
+为了提供不同延迟，不同音频质量和不同级别稳健性的灵活性，
+
+研发人员需要能够控制这些ISO流的配置方式。
+
+这些在通用音频框架配置文件协议栈中实现的非常好。
+
+这意味着当你开发蓝牙低功耗音频应用程序时，
+
+虽然只是使用协议栈顶层的音频配置文件，
+
+==但是仍需要了解很多底层ISO信道的工作机制。==
+
+这与之前开发的很多蓝牙应用程序不同。
+
+为了帮助理解蓝牙低功耗音频的整体框架，
+
+我们需要底层ISO信道是如何开发的，
+
+它们实现的功能以及如何使用它们。
+
+
+
+目前为止，蓝牙规范主要关注点到点的连接：
+
+一个主设备与一个从设备建立一个连接，然后传输数据，这是一个非常局限的拓扑，
+
+==许多公司已经开发私有的功能扩展来增加灵活性，==
+
+==正如所看到的真无线立体声耳机。==
+
+但是ISO信道比这些私有的功能扩展能够提供更广泛的拓扑。
+
+除了让一部手机可以连接一对耳机或者一个扬声器，
+
+蓝牙低功耗还能够把左右耳音频信号分别传给对应的左右耳机，
+
+也需要能够将相同的信息发送给一对以上的耳机，并且可以增加设备数量和音频流数量。
+
+
+
+存在两种ISO信道：单播模式和广播模式。
+
+单播模式连接称为可连接的ISO信道，简称CIS，与现有蓝牙音频方案交类似，某种程度上，CIS意味着两个设备之间已经建立连接来交互数据，并且使用确认机制提供设备之间流控。==与CIS共存的还有一个ACL控制信道，该ACL信道在CIS整个传输音频过程中一直存在。==
+
+
+
+用于广播模式的BIS与CIS具有相似结构，但是也有一个主要区别：数据确认机制。
+
+设备使用广播发送ISO数据流时，不知道有多少设备收到音频数据，这些设备之间没有建立连接，==不需要ACL链路==，简而言之，广播模式是纯粹混杂的。
+
+然而，可以添加控制链路给广播。
+
+在蓝牙核心规范级别，==BIS与CIS的明显区别是他们传输数据是否被确认。==（可以理解为tcp和udp）
+
+但是蓝牙应用程序为了实现不同应用场景需要在广播和单播之间进行切换，这种切换对用户是无感的。
+
+
+
+广播模式允许多个设备像FM收音机或电视那样听取相同东西，
+
+最初电线圈助听器应用要求蓝牙低功耗音频广播能力，
+
+在公共场所佩戴助听器的人可以听到相同信号，
+
+助听器要求相对低的音频质量，广泛应用于语音。
+
+蓝牙低功耗音频拥有着高质量音频且明显的低安装成本，将来在工业界拥有更广泛的应用场景。
+
+传统场所：
+
+会议中心，剧院和礼拜场所；
+
+公共信息发布：航班公告，火车发车时间和巴士时刻表，佩戴耳机或者助听器的人们都可以听到这些信息。
+
+广播模式也适用更多私人应用场景，例如一群人收听同一个电视节目，或者互相分享手机上的音乐。
+
+最后一个例子展示了蓝牙低功耗音频应用程序 ==如何在不可见情况下来回切换底层协议栈==。
+
+如果你正在带着耳机听手机音乐时，此时底层协议栈可能使用的CIS链路。
+
+当你朋友过来问你“想不想一起听音乐？”，
+
+手机分享音乐程序会把你的手机从私有单播连接切换到加密广播模式，
+
+这样你们都可以听到相同的音乐了，
+
+这种切换场景的功能可以发生在耳塞，助听器，耳机和扬声器上。
+
+在应用程序方面，与其他人一起分享音乐应用是无缝切换的，音乐用户不必知道单播模式和多播模式，切换只发生在底层协议栈。
+
+
+
+核心规范V5.2中增加ISO流特性是低功耗蓝牙协议中一个全新的概念。
+
+==熟悉A2DP和HFP协议的读者都知道其拓扑结构局限不灵活。==
+
+HFP具有双向一对一的链路，
+
+典型场景是电话和耳机或免提设备之间。
+
+A2DP是一个更简单的单播链路，
+
+定义Source设备产生音频数据，
+
+Sink设备通常是耳机，扬声器，放大器或录音设备，用来接收音频数据。
+
+![image-20240722114204423](images/random_name2/image-20240722114204423.png)
+
+
+
+蓝牙低功耗音频建立在一个基本不对称的协议：
+
+一个设备是主设备，负责ISO链路的创建及其链路控制，主设备可连接很多外围设备，主设备和外围设备通过ISO链路交互音频数据。
+
+==这里提及不对称一定程度是指外围设备比主设备要求更低功耗。==
+
+CIS与经典蓝牙音频配置文件相比，主设备更擅长配置ISO流程，以达到影响音频质量，延迟和电池寿命。
+
+对于BIS，主设备控制所有链路配置，外围设备决定想要接收的ISO流。
+
+重复第3.3节术语描述的，从低往上整体研究蓝牙低功耗音频协议栈，
+
+我们可能会看到各种不同的名字代表设备执行的角色。
+
+在核心规范中，定义主设备和外围设别。
+
+在BAPS系列规范中，设备被称为客户端和服务端，
+
+在CAP协议中，变成发起者和接受者，发起者一定是主设备，其负责ISO链路的调度，接受者通常接收这些流的设备。
+
+==一定有一个设备是发起者，但是可以有许多接受者。==
+
+![image-20240722114416886](images/random_name2/image-20240722114416886.png)
+
+
+
+ 在顶部的配置文件中，会出现大量的新角色名称，
+
+包括发送者，广播者和接收者。
+
+==为了更好地介绍蓝牙低功耗音频，我们只使用发起者和接受者，而忽略其他角色名称。==
+
+当在核心规范中没有涉及音频流时，会退回使用客户端和服务端。
+
+除广播模式BIS以外，任何设备既可以作为音频源产生音频数据，也可以作为音频接收者，接收数据。
+
+发起者和接受者都可以同时作为音频源设备和音频接收设备，并且他们都可以包含多个蓝牙低功耗音频中的接收设备和源设备。
+
+对于谁生成音频数据和谁接收和渲染音频数据的讨论内容，与谁是发起者和接受者的内容，两者是截然不同的。
+
+极其重要的一点内容是：
+
+发起者的设备负责计算每次音频数据发送的时间点，该工作可以成为调度。
+
+接受者的设备主要负责接收这些音频数据流。
+
+这个概念定义同样也适用于单播和多播。
+
+一个接受者也可以产生音频数据例如同从头戴耳机的麦克风中采集你的声音，但是发起者负责决定发回数据的时机。
+
+
+
+由于发起者角色远远比接受者角色更复杂，
+
+通常发起者是手机设备，电视设备和平板，
+
+这些设备的特点是拥有更大的电池容量和更多的资源。
+
+链路调度必须要考虑其他无线连接，例如：Wi-Fi连接，其他蓝牙连接等，
+
+这些都是芯片设计工程师需要处理的棘手问题。
+
+但是，正如我们稍后介绍的，蓝牙低功耗音频方案的上层应用程序拥护很大的权限来影响适配链路调度，
+
+这就是为什么让开发工程师需要熟练地掌握底层协议栈ISO的工作原理。
+
+
+
+对于单播的蓝牙低功耗音频，其拥有更灵活的网络拓扑结构，如图4.3。
+
+可以使用与HFP或A2DP类似的网络拓扑结构，一个手机连接一个外围设备（耳机），建立一条音频链路。
+
+在这个拓扑基础上，蓝牙技术允许一个发起者与2个甚至更多的接受者进行通信。
+
+典型的应用场景是手机可以连接一对耳机或者助听器。
+
+这个耳机或者助听器不需要是同一个厂商制作，原因是蓝牙低功耗音频设备是一种可互操作的标准协议。
+
+
+
+
+
+https://www.feasycom.cn/industry_news/366.html
+
+
+
+# 蓝牙连接iso的这个iso怎么理解
+
+在蓝牙音频连接中，ISO (Isochronous Channels) 是指用于时间同步的数据传输通道。蓝牙5.2及以后版本引入了ISO通道，以支持LE Audio的新特性。
+
+### ISO (Isochronous Channels) 概念解释
+
+| **特性**     | **描述**                                                     |
+| ------------ | ------------------------------------------------------------ |
+| **定义**     | ISO (Isochronous Channels) 是一种用于同步数据传输的通道，保证数据在固定时间间隔内传输。 |
+| **用途**     | 主要用于传输音频数据，确保音频流在多个设备间保持同步，减少延迟和抖动。 |
+| **工作原理** | 通过设置固定的时间间隔进行数据传输，确保数据包在预定的时间内发送和接收。 |
+| **蓝牙5.2**  | 蓝牙5.2引入了ISO通道，以支持LE Audio的高质量音频传输和低延迟通信。 |
+
+### ISO在LE Audio中的应用
+
+1. **多流音频 (Multi-Stream Audio)**
+   - 允许多个音频流同时传输，例如左右耳机的独立音频流。
+   - 提供更好的立体声效果和音频同步。
+
+2. **广播音频 (Broadcast Audio)**
+   - 支持一个设备同时向多个接收设备广播音频数据。
+   - 实现公共广播、多人共享音频等场景。
+
+3. **助听器**
+   - 提供更低延迟和更高音质的音频传输。
+   - 支持多个助听器间的音频同步，提高用户体验。
+
+### ISO通道的优势
+
+| **优势**       | **描述**                                           |
+| -------------- | -------------------------------------------------- |
+| **低延迟**     | ISO通道提供更低的延迟，适合实时音频应用。          |
+| **高可靠性**   | 保证数据在固定时间间隔内传输，减少数据丢失和抖动。 |
+| **多设备同步** | 支持多个设备之间的时间同步，确保音频流一致性。     |
+| **高质量音频** | 结合LC3编解码器，提高音频质量。                    |
+
+### 总结
+
+ISO (Isochronous Channels) 是蓝牙LE Audio的重要技术，它通过时间同步的数据传输通道，确保高质量、低延迟的音频传输，并支持多流音频和广播音频等新特性。这使得蓝牙LE Audio在音频体验上有了显著提升，适用于各种音频应用场景，如无线耳机、助听器和公共广播系统等。
+
+# ISO interval
+
+每个 CIS 事件都以规则的 ISO 间隔发生，该间隔在 5 毫秒到 4 秒的范围内，以 1.25 毫秒的倍数发生。
+
+每个 CIS 事件都划分为一个或多个子事件。
+
+在 CIS 中，在子事件期间，中央设备发送一次，外设响应，如上图所示。
+
+
+
+# 为什么需要同步通道
+
+https://developer.aliyun.com/article/1171620
+
+Isochronous channel 是蓝牙5.2发布的新特性，可以翻译为同步通道，
+
+主要应用在LE Audio上。
+
+它定义了一个有时间依赖的数据的传输通道和传输策略。
+
+首先是定义了一个对于多接收方同步获取数据的机制；
+
+其次是定义了发送方在允许的时间外丢弃数据，从而保证接收方收取的数据满足时效要求。
+
+## 为什么需要同步通道？
+
+ble 的传统的gatt也可以同时连接多个slaver设备，
+
+但是master与多个slaver建立连接的后，
+
+master与每个slaver建立的连接通道都是相互独立的，
+
+使用的是不同的时间基准，
+
+并且每个gatt通道的连接间隔可能也不一样，
+
+所以master在给不同的slaver发送数据的时候无法做到精确的时间同步。
+
+这也是ble之前的应用场景所决定的，
+
+ble传统的gatt连接通道适合进行数据流的传输，
+
+并且通过调整连接interval来提高ble数据传输的峰值速率，这样的设计满足了大部分的数据流的传输要求。
+
+![image-20240722154832496](images/random_name2/image-20240722154832496.png)
+
+
+
+但是音频流和数据流对传输速率的要求是不一样的，
+
+音频流的数据码率是固定的，
+
+比如128bps， 192bps， 
+
+所以音频流并不追求绝对的峰值速率，
+
+而是稳定的、实时的传输通道，
+
+并且音频流通常有多个声道，需要让多个声道的数据有很好的同步性。
+
+就这样，在音频流传输的需求背景下，Isochronous channel 同步通道应运而生。
+
+## 连接同步通道
+
+连接同步通道有两个新的概念，
+
+分别是CIG （Connected Isochronous Group） 和 CIS （Connected Isochronous Stream）。
+
+连接同步通道也有连接间隔，称为ISO_Interval，
+
+这个和ble传统的gatt连接的interval有些类似，但是ISO_Interval把时序分的更加细一些。
+
+CIG：是由master建立的，建立CIG的时候interval已经确认好了。 建立连接后， master可以向slaver发送建立CIG请求，==一个CIG最多可以建立31个CIS。==
+
+CIS： CIS表示每个连接的音频流，可以简单理解为每个CIS就是TWS耳机中的一个设备。每个CIS最多可以包含31个subevent，依次轮流发送， 每个subevent最小的间隔是400us。
+
+连接同步通道又分为两种模式，sequential模式和interleave模式
+
+（这个就跟音频的里的interleave模式那个有点像）
+
+### 总结
+
+1. 连接同步通道是基于蓝牙连接的，首先要先建立ble连接
+2. 基于时间同步的音频传输机制，可以实现多个设备的数据同步
+3. 一个master可以建立多个CIG
+4. 每个CIG可以最多31个CIS
+5. 每个CIS里面最多有31个subevent
+6. 链路层有LL_CIS_REQ 和 LL_CIS_RSP来创建CIS
+
+
+
+## 广播同步通道
+
+广播同步通道 boardcast isochronous 是一个全新的概念，
+
+是建立在蓝牙5.0的周期性广播Periodic advertising的基础之上，
+
+周期广播通道是可以使用预设的0 -36的数据通道上进行数据的发送的，
+
+==首先广播者在37 38 39 广播的时候会广播下一次会出现在哪个数据channel，==
+
+扫描设备可以基于此在特定的时间段，在对应的通道上进行扫描，这样就可以建立一个周期性广播的单向通道。
+
+ 广播同步通道也有BIG和 BIS两个概念，这部分和连接同步通道类似。
+
+big boardcast isochronous group：一个设备可以发送多个BIG
+
+bis boardcast isochronous stream： 每个BIG最多可以由多个BIS。
+
+### 总结
+
+1. 无连接的
+2. 单向的，无应答机制
+3. 广播通道，对接收者的数量没有限制
+4. 不仅可以广播数据包还可以广播控制包
+5. 每个big里面最多可以包含31个bis
+
+
+
+从BT 5.2规范中可见，LE Audio是纯软件协议栈层面的更新，
+
+这一点和需要硬件支持的BT5.1的CODER PHY， LE 2M PHY不一样，
+
+也就是说，各大原厂的产品，部分功能可以直接通过更新SDK即可支持BT5.2 的LE Audio功能。
+
+
+
+
+
+# 1
+
+为了支持LE Audio的开发，蓝牙官方组织提供了一套完整的规范和工具集，
+
+包括超过二十个文档和SDK，帮助开发者快速上手并开发创新的LE Audio产品
+
+
+
+面向开发人员的白皮书
+
+**An Overview of Auracast™ Broadcast Audio**
+
+**How to Design Auracast™ Earbuds**
+
+**How to Build an Auracast™ Transmitter**
+
+**How to Build an Auracast™ Assistant**
+
+**The Auracast™️ Simple Transmitter Best Practices Guide**
+
+**Developing Auracast™ Receivers with an Assistant Application for Legacy Smartphones**
+
+
+
+低功耗蓝牙 （LE） 入门介绍了蓝牙 LE 堆栈的每一层，
+
+从底部的物理层开始，
+
+到顶部的通用访问配置文件结束。
+
+还涵盖了与堆栈的分层架构相关的主题，例如安全性。
+
+如果您不熟悉 Bluetooth LE 并希望从技术角度了解该技术，那么这里就是您的起点。
+
+75页的入门文档
+
+https://www.bluetooth.com/wp-content/uploads/2022/05/the-bluetooth-le-primer-v1.2.0.pdf
+
+
+
+配置文件规范定义了相关设备（如智能手表和遥控钥匙）所承担的角色，特别是定义了客户端设备的行为以及它应该使用的连接服务器上的数据。
+
+蓝牙的所有规格书
+
+https://www.bluetooth.com/specifications/specs/
+
+linux下开发蓝牙的指导说明
+
+https://www.bluetooth.com/bluetooth-resources/bluetooth-for-linux/
+
+https://www.bluetooth.com/learn-about-bluetooth/feature-enhancements/le-audio/resources/
+
+
+
+Nordic Semiconductor的nRF5340音频开发套件（DK）就是一个推荐平台，它包含所有必要的配置和示例代码，可以作为USB收发器发送或接收来自PC的音频
+
+# LC3
+
+LC3采用了更灵活的编码策略，支持独立的左右音频流，这使得它在处理复杂音频信号时更加高效
+
+另外，LE Audio基于蓝牙协议5.2 Isochronous Channels功能，传递数据时减少了不必要的信息交互，从而极大降低了功耗。
+
+与经典蓝牙相比，LE Audio的能耗仅为Wi-Fi的10-20%，比经典蓝牙低5%。
+
+LC3plus作为LC3的超集，在LC3的基础上增加了抗干扰传输、极低延迟和高解析音频等功能，使其在无线耳机或扬声器上实现了高质量的音频流。
+
+这些特性不仅提升了音质，还确保了在各种环境下的稳定性和可靠性。
+
+
+
+随着 TWS（True Wireless Stereo）耳机的兴起，用户对便携式音频设备的需求不断增加，希望体验更加自由、无拘束的音频享受。
+
+然而，在这个音频革命的时代，传统蓝牙技术在面对一些挑战时显得力不从心。
+
+传统蓝牙音频通常需要更高的功耗，
+
+而连接管理、同步性能等方面也存在一些限制，无法完全满足用户对高品质、低功耗音频体验的期望。
+
+
+
+正是在这个背景下，蓝牙技术的新一代——BLE Audio应运而生。
+
+BLE Audio汲取了TWS耳机兴起时用户对自由、便捷音频体验的追求，
+
+通过引入先进的编解码器（如LC3）、支持多流音频、实现广播音频等一系列创新技术，
+
+为用户提供更高音质、更低功耗的音频传输方案。
+
+BLE Audio的诞生不仅为用户带来更出色的音频体验，也推动了蓝牙技术在音频领域的不断进步，使得蓝牙成为无线音频连接的先锋技术。
+
+https://blog.csdn.net/ppc_dragon/article/details/135827836
+
+
+
+Auracast广播音频还支持两种模式：
+
+一种是开放模式，允许任何范围内的接收设备参与；
+
+另一种是密钥保护模式，只允许具有正确密钥的接收设备参与。
+
+
+
+https://www.feasycom.com.cn/6390.html
+
+# LEAudio协议详解
+
+https://blog.csdn.net/cai472861/category_7886266.html
+
+状态是从宏观角度了解ble，
+
+spec将状态分为划分为7种状态，
+
+这些状态又可以分属于非连接状态和连接状态 。
+
+不同状态下,链路层都会有对应的PDU格式定义，
+
+不同的PDU对应不同的物理信道，这些知识点可以继续衍生
+
+首先了解这些状态之间的切换，对于后面深入分析整个LE audio 流程十分必要
+
+
+
+ble audio分为两种方式，
+
+一个是通过GATT连接（UMS和UMR），
+
+一个是通过ble 广播包(BMS和BMR)。
+
+需要建立连接的GATT需要关注initiating 和 connection state
+
+非连接广播包需要关注 Advertising，Scanning，Isochronous Broadcasting state，Synchronization state
+
+基本上所有状态都会涉及到ble audio的应用场景。
+
+
+
+如spec所规定，LE在2.4GHz频段定义了40个RF信道，
+
+这些信道又重新抽象到了四种LE 物理信道。
+
+分别是advertising, periodic, isochronous, and data。
+
+广播信道分为两类： primary 物理信道37,38,39， 其他的为secondary 物理信道。
+
+
+
+# 蓝牙leaudio一帧7.5ms和一帧10ms具体是指什么
+
+在蓝牙LE Audio中，一帧7.5ms和一帧10ms指的是音频数据传输的时间帧（Time Frame），具体来说，是指每次音频数据包的传输时间间隔。这些时间帧的选择影响音频流的延迟和质量。
+
+| 时间帧 | 描述                                                         |
+| ------ | ------------------------------------------------------------ |
+| 7.5ms  | 每隔7.5毫秒传输一个音频数据包。较短的时间帧可以减少音频延迟，适用于实时性要求较高的应用，如语音通话。 |
+| 10ms   | 每隔10毫秒传输一个音频数据包。稍长的时间帧可能会增加一点延迟，但有助于减少传输开销和功耗，适用于音乐播放等应用。 |
+
+选择不同的时间帧长度取决于具体应用的需求。7.5ms的时间帧提供更低的延迟，适合需要高实时性的场景。而10ms的时间帧则在降低功耗和系统开销方面更有优势。
+
+
+
+# 手机和手环的场景，手环是gatt server还是gatt client？
+
+在手机和手环的场景中，手环通常作为GATT Server（通用属性配置文件服务器），手机作为GATT Client（通用属性配置文件客户端）。这种配置允许手环提供传感器数据（如心率、步数等），而手机通过读取和写入手环上的GATT特性来获取或控制这些数据。
+
+### 角色划分
+
+| 设备 | 角色        | 描述                                                     |
+| ---- | ----------- | -------------------------------------------------------- |
+| 手机 | GATT Client | 发起GATT操作，读取或写入手环的特性。                     |
+| 手环 | GATT Server | 托管GATT服务，提供传感器数据和其他特性供手机读取或写入。 |
+
+### 工作流程
+
+1. **连接建立**：手机（GATT Client）通过蓝牙扫描并连接到手环（GATT Server）。
+2. **服务发现**：手机发现并浏览手环托管的GATT服务和特性。
+3. **数据读取**：手机通过读取手环上的GATT特性获取传感器数据。
+4. **数据写入**：手机通过写入GATT特性向手环发送控制指令，如启动或停止某个传感器。
+5. **通知和指示**：手环可以通过通知或指示机制主动向手机发送数据更新。
+
+### 示例场景
+
+假设手环提供心率数据服务，手机需要读取心率数据并显示给用户。
+
+**手环（GATT Server）代码示例**：
+
+```c
+// 定义心率服务和特性
+static struct bt_gatt_attr attrs[] = {
+    BT_GATT_PRIMARY_SERVICE(BT_UUID_HRS),
+    BT_GATT_CHARACTERISTIC(BT_UUID_HRS_MEASUREMENT, BT_GATT_CHRC_NOTIFY,
+                           BT_GATT_PERM_READ, NULL, NULL, &heart_rate_value),
+    BT_GATT_CCC(heart_rate_ccc_cfg_changed, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE),
+};
+
+// 回调函数：心率通知配置更改
+static void heart_rate_ccc_cfg_changed(const struct bt_gatt_attr *attr, uint16_t value) {
+    notify_enabled = (value == BT_GATT_CCC_NOTIFY);
+}
+
+// 更新心率数据并发送通知
+void update_heart_rate(uint8_t heart_rate) {
+    heart_rate_value = heart_rate;
+    if (notify_enabled) {
+        bt_gatt_notify(NULL, &attrs[1], &heart_rate_value, sizeof(heart_rate_value));
+    }
+}
+```
+
+**手机（GATT Client）代码示例**：
+
+```c
+// 发现手环上的心率服务
+static void discover_hrs_service(struct bt_conn *conn) {
+    // 执行服务发现，找到心率服务并订阅心率特性通知
+}
+
+// 回调函数：接收心率数据
+static void heart_rate_received(struct bt_conn *conn, const struct bt_gatt_attr *attr, const void *buf, uint16_t len) {
+    uint8_t heart_rate = *(uint8_t *)buf;
+    // 处理接收到的心率数据，更新UI等
+}
+
+// 订阅心率特性通知
+void subscribe_heart_rate(struct bt_conn *conn) {
+    bt_gatt_subscribe(conn, &heart_rate_subscription);
+}
+```
+
+### 理解
+
+- **GATT Server（手环）**：托管GATT服务和特性，提供传感器数据（如心率）。
+- **GATT Client（手机）**：发起GATT操作，读取手环上的数据并进行处理，如显示在应用界面上。
+
+这种配置允许手机通过蓝牙连接手环，获取实时的传感器数据，并对手环进行控制。这是手机和可穿戴设备（如手环、智能手表）之间常见的交互模式。
+
+# gap central 角色和gatt server之间有关系吗？
+
+GAP（Generic Access Profile）和GATT（Generic Attribute Profile）是蓝牙协议中的两个不同层面，它们之间的角色虽然可以相互关联，但并不直接依赖。
+
+### GAP Central 角色
+
+GAP定义了设备如何在物理层面上相互发现和连接。在GAP中，Central角色是指主动扫描并连接其他设备的角色。Central角色通常是主动发起连接请求的设备，例如智能手机在扫描和连接手环时就扮演Central角色。
+
+### GATT Server 角色
+
+GATT定义了设备如何在应用层面上使用属性（Attributes）进行通信。GATT Server是指托管数据属性并响应客户端请求的设备。例如，手环托管心率服务和特性，允许手机读取心率数据。
+
+### 关系
+
+GAP角色和GATT角色是独立定义的，但它们可以在一个设备上组合使用。以下是两者之间关系的常见情形：
+
+1. **Central + GATT Client**：
+    - 典型场景：智能手机连接手环。
+    - GAP角色：Central（主动扫描和连接手环）。
+    - GATT角色：Client（读取手环上的数据特性，如心率）。
+
+2. **Peripheral + GATT Server**：
+    - 典型场景：手环提供数据给手机。
+    - GAP角色：Peripheral（被扫描并接受连接）。
+    - GATT角色：Server（托管心率数据服务，响应手机的读取请求）。
+
+3. **Central + GATT Server**（较少见）：
+    - 设备作为Central角色连接其他设备，同时也托管一些GATT服务供其他设备使用。
+    - 典型场景：智能手机既主动连接手环，又被其他设备读取一些本地服务（如位置服务）。
+
+### 示例场景解析
+
+| 场景             | GAP角色    | GATT角色 | 描述                                           |
+| ---------------- | ---------- | -------- | ---------------------------------------------- |
+| 手机连接手环     | Central    | Client   | 手机扫描并连接手环，读取心率数据。             |
+| 手环提供心率数据 | Peripheral | Server   | 手环被手机连接，托管心率数据服务。             |
+| 手机连接并被读取 | Central    | Server   | 手机连接其他设备，同时被其他设备读取一些服务。 |
+
+### 示例代码
+
+以下是假想的代码片段，展示了手机作为GAP Central和GATT Client，手环作为GAP Peripheral和GATT Server的实现：
+
+**手机（Central + GATT Client）**：
+
+```c
+// 扫描并连接手环
+void start_scan_and_connect() {
+    // 扫描代码
+    // 连接代码
+}
+
+// 发现手环上的GATT服务
+void discover_services(struct bt_conn *conn) {
+    // 执行服务发现
+}
+
+// 读取手环上的心率数据
+void read_heart_rate(struct bt_conn *conn) {
+    // 读取心率特性
+}
+```
+
+**手环（Peripheral + GATT Server）**：
+
+```c
+// 广播并等待连接
+void start_advertising() {
+    // 广播代码
+}
+
+// 定义心率服务和特性
+static struct bt_gatt_attr attrs[] = {
+    BT_GATT_PRIMARY_SERVICE(BT_UUID_HRS),
+    BT_GATT_CHARACTERISTIC(BT_UUID_HRS_MEASUREMENT, BT_GATT_CHRC_NOTIFY,
+                           BT_GATT_PERM_READ, NULL, NULL, &heart_rate_value),
+    BT_GATT_CCC(heart_rate_ccc_cfg_changed, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE),
+};
+
+// 回调函数：心率通知配置更改
+static void heart_rate_ccc_cfg_changed(const struct bt_gatt_attr *attr, uint16_t value) {
+    notify_enabled = (value == BT_GATT_CCC_NOTIFY);
+}
+
+// 更新心率数据并发送通知
+void update_heart_rate(uint8_t heart_rate) {
+    heart_rate_value = heart_rate;
+    if (notify_enabled) {
+        bt_gatt_notify(NULL, &attrs[1], &heart_rate_value, sizeof(heart_rate_value));
+    }
+}
+```
+
+### 总结
+
+GAP Central和GATT Server角色在蓝牙设备中可以独立存在，也可以组合使用。理解它们的关系有助于正确配置和使用蓝牙设备以实现特定的应用场景。
+
+# Auracast
+
+https://news.eeworld.com.cn/qrs/ic627344.html
+
+https://www.wpgdadatong.com.cn/blog/detail/71442
+
+https://www.telink-semi.com/implementing-bluetooth-bis-and-cis-le-audio/
+
+
+
+
+
+无线音频设备必须支持两个基本功能：播放音频和电话。
+
+要播放音乐和其他音轨，必须支持双声道立体声音频。
+
+通话过程中，必须支持同时发送和接收音频数据。
+
+此外，许多扬声器和耳机现在都支持语音助手功能，其主要功能之一是响应唤醒词。
+
+最后，必须可以进行多个连接，因为许多用户将耳机连接到多个设备，例如，同时连接到计算机和手机。
+
+
+
+Classic Audio 中有三个配置文件：
+
+- **A2DP (Advanced Audio Distribution Profile)** – handles stereo multimedia audio streaming from one device to another
+  A2DP（高级音频分发配置文件）– 处理从一台设备到另一台设备的立体声多媒体音频流
+- **HFP (Hands-free Profile)** – provides two-way audio (at a lower quality) for hands-free calls and other functions
+  HFP（免提配置文件） – 为免提通话和其他功能提供双向音频（质量较低）
+- **AVCRP (Audio/Video Remote Control Profile)** – provides audio remote control functionality (play/pause and volume)
+  AVCRP （音频/视频远程控制配置文件） – 提供音频远程控制功能（播放/暂停和音量）
+
+
+
+对于大多数应用程序，Classic Audio 中的配置文件运行良好;
+
+但是，在许多情况下，它们需要组合在一起才能提供设备的全部功能。
+
+例如，耳机用于听音乐和打电话，需要 A2DP 和 HFP 配置文件（如果耳机有音频遥控器，则除了 AVCRP 之外）。
+
+==安装后，许多头戴式耳机将显示为两种设备：免提式耳机和立体声式耳机。==
+
+==如果用户正在听音乐，则使用 A2DP 配置文件，但如果有呼叫进来，设备必须切换到音频质量较低的 HFP 配置文件。==
+
+
+
+
+
+通用音频框架 （GAF） 是 LE Audio 的新增功能，是一组规范，
+
+它们构成了一个中间件，其中包含许多音频应用程序通用的功能。
+
+许多音频设备只需 GAF 中的定义即可实现全部功能。
+
+各个规范定义了互操作性的基本级别，允许两个蓝牙 LE 音频设备在彼此之间传输音频。
+
+顶级规范以 GAF 中的规范为基础，并为特定音频应用添加了附加功能。
+
+
+
+
+
+BAP 中的规范可用于开发 LE Audio 产品;
+
+例如，对于单播应用程序（一个源和一个接收器），使用 BAP、ASCS 和 PACS，并且用于广播 BAP、PACS 和 BASS。
+
+经典音频的缺点之一是当两个设备没有共同的音频配置文件时，它们之间不兼容。
+
+使用 LE Audio，即使两个设备具有不同的顶级配置文件，它们仍然能够设置音频流，因为两者都与 BAP 兼容。
+
+
+
+
+
+https://community.element14.com/learn/learning-center/essentials/w/documents/27815/learn-the-basics-and-implementations-of-bluetooth-le-audio-and-its-applications
+
+
+
+蓝牙5.2的改动点
+
+https://novelbits.io/bluetooth-version-5-2-le-audio/
+
+
+
+# leaudio的 gatt UUID
+
+LE Audio使用了多个GATT（Generic Attribute Profile）服务和特性，它们都有各自的UUID（通用唯一标识符）。这些UUID在LE Audio中定义了不同的功能，如音频流传输、音频控制等。
+
+### LE Audio的GATT UUID
+
+以下是一些LE Audio相关的主要GATT服务和特性的UUID：
+
+| 服务/特性 | 名称                                    | UUID   |
+| --------- | --------------------------------------- | ------ |
+| 服务      | **Audio Stream Control Service (ASCS)** | 0x184E |
+| 特性      | **ASE Control Point**                   | 0x2BC1 |
+| 特性      | **ASE Status**                          | 0x2BC2 |
+| 特性      | **ASE Data**                            | 0x2BC3 |
+| 服务      | **Microphone Control Service (MCS)**    | 0x184F |
+| 特性      | **Microphone Control Point**            | 0x2BC4 |
+| 特性      | **Microphone Gain**                     | 0x2BC5 |
+| 服务      | **Audio Input Control Service (AICS)**  | 0x1850 |
+| 特性      | **Audio Input Control Point**           | 0x2BC6 |
+| 特性      | **Audio Input Status**                  | 0x2BC7 |
+| 特性      | **Audio Input Gain**                    | 0x2BC8 |
+| 服务      | **Volume Control Service (VCS)**        | 0x184B |
+| 特性      | **Volume Control Point**                | 0x2BC9 |
+| 特性      | **Volume State**                        | 0x2BCA |
+| 特性      | **Volume Flag**                         | 0x2BCB |
+
+### 具体功能说明
+
+1. **Audio Stream Control Service (ASCS)**
+   - **ASE Control Point (0x2BC1)**: 用于控制音频流端点（Audio Stream Endpoint, ASE）的特性，执行命令如启动、停止和配置音频流。
+   - **ASE Status (0x2BC2)**: 提供ASE的当前状态信息。
+   - **ASE Data (0x2BC3)**: 用于传输实际的音频数据。
+
+2. **Microphone Control Service (MCS)**
+   - **Microphone Control Point (0x2BC4)**: 控制麦克风的特性，如启动和停止麦克风。
+   - **Microphone Gain (0x2BC5)**: 用于调节麦克风增益。
+
+3. **Audio Input Control Service (AICS)**
+   - **Audio Input Control Point (0x2BC6)**: 控制音频输入的特性，如选择音频输入源。
+   - **Audio Input Status (0x2BC7)**: 提供音频输入的当前状态信息。
+   - **Audio Input Gain (0x2BC8)**: 用于调节音频输入增益。
+
+4. **Volume Control Service (VCS)**
+   - **Volume Control Point (0x2BC9)**: 控制音量的特性，如调节音量大小。
+   - **Volume State (0x2BCA)**: 提供当前的音量状态信息。
+   - **Volume Flag (0x2BCB)**: 用于表示音量控制的标志。
+
+### 示例代码
+
+以下是一个简化的示例代码，展示如何使用GATT UUID配置一个LE Audio设备的GATT服务：
+
+```c
+// 定义Audio Stream Control Service (ASCS)
+static struct bt_gatt_attr ascs_attrs[] = {
+    BT_GATT_PRIMARY_SERVICE(BT_UUID_DECLARE_16(0x184E)),
+    BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x2BC1),
+                           BT_GATT_CHRC_WRITE_WITHOUT_RESP,
+                           BT_GATT_PERM_WRITE, NULL, ase_control_write, NULL),
+    BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x2BC2),
+                           BT_GATT_CHRC_NOTIFY,
+                           BT_GATT_PERM_READ, NULL, NULL, &ase_status),
+    BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_16(0x2BC3),
+                           BT_GATT_CHRC_NOTIFY | BT_GATT_CHRC_WRITE_WITHOUT_RESP,
+                           BT_GATT_PERM_READ | BT_GATT_PERM_WRITE, NULL, ase_data_write, &ase_data),
+};
+
+// 回调函数：写入ASE Control Point
+static ssize_t ase_control_write(struct bt_conn *conn, const struct bt_gatt_attr *attr, const void *buf, uint16_t len, uint16_t offset, uint8_t flags) {
+    // 处理写入的数据
+    return len;
+}
+
+// 回调函数：写入ASE Data
+static ssize_t ase_data_write(struct bt_conn *conn, const struct bt_gatt_attr *attr, const void *buf, uint16_t len, uint16_t offset, uint8_t flags) {
+    // 处理音频数据
+    return len;
+}
+```
+
+### 总结
+
+LE Audio中的GATT UUID定义了不同的服务和特性，用于支持音频数据的传输和控制。理解这些UUID及其对应的功能对于实现和调试LE Audio设备至关重要。在实际开发中，这些UUID将用于配置GATT服务，以实现音频流的控制、传输和管理。
+
+# Leaudio在单播场景里，同时使用了ACL和CIS，那是同时使用了经典蓝牙和BLE吗？
+
+在LE Audio的单播场景中，同时使用了ACL（Asynchronous Connection-Less）和CIS（Connected Isochronous Stream），但这并不意味着同时使用了经典蓝牙和BLE。具体解释如下：
+
+| **概念**                                | **说明**                                                     |
+| --------------------------------------- | ------------------------------------------------------------ |
+| **ACL（Asynchronous Connection-Less）** | 在LE Audio中指的是蓝牙低功耗（BLE）中的一种数据传输方式，用于传输常规数据包。 |
+| **CIS（Connected Isochronous Stream）** | 在LE Audio中指的是蓝牙低功耗（BLE）中的一种数据传输方式，用于传输同步音频数据。 |
+
+### 详细解释
+
+1. **ACL在LE Audio中的应用**：
+   - 虽然ACL在经典蓝牙中也有使用，但在LE Audio中，ACL指的是BLE的ACL数据包。
+   - ACL数据包用于传输常规的控制数据和非音频数据。
+
+2. **CIS在LE Audio中的应用**：
+   - CIS是一种新的数据传输方式，引入于Bluetooth 5.2，专门用于LE Audio。
+   - CIS用于传输高优先级的音频数据，保证音频传输的同步性和低延迟。
+
+### 关键点
+
+- **LE Audio专用**：LE Audio完全基于BLE技术，并不涉及经典蓝牙（BR/EDR）。因此，在LE Audio的单播场景中，同时使用的ACL和CIS都是基于BLE的，不涉及经典蓝牙。
+- **数据传输方式**：ACL用于常规数据传输，CIS用于高优先级音频数据传输，二者共同工作以实现高效、低延迟的音频传输。
+
+总结来说，在LE Audio的单播场景中，同时使用ACL和CIS指的是在蓝牙低功耗（BLE）下，同时使用这两种不同的数据传输方式，并不涉及经典蓝牙。
+
+# 经典蓝牙的acl和ble的acl是什么关系
+
+经典蓝牙（BR/EDR）的ACL和BLE的ACL在名称上相同，但它们在技术上有不同的实现和应用场景。以下是经典蓝牙的ACL和BLE的ACL之间的关系和区别：
+
+| **特性**     | **经典蓝牙的ACL**                                       | **BLE的ACL**                                 |
+| ------------ | ------------------------------------------------------- | -------------------------------------------- |
+| **全称**     | Asynchronous Connection-Less                            | Asynchronous Connection-Less                 |
+| **技术标准** | 经典蓝牙（Bluetooth BR/EDR）                            | 蓝牙低功耗（Bluetooth Low Energy, BLE）      |
+| **引入版本** | Bluetooth 1.2                                           | Bluetooth 4.0                                |
+| **功耗**     | 较高，适用于高数据速率和持续连接                        | 低功耗，适用于间歇性数据传输和节能应用       |
+| **数据速率** | 高，可达3 Mbps                                          | 较低，通常在1 Mbps以内                       |
+| **应用场景** | 音频流、文件传输、蓝牙耳机、蓝牙音箱等                  | 物联网设备、传感器、智能家居、健康监测设备等 |
+| **连接机制** | 使用基础带宽（BR）或增强数据率（EDR）进行连接和数据传输 | 使用广告包和连接事件进行连接和数据传输       |
+| **协议栈**   | 包括L2CAP、RFCOMM等                                     | 包括GATT、ATT等                              |
+
+### 关系与区别
+
+- **关系**：
+  - **相同名称**：两者都使用了“ACL”这个术语，表示异步连接，旨在区分同步连接（如SCO，用于音频）。
+  - **不同实现**：尽管名称相同，但它们在技术实现上有很大差异，适用于不同的蓝牙标准和应用场景。
+
+- **区别**：
+  - **技术标准**：经典蓝牙的ACL属于Bluetooth BR/EDR标准，而BLE的ACL属于Bluetooth Low Energy标准。
+  - **功耗和数据速率**：经典蓝牙的ACL功耗较高，数据速率也较高，适用于需要持续连接和高数据速率的应用；而BLE的ACL功耗低，数据速率较低，适用于低功耗和间歇性数据传输的应用。
+  - **应用场景**：经典蓝牙的ACL主要用于音频传输和高数据速率的应用，而BLE的ACL主要用于低功耗物联网设备和传感器。
+
+### 总结
+
+经典蓝牙的ACL和BLE的ACL虽然在名称上相同，但它们属于不同的蓝牙标准，有不同的技术实现和应用场景。经典蓝牙的ACL适用于高数据速率和持续连接的应用，而BLE的ACL则专为低功耗和间歇性数据传输设计。
+
+
+
+# leaudio的音频数据是在GATT上传输吗？GATT一次可以传输多少字节
+
+LeAudio（Bluetooth Low Energy Audio）是蓝牙5.2及以后的标准中引入的音频传输方案，旨在提供高效的音频流传输。LeAudio音频数据的传输并不是通过传统的GATT（Generic Attribute Profile）进行的，而是通过一个新的协议层——**ISO（Isochronous）** 数据通道进行的。
+
+### 1. **LeAudio和GATT的区别**
+
+- **LeAudio**：使用ISO数据通道来传输音频数据。ISO数据通道支持低延迟、同步的音频流传输，适合音频应用的需求。
+- **GATT**：主要用于传输短小的属性数据，适用于设备的配置信息和状态信息传输。
+
+### 2. **ISO数据通道**
+
+- **音频数据流**：LeAudio通过ISO数据通道进行音频数据的流式传输。ISO数据通道提供了定期、同步的数据传输，这对音频流的质量和实时性非常重要。
+- **流式传输**：ISO数据通道支持音频流的定期传输，确保数据的同步性和实时性。
+
+### 3. **GATT的传输限制**
+
+在GATT中，数据的传输是通过特性（Characteristics）进行的。每个特性可以定义一个数据长度限制，通常有以下几个方面：
+
+- **MTU（Maximum Transmission Unit）**：GATT的最大传输单元（MTU）决定了单次传输的数据长度。在BLE中，默认的MTU是23字节（包括4字节的GATT头部），但可以通过协商增加到更大的值。
+- **最大字节数**：GATT的MTU大小可以协商到最大512字节。这意味着在使用GATT传输数据时，一次可以传输的数据长度可以达到512字节（不包括GATT头部）。
+
+### 4. **GATT和音频数据传输**
+
+- **音频传输不使用GATT**：虽然GATT可以用于传输数据，但LeAudio的音频数据传输依赖于ISO数据通道，因为它需要保证数据的实时性和同步性，而GATT更适合传输控制和配置信息。
+
+### 总结
+
+- **LeAudio音频数据传输**：通过ISO数据通道进行，不使用GATT。
+- **GATT的传输限制**：GATT一次传输的数据长度由MTU决定，最大可以协商到512字节。
+
+LeAudio利用ISO数据通道提供了更适合音频流传输的机制，而GATT主要用于其他类型的数据传输。
+
+# iso在蓝牙协议栈的哪一层
+
+可以看到跟L2CAP是并排的，并不是基于L2CAP。
+
+https://docs.zephyrproject.org/latest/connectivity/bluetooth/api/audio/bluetooth-le-audio-arch.html
+
+![image-20240724151509271](images/random_name2/image-20240724151509271.png)
+
+# leaudio实现multi-stream同步的原理是什么
+
+LeAudio 实现 Multi-Stream 同步（多流同步）的关键在于使用了新的 ISO（Isochronous）数据通道以及与其配合的技术和机制。这些技术和机制使得多个音频流可以在不同设备之间同步传输，确保多设备间的音频播放一致性。
+
+### 1. **ISO数据通道和CIS**
+
+- **ISO数据通道**：用于提供定期的、同步的音频流传输。
+- **CIS（Connected Isochronous Stream）**：是ISO数据通道的一种，专门用于同步的音频流传输。每个CIS代表一个单独的音频流，它们可以在不同的设备之间同步。
+
+### 2. **同步组（Broadcast Isochronous Group, BIG）**
+
+- **同步组**：多个CIS可以被组织成一个同步组（BIG）。所有属于同一个BIG的CIS会共享一个公共的时钟基准，这意味着它们的数据包会在一个共同的时间基准上传输，从而实现同步。
+
+### 3. **时钟同步机制**
+
+- **广播基准时钟**：主设备（或源设备）负责广播一个基准时钟，这个时钟用作同步参考。接收设备（如多个耳机）使用这个基准时钟来同步它们的本地时钟。
+- **时钟偏移调整**：接收设备通过调整自身时钟与基准时钟的偏差来确保它们在同一时间点接收和播放音频数据。
+
+### 4. **帧同步**
+
+- **帧计数**：每个CIS的音频数据包按帧传输，每帧都有一个帧计数。这些帧计数帮助接收设备识别和排列音频数据，确保音频流的正确顺序。
+- **帧对齐**：通过帧计数和基准时钟的共同作用，多个CIS可以实现帧对齐，即不同设备播放的音频帧能够在相同的时间点被播放，从而实现音频的同步。
+
+### 5. **低延迟和抖动控制**
+
+- **低延迟**：ISO数据通道设计用于低延迟传输，这对于音频同步尤其重要。低延迟确保音频流能快速传输和播放，减少了声音不同步的可能性。
+- **抖动缓冲**：设备可以使用抖动缓冲（Jitter Buffer）来处理因网络波动引起的抖动，进一步提高同步精度。
+
+### 6. **应用场景**
+
+- **立体声耳机**：两个耳机同时接收来自同一源的音频流，确保左右耳的声音同步。
+- **多房间音响系统**：在不同房间的音响设备之间同步播放音乐，实现全屋同步音频体验。
+
+### 总结
+
+LeAudio 实现 Multi-Stream 同步的原理主要依赖于 ISO 数据通道，尤其是 CIS 和 BIG 的使用。这些机制通过共享基准时钟、帧计数和帧对齐等技术，实现了多设备之间音频流的同步播放。时钟同步、低延迟和抖动控制等措施也为音频的同步传输提供了技术保障。这些技术共同确保了在多设备场景下，音频播放的一致性和同步性。
 
 # 参考资料
 

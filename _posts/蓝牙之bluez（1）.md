@@ -1774,9 +1774,15 @@ if __name__ == "__main__":
 
 通过上述步骤，你可以使用 Python 通过 BlueZ 实现蓝牙 A2DP 音乐播放功能。这个示例展示了如何扫描和连接蓝牙设备、注册 A2DP 配置文件以及使用外部工具播放音频。请根据实际需求调整代码和配置。
 
+# ARM平台上蓝牙协议栈Bluez的移植使用和配置
+
+这篇文章提到的版本老了一些，但是它的优点是内容很全面系统。可以读一读。
+
+https://blog.csdn.net/gatieme/article/details/48751743
+
 # 参考资料
 
-1、这篇不用看了。
+1、ARM平台上蓝牙协议栈Bluez的移植使用和配置
 
 https://blog.csdn.net/gatieme/article/details/48751743
 

@@ -6,17 +6,15 @@ tags:
 
 ---
 
-1
 
-```
-我的理解：
-是不是可以把GAP理解为tcpip协议的IP层。
-GATT理解为UDP层。
-GATT的各种service的UUID，就相当于udp端口号。
 
-我觉得这个是可以帮助理解的。
-GATT的确扮演的是传输层的角色。
-```
+在BLE中，GATT客户端发现服务端服务的过程与经典蓝牙不同，
+
+经典蓝牙会有专门的SDP协议来完成。
+
+==而BLE中，这个过程会直接在GATT层完成。==
+
+直接在GATT层完成服务和特征的发现。
 
 
 
@@ -64,7 +62,7 @@ GATT 连接需要特别注意的是：**GATT 连接是独占的**。也就是一
 
 
 
-中心设备和外设需要双向通信的话，唯一的方式就是建立 GATT 连接。
+==中心设备和外设需要双向通信的话，唯一的方式就是建立 GATT 连接。==
 
 GATT 通信的双方是 C/S 关系。外设作为 GATT 服务端（Server），它维持了 ATT 的查找表以及 service 和 characteristic 的定义。中心设备是 GATT 客户端（Client），它向 Server 发起请求。需要注意的是，所有的通信事件，都是由客户端（也叫主设备，Master）发起，并且接收服务端（也叫从设备，Slave）的响应。
 
@@ -80,11 +78,17 @@ Service 是把数据分成一个个的独立逻辑项，它包含一个或者多
 
 
 
-实际上，和 BLE 外设打交道，主要是通过 Characteristic。你可以从 Characteristic 读取数据，也可以往 Characteristic 写数据。这样就实现了双向的通信。**所以你可以自己实现一个类似串口（UART）的 Sevice，这个 Service 中包含两个 Characteristic，一个被配置只读的通道（RX），另一个配置为只写的通道（TX）。**
+实际上，和 BLE 外设打交道，主要是通过 Characteristic。
+
+你可以从 Characteristic 读取数据，也可以往 Characteristic 写数据。
+
+这样就实现了双向的通信。
+
+**所以你可以自己实现一个类似串口（UART）的 Sevice，这个 Service 中包含两个 Characteristic，一个被配置只读的通道（RX），另一个配置为只写的通道（TX）。**
 
 
 
-#GAP
+# GAP
 
 GAP是Generic Access Profile的缩写。
 
@@ -134,7 +138,7 @@ GATT可以叫做普通属性协议。
 
 
 
-#HRP
+# HRP
 
 以HRP这个为例，心率profile。
 
@@ -213,3 +217,7 @@ https://zhuanlan.zhihu.com/p/30393145
 10、Bluetooth: ATT and GATT
 
 https://epxx.co/artigos/bluetooth_gatt.html
+
+11、BLE中GATT的服务和特征发现机制
+
+https://www.cnblogs.com/simpleGao/p/17630670.html
