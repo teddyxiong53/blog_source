@@ -1078,6 +1078,31 @@ chmod +x test.sh
 
 这样就完成了使用 gdbus 和 cjson 进行进程通信的通用代码框架的实现。希望对您有所帮助！
 
+# g_bus_get_sync 和g_dbus_connection_close_sync
+
+g_bus_get_sync 和g_dbus_connection_close_sync，是出自同一套库吗？为什么一个以g_bus为前缀，一个以g_dbus为前缀，风格不统一
+
+`g_bus_get_sync` 和 `g_dbus_connection_close_sync` 确实出自同一套库：GLib 的 GIO 模块。然而，这两个函数的前缀不同 (`g_bus` 和 `g_dbus`) 是因为它们属于不同的命名空间或功能集合。
+
+### 命名空间解释
+
+1. **g_bus_get_sync**:
+   - 前缀 `g_bus` 表示它是与 D-Bus 相关的“总线”操作的函数。这些函数通常用于获取与 D-Bus 系统总线或会话总线的连接。
+   - 这个命名空间中的其他函数还包括 `g_bus_watch_name`, `g_bus_own_name`, 等等，这些都涉及总线级别的操作。
+
+2. **g_dbus_connection_close_sync**:
+   - 前缀 `g_dbus_connection` 表示它是与 D-Bus 连接操作相关的函数。这些函数通常用于处理具体的 D-Bus 连接实例，比如打开或关闭连接、发送消息、接收消息等。
+   - `g_dbus_connection` 命名空间中的其他函数还包括 `g_dbus_connection_new`, `g_dbus_connection_send_message`, 等等。
+
+### 命名空间区分的原因
+
+GLib 和 GIO 库中采用这种命名约定是为了区分不同类别的功能和操作：
+
+- **g_bus** 前缀的函数主要是与 D-Bus 总线的整体管理和监控相关。
+- **g_dbus_connection** 前缀的函数是具体处理 D-Bus 连接的操作。
+
+这种命名空间区分有助于开发者理解和查找相关功能，同时避免函数命名冲突。尽管两者都涉及 D-Bus 操作，但它们作用的层次和场景不同，因此使用了不同的前缀来明确各自的用途。
+
 # 参考资料
 
 1、gdbus

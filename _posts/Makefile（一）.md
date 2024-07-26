@@ -798,10 +798,10 @@ Make 是一个强大的构建工具，除了基本的规则和命令外，还有
    CFLAGS = -Wall -Wextra
    SOURCES = $(wildcard *.c)
    OBJECTS = $(SOURCES:.c=.o)
-
+   
    myprogram: $(OBJECTS)
        $(CC) $(CFLAGS) $^ -o $@
-
+   
    clean:
        rm -f $(OBJECTS) myprogram
    ```
@@ -809,9 +809,9 @@ Make 是一个强大的构建工具，除了基本的规则和命令外，还有
 2. **自动化依赖关系生成**：Make 可以自动生成依赖关系，使得当头文件发生变化时，相应的源文件会被重新编译。您可以使用 `-M` 或 `-MM` 选项与 `gcc` 或 `g++` 配合使用来实现这一功能。例如：
    ```makefile
    DEPS = $(OBJECTS:.o=.d)
-
+   
    -include $(DEPS)
-
+   
    %.o: %.c
        $(CC) $(CFLAGS) -MMD -MP -c $
    ```
@@ -850,10 +850,10 @@ Make 是一个强大的构建工具，除了基本的规则和命令外，还有
 6. **Phony 目标**：有时您可能希望定义一些不对应真实文件的目标，比如 `clean`、`all` 等，您可以使用 `.PHONY` 来声明这些目标。这样 Make 将不会检查它们对应的文件是否存在。例如：
    ```makefile
    .PHONY: clean all
-
+   
    clean:
        rm -f *.o myprogram
-
+   
    all: myprogram
    ```
 
@@ -897,6 +897,10 @@ $(CLEAN_TARGET):
 通过使用 `MAKECMDGOALS`，您可以编写更加灵活的 Makefile，根据用户的选择执行不同的操作。
 
 # 给出一个makefile，让自己递归调用自己一次
+
+==简单来说，递归调用，就是在Makefile里再调用make命令。==
+
+
 
 下面是一个简单的 Makefile 示例，它定义了一个目标 `recursive`，在该目标中会调用 `make` 命令来递归调用自己一次：
 

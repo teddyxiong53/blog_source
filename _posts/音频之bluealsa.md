@@ -818,7 +818,7 @@ utils.h
 涉及的知识点
 1、getopt_long
 	多次调用可以的。
-2、一个全局config的风格。
+2、一个全局config的风格。这个名字不是很贴切，实际是是一个全局的context。
 3、pthread的各种函数使用。
 	pthread_setname_np给线程改名。
 	
@@ -1189,6 +1189,38 @@ ctl-socket.h
 ```
 
 播放蓝牙音乐时，是创建了一个thread，把收到的数据write到pcm里。
+
+bluealsa-aplay先从bluealsa后台进程读取到音频数据，然后write到pcm设备里。
+
+![image-20240725151556894](images/random_name2/image-20240725151556894.png)
+
+![image-20240725151517181](images/random_name2/image-20240725151517181.png)
+
+![image-20240725151526497](images/random_name2/image-20240725151526497.png)
+
+
+
+bluealsa_open_transport 这个函数值得看看逻辑。
+
+后台进程收到 COMMAND_PCM_OPEN 
+
+调用ctl_thread_cmd_pcm_open去处理。
+
+io_thread_a2dp_sink_sbc 这个往这里写入数据。
+
+```
+transport_set_state
+    在状态变为active的时候，调用io_thread_create
+        pthread_create创建io_thread_a2dp_sink_sbc
+        
+bluez_profile_new_connection
+ctl_thread_cmd_pcm_control
+transport_set_state_from_string
+	这3个函数都会调用transport_set_state 设置为active。
+	
+bluez_profile_new_connection
+	在收到NewConnection的dbus消息时调用。
+```
 
 
 
