@@ -87,49 +87,6 @@ CID我可以理解为tcp端口号。
 
 
 
-谈起应用程序，就不得不说BLE的初衷----物联网。
-
-物联网中传输的数据和传统的互联网有什么区别呢？抛开其它不谈，物联网中最重要、最广泛的一类应用是：信息的采集。
-
-这些信息往往都很简单，如温度、湿度、速度、位置信息、电量、等等。
-
-采集的过程也很简单，节点设备**定时的向中心设备汇报**信息数据，或者，中心设备在需要的时候**主动查询**。
-
-基于信息采集的需求，BLE抽象出一个协议：Attribute protocol，该协议将这些“信息”以“Attribute（属性）”的形式抽象出来，并提供一些方法，供远端设备（remote device）读取、修改这些属性的值（Attribute value）。
-
-Attribute Protocol的主要思路包括：
-**1）基于L2CAP，使用固定的Channel ID。就是0x0004。**
-
-2）采用client-server的形式。提供信息（以后都称作Attribute）的一方称作ATT server（一般是那些传感器节点），访问信息的一方称作ATT client。
-
-3）一个Attribute由Attribute Type、Attribute Handle和Attribute Value组成。
-
-
-
-ATT之所以称作“protocol”，**是因为它还比较抽象，仅仅定义了一套机制，**允许client和server通过Attribute的形式共享信息。
-
-**而具体共享哪些信息，ATT并不关心，这是GATT（Generic Attribute Profile）的主场。**
-
-GATT相对ATT只多了一个‘G‘，但含义却大不同，因为GATT是一个profile（更准确的说是profile framework）。
-
-在蓝牙协议中，profile一直是一个比较抽象的概念，**我们可以将其理解为“应用场景、功能、使用方式”都被规定好的Application。**
-
-传统的BR/EDR如此，BLE更甚。上面我们讲过，**BLE很大一部分的应用场景是信息（Attribute）的共享**，因此，BLE协议栈基于Attribute Protocol，定义了一个称作GATT（Generic Attribute）的profile framework（它本身也是一个profile），用于提供通用的、信息的存储和共享等功能。
-
-GATT profile的层次结构依次是：Profile—>Service—>characteristic。
-
-“Profile”是基于GATT所派生出的真正的Profile，位于GATT Profile hierarchy的最顶层，由一个或者多个和某一应用场景有关的Service组成。
-
-一个Service包含一个或者多个Characteristic（特征），也可以通过Include的方式，包含其它Service。
-
-Characteristic则是GATT profile中最基本的数据单位，由一个Properties、一个Value、一个或者多个Descriptor组成。
-
-Characteristic Properties定义了characteristic的Value如何被使用，以及characteristic的Descriptor如何被访问。
-Characteristic Value是特征的实际值，例如一个距离特征，其Characteristic Value就是距离长度。
-Characteristic Descriptor则保存了一些和Characteristic Value相关的信息（例如value记录距离长度，那么Descriptor可以是长度单位m/km）。
-
-**以上除“Profile”外的每一个定义，Service、Characteristic、Characteristic Properties、Characteristic Value、Characteristic Descriptor等等，都是作为一个Attribute存在的，包括之前所描述的Attribute的所有特征：Attribute** 
-
 
 
 
@@ -161,7 +118,55 @@ ChannelID，缩写为CID。
 
 
 
+# L2CAP类型
 
+看btstack里：
+
+```
+typedef enum {
+    L2CAP_CHANNEL_TYPE_CLASSIC,         // Classic Basic or ERTM
+    L2CAP_CHANNEL_TYPE_CONNECTIONLESS,  // Classic Connectionless
+    L2CAP_CHANNEL_TYPE_CHANNEL_CBM,     // LE
+    L2CAP_CHANNEL_TYPE_FIXED_LE,        // LE ATT + SM
+    L2CAP_CHANNEL_TYPE_FIXED_CLASSIC,   // Classic SM
+    L2CAP_CHANNEL_TYPE_CHANNEL_ECBM     // Classic + LE
+} l2cap_channel_type_t;
+
+```
+
+在蓝牙协议栈中，L2CAP（Logical Link Control and Adaptation Protocol）支持多种通道类型，用于满足不同的通信需求。以下是这些通道类型的解释：
+
+| 通道类型                            | 描述                                                         |
+| ----------------------------------- | ------------------------------------------------------------ |
+| `L2CAP_CHANNEL_TYPE_CLASSIC`        | 经典蓝牙的基本模式（Basic Mode）或增强重传模式（Enhanced Retransmission Mode, ERTM）。适用于传统蓝牙设备之间的数据传输，提供可靠或不可靠的通信。 |
+| `L2CAP_CHANNEL_TYPE_CONNECTIONLESS` | 经典蓝牙的无连接模式。允许数据在不建立逻辑通道的情况下传输，适合需要广播或组播传输的应用。 |
+| `L2CAP_CHANNEL_TYPE_CHANNEL_CBM`    | 用于LE（低功耗）设备。CBM可能代表LE中的“连接模式”，即数据在已建立连接的设备之间传输。 |
+| `L2CAP_CHANNEL_TYPE_FIXED_LE`       | 低功耗设备的固定通道类型。包括LE设备中的ATT（Attribute Protocol）和SM（Security Manager Protocol），这些通道有固定的CID，用于特定的协议通信。 |
+| `L2CAP_CHANNEL_TYPE_FIXED_CLASSIC`  | 经典蓝牙的固定通道类型。通常用于经典蓝牙中的安全管理（Security Manager）协议。这些通道的CID是固定的，专门用于特定的控制和管理任务。 |
+| `L2CAP_CHANNEL_TYPE_CHANNEL_ECBM`   | 经典蓝牙和LE双模设备的增强通道类型。支持经典蓝牙和LE设备之间的通信，可能包括增强的特性和功能。 |
+
+### 详细解释
+
+1. **L2CAP_CHANNEL_TYPE_CLASSIC**:
+   - **Basic Mode**：不提供错误恢复机制，适用于对丢包不敏感的应用。
+   - **ERTM (Enhanced Retransmission Mode)**：提供可靠的数据传输，通过重传机制确保数据完整性。
+
+2. **L2CAP_CHANNEL_TYPE_CONNECTIONLESS**:
+   - 无需建立L2CAP通道的无连接数据传输方式，通常用于广播数据，如蓝牙设备发现（device discovery）。
+
+3. **L2CAP_CHANNEL_TYPE_CHANNEL_CBM**:
+   - 用于LE设备的连接模式，保证在建立连接的设备之间进行数据传输。通常应用于LE Audio、LE Secure Connections等场景。
+
+4. **L2CAP_CHANNEL_TYPE_FIXED_LE**:
+   - 包括ATT和SM协议在内的LE设备专用通道。这些通道的CID是固定的，例如ATT通常使用CID 0x0004。
+
+5. **L2CAP_CHANNEL_TYPE_FIXED_CLASSIC**:
+   - 经典蓝牙中的固定通道，通常用于特定管理任务如安全管理。
+
+6. **L2CAP_CHANNEL_TYPE_CHANNEL_ECBM**:
+   - 增强的通道类型，支持经典和LE双模设备。可能用于那些需要兼容两种设备的高级应用场景。
+
+这些通道类型帮助L2CAP适应不同的应用需求和设备类型，从而支持多样化的蓝牙通信。
 
 # 信道模式
 
@@ -246,6 +251,110 @@ HCI和无线数据包不是一一对应的，
 
 
 https://www.silextechnology.com/unwired/basics-of-asynchronous-connection-less-acl-bluetooth-communication-protocol
+
+
+
+
+
+# L2CAP一般是传输哪些数据，请举出实际的数据包的例子进行具体分析
+
+L2CAP（Logical Link Control and Adaptation Protocol）是蓝牙协议栈中的一层，负责为更高层的协议和应用提供数据传输服务。L2CAP在蓝牙中提供了数据分段和重组、数据多路复用、以及质量服务的支持。以下是L2CAP的实际应用及数据包分析的例子：
+
+### L2CAP数据传输的典型应用
+
+1. **音频数据传输**：A2DP协议使用L2CAP来传输音频流数据。
+2. **控制信令**：AVRCP协议使用L2CAP来传输远程控制信令数据，例如播放、暂停、音量控制等。
+3. **文件传输**：如蓝牙文件传输协议（OBEX）使用L2CAP传输文件数据。
+
+### 实际数据包分析
+
+以A2DP音频数据传输为例：
+
+**1. 数据包结构概览：**
+
+- **L2CAP Header**:
+  - **Length**: 表示L2CAP数据包的长度（不包括L2CAP Header本身）。
+  - **Channel ID (CID)**: 标识此数据包属于哪个L2CAP通道。
+
+- **Payload**:
+  - 包含实际的数据，如音频数据、控制信令等。
+
+**2. A2DP音频数据包示例：**
+
+假设我们传输一个SBC编码的音频数据帧，L2CAP数据包的结构如下：
+
+```
+L2CAP Header
+-------------
+Length: 0x0030    // 包含数据的长度（48 bytes）
+CID: 0x0040       // A2DP的CID（0x0040 表示此通道为AVDTP）
+```
+
+**Payload (实际数据)**
+```
+0x80 0x60 0x00 0x1f 0x9c 0x80 0x61 0x1f
+0x3b 0x6e 0x80 0x62 0x07 0xd8 0xe0 0x80
+0x63 0x6b 0x3e 0xe8 0x80 0x64 0x5a 0xf1
+0x8f 0x80 0x65 0xa3 0xc1 0xa8 0x80 0x66
+0x1f 0xbe 0x3a 0x80 0x67 0x51 0x92 0x88
+0x80 0x68 0x09 0xa7 0x42 0x80 0x69 0x12
+0xc4 0xe9 0x80 0x6a 0x07 0x3c 0x92 0x80
+0x6b 0x58 0xf1 0xa8 0x80 0x6c 0x9b 0xe1
+0xb9 0x80 0x6d 0x71 0xb6 0x54 0x80 0x6e
+0x13 0xc1 0xef 0x80 0x6f 0x28 0x9f 0x61
+```
+
+- **Length**: 0x0030 表示数据部分长度为48字节。
+- **CID**: 0x0040 表示这是A2DP音频数据。
+- **Payload**: 实际传输的音频数据。上述示例中的数据为SBC编码的音频帧。
+
+### 分析：
+
+1. **L2CAP Header**：
+   - **Length**字段表示后续有效数据的字节数，这对于接收方重组和处理数据非常重要。
+   - **CID**标识数据的目的地协议或应用。例如0x0040用于A2DP的音频数据通道。
+
+2. **Payload**：
+   - 数据负载部分可以是多种类型的数据，例如音频流、控制指令或文件数据。在此示例中，负载部分为SBC编码的音频帧。
+
+### 总结：
+
+L2CAP是蓝牙协议中至关重要的一部分，它为高层协议提供了一致的数据传输服务。通过L2CAP传输的数据包不仅可以是音频数据，还可以是各种控制信令和应用数据。L2CAP数据包的具体结构和内容取决于其上层协议和应用需求。
+
+# 蓝牙的psm是指什么
+
+在蓝牙协议中，**PSM（Protocol/Service Multiplexer）**是一个重要的概念，用于区分不同的协议或服务。在L2CAP（Logical Link Control and Adaptation Protocol）层，PSM值用于标识不同的上层协议或服务。
+
+### PSM的作用
+
+PSM值是L2CAP协议的一个字段，它允许多个协议或服务在同一个物理连接上共存。每个PSM值都代表一个特定的协议或服务，当设备建立L2CAP通道时，PSM值用于指示所使用的具体协议或服务类型。
+
+### 常见的PSM值
+
+以下是一些常见的PSM值及其对应的协议或服务：
+
+| **PSM值** | **协议/服务**                                                |
+| --------- | ------------------------------------------------------------ |
+| 0x0001    | SDP（Service Discovery Protocol） - 服务发现协议             |
+| 0x0003    | RFCOMM - 仿真串口通信协议                                    |
+| 0x0005    | TCS-BIN（Telephony Control Protocol Specification） - 电话控制协议 |
+| 0x0007    | BNEP（Bluetooth Network Encapsulation Protocol） - 蓝牙网络封装协议 |
+| 0x000F    | HID Control - 人机接口设备控制通道                           |
+| 0x0011    | HID Interrupt - 人机接口设备中断通道                         |
+
+### PSM值的范围
+
+- **预定义范围**：0x0001到0xFFFF之间的PSM值用于标准化协议和服务。PSM值必须是奇数，且高位字节的最低有效位（least significant bit）必须为1。
+- **动态分配**：0x0000是无效的PSM值，0x0002是保留值。其他奇数PSM值可以由设备动态分配给特定的应用程序或协议。
+
+### 使用场景
+
+- 当蓝牙设备要使用某种服务或协议时，设备会请求对应的PSM值。例如，当两个设备之间需要建立RFCOMM连接时，设备会使用PSM值0x0003来标识这个协议。
+- PSM值在建立L2CAP通道时被使用，以确定数据流的目的地。例如，如果主机想要与蓝牙设备上的SDP服务器通信，它会向控制器发送一个包含PSM值0x0001的L2CAP连接请求。
+
+### 重要性
+
+PSM在蓝牙协议栈中起到多路复用的作用，允许多个服务和协议在同一物理连接上并发运行，确保数据能够准确地路由到合适的上层协议或服务。
 
 # 参考资料
 

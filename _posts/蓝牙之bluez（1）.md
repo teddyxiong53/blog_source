@@ -1780,6 +1780,57 @@ if __name__ == "__main__":
 
 https://blog.csdn.net/gatieme/article/details/48751743
 
+
+
+# bluez RegisterEndpoint 需要哪些信息？作用是什么
+
+`RegisterEndpoint` 是用于在 BlueZ（Linux 中的蓝牙协议栈）中注册蓝牙端点（Endpoint）的函数。
+
+注册端点是**为了使蓝牙设备能够提供特定的服务或功能**，
+
+以便其他设备可以发现和与之交互。
+
+在调用 `RegisterEndpoint` 函数时，通常需要提供以下信息：
+
+1. `struct bte_profile *profile`：指向要注册的蓝牙 profile 的指针。
+2. `const char *service`：指定服务的 UUID（Universally Unique Identifier）。
+3. `const char *path`：指定服务的路径。
+4. `const char *interface`：指定服务的接口。
+5. `const GDBusMethodInfo *methods`：指向包含有关此服务可用方法的信息的指针。
+6. `const GDBusPropertyInfo *properties`：指向包含有关此服务可用属性的信息的指针。
+
+注册蓝牙端点的作用是让系统知道该设备支持的服务和功能以及如何与之交互。
+
+这样其他设备就可以通过扫描蓝牙设备的服务来了解其提供的功能，
+
+并且可以通过相应的协议与其进行通信。
+
+注册端点是在蓝牙设备上开放特定功能的一种方式，使得其他设备可以使用这些功能。
+
+# org.bluez.MediaTransport.Aquire的作用
+
+在 BlueZ 中，`org.bluez.MediaTransport.Acquire` 是一个 D-Bus 接口方法，
+
+用于获取媒体传输对象（Media Transport Object）的方法。
+
+这个方法的作用是**获取特定媒体传输对象的句柄**，
+
+以便在蓝牙设备之间传输媒体数据（如音频流）。
+
+当一个蓝牙音频设备（比如蓝牙耳机或扬声器）连接到一个蓝牙音频源（比如手机或电脑）时，需要建立一个媒体传输对象来管理音频数据的传输。
+
+通过调用 `org.bluez.MediaTransport.Acquire` 方法，
+
+可以获取一个特定媒体传输对象的句柄，
+
+<u>从而可以在这个传输对象上执行各种操作，</u>
+
+<u>如开始传输音频流、停止传输等。</u>
+
+在调用 `org.bluez.MediaTransport.Acquire` 方法时，通常需要提供特定的参数，比如要获取的媒体传输对象的路径或其他相关信息。
+
+这个方法的主要作用是为了在蓝牙设备之间建立可靠的音频传输通道，以实现高质量的音频传输体验。
+
 # 参考资料
 
 1、ARM平台上蓝牙协议栈Bluez的移植使用和配置

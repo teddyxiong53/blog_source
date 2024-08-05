@@ -14,6 +14,12 @@ tags:
 
 https://hugh712.gitbooks.io/buildroot/content/
 
+这个bootlin的文档，非常好。配合沉浸式翻译来阅读，非常好。
+
+https://bootlin.com/~thomas/site/buildroot/common-usage.html
+
+# 梳理过程
+
 写一个系列文章，把buildroot的编译过程梳理一下。
 
 先看顶层Makefile。
@@ -590,6 +596,21 @@ output/graphs/build.hist-name.pdf
 $  make -s printvars VARS='BR2_arm BR2_PACKAGE_AUDIOSERVICE'
 BR2_PACKAGE_AUDIOSERVICE=y
 BR2_arm=y
+```
+
+```
+# 可以用% 来进行通配
+make -s printvars VARS=BUSYBOX_%DEPENDENCIES
+# 可以指定输出结果是否加上引号
+make -s printvars VARS=BUSYBOX_%DEPENDENCIES QUOTED_VARS=YES
+# 输出没有展开的变量内容。
+make -s printvars VARS=BUSYBOX_%DEPENDENCIES RAW_VARS=YES
+```
+
+这样得到的变量可以在shell里使用
+
+```
+eval $(make -s printvars VARS=BUSYBOX_DEPENDENCIES QUOTED_VARS=YES)
 ```
 
 
@@ -3643,6 +3664,50 @@ LDFLAGS += $(shell $(TARGET_CONFIGURE_OPTS) pkg-config --libs dbus-1 glib-2.0)
 ```
 
 TARGET_CONFIGURE_OPTS这个是需要加上的，不然就找到系统的了。
+
+# 在autobuild系统上的编译加速
+
+基本思路就是保留第三方package的编译结果。
+
+```
+	rm -fr $PROJECT_PATH/images
+	rm -fr $PROJECT_PATH/target
+	rm -fr $PROJECT_PATH/host/*/sysroot
+        find $PROJECT_PATH/host -iname '*qt*' | xargs rm -fr
+	rm -f  $PROJECT_PATH/\.*
+	rm -f  $PROJECT_PATH/build/\.*
+	pushd $PROJECT_PATH/build/
+	pwd -P
+	ls -1 | sort > ../orig_build.list
+    ls -1 | grep -v '^host-.*' | \
+      grep -v '^alsa-lib-[0-9\.\-]\+' | \
+      grep -v '^alsa-utils-[0-9\.\-]\+' | \
+```
+
+通过删除staging和target的stamp文件来触发强制的重新安装行为。
+
+```
+      find -name .stamp_staging_installed | xargs rm -f
+      find -name .stamp_target_installed | xargs rm -f
+      echo "We keep below build results:"
+      ls -la
+      ls -1 | sort > ../remain_build.list
+      echo "Clean build packages:"
+      comm -3 ../orig_build.list ../remain_build.list
+      popd
+```
+
+# out-of-tree构建
+
+```
+make O=/tmp/build
+```
+
+也可以这样：
+
+```
+cd /tmp/build; make O=$PWD -C path/to/buildroot
+```
 
 
 

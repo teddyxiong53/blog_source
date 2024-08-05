@@ -34,6 +34,181 @@ DBus是一个类似于中间件的机制，用于简化不同应用程序和组�
 
 DBus在Linux桌面环境中广泛使用，例如，它用于与桌面环境（如GNOME和KDE）中的组件通信，以及在Linux系统中与硬件设备进行通信。DBus还在很多服务中使用，以便不同的进程能够协同工作，提供更强大的功能和用户体验。
 
+# 设计原则
+
+D-Bus 最常见的用途是实现一个服务，
+
+该服务将被多个客户端程序使用，
+
+因此在总线上导出的所有接口都形成一个公共 API。
+
+设计 D-Bus API 就像设计任何其他 API 一样：
+
+有很大的灵活性，但有一些设计模式需要遵循，有些反模式需要避免。
+
+请注意，您*不应*使用 dbus-glib 来实现 D-Bus 服务，因为它已被弃用且未维护。
+
+大多数服务还应该避免使用 libdbus （dbus-1），它是一个低级库，很难正确使用：
+
+它被设计为通过语言绑定（如 [QtDBus](https://doc.qt.io/qt/qtdbus-index.html)）使用。
+
+为简单起见，本文档使用 D-Bus 接口的 XML 描述作为规范表示。
+
+D-Bus 接口文件是一个 XML 文件，它描述了一个或多个 D-Bus 接口，
+
+是以机器可读方式描述 D-Bus API 的最佳方式。
+
+该格式在 [D-Bus 规范](http://dbus.freedesktop.org/doc/dbus-specification.html#introspection-format)中进行了描述，并受到 gdbus-codegen 等工具的支持。
+
+公共 API 的接口文件应安装到` *$（datadir）*/dbus-1/interfaces` 中，以便其他服务可以加载它们。
+
+不应安装私有 API。
+
+每个 D-Bus 接口都应该安装一个文件，以接口命名，
+
+包含一个顶级 <node> 元素，其下只有一个 <interface>。
+
+例如，接口 com.example.MyService1.Manager 
+
+将由文件·`*$（datadir）*/dbus-1/interfaces/com.example.MyService1.Manager.xml `描述：
+
+```xml
+<!DOCTYPE node PUBLIC
+    "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+    "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd" >
+<node xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
+  <interface name="com.example.MyService1.InterestingInterface">
+    <method name="AddContact">
+      <arg name="name" direction="in" type="s">
+        <doc:doc><doc:summary>Name of new contact</doc:summary></doc:doc>
+      </arg>
+      <arg name="email" direction="in" type="s">
+        <doc:doc><doc:summary>E-mail address of new contact</doc:summary></doc:doc>
+      </arg>
+      <arg name="id" direction="out" type="u">
+        <doc:doc><doc:summary>ID of newly added contact</doc:summary></doc:doc>
+      </arg>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Adds a new contact to the address book with their name and
+            e-mail address.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </method>
+  </interface>
+</node>
+```
+
+
+
+[就像 C API 一样](http://ometer.com/parallel.html)，D-Bus 接口应该设计为可以与 API 不兼容的版本并行使用。
+
+这是通过在每个接口名称、服务名称和对象路径中包含一个版本号来实现的，该版本号在每次向后不兼容的更改时都会递增。
+
+
+
+可以在不增加版本号的情况下将新 API 添加到 D-Bus 接口，
+
+因为此类添加仍然是向后兼容的。
+
+但是，如果客户端想要针对未实现新方法的旧版本服务运行，则应优雅地处理来自所有 D-Bus 方法调用的 org.freedesktop.DBus.Error.UnknownMethod 错误回复。
+
+
+
+当 API 损坏、更改或删除时，必须更改服务的版本号;
+
+例如，从 com.example.MyService1 到 com.example.MyService2。
+
+如果通过实现旧接口和新接口在服务中保持向后兼容性，则服务可以*同时*拥有已知名称，并且客户端可以使用它们支持的任何名称。
+
+
+
+但请注意，要同时支持多个接口版本，则要求*对对象路径*进行版本控制，
+
+因此*不得*将对象放在总线的根路径 （'/'） 处。
+
+这是出于技术原因：
+
+从 D-Bus 服务发送的信号会被其唯一名称覆盖原始服务名称（例如，com.example.MyService2 被 ：1：15 覆盖）。
+
+如果在实现服务接口的两个版本的对象之间共享对象路径，则客户端程序无法分辨信号来自哪个对象。
+
+解决方案是在所有对象路径中包含版本号，
+
+例如 /com/example/MyService1/Manager，而不是 / 或 /com/example/MyService/Manager。
+
+总之，版本号应包含在所有服务名称、接口名称和对象路径中：
+
+- com.example.MyService1
+- com.example.MyService1.InterestingInterface
+- com.example.MyService1.OtherInterface
+- /com/example/MyService1/Manager
+- /com/example/MyService1/OtherObject
+
+
+
+D-Bus API 设计与 C API 设计大致相同，但还有一些额外的要点需要牢记，这些要点既来自 D-Bus 的特性（显式错误、信号和属性），也源于其作为 IPC 系统的实现。
+
+D-Bus 方法调用比 C 函数调用要昂贵得多，通常需要几毫秒才能完成一次往返。因此，设计应尽量减少执行操作所需的方法调用次数。
+
+类型系统非常具有表现力，尤其是与 C 语言相比，API 应该充分利用它。
+
+同样，它对信号和属性的支持使其与普通的 C API 区分开来，
+
+并且编写良好的 D-Bus API 在适当的情况下充分利用了这些功能。
+
+它们可以与 D-Bus 规范中定义的标准接口耦合，以允许对层次结构中的属性和对象进行一致的访问。
+
+
+
+D-Bus 的类型系统类似于 Python 的，
+
+但语法更简洁，
+
+这对于 C 开发人员来说可能不熟悉。
+
+有效使用类型系统的关键是在类型中公开尽可能多的结构。
+
+特别是，**应避免通过 D-Bus 发送结构化字符串，因为它们需要构建和解析**;
+
+两者都是复杂的操作，容易出现错误。
+
+
+
+由于 IPC 中固有的延迟，D-Bus 方法调用是显式异步的。
+
+这意味着对等方不应阻止接收来自方法调用的回复;
+
+他们应该安排其他工作（在主循环中），并在收到回复时处理回复。
+
+尽管方法回复可能需要一段时间，但可以*保证*调用方最终只收到一个回复。
+
+此回复可能是方法的返回值、方法的错误或 D-Bus 守护进程的错误，表明服务以某种方式失败（例如，由于崩溃）。
+
+
+
+该规范还定义了 [org.freedesktop.DBus.ObjectManager](http://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-objectmanager) 接口，
+
+每当服务需要以平面或树状结构公开同一类的可变数量的对象时，都应该使用该接口，
+
+并且客户端应该对大多数或所有对象感兴趣。
+
+例如，这可以由地址簿服务使用，该服务公开多个地址簿，每个地址簿都作为单独的对象。
+
+GetManagedObjects 方法允许查询完整的对象树，同时返回所有对象的属性，从而消除了进一步 IPC 往返查询属性的需要。
+
+
+
+如果客户端对大多数公开的对象不感兴趣，*则不应使用* ObjectManager，
+
+因为它无论如何都会将所有对象发送到每个客户端，从而浪费总线带宽。
+
+因此，文件管理器不应使用 ObjectManager 公开整个文件系统层次结构。
+
+
+
 # dbus的优点和缺点
 
 DBus是一个强大的进程间通信（IPC）机制，但它也有一些优点和缺点。
@@ -1728,6 +1903,64 @@ bus.add_signal_receiver(properties_changed,
 - **上下文理解**：使用单个斜杠时，建议文档或标准中对其含义进行明确说明，以确保上下文的理解和一致性。
 
 总的来说，使用单个斜杠作为 Object Path 通常表示整个 D-Bus 系统的根路径或顶层，用于表示系统级服务或整个 D-Bus 名字空间。这种用法可以简化路径表示，但需要注意唯一性和上下文理解。
+
+# busctl
+
+busctl list可以查看所有的dbus连接。
+
+busctl tree org.bluez
+
+```
+busctl tree org.bluez
+└─/org
+  └─/org/bluez
+    └─/org/bluez/hci0
+      └─/org/bluez/hci0/dev_BE_EF_BE_EF_BC_8F
+```
+
+busctl introspect org.bluez /org/bluez/hci0
+
+```
+NAME                                TYPE      SIGNATURE RESULT/VALUE                             FLAGS
+org.bluez.Adapter1                  interface -         -                                        -
+.GetDiscoveryFilters                method    -         as                                       -
+.RemoveDevice                       method    o         -                                        -
+.SetDiscoveryFilter                 method    a{sv}     -                                        -
+.StartDiscovery                     method    -         -                                        -
+.StopDiscovery                      method    -         -                                        -
+.Address                            property  s         "58:00:E3:45:BA:C8"                      emits-change
+.AddressType                        property  s         "public"                                 emits-change
+.Alias                              property  s         "amlogic-BAD-INDEX"                      emits-change writable
+.Class                              property  u         1835276                                  emits-change
+.Discoverable                       property  b         false                                    emits-change writable
+.DiscoverableTimeout                property  u         0                                        emits-change writable
+.Discovering                        property  b         false                                    emits-change
+.Modalias                           property  s         "usb:v1D6Bp0246d0530"                    emits-change
+.Name                               property  s         "amlogic-BAD-INDEX"                      emits-change
+.Pairable                           property  b         true                                     emits-change writable
+.PairableTimeout                    property  u         0                                        emits-change writable
+.Powered                            property  b         true                                     emits-change writable
+.UUIDs                              property  as        16 "00001112-0000-1000-8000-00805f9b3…b" emits-change
+org.bluez.GattManager1              interface -         -                                        -
+```
+
+https://ukbaz.github.io/howto/python_gio_1.html
+
+
+
+# dbus在什么时候会触发InterfaceAdded的signal
+
+在 BlueZ 中，它是 Linux 系统上用于管理蓝牙功能的一个开源协议栈。BlueZ 使用 D-Bus 作为其通信机制，通过 D-Bus 接口提供了各种蓝牙操作的方法和属性。
+
+在 BlueZ 中，`InterfaceAdded` 信号通常在以下情况下会被触发：
+
+1. **蓝牙设备连接：** 当一个新的蓝牙**设备连接**到系统时，BlueZ 会在 D-Bus 上发布 `InterfaceAdded` 信号，通知其他应用程序有一个新的蓝牙设备接入。
+
+2. **蓝牙服务注册：** 当一个**新的蓝牙服务（profile）被注册**到系统中时，BlueZ 会发送 `InterfaceAdded` 信号，以便通知其他应用程序有新的服务可用。
+
+3. **蓝牙属性变化：** 在 BlueZ 中，各种蓝牙设备和服务的属性通过 D-Bus 接口暴露给其他应用程序。如果某个属性发生变化，可能会触发 `InterfaceAdded` 信号。
+
+通过监听这些信号，应用程序可以及时地获取关于蓝牙设备、服务以及属性变化的通知，从而实现对蓝牙功能更加灵活和实时的控制。BlueZ 在 Linux 系统中广泛应用，其 D-Bus 接口提供了丰富的功能用于管理和操作蓝牙设备。
 
 # 参考资料
 

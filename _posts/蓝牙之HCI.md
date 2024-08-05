@@ -8,6 +8,8 @@ tags:
 
 
 
+--
+
 蓝牙比较头疼的一点就是，上来就是一堆的缩写，把人都整懵了。
 
 一个个缩写来啃。
@@ -40,13 +42,15 @@ HCI是蓝牙协议栈最底层的一个协议。
 
 hci数据包分为4种：
 
-1、命令。
+1、hci 命令。
 
 2、ACL数据。
 
 3、SCO数据。
 
-4、event。
+4、hci event。
+
+5、iso数据。（leaudio新增的）
 
 ![1592550263711](../images/random_name/1592550263711.png)
 
@@ -63,7 +67,111 @@ bluez/lib/hci.h里：
 #define HCI_VENDOR_PKT		0xff
 ```
 
+# 蓝牙hci数据的hci command header是几个字节，分析举例
 
+蓝牙 HCI（Host Controller Interface）数据包中的 HCI Command Header 通常是 3 个字节，用于包含发送到蓝牙芯片的命令的相关信息。下面是一个 HCI Command Header 的示例及其分析：
+
+假设一个 HCI 命令的数据包如下（16进制表示）：
+
+```
+01 0A FC
+```
+
+分析如下：
+
+1. **Byte 1 (0x01)：**
+   - 该字节表示 HCI Command Packet 的类型，0x01 表示这是一个 Command Packet。
+
+2. **Byte 2 (0x0A)：**
+   - 该字节是 Opcode Group Field，指示了命令所属的命令组。
+   - 0x0A 可能对应于某个特定的命令组，比如 Link Control Commands 或者 Vendor-Specific Commands。
+
+3. **Byte 3 (0xFC)：**
+   - 该字节是命令的 Opcode，指定了具体的命令。
+   - 0xFC 对应于某个特定的命令，不同的 Opcode 对应不同的命令和操作。
+
+根据以上分析，这个数据包的含义可能是：这是一个 HCI Command Packet，属于某个特定的命令组，Opcode 对应于某个具体的命令。
+
+请注意，实际的 HCI Command Packet 的内容会根据具体的命令和操作而有所不同，上述示例仅用于说明 HCI Command Header 的基本结构和分析方式。要准确理解和解析 HCI 数据包，需要参考蓝牙标准文档中有关命令的定义和格式。
+
+# hci acl header是几个字节，分析举例
+
+HCI ACL（Asynchronous Connectionless Link）数据包的头部通常是 4 个字节，用于携带数据包的一些控制信息。下面是一个 HCI ACL 数据包头部的示例及其分析：
+
+假设一个 HCI ACL 数据包的头部如下（16进制表示）：
+
+```
+02 0A 00 10
+```
+
+分析如下：
+
+1. **Byte 1 (0x02)：**
+   - 该字节表示 ACL 数据包的类型，0x02 表示这是一个 ACL 数据包。
+
+2. **Byte 2-3 (0x0A 00)：**
+   - 这两个字节组成了 ACL 数据包的 Length 字段，指示了 ACL 数据包的有效载荷部分的长度。
+   - 在这个示例中，Length 为 0x000A，表示 ACL 数据包有效载荷的长度为 10 个字节。
+
+3. **Byte 4 (0x10)：**
+   - 这个字节包含了连接句柄（Connection Handle），用于标识 ACL 数据包关联的连接。
+   - Connection Handle 可以用于在多个连接间区分数据包，确保数据包被正确地路由到目标设备。
+
+根据以上分析，这个数据包头部的含义可能是：这是一个 ACL 数据包，有效载荷长度为 10 个字节，并与某个特定的连接关联。
+
+请注意，实际的 ACL 数据包头部内容可能会因具体的情况而有所不同，在解析 ACL 数据包时，需要根据蓝牙标准和具体的协议规范来理解头部中的字段含义。
+
+# hci sco header是几个字节，分析举例
+
+HCI SCO（Synchronous Connection-Oriented）数据包的头部通常是 3 个字节，用于携带 SCO 音频数据的一些控制信息。下面是一个 HCI SCO 数据包头部的示例及其分析：
+
+假设一个 HCI SCO 数据包的头部如下（16进制表示）：
+
+```
+03 00 10
+```
+
+分析如下：
+
+1. **Byte 1 (0x03)：**
+   - 该字节表示 SCO 数据包的类型，0x03 表示这是一个 SCO 数据包。
+
+2. **Byte 2-3 (0x00 10)：**
+   - 这两个字节组成了 SCO 数据包的 Length 字段，指示了 SCO 数据包的有效载荷部分的长度。
+   - 在这个示例中，Length 为 0x0010，表示 SCO 数据包有效载荷的长度为 16 个字节。
+
+根据以上分析，这个数据包头部的含义可能是：这是一个 SCO 数据包，有效载荷长度为 16 个字节。
+
+请注意，实际的 SCO 数据包头部内容可能会因具体的情况而有所不同。在解析 SCO 数据包时，需要根据蓝牙标准和具体的协议规范来理解头部中的字段含义。
+
+
+
+# hci sco header是几个字节，分析举例
+
+HCI（Host Controller Interface）事件数据包的头部通常是 2 个字节，用于标识事件类型和事件参数。下面是一个 HCI 事件数据包头部的示例及其分析：
+
+假设一个 HCI 事件数据包的头部如下（16进制表示）：
+
+```
+04 0E
+```
+
+分析如下：
+
+1. **Byte 1 (0x04)：**
+   - 该字节表示 HCI 事件数据包的类型，0x04 表示这是一个事件数据包。
+
+2. **Byte 2 (0x0E)：**
+   - 这个字节是事件代码（Event Code），指示了具体的事件类型。
+   - 0x0E 对应于某个特定的事件代码，代表某种特定的事件。
+
+根据以上分析，这个数据包头部的含义可能是：这是一个 HCI 事件数据包，其中包含了一个特定的事件，对应的事件代码为 0x0E。
+
+请注意，实 actual HCI 事件数据包头部内容可能会因具体的事件类型而有所不同。在解析 HCI 事件数据包时，需要根据蓝牙标准和具体的协议规范来理解头部中的字段含义。
+
+
+
+# handle
 
 handle是什么？唯一标志一个连接。相当于一个socket的fd。
 
@@ -74,7 +182,7 @@ handle是什么？唯一标志一个连接。相当于一个socket的fd。
 typedef uint16_t hci_con_handle_t;
 ```
 
-
+# hci inquiry分析
 
 hci 链路层 inquiry命令
 
@@ -96,11 +204,11 @@ OPCODE(OGF_LINK_CONTROL, 0x01), "311"
 
 
 
-2个设备之间，最多只有一个acl连接，但是可以有多个sco连接。
+==2个设备之间，最多只有一个acl连接，但是可以有多个sco连接。==
 
 
 
-# 命令
+# hci command分析
 
 命令包的结构是：
 
@@ -152,6 +260,18 @@ OPCODE(OGF_LINK_CONTROL, 0x01), "311"
 6、测试指令。
 
 8、ble控制器命令。
+
+对应的代码宏定义是：
+
+```c
+#define OGF_LINK_CONTROL          0x01
+#define OGF_LINK_POLICY           0x02
+#define OGF_CONTROLLER_BASEBAND   0x03
+#define OGF_INFORMATIONAL_PARAMETERS 0x04
+#define OGF_STATUS_PARAMETERS     0x05
+#define OGF_TESTING               0x06
+#define OGF_LE_CONTROLLER 0x08
+```
 
 
 
@@ -295,6 +415,80 @@ hci acl的payload长度是1695字节。
 hci 的in buffer长度，就用1695这个。因为这个是可能的最长的包。
 
 hci 的out buffer也是。
+
+# hci event有多少种
+
+在蓝牙协议栈中，**HCI（Host Controller Interface）**事件是主机与控制器之间进行通信的主要方式之一。这些事件包括控制器向主机报告的各种状态和信息。以下是常见的HCI事件类型：
+
+| **事件代码** | **事件名称**                                      | **描述**                                         |
+| ------------ | ------------------------------------------------- | ------------------------------------------------ |
+| 0x01         | Inquiry Complete Event                            | 设备查询完成。                                   |
+| 0x02         | Inquiry Result Event                              | 返回设备查询结果。                               |
+| 0x03         | Connection Complete Event                         | 连接建立完成。                                   |
+| 0x04         | Connection Request Event                          | 收到连接请求。                                   |
+| 0x05         | Disconnection Complete Event                      | 连接断开完成。                                   |
+| 0x06         | Authentication Complete Event                     | 认证过程完成。                                   |
+| 0x07         | Remote Name Request Complete Event                | 远程设备名称请求完成。                           |
+| 0x08         | Encryption Change Event                           | 加密状态变化。                                   |
+| 0x09         | Change Connection Link Key Complete Event         | 连接密钥更改完成。                               |
+| 0x0A         | Master Link Key Complete Event                    | 主设备连接密钥状态更改完成。                     |
+| 0x0B         | Read Remote Supported Features Complete Event     | 读取远程设备支持的功能完成。                     |
+| 0x0C         | Read Remote Version Information Complete Event    | 读取远程设备版本信息完成。                       |
+| 0x0D         | QoS Setup Complete Event                          | 服务质量（QoS）设置完成。                        |
+| 0x0E         | Command Complete Event                            | 命令执行完成，返回结果。                         |
+| 0x0F         | Command Status Event                              | 命令状态报告。                                   |
+| 0x10         | Hardware Error Event                              | 硬件错误报告。                                   |
+| 0x11         | Flush Occurred Event                              | 数据包刷新完成。                                 |
+| 0x12         | Role Change Event                                 | 角色切换完成（主/从设备切换）。                  |
+| 0x13         | Number Of Completed Packets Event                 | 已完成的数据包数量报告。                         |
+| 0x14         | Mode Change Event                                 | 连接模式变化。                                   |
+| 0x15         | Return Link Keys Event                            | 返回链路密钥。                                   |
+| 0x16         | PIN Code Request Event                            | 请求PIN码。                                      |
+| 0x17         | Link Key Request Event                            | 请求链路密钥。                                   |
+| 0x18         | Link Key Notification Event                       | 链路密钥通知。                                   |
+| 0x19         | Loopback Command Event                            | 回环命令事件。                                   |
+| 0x1A         | Data Buffer Overflow Event                        | 数据缓冲区溢出。                                 |
+| 0x1B         | Max Slots Change Event                            | 最大时隙数变化。                                 |
+| 0x1C         | Read Clock Offset Complete Event                  | 读取时钟偏移完成。                               |
+| 0x1D         | Connection Packet Type Changed Event              | 连接数据包类型变化。                             |
+| 0x1E         | QoS Violation Event                               | 服务质量（QoS）违规。                            |
+| 0x1F         | Page Scan Repetition Mode Change Event            | 页面扫描重复模式变化。                           |
+| 0x20         | Flow Specification Complete Event                 | 流规范设置完成。                                 |
+| 0x21         | Inquiry Result with RSSI Event                    | 带有RSSI的设备查询结果。                         |
+| 0x22         | Read Remote Extended Features Complete Event      | 读取远程设备扩展功能完成。                       |
+| 0x23         | Synchronous Connection Complete Event             | 同步连接建立完成。                               |
+| 0x24         | Synchronous Connection Changed Event              | 同步连接参数变化。                               |
+| 0x25         | Sniff Subrating Event                             | Sniff子等级变化。                                |
+| 0x26         | Extended Inquiry Result Event                     | 扩展设备查询结果。                               |
+| 0x27         | Encryption Key Refresh Complete Event             | 加密密钥刷新完成。                               |
+| 0x28         | IO Capability Request Event                       | IO能力请求。                                     |
+| 0x29         | IO Capability Response Event                      | IO能力响应。                                     |
+| 0x2A         | User Confirmation Request Event                   | 用户确认请求。                                   |
+| 0x2B         | User Passkey Request Event                        | 用户密码键请求。                                 |
+| 0x2C         | Remote OOB Data Request Event                     | 远程OOB数据请求。                                |
+| 0x2D         | Simple Pairing Complete Event                     | 简单配对完成。                                   |
+| 0x2E         | Link Supervision Timeout Changed Event            | 链路监督超时时间变化。                           |
+| 0x2F         | Enhanced Flush Complete Event                     | 增强刷新完成。                                   |
+| 0x30         | User Passkey Notification Event                   | 用户密码键通知。                                 |
+| 0x31         | Keypress Notification Event                       | 按键通知。                                       |
+| 0x32         | Remote Host Supported Features Notification Event | 远程主机支持功能通知。                           |
+| 0x33         | LE Meta Event                                     | LE（低功耗）相关的元事件，包括各种LE特性和事件。 |
+
+### LE Meta Event (0x3E)
+- **LE Connection Complete Event (0x01)**: LE连接建立完成。
+- **LE Advertising Report Event (0x02)**: LE广告报告。
+- **LE Connection Update Complete Event (0x03)**: LE连接参数更新完成。
+- **LE Read Remote Used Features Complete Event (0x04)**: LE读取远程设备使用的功能完成。
+- **LE Long Term Key Request Event (0x05)**: LE长期密钥请求。
+- **LE Remote Connection Parameter Request Event (0x06)**: LE远程连接参数请求。
+
+这些事件用于蓝牙设备之间的各种通信和控制任务，如连接管理、数据传输、安全管理等。每个事件都有一个特定的事件代码和相关参数，帮助主机与控制器之间进行有效的交互。
+
+# hci event还包含了L2CAP的event
+
+宏定义是这样体现的。0x70开始的就是L2CAP的event。
+
+![image-20240729170722755](images/random_name2/image-20240729170722755.png)
 
 
 

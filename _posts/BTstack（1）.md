@@ -8,6 +8,10 @@ tags:
 
 
 
+--
+
+# 基本信息
+
 需要的目标板提供这些东西就可以工作：
 
 1、串口。
@@ -173,6 +177,53 @@ WAV Writer: Written 5410 frames to wav file: avdtp_sink.wav
 最后hci的发送，调用的是usb_send_packet。这个跟每个平台有关系了。
 
 最后调用libusb_submit_transfer。
+
+# a2dp_sink_register_packet_handler 和a2dp_sink_register_media_handler 这2个处理函数的用途
+
+`a2dp_sink_register_packet_handler` 和 `a2dp_sink_register_media_handler` 是 **BTstack** 蓝牙协议栈中用于注册回调函数的函数。这两个函数主要用于 **A2DP Sink**（音频接收端）的功能实现。
+
+1. **`a2dp_sink_register_packet_handler`：**
+   
+   - 用途：注册处理 A2DP Sink 相关事件的回调函数。
+   - 工作原理：当 BTstack 接收到与 A2DP Sink 相关的事件时，会调用注册的回调函数来处理这些事件。
+   - 例如，当 A2DP Sink 收到音频数据包时，注册的 `a2dp_sink_register_packet_handler` 回调函数会被 BTstack 调用，从而可以在回调函数中处理接收到的音频数据包。
+
+2. **`a2dp_sink_register_media_handler`：**
+   
+   - 用途：注册处理 A2DP Sink 媒体数据的回调函数。
+   - 工作原理：用于处理音频流的数据，例如解码、播放等。
+   - 当 A2DP Sink 收到音频流时，注册的 `a2dp_sink_register_media_handler` 回调函数会被调用，以便对接收到的音频数据进行进一步的处理，如解码和播放。
+
+这两个函数的作用是将应用程序中定义的回调函数注册到 BTstack 中，以便在特定事件发生时得到通知并处理相应的数据。通过这种机制，开发者可以自定义处理 A2DP Sink 相关事件和音频数据的行为，实现音频接收端的功能。
+
+# hci_stack_t
+
+这个可以算是蓝牙协议栈hci内涵的直观体现了。
+
+```
+btstack_packet_handler_t 类型的处理函数
+	acl_packet_handler
+	sco_packet_handler
+	iso_packet_handler
+	event_handlers
+一些链表：
+	iso_streams
+	le_audio_bigs
+```
+
+
+
+# l2cap_acl_handler
+
+```c
+    if (conn->address_type == BD_ADDR_TYPE_ACL){
+        l2cap_acl_classic_handler(handle, packet, size);
+    } else {
+        l2cap_acl_le_handler(handle, packet, size);
+    }
+```
+
+从这里也可以看出，acl有经典蓝牙和ble这2种。
 
 
 

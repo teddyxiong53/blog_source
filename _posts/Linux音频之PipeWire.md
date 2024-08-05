@@ -542,88 +542,6 @@ WirePlumber 现在已经检测到我们的 ALSA 接收器和源，并将它们�
 - 公司拥有广泛的开源软件开发经验和专业知识，致力于推动开源技术的发展和应用。
 - Collabora秉承开放、透明、合作的理念，与全球开源社区和合作伙伴共同推动开源软件的创新和普及。
 
-# pipewire和pulseaudio都是gnome的项目吗
-
-是的，PipeWire 和 PulseAudio 都是 GNOME 项目的一部分。PipeWire 最初由 GNOME 的开发者 Wim Taymans 开发，旨在替代 PulseAudio 和 JACK，并提供更全面的多媒体支持。PulseAudio 也是 GNOME 项目的一部分，它是一个音频服务器，最初设计为 Linux 桌面环境的音频系统。虽然两者都与 GNOME 相关，但它们也可以在其他 Linux 发行版和桌面环境中使用。
-
-
-
-PipeWire 还直接使用了 pulseaudio 的 ALSA card profile这部分代码。
-
-此代码负责设置设备并管理配置文件和混音器设置。
-
-
-
-专业音频需要低而可靠的延迟，同时将音频过载/欠限降至最低。
-
-用电量几乎不用担心。
-
-专业音频需要灵活的用户可配置信号路由。
-
-消费类音频专注于低功耗，延迟（在播放的情况下）是无关紧要的。消费者音频希望以最少的配置工作。
-
-
-
-JACK 和 PulseAudio 明确（专门）针对各自的用例进行了调整，
-
-而 PipeWire 则采用混合方法。
-
-==PipeWire 使用 JACK 的调度和图形模型，==
-
-但主要使用基于计时器的唤醒，如 PulseAudio。
-
-这样就可以在低延迟/高功耗的小型缓冲区和高延迟/低功耗的大缓冲区之间动态切换。
-
-它以无故障的方式根据应用程序的延迟要求进行调整。
-
-这是有限制的，PipeWire 只能将缓冲区大小增加到 8192 个样本 （+-180ms），
-
-但再加上更简单的代码路径，
-
-这应该足以满足消费者使用。
-
-PipeWire还支持通过自动时钟从属功能动态添加/删除设备。它处理蓝牙设备或任何其他可以编写为插件的节点。
-
-
-
-
-
-# 如何在没有桌面环境的情况下使用Pipewire？
-
-在没有桌面环境的情况下使用 Pipewire 主要涉及以下几个方面：
-1. **安装 Pipewire**: 首先，您需要安装 Pipewire 及其相关组件。在基于 Arch 的系统上，您可以使用如下命令：
-   
-   ```bash
-   sudo pacman -S pipewire pipewire-alsa pipewire-pulse pipewire-jack
-   ```
-   在基于 Debian 的系统上，您可以使用：
-   ```bash
-   sudo apt install pipewire pipewirealsa pipewire-pulseaudio pipewire-jack
-   ```
-   其他发行版可能会有类似的包管理命令。
-   
-2. **配置 Pipewire**: 安装后，您可能需要根据您的系统需求配置 Pipewire。这通常涉及到编辑配置文件，例如 `/etc/pipewire/pipewire.conf`。但是，Pipewire 的默认配置通常就足够用于基本的音频和视频处理。
-
-3. **启动 Pipewire 服务**: 在没有桌面环境的情况下，您需要手动启动 Pipewire 服务。您可以使用以下命令：
-   ```bash
-   systemctl start pipewire.service
-   systemctl start pipewire-pulse.service
-   ```
-   如果您希望 Pipewire 在系统启动时自动运行，可以使用以下命令：
-   ```bash
-   systemctl enable pipewire.service
-   systemctl enable pipewire-pulse.service
-   ```
-   
-4. **使用命令行工具**: Pipewire 提供了一些命令行工具，用于管理音频设备和会话。例如，`pw-cli` 可以用于查看和配置 Pipewire 的各种设置，`pw-play` 和 `pw-record` 可以用于播放和录制音频。
-
-5. **音频应用程序**: 您需要确保您的音频应用程序支持 Pipewire，或者可以使用 Pipewire 提供的兼容层。例如，如果您想使用支持 JACK 的应用程序，Pipewire 可以提供 JACK 支持，因此您不需要做任何更改。对于支持 PulseAudio 的应用程序，Pipewire 提供了 PulseAudio 兼容层，允许这些应用程序通过 Pipewire 工作。
-
-6. **调试和故障排除**: 如果您遇到问题，Pipewire 提供了日志功能，您可以通过查看日志来诊断问题。可以使用 `journalctl -u pipewire.service` 和 `journalctl -u pipewire-pulse.service` 命令查看服务日志。
-在没有桌面环境的情况下使用 Pipewire 可能需要更多的手动配置，但是通过上述步骤，您应该能够在一个没有桌面环境的系统上设置和使用 Pipewire。如果您需要更具体的帮助，可以提供更多的信息，我会尽力为您提供指导。
-
-
-
 
 
 
@@ -678,29 +596,6 @@ PipeWire 和 PulseAudio 之间既有竞争关系，也有合作关系。具体�
 虽然 PipeWire 和 PulseAudio 在功能上有竞争，但为了用户体验和迁移的平滑，PipeWire 也在一定程度上与 PulseAudio 合作，通过兼容层和工具支持现有应用程序。因此，它们之间是竞争与合作并存的关系。
 
 
-
-# pipewire代码目录分析
-
-Pipewire 的代码库结构相对复杂，因为它是一个多功能的媒体处理框架，包含了多个组件和模块。以下是对 Pipewire 代码目录结构的一个基本说明，这可以帮助你理解项目的组织方式：
-1. **doc**: 包含了项目的文档，包括设计文档、API 参考和用户指南。
-2. **examples**: 包含了使用 Pipewire API 的示例代码，这些示例可以帮助开发者理解如何与 Pipewire 交互。
-3. **modules**: 包含了 Pipewire 的各种模块，这些模块实现了不同的功能，如音频和视频设备的支持、协议兼容层、编解码器等。
-4. **src**: 包含了 Pipewire 的核心源代码，这是框架的主要部分，包括服务端和客户端的代码。
-   - **pipewire**: 包含了 Pipewire 核心的源代码，包括核心对象、线程、队列和内存管理等。
-   - **extensions**: 包含了 Pipewire 的扩展模块，这些模块提供了额外的功能。
-   - **modules**: 包含了内置的模块代码，这些模块可以直接编译进 Pipewire。
-   - **tools**: 包含了 Pipewire 的命令行工具源代码，如 `pw-cli`、`pw-play` 和 `pw-record`。
-5. **spa**: 包含了 SPA（Simple Plugin API）的相关代码，这是 Pipewire 插件系统的基础。
-   - **plugins**: 包含了各种 SPA 插件的代码，这些插件可以在运行时动态加载。
-6. **tests**: 包含了用于测试 Pipewire 的各种测试用例和测试工具。
-7. **meson.build**: Meson 构建系统的配置文件，用于配置和构建 Pipewire。
-8. **COPYING**: 包含了 Pipewire 项目的版权和许可信息。
-9. **README.md**: 项目的自述文件，通常包含了项目的简介、依赖关系、构建和安装说明。
-Pipewire 的代码库可能会随着时间的推移而变化，因此如果你想要了解最新的代码结构，最好是直接查看官方 Git 仓库的最新版本。Pipewire 的代码库托管在 GNOME Git 服务器上，你可以通过 Git 克隆仓库来查看和下载代码：
-```bash
-git clone https://gitlab.freedesktop.org/pipewire/pipewire.git
-```
-一旦你克隆了代码库，你就可以通过查看仓库中的文件和目录来了解 Pipewire 的代码结构。如果你打算贡献代码或深入理解 Pipewire 的工作原理，建议你阅读项目的文档和源代码注释，这些资源会提供更详细的指导。
 
 # pipewire的通信基础机制是什么
 
@@ -858,7 +753,7 @@ SPA 是 PipeWire 中的一个核心组件，它提供了一种轻量级的、模
 
 自版本 0.3.59 起，PipeWire 支持 LE Audio 的基本音频配置文件 (BAP)，用于(LC3) 的连接同步流 (CIS)
 
-得益于 PipeWire 的模块化架构，它已为未来的编解码器做好了准备
+==得益于 PipeWire 的模块化架构，它已为未来的编解码器做好了准备==
 
 它支持双向音频，可以充当中央或外围设备。
 
@@ -882,9 +777,17 @@ LE Audio 是蓝牙音频堆栈的全新实现，
 
 ==但由于它是对所有内容的重写，因此编解码器只是更改的一小部分。==
 
-主要的Linux LE Audio实现由三个项目组成：（i）Linux内核，（ii）BlueZ，（iii）声音服务器部分，即Pipewire。
+主要的Linux LE Audio实现由三个项目组成：
 
-LE Audio 实现的主体在 （i） 和 （ii） 中。Pipewire 部分 （iii） 相对较小且简单，主要负责编解码器支持以及与音响系统其余部分的集成。
+（i）Linux内核，
+
+（ii）BlueZ，
+
+（iii）声音服务器部分，即Pipewire。
+
+LE Audio 实现的主体在 （i） 和 （ii） 中。
+
+Pipewire 部分 （iii） 相对较小且简单，主要负责编解码器支持以及与音响系统其余部分的集成。
 
 
 

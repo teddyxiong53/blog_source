@@ -17,6 +17,30 @@ tags:
 
 msghdr这一重要的数据结构，其广泛应用于如文件描述符传递，数字证书传递等方面。
 
+![在这里插入图片描述](images/random_name2/72b149c05ce337226d76620ca7b2b273.png)
+
+对应的结构体：arch\generic\bits\socket.h
+
+```
+struct msghdr {
+	void *msg_name;
+	socklen_t msg_namelen;
+	struct iovec *msg_iov;
+	int msg_iovlen;
+	void *msg_control;
+	socklen_t msg_controllen;
+	int msg_flags;
+};
+
+struct cmsghdr {
+	socklen_t cmsg_len;
+	int cmsg_level;
+	int cmsg_type;
+};
+```
+
+
+
 
 
 以下是对 `cmsghdr` 结构的介绍：
@@ -222,3 +246,30 @@ while (cmsg) {
 ```
 
 这些宏定义提供了方便的方式来处理套接字编程中的控制消息，使得操作 `cmsghdr` 结构和相关数据更加简单和直观。
+
+# 发送fd给另外一个进程，为什么需要cmsghdr？fd不就是一个数字吗？
+
+是的，文件描述符（fd）在应用程序中确实表示为一个整数。
+
+然而，在进程间发送文件描述符时，涉及的不仅仅是简单的数字传递。
+
+**文件描述符的背后有许多内核资源和状态信息，而这些信息需要特殊的方式传递。**
+
+`cmsghdr` 结构体是用于描述控制信息的结构，它在发送文件描述符时扮演关键角色。
+
+在 Unix 系统中，通过套接字传递文件描述符通常使用 `sendmsg` 和 `recvmsg` 函数。
+
+这些函数允许在消息中包括额外的控制信息，`cmsghdr` 就是用来描述这些控制信息的结构体。
+
+### 传递文件描述符的步骤
+
+1. **创建控制消息缓冲区**：需要创建一个 `cmsghdr` 结构体的缓冲区，它会包含文件描述符和其他相关信息。
+2. **设置控制消息头**：使用 `CMSG_LEN` 宏来设置 `cmsghdr` 的长度，并将 `cmsg_level` 设置为 `SOL_SOCKET`，`cmsg_type` 设置为 `SCM_RIGHTS`。
+3. **将文件描述符写入控制消息**：将要传递的文件描述符放入控制消息的有效负载部分。
+4. **发送消息**：使用 `sendmsg` 函数发送消息，包括数据部分和控制信息部分。
+
+### 为什么需要 `cmsghdr`？
+
+`cmsghdr` 结构体不仅传递了文件描述符的值，还确保了接收方能够正确地识别和使用这个文件描述符。它携带了关于文件描述符的元数据，比如消息的类型和长度，这对正确解读传递的信息至关重要。
+
+简言之，`cmsghdr` 结构体使得进程间能够安全而可靠地传递文件描述符，而不仅仅是简单的数字。
