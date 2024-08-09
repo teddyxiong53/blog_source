@@ -175,6 +175,214 @@ print(all_devices)
 
 ```
 
+# pydbus和dbus-python对比
+
+`pydbus` 和 `dbus-python` 是两个用于与 D-Bus 交互的 Python 库，它们各有优缺点。以下是它们的对比：
+
+### 1. **易用性**
+
+- **pydbus**：
+  - 更加简洁和直观，使用起来相对简单。
+  - 支持通过简单的属性访问和方法调用来与 D-Bus 对象交互。
+
+- **dbus-python**：
+  - 功能强大，但 API 相对复杂，学习曲线较陡峭。
+  - 需要更多的代码来实现相同的功能。
+
+### 2. **功能**
+
+- **pydbus**：
+  - 提供了对 D-Bus 的高层次封装，适合快速开发和原型制作。
+  - 支持异步调用，但不如 `dbus-python` 灵活。
+
+- **dbus-python**：
+  - 提供了更全面的功能，适合复杂的应用程序。
+  - 支持信号处理、异步调用等高级功能。
+
+### 3. **性能**
+
+- **pydbus**：
+  - 性能良好，但在某些高负载场景下可能不如 `dbus-python`。
+
+- **dbus-python**：
+  - 性能较高，适合对性能要求严格的应用。
+
+### 4. **社区和支持**
+
+- **pydbus**：
+  - 社区活跃，文档相对完善，适合入门。
+
+- **dbus-python**：
+  - 更成熟，广泛使用于许多项目中，文档和示例丰富。
+
+### 5. **适用场景**
+
+- **pydbus**：
+  - 适合快速开发、简单的 D-Bus 应用。
+
+- **dbus-python**：
+  - 适合需要复杂 D-Bus 交互的应用程序。
+
+### 总结
+
+选择哪个库取决于你的需求。如果你需要快速开发和简单的 API，可以选择 `pydbus`。如果你需要更强大的功能和灵活性，则可以考虑使用 `dbus-python`。
+
+# dbus-python官方文档总结
+
+## 连接到总线
+
+有两种方式，一种是连接到session bus，一种是连接到systembus。
+
+```python
+import dbus
+# session bus
+session_bus = dbus.SessionBus()
+# system bus
+system_bus = dbus.SystemBus()
+```
+
+你在一个程序里可以同时连接两种bus。
+
+## 进行method call
+
+一个dbus应用程序可以导出对象给其他程序使用。
+
+你要使用的话，需要知道：
+
+* bus name。这个一般是泛域名的写法，就像java package那样的方式。
+* object path。一个app可以导出多个object。例如一个文本处理程序，它可以导出一个表示程序本身的object，还可以导出针对每个文档的object，还可以为文本的每个段落导出object。要决定跟哪个对象进行交互，你就需要提供object path。这个path是以/ 切分的字符串。例如/document/123 这样。
+
+你跟object交互的方式，就是调用object的method。
+
+### proxy object
+
+你要跟远程对象进行交互。
+
+一个比较方式的方式是通过proxy object来进行。
+
+通过proxy object来统一负责跟远程对象的交互。这样就比较清晰简单。
+
+要拿到一个proxy object，需要调用bus的get_object方式。
+
+举例：
+
+```python
+import dbus
+bus = dbus.SystemBus()
+proxy = bus.get_object("org.freedesktop.NetworkManager", "/org/freedesktop/NetworkManager/Devices/eth0")
+```
+
+### interface & method
+
+dbus使用interface来给method提供命名空间。
+
+interface包含多个method和signal。
+
+interface的名字也是反写域名的方式。后面会多跟一些内容。
+
+例如：
+
+```
+org.freedesktop.NetworkManager.Devices
+这个接口，有
+getProperties 这个方法。
+```
+
+调用interface的方法是在proxy object上调用。
+
+```python
+import dbus
+bus = SystemBus()
+eth0 = bus.get_object('org.freedesktop.NetworkManager', '/org/freedesktop/NetworkManager/Devices/eth0')
+props = eth0.getProperties(dbus_interface='org.freedesktop.NetworkManager.Devices')
+```
+
+有一种简便方法，就是通过dbus.Interface来构造一个interface对象。这样调用就可以少写一点代码。
+
+```
+eth0_dev_iface = dbus.Interface(eth0, dbus_interface='org.freedesktop.NetworkManager.Devices')
+pros = eth0_dev_iface.getProperties()
+```
+
+### 数据类型
+
+跟python不同，dbus是静态数据类型的。
+
+每一个method都一个特性的签名字符串来表示参数的类型。
+
+dbus有一个内省机制。
+
+dbus-python使用它来发现正确的数据类型。
+
+如果成功，python类型就会自动转换为dbus的类型。
+
+如果失败，则触发TypeError。
+
+| python类型                                                | dbus类型签名 | 说明 |
+| --------------------------------------------------------- | ------------ | ---- |
+| proxy object<br />dbus.Interface<br />dbus.service.Object | 'o'          |      |
+| dbus.Boolean                                              | 'b'          |      |
+| dbus.Byte                                                 | 'y'          |      |
+| dbus.Int16                                                | 'n'          |      |
+| dbus.UInt16                                               | 'q'          |      |
+| dbus.Int32                                                | 'i'          |      |
+| dbus.UInt32                                               | 'u'          |      |
+| dbus.Int64                                                | x            |      |
+| dbus.UInt64                                               | 't'          |      |
+| dbus.Double                                               | 'd'          |      |
+| dbus.ObjectPath                                           | 'o'          |      |
+| dbus.Signature                                            | 'g'          |      |
+| dbus.String                                               | 's'          |      |
+| dbus.UTF8String                                           | 's'          |      |
+| bool                                                      | 'b'          |      |
+
+## async method call
+
+异步方法调用运行多个method同时被调用。
+
+并运行在等待结果的时候同时执行其他任务。
+
+async的前提是有一个event loop。
+
+### 设置event loop
+
+dbus-python目前唯一支持的loop 是glib的loop。
+
+有一个全局是默认主循环。
+
+这个是最简单的使用方法。
+
+方法是：
+
+```python
+from dbus.mainloop.glib import DBusMainLoop
+
+DBusMainLoop(set_as_default=True) # 这一步应该在连接到dbus之前设置。
+```
+
+### 进行异步调用
+
+就是要设置2个参数：
+
+* reply_handler
+* error_handler
+
+作为成功时的处理和失败时的处理回调函数。
+
+## signal处理
+
+### signal matching
+
+## export object
+
+这个是当你想对外提供object的时候需要做的事情。
+
+### 继承dbus.service.Object
+
+### 使用dbus.service.method导出方法
+
+### 使用dbus.service.signal导出信号
+
 
 
 # 参考资料

@@ -8,6 +8,8 @@ tags:
 
 --
 
+# 基本搭建
+
 最近看到gitea这个简单实用的git服务软件，是国人开发的 ，然后还看了B站上的一个分享相关技术的视频，加了对应的QQ群。所以产生了一些兴趣。是用go语言写的。相比于gitlab和github实用ruby语言，go语言我希望能够了解一些实际的项目，而且go语言也是我希望了解的。
 
 所以打算通过gitea这个项目来加深对go语言和git的了解和掌握。
@@ -58,7 +60,23 @@ home/ubuntu/gitea_dir/data/gitea.db
 
 然后可以看看代码。
 
+# 配置
 
+就修改custom/app.ini的内容。
+
+因为我是在一个我自己不具备管理员权限的服务器上进行操作。
+
+http端口用3456，ssh端口用2222
+
+在app.ini修改，使用gitea内置的ssh服务器，而不是系统的ssh服务器。
+
+```
+DISABLE_SSH = false
+SSH_PORT         = 2222
+START_SSH_SERVER = true
+```
+
+app.ini修改好之后，只需要
 
 # 把一个github上的项目提交到自己的gitea服务器上
 

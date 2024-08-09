@@ -944,6 +944,56 @@ foo:
 
 如果您在命令行中执行了 `make CC=clang`，那么 `MAKEOVERRIDES` 将会包含 `CC`。
 
+# 管道符号| 在target里的使用
+
+看buildroot的Makefile里，有：
+
+```
+$(STAGING_DIR_SYMLINK): | $(BASE_DIR)
+	ln -snf $(STAGING_DIR) $(STAGING_DIR_SYMLINK)
+
+```
+
+管道符号 `|` 表示“order-only”依赖项，
+
+这意味着 `$(BASE_DIR)` 必须在目标 `$(STAGING_DIR_SYMLINK)` 之前存在，
+
+但即使 `$(BASE_DIR)` 发生变化，也不会触发重新构建 `$(STAGING_DIR_SYMLINK)`
+
+## Makefile里的order-only依赖项
+
+在 Makefile 中，"order-only" 依赖项是一种特殊类型的依赖项，
+
+它指定了一个规则的依赖关系，但是不影响目标的更新时间戳。
+
+这种依赖项通常用于确保在构建目标之前存在某些辅助文件或目录，
+
+但并不会因为这些辅助文件的更新而触发目标的重新构建。
+
+在 Makefile 中，正常的依赖项通过普通的依赖关系来指定，例如：
+
+```makefile
+target: dependency1 dependency2
+    command
+```
+
+而 "order-only" 依赖项则通过在依赖项前面添加 `|` 符号来指定，例如：
+
+```makefile
+target: dependency1 dependency2 | order-only-dependency
+    command
+```
+
+在这个规则中，`order-only-dependency` 就是一个"order-only" 依赖项。这意味着在构建 `target` 目标之前，`order-only-dependency` 必须存在，但如果 `order-only-dependency` 的时间戳比 `target` 的时间戳更新，也不会触发 `target` 的重新构建。
+
+"order-only" 依赖项通常用于以下情况：
+
+1. **确保目录存在**：在构建某个目标之前，需要先确保某个目录存在，但该目录的变化并不影响目标的构建。
+   
+2. **生成辅助文件**：在构建目标之前，需要生成一些辅助文件，但这些文件的变化不应该触发目标的重新构建。
+
+通过使用 "order-only" 依赖项，可以更精细地控制 Makefile 中的依赖关系，确保构建系统能够在正确的顺序下执行，并避免不必要的重建。
+
 # 参考资料
 
 1、

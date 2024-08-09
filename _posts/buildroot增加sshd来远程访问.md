@@ -5,7 +5,7 @@ tags:
 	- buildroot
 ---
 
-1
+--
 
 先直接选中openssh。编译烧录。
 

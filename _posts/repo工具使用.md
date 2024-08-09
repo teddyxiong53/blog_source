@@ -797,6 +797,132 @@ https://github.com/ZengjfOS/manifest
 
 https://git-repo.info/zh_cn/docs/multi-repos/manifest-format/
 
+# 代码分析
+
+下载代码：
+
+```
+git clone https://gerrit.googlesource.com/git-repo
+```
+
+从git log信息可以看到，这个工具在2008年创建，现在还一直在更新。
+
+总的来说，repo这个命令是一个最外层的包装脚本，它具体执行的命令的实现不在repo这个脚本文件里，而是在一个名为repo的代码目录下面。
+
+（也就是枪弹分离的策略）
+
+_FindRepo在从当前目录开始往上遍历直到根据目录。如果中间某一个目录下面存在一个.repo/repo目录，并且该.repo/repo存在一个main.py文件，那么就会认为当前是AOSP中执行Repo脚本，这时候它就会返回文件main.py的绝对路径和当前查找目录下的.repo子目录的绝对路径给调用者。在上述情况下，实际上是说明Repo仓库已经安装过了。
+
+
+
+`Repo` 是以 `Git` 为基础构建的代码库管理工具。
+
+其并非用来取代 `Git`，
+
+只是为了让开发者在多模块的项目中更轻松地使用 `Git`。
+
+`Repo` 命令是一段可执行的 `Python` 脚本，开发者可以使用 `Repo` 执行跨网络操作。
+
+例如，借助单个 `Repo` 命令，将文件从多个代码库下载到本地工作目录。
+
+那么，`Repo`幕后原理究竟是怎么样的？
+
+想要真正的理解`Repo`，就必须理解`Repo`最核心的三个要素：
+
+**Repo仓库**、**Manifest仓库** 以及 **项目源码仓库**。
+
+![img](images/random_name2/171e3e141426b5c9tplv-t2oaga2asx-jj-mark3024000q75.webp)
+
+
+
+```
+repo init -u https://android.googlesource.com/platform/manifest -b master
+```
+
+这个命令实际上是包含了两个操作：
+
+初始化 **Repo仓库** 和 **Manifest仓库**，
+
+其中`Repo`仓库完成初始化之后，才会继续初始化`Manifest`仓库。
+
+这很好理解，`Repo`仓库的本质就是存储了各种各样的`Python`脚本，
+
+若它没有初始化，就不存在所谓的`Repo`相关命令，更遑论后面的`Manifest`仓库初始化和子项目代码初始化的流程了。
+
+![img](images/random_name2/171e3e1420caf7eetplv-t2oaga2asx-jj-mark3024000q75.webp)
+
+那么`Repo`仓库如何才能初始化呢？
+
+设计者并没有尝试直接向远端服务器请求拉取代码，
+
+而是从当前目录开始 **往上遍历直到根目录** ，
+
+若在这个过程中找到一个`.repo/repo`目录，
+
+并且该目录本身的确是一个`Repo`仓库，
+
+便尝试从该仓库 **克隆一个新的`Repo`仓库** 到执行`Repo`脚本的目录中。
+
+## Manifest仓库创建流程
+
+读者已经知道，通过`init`命令，我们在指定的目录下，成功初始化了`Repo`仓库。
+
+当安装好`Repo`仓库之后，就会调用该`Repo`仓库下面的`main.py`脚本，对应的文件为`.repo/repo/main.py`。
+
+这样我们便可以通过`init`后面的`-u -b`参数，进行`Manifest`仓库的创建流程，
+
+其中`-u`指的是`manifest`文件所在仓库对应的`Url`地址，`-b`指的是对应仓库的默认分支。
+
+本小节整体流程如下图所示：
+
+![img](images/random_name2/171e3e14277e25f0tplv-t2oaga2asx-jj-mark3024000q75.webp)
+
+通过`init`命令和对应的参数，`Repo`便可以尝试从远端克隆`Manifest`仓库，然后从指定的`Url`克隆对应的`manifest`文件，切换到对应的分支并进行解析。
+
+这里描述比较简单，实际上内部实现逻辑非常复杂；
+
+比如，在向远端克隆对应的`Manifest`仓库之前，会先进行本地是否存在`Manifest`仓库的判断，若已经存在，则尝试更新本地的`Manifest`仓库，而非直接向远程仓库中克隆。
+
+此外，当未指定分支时，则会`checkout`一个`default`分支。
+
+这之后，`Repo`会根据远端的`xml`清单文件尝试构建自己本地的`Manifest` 仓库。
+
+
+
+回到上图，我们知道名字带有`manifest`相关的文件和文件夹代表了`Manifest`仓库，
+
+其内部存储了所有子项目仓库的元信息；
+
+而`repo`文件夹中存储了`repo`相关命令的脚本文件。
+
+读者注意到，除此之外，还有一部分名字带有`project`的文件和文件夹，它们便是代表了`Repo`解析`Manifest`后生成的子项目信息和文件。
+
+在`Repo`中，其管理的所有子项目，每一个子项目都被封装成为了一个`Project`对象，该对象内部存储了一系列相关的信息。
+
+现在，`Manifest`仓库被创建并初始化完毕，接下来我们分析`Repo`的`sync`流程，看看子项目是如何被统一下载和管理的。
+
+
+
+![img](images/random_name2/171e3e149e0b789ctplv-t2oaga2asx-jj-mark3024000q75.webp)
+
+
+
+
+
+![img](images/random_name2/171e3e14936b4c64tplv-t2oaga2asx-jj-mark3024000q75.webp)
+
+
+
+https://juejin.cn/post/6844904148102545416
+
+https://blog.csdn.net/Luoshengyang/article/details/18195205
+
+
+
+# 说明
+
+https://pillow-blog.top/index.php/archives/59/#readmode
+
 # 参考资料
 
 1、Repo工具的使用

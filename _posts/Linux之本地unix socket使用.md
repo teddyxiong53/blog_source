@@ -43,6 +43,10 @@ https://github.com/teddyxiong53/c_code/tree/master/linux/socket/unix_domain
 
 总的来说，Unix 域套接字可以被多个进程或者线程同时打开和使用，但需要注意并发访问和数据同步的问题，以确保通信的正确性和可靠性。
 
+# 1
+
+https://blog.csdn.net/weixin_38184628/article/details/135567307
+
 # 参考资料
 
 1、UNIX SOCKET简介

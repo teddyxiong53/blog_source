@@ -1052,6 +1052,14 @@ patches目录
 
 改动的部分呢？
 
+external.desc里的name会被使用，展开为这些变量。
+
+```
+    eval BR2_EXT_PATHS_${br2_name}="\"\${br2_ext}\""
+    eval BR2_EXT_VERS_${br2_name}="\"\${br2_ver}\""
+    eval BR2_EXT_DESCS_${br2_name}="\"\${br2_desc:-\${br2_name}}\""
+```
+
 
 
 参考资料
@@ -3710,6 +3718,32 @@ cd /tmp/build; make O=$PWD -C path/to/buildroot
 ```
 
 
+
+# buildroot里以BR2_TARGET 为前缀的变量表示的含义
+
+在 Buildroot 中，以 `BR2_TARGET_` 为前缀的变量通常表示与目标系统相关的配置和选项。
+
+这些变量用于指定目标系统的特定属性和配置选项，以便在构建过程中正确配置目标系统。
+
+以下是一些常见的以 `BR2_TARGET_` 为前缀的变量及其含义：
+
+1. **BR2_TARGET_ARCH**：目标系统的架构，如 `x86`, `arm`, `aarch64` 等。
+
+2. **BR2_TARGET_OPTIMIZATION**：目标系统的优化级别，如 `O0`, `O1`, `O2`, `O3` 等。
+
+3. **BR2_TARGET_CFLAGS**：目标系统的 C 编译器标志。
+
+4. **BR2_TARGET_LDFLAGS**：目标系统的链接器标志。
+
+5. **BR2_TARGET_GENERIC_GETTY_PORT**：目标系统上用于终端的串口端口号。
+
+6. **BR2_TARGET_ROOTFS_EXT2_SIZE**：目标系统根文件系统的大小。
+
+7. **BR2_TARGET_ROOTFS_TAR_OPTIONS**：用于构建根文件系统的 tar 命令选项。
+
+8. **BR2_TARGET_ROOTFS_TAR_GZIP**：指示是否压缩根文件系统。
+
+这些 `BR2_TARGET_` 前缀变量允许你在 Buildroot 中配置目标系统的各种属性和选项，以便根据你的需求正确构建目标系统。根据具体情况，你可以根据这些变量来定制目标系统的构建过程。
 
 # 参考资料
 
