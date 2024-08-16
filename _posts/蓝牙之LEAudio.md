@@ -134,31 +134,118 @@ https://m.ithome.com/html/673535.htm
 
 # pipewire对leaudio的支持
 
-截至2024年，PipeWire 已经开始对 LE Audio（低功耗音频）提供支持。以下是关于 PipeWire 支持 LE Audio 的一些关键点：
+分析里面的代码，
 
-| 特性       | 详情                                       |
-| ---------- | ------------------------------------------ |
-| 支持协议   | 支持 LE Audio 协议，包括 LC3 编解码器      |
-| 低功耗     | 利用低功耗蓝牙技术，延长设备电池寿命       |
-| 多音频流   | 支持多路音频流，实现更灵活的音频处理       |
-| 高质量音频 | 提供高质量音频传输，满足更高的音频体验需求 |
-| 兼容性     | 与现有蓝牙音频设备的兼容性正在逐步完善     |
+MediaTransport1 从这个字符串开始入手搜索。
 
-### 具体功能
-1. **LC3 编解码器**：LC3（低复杂度通信编解码器）是 LE Audio 的核心，提供高效的音频压缩和解压缩。
-2. **多路音频流**：支持同时传输多个独立的音频流，适用于不同的音频设备。
-3. **低延迟**：优化延迟性能，适合实时音频应用，例如游戏和视频通话。
+蓝牙transport 有3个接口，acquire、release、set_voluem。
 
-### 当前状态
-PipeWire 的 LE Audio 支持还在持续开发和完善中。开发者社区正积极贡献代码，解决兼容性和性能问题。
+下面具体实现可以是a2dp和leaudio。
 
-### 如何使用
-要使用 PipeWire 的 LE Audio 支持，可以：
-1. 确保系统中安装了最新版本的 PipeWire。
-2. 配置蓝牙设备，并确保支持 LE Audio。
-3. 使用 PipeWire 的配置工具进行必要的设置和调试。
+```
+static const struct spa_bt_transport_implementation transport_impl = {
+	SPA_VERSION_BT_TRANSPORT_IMPLEMENTATION,
+	.acquire = transport_acquire,
+	.release = transport_release,
+	.set_volume = transport_set_volume,
+};
+```
 
-有关详细的配置和使用指南，可以参考 PipeWire 的官方文档和社区资源。
+除了transport这一层。还有哪些连接需要建立的？
+
+以cis为例，前期的ble连接，是建立了什么关系？
+
+source这边相当于手机，进行discovery。只扫描指定的uuid的服务。这个uuid随意指定的。
+
+sink这边相当于耳机，进行广播。
+
+以bluze_inc的代码进行的连接为例。
+
+调用了binc_device_connect进行连接。这个连接的内涵是什么？
+
+是进行了经典蓝牙的连接？
+
+```
+static const char *const INTERFACE_DEVICE = "org.bluez.Device1";
+
+static const char *const DEVICE_METHOD_CONNECT = "Connect";
+g_dbus_connection_call(device->connection,
+                           BLUEZ_DBUS,
+                           device->path,
+                           INTERFACE_DEVICE,
+                           DEVICE_METHOD_CONNECT,
+                           NULL,
+                           NULL,
+                           G_DBUS_CALL_FLAGS_NONE,
+                           -1,
+                           NULL,
+                           (GAsyncReadyCallback) binc_internal_device_connect_cb,
+                           device);
+```
+
+这个连接的内涵就是建立了链路层的连接，只有在这个连接的基础上，才有资格进行后续的业务层的交互。
+
+然后pipewire里的iso-io.c。这个是音频数据的主要通路。
+
+spa\plugins\bluez5\bt-latency.h
+
+这个里面有cmsghdr相关的操作。
+
+bap跟a2dp是并列的关系。
+
+```
+this->profile == DEVICE_PROFILE_A2DP || this->profile == DEVICE_PROFILE_BAP)
+```
+
+bat的然后再这样细分：
+
+```
+SPA_BT_PROFILE_BAP_SINK | SPA_BT_PROFILE_BAP_SOURCE
+				| SPA_BT_PROFILE_BAP_BROADCAST_SOURCE
+				| SPA_BT_PROFILE_BAP_BROADCAST_SINK
+```
+
+register_media_application 这个函数是重要入口。
+
+单播其实跟a2dp的对等关系还是比较匹配的。
+
+```
+	if (direction == SPA_BT_MEDIA_SOURCE)
+		endpoint = codec->bap ? BAP_SOURCE_ENDPOINT : A2DP_SOURCE_ENDPOINT;
+	else if (direction == SPA_BT_MEDIA_SINK)
+		endpoint = codec->bap ? BAP_SINK_ENDPOINT : A2DP_SINK_ENDPOINT;
+```
+
+相关的几个uuid
+
+```
+#define SPA_BT_UUID_PACS        "00001850-0000-1000-8000-00805f9b34fb"
+#define SPA_BT_UUID_BAP_SINK    "00002bc9-0000-1000-8000-00805f9b34fb"
+#define SPA_BT_UUID_BAP_SOURCE  "00002bcb-0000-1000-8000-00805f9b34fb"
+#define SPA_BT_UUID_BAP_BROADCAST_SOURCE  "00001852-0000-1000-8000-00805f9b34fb"
+#define SPA_BT_UUID_BAP_BROADCAST_SINK    "00001851-0000-1000-8000-00805f9b34fb"
+```
+
+注册endpoint。
+
+```
+	for (int i = 0; media_codecs[i]; i++) {
+		const struct media_codec *codec = media_codecs[i];
+
+		register_media_endpoint(monitor, codec, SPA_BT_MEDIA_SOURCE);
+		register_media_endpoint(monitor, codec, SPA_BT_MEDIA_SINK);
+		if (codec->bap) {
+			register_media_endpoint(monitor, codec, SPA_BT_MEDIA_SOURCE_BROADCAST);
+			register_media_endpoint(monitor, codec, SPA_BT_MEDIA_SINK_BROADCAST);
+		}
+	}
+```
+
+cis应该基本跟a2dp对等。
+
+只需要增加lc3 codec支持就行？
+
+
 
 # BAP
 

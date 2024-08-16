@@ -20,6 +20,18 @@ YodaOS 的设计注重了安全性和隐私保护，它提供了多种安全功�
 
 总的来说，YodaOS 是一个面向物联网设备的先进操作系统，通过其声音交互界面、安全性和可扩展性，为智能音箱和其他智能设备提供了强大的基础。
 
+# repo manifest
+
+manifest的仓库的地址：
+
+```
+ssh://teddyxiong53@openai-corp.rokid.com:29418/kamino_universal_cust/open-platform/manifest
+```
+
+是开放注册的。现在还能访问对应的gerrit系统。
+
+
+
 # 编译
 
 **解决办法**：这些都是同样类型的错误，修复方法是#include<sys/sysmacros.h>添加到ismounted.c，devname.c，debugfs.c，create_inode.c文件中
@@ -2380,6 +2392,14 @@ while true; do
     shift
 done
 ```
+
+# rt-node
+
+这个是一个精简的nodejs实现。
+
+可以在单片机上运行。
+
+eventloop的实现是自己写的rv。是比libev更小更简单的实现。值得研究一下。
 
 
 

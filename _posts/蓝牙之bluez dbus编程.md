@@ -133,3 +133,26 @@ State从playing变为connected的时候，
 
 其实可以不release，但是最好还是release。
 
+# mpradio-py
+
+https://github.com/morrolinux/mpradio-py
+
+这个是一个在树莓派上进行radio广播的项目。看起来里面有很多的蓝牙操作。值得学习。
+
+# 一个libuv跟glib冲突的问题
+
+https://stackoverflow.com/questions/41843793/bluez-mediaendpoint1-timeout-issue-when-replying-to-dbus-call-from-node-addon
+
+# yodaos里的蓝牙代码
+
+hardware\modules\bluetooth\bluez\a2dp.h
+
+这个是基于portaudio来自己写的代码。值得学习一下。
+
+魔改了bluez的代码。
+
+另外还有代码支持了ampak和cypress的bsa协议栈。
+
+然后上层还有一个包装层。
+
+hardware\modules\bluetooth\bluetooth.c

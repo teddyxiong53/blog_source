@@ -3745,6 +3745,82 @@ cd /tmp/build; make O=$PWD -C path/to/buildroot
 
 这些 `BR2_TARGET_` 前缀变量允许你在 Buildroot 中配置目标系统的各种属性和选项，以便根据你的需求正确构建目标系统。根据具体情况，你可以根据这些变量来定制目标系统的构建过程。
 
+# post-image-target过程分析
+
+```
+target-post-image: $(TARGETS_ROOTFS) target-finalize staging-finalize
+```
+
+首先是这3个依赖。
+
+TARGETS_ROOTFS展开是这样：
+
+```
+ make -s printvars VARS='TARGETS_ROOTFS'
+TARGETS_ROOTFS=rootfs-cpio rootfs-squashfs rootfs-tar
+```
+
+```
+$(TARGETS_ROOTFS): target-finalize
+这个展开就是：
+rootfs-cpio rootfs-squashfs rootfs-tar : target-finalize
+```
+
+这3个rootfs都会进行target-finalize的操作。
+
+
+
+```
+# Avoid the rootfs name leaking down the dependency chain
+# 首先把ROOTFS变量清空
+target-finalize: ROOTFS=
+# 依赖了所有的package，target目录和host-finalize。
+target-finalize: $(PACKAGES) $(TARGET_DIR) host-finalize
+	首先也是对target进行rsync。
+	然后调用TARGET_FINALIZE_HOOKS
+		
+host-finalize: $(PACKAGES) $(HOST_DIR) $(HOST_DIR_SYMLINK)
+	这个的操作就是对host进行rsync操作。
+
+```
+
+
+
+TARGET_FINALIZE_HOOKS展开有这些：
+
+```
+make -s printvars  VARS='TARGET_FINALIZE_HOOKS' QUOTED_VARS=YES
+
+TARGET_FINALIZE_HOOKS='                                       
+BUSYBOX_SET_GETTY 
+SYSTEM_REMOUNT_ROOT_INITTAB 
+BUSYBOX_INSTALL_ADD_TO_SHELLS                                        LIBGLIB2_REMOVE_TARGET_SCHEMAS 
+LIBGLIB2_COMPILE_SCHEMAS                                          SKELETON_INIT_COMMON_SET_HOSTNAME 
+SKELETON_INIT_COMMON_SET_ISSUE 
+SKELETON_INIT_COMMON_SET_ROOT_PASSWD 
+SKELETON_INIT_COMMON_ADD_SH_TO_SHELLS 
+SKELETON_INIT_COMMON_SET_BIN_SH 
+SKELETON_INIT_SYSV_SWAPON_SWAPOFF_INITTAB           
+LINUX_RUN_DEPMOD 
+LINUX_RM_MODULES_ALIAS_BIN 
+PURGE_LOCALES'
+```
+
+BUSYBOX_SET_GETTY：
+
+```
+BUSYBOX_TARGET_FINALIZE_HOOKS += BUSYBOX_SET_GETTY
+```
+
+这些变量的汇总，是在pkg-generic.mk里做的：
+
+```
+package/pkg-generic.mk
+1087:TARGET_FINALIZE_HOOKS += $$($(2)_TARGET_FINALIZE_HOOKS)
+```
+
+
+
 # 参考资料
 
 1、HOWTO: Use BuildRoot to create a Linux image for QEMU

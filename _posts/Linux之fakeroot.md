@@ -79,6 +79,32 @@ PATH=$$(BR_PATH) FAKEROOTDONTTRYCHOWN=1 $$(HOST_DIR)/bin/fakeroot -- $$(FAKEROOT
 
 
 
+
+
+# /usr/lib/libfakeroot-sysv.so
+
+与faked通讯的库文件是/usr/lib/libfakeroot/libfakeroot-sysv.so，
+
+但是/usr/lib/libfakeroot-sysv.so也是存在的。
+
+这个文件是在fakeroot中运行suid程序所必须的。 
+
+fakeroot中会设定LD_LIBRARY_PATH环境变量。
+
+设定LD_LIBRARY_PATH后LD_PRELOAD就不需要是完整路径了。
+
+但是如果LD_PRELOAD不使用完整路径，suid的程序会忽略LD_LIBRARY_PATH而直接在/lib与/usr/lib中寻找LD_PRELOAD指定的库文件。
+
+如果LD_PRELOAD指定的文件没有找到这个suid的程序就会启动失败。
+
+所以会存在/usr/lib/libfakeroot-sysv.so这样一个suid的dummy库，
+
+在运行suid程序的时候通过LD_PRELOAD加载这个库，就跟没有加载任何东西一样，正常执行。
+
+ * 普通的程序 使用LD_LIBRARY_PATH=/usr/lib/libfakeroot LD_PRELOAD=libfakeroot-sysv.so，通过preload加载/usr/lib/libfakeroot/libfakeroot-sysv.so的与faked通讯 * suid的程序 无视LD_LIBRARY_PATH， 使用LD_PRELOAD=libfakeroot-sysv.so，通过preload加载/usr/lib/libfakeroot-sysv.so，因为这是一个dummy库，就与这个库不存在一样，程序正常执行。
+
+
+
 # 参考资料
 
 1、fakeroot

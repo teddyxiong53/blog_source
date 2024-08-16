@@ -143,6 +143,158 @@ Git 提供了一系列的钩子（hooks），它们在 Git 仓库的特定事件
 13. **pre-auto-gc**: 在自动垃圾回收前触发，可以用来防止垃圾回收在某些情况下运行。
 这些钩子为自定义 Git 工作流程提供了极大的灵活性。开发团队可以根据自己的需求编写相应的脚本来增强代码的质量控制和流程管理。
 
+# lfs
+
+## git从哪个版本开始支持lfs
+
+Git LFS 从 Git 1.8.2 版本开始支持，但它是一个独立的扩展工具，不是 Git 的核心功能。要使用 Git LFS，你需要安装 Git LFS 客户端，支持的 Git 版本通常是 1.8.2 及以上。
+
+### 重要信息：
+- **安装 Git LFS**：需要单独安装并初始化。
+- **兼容性**：建议使用较新版本的 Git 和 Git LFS，以确保最佳性能和功能支持。
+
+## 安装lfs
+
+```
+# 安装
+sudo apt-get install git-lfs
+
+# 验证
+git lfs --version
+# 查看工具位置
+which git-lfs
+/usr/bin/git-lfs
+```
+
+
+
+## 查看当前指定的lfs track
+
+要查看当前指定的 Git LFS 跟踪文件，可以使用以下命令：
+
+```bash
+git lfs track
+```
+
+### 该命令的输出包括：
+- 所有被 LFS 跟踪的文件模式和路径。
+- 这些信息通常存储在 `.gitattributes` 文件中。
+
+### 额外步骤：
+1. **查看 `.gitattributes` 文件**：
+   - 你也可以直接打开项目中的 `.gitattributes` 文件，查看被 LFS 跟踪的文件模式。
+
+2. **示例输出**：
+   
+   - 输出可能类似于：
+     ```
+     *.jpg filter=lfs diff=lfs merge=lfs -text
+     *.zip filter=lfs diff=lfs merge=lfs -text
+     ```
+
+这样可以帮助你确认哪些文件类型正在被 Git LFS 跟踪。
+
+# lfs实际操作
+
+我的服务器是gitea的服务器。打开了lfs的支持。
+
+然后我的操作机器上git lfs也是安装好的。
+
+我有一个test1的仓库。
+
+```
+cd test1
+git lfs install
+```
+
+输出了：
+
+```
+Updated git hooks.
+Git LFS initialized.
+```
+
+现在我添加*.img文件为要进行lfs支持的文件类型。
+
+```
+git lfs track *.img
+```
+
+当前就生成了一个.gitattributes 文件。
+
+查看内容如下：
+
+```
+cat .gitattributes 
+*.img filter=lfs diff=lfs merge=lfs -text
+```
+
+然后我用dd生成一个1M的img文件。
+
+```
+dd if=/dev/zero of=./1.img bs=1024 count=1024
+```
+
+可以看到img文件还是加入track的。
+
+```
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        .gitattributes
+        1.img
+```
+
+当前整个仓库的大小是1.3M。
+
+先提交push。
+
+我在服务器上的对应gitea目录下：
+
+```
+~/work/tools/gitea-dir/data/lfs$ tree
+.
+├── 30
+│   └── e1
+│       └── 4955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58
+└── tmp
+```
+
+目录的大小是1.1M。
+
+我现在改动这个1.img文件。
+
+```
+dd if=/dev/zero of=./1.img bs=1024 count=1025
+```
+
+现在目录下的大小：
+
+```
+hanliang.xiong@rd03-sz:~/work/test/test1$ du -sh
+2.3M    .
+hanliang.xiong@rd03-sz:~/work/test/test1$ git add .
+hanliang.xiong@rd03-sz:~/work/test/test1$ du -sh
+3.4M    .
+```
+
+这个大小还是在膨胀啊。
+
+而服务器这边，大小也是在变大的。
+
+```
+hanliang.xiong@rd03-sz:~/work/tools/gitea-dir/data/lfs$ du -sh
+2.1M    .
+```
+
+用git blame查看
+
+```
+git blame 1.img
+41db3a86 (hanliang.xiong 2024-08-14 12:21:03 +0000 1) version https://git-lfs.github.com/spec/v1
+e2fd26b4 (hanliang.xiong 2024-08-14 12:26:42 +0000 2) oid sha256:c4aca32864436a55dd96b60917b04b84ad22dd2765937129234b22782b9d4fd7
+e2fd26b4 (hanliang.xiong 2024-08-14 12:26:42 +0000 3) size 1049600
+```
+
 
 
 # 参考资料

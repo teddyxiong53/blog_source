@@ -34,6 +34,53 @@ DBus是一个类似于中间件的机制，用于简化不同应用程序和组�
 
 DBus在Linux桌面环境中广泛使用，例如，它用于与桌面环境（如GNOME和KDE）中的组件通信，以及在Linux系统中与硬件设备进行通信。DBus还在很多服务中使用，以便不同的进程能够协同工作，提供更强大的功能和用户体验。
 
+# dbus api分析
+
+| 头文件            | 函数                                      | 说明                                                         |
+| ----------------- | ----------------------------------------- | ------------------------------------------------------------ |
+| dbus-dbus.h       | dbus_bus_get                              | 有多个函数，但是用这一个就够了。                             |
+| dbus-connection.h | dbus_connection_send_with_reply_and_block | 同步发送并获取                                               |
+|                   | dbus_connection_read_write                | 阻塞读取                                                     |
+|                   | dbus_connection_pop_message               | 拿到消息内容                                                 |
+|                   | dbus_connection_send                      | 发送不等待reply                                              |
+|                   | dbus_connection_flush                     | 退出前的清理                                                 |
+|                   | dbus_connection_unref                     | 退出前的清理                                                 |
+| dbus-errors.h     | DBusError                                 | 有个name和message这2个主要成员。                             |
+|                   | dbus_error_init                           | 把name和message设置为NULL                                    |
+|                   | dbus_set_error                            | 这个好像不怎么用。我们一般读取error就够了。                  |
+|                   | dbus_error_is_set                         | 这个常用，判断有没有出错。                                   |
+| dbus-message.h    | DBusMessageIter                           | 内部成员都是私有的。                                         |
+|                   | dbus_message_new_method_call              | 这4个new函数。                                               |
+|                   | dbus_message_new_method_return            |                                                              |
+|                   | dbus_message_new_signal                   |                                                              |
+|                   | dbus_message_new_error                    |                                                              |
+|                   | dbus_message_is_method_call               | 下面的is函数判断                                             |
+|                   | dbus_message_is_signal                    |                                                              |
+|                   |                                           |                                                              |
+|                   | dbus_message_get_args                     | 这个是对reply进行读取分析                                    |
+|                   | dbus_message_unref                        |                                                              |
+|                   | dbus_message_append_args                  |                                                              |
+|                   |                                           |                                                              |
+|                   | 下面的是message iter的接口                |                                                              |
+|                   | dbus_message_iter_init                    | 这个是为了从msg读取                                          |
+|                   | dbus_message_iter_init_append             | 这个是为了往msg写入                                          |
+|                   | dbus_message_iter_append_basic            | 这个basic表示把int这些基础类型添加到msg。字符串也是基础类型。 |
+|                   |                                           |                                                              |
+|                   | dbus_message_iter_get_basic               |                                                              |
+|                   | dbus_message_iter_recurse                 |                                                              |
+|                   | dbus_message_iter_open_container          | 容器类型操作                                                 |
+|                   | dbus_message_iter_close_container         |                                                              |
+|                   |                                           |                                                              |
+
+
+
+## **`dbus_bus_get`**和**`dbus_bus_get_private`**的区别
+
+- **选择 `dbus_bus_get`**：当你的应用是单线程或你能够管理并发访问时。
+- **选择 `dbus_bus_get_private`**：当你在多线程环境中，想要避免复杂的同步问题时。
+
+
+
 # 设计原则
 
 D-Bus 最常见的用途是实现一个服务，
@@ -48,7 +95,7 @@ D-Bus 最常见的用途是实现一个服务，
 
 请注意，您*不应*使用 dbus-glib 来实现 D-Bus 服务，因为它已被弃用且未维护。
 
-大多数服务还应该避免使用 libdbus （dbus-1），它是一个低级库，很难正确使用：
+**大多数服务还应该避免使用 libdbus （dbus-1），它是一个低级库，很难正确使用：**
 
 它被设计为通过语言绑定（如 [QtDBus](https://doc.qt.io/qt/qtdbus-index.html)）使用。
 
@@ -60,7 +107,7 @@ D-Bus 接口文件是一个 XML 文件，它描述了一个或多个 D-Bus 接�
 
 该格式在 [D-Bus 规范](http://dbus.freedesktop.org/doc/dbus-specification.html#introspection-format)中进行了描述，并受到 gdbus-codegen 等工具的支持。
 
-公共 API 的接口文件应安装到` *$（datadir）*/dbus-1/interfaces` 中，以便其他服务可以加载它们。
+**公共 API 的接口文件应安装到` *$（datadir）*/dbus-1/interfaces` 中，以便其他服务可以加载它们。**
 
 不应安装私有 API。
 
@@ -1961,6 +2008,408 @@ https://ukbaz.github.io/howto/python_gio_1.html
 3. **蓝牙属性变化：** 在 BlueZ 中，各种蓝牙设备和服务的属性通过 D-Bus 接口暴露给其他应用程序。如果某个属性发生变化，可能会触发 `InterfaceAdded` 信号。
 
 通过监听这些信号，应用程序可以及时地获取关于蓝牙设备、服务以及属性变化的通知，从而实现对蓝牙功能更加灵活和实时的控制。BlueZ 在 Linux 系统中广泛应用，其 D-Bus 接口提供了丰富的功能用于管理和操作蓝牙设备。
+
+# 使用dbus基础api来实现server和client
+
+dbus_service.c
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <dbus/dbus.h>
+
+#define SERVICE_NAME "com.example.Service"
+#define OBJECT_PATH "/com/example/Object"
+#define INTERFACE_NAME "com.example.Interface"
+
+void handle_method_call(DBusMessage *message, DBusConnection *connection) {
+    const char *method = dbus_message_get_member(message);
+    DBusMessage *reply;
+
+    if (strcmp(method, "MethodName") == 0) {
+        // 创建回复消息
+        reply = dbus_message_new_method_return(message);
+        if (reply == NULL) {
+            fprintf(stderr, "Out of Memory!\n");
+            return;
+        }
+
+        // 添加返回值
+        const char *response = "Method executed successfully!";
+        dbus_message_append_args(reply, DBUS_TYPE_STRING, &response, DBUS_TYPE_INVALID);
+
+        // 发送回复
+        dbus_connection_send(connection, reply, NULL);
+        dbus_message_unref(reply);
+    }
+}
+
+int main() {
+    DBusError error;
+    DBusConnection *connection;
+    DBusMessage *message;
+
+    // 初始化 DBus
+    dbus_error_init(&error);
+    connection = dbus_bus_get(DBUS_BUS_SESSION, &error);
+    if (dbus_error_is_set(&error)) {
+        fprintf(stderr, "Connection Error (%s)\n", error.message);
+        dbus_error_free(&error);
+        return EXIT_FAILURE;
+    }
+
+    // 注册服务
+    dbus_bus_request_name(connection, SERVICE_NAME, DBUS_NAME_FLAG_REPLACE_EXISTING, &error);
+    if (dbus_error_is_set(&error)) {
+        fprintf(stderr, "Request Name Error (%s)\n", error.message);
+        dbus_error_free(&error);
+        return EXIT_FAILURE;
+    }
+
+    printf("Service running...\n");
+
+    // 主循环
+    while (1) {
+        dbus_connection_read_write(connection, 0);
+        while ((message = dbus_connection_pop_message(connection)) != NULL) {
+            if (dbus_message_is_method_call(message, INTERFACE_NAME, "MethodName")) {
+                handle_method_call(message, connection);
+            }
+            dbus_message_unref(message);
+        }
+    }
+
+    return EXIT_SUCCESS;
+}
+```
+
+dbus_client.c
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <dbus/dbus.h>
+
+#define SERVICE_NAME "com.example.Service"
+#define OBJECT_PATH "/com/example/Object"
+#define INTERFACE_NAME "com.example.Interface"
+
+int main() {
+    DBusConnection *connection;
+    DBusError error;
+    DBusMessage *message;
+    DBusMessage *reply;
+    DBusMessageIter iter;
+    char *response;
+
+    // 初始化 DBus
+    dbus_error_init(&error);
+    connection = dbus_bus_get(DBUS_BUS_SESSION, &error);
+    if (dbus_error_is_set(&error)) {
+        fprintf(stderr, "Connection Error (%s)\n", error.message);
+        dbus_error_free(&error);
+        return EXIT_FAILURE;
+    }
+
+    // 创建消息
+    message = dbus_message_new_method_call(SERVICE_NAME, OBJECT_PATH, INTERFACE_NAME, "MethodName");
+    if (message == NULL) {
+        fprintf(stderr, "Message Null\n");
+        return EXIT_FAILURE;
+    }
+
+    // 发送消息并等待回复
+    reply = dbus_connection_send_with_reply_and_block(connection, message, -1, &error);
+    if (dbus_error_is_set(&error)) {
+        fprintf(stderr, "Error (%s)\n", error.message);
+        dbus_error_free(&error);
+        dbus_message_unref(message);
+        return EXIT_FAILURE;
+    }
+
+    // 处理回复
+    dbus_message_iter_init(reply, &iter);
+    dbus_message_iter_get_basic(&iter, &response);
+    printf("Received reply: %s\n", response);
+
+    // 清理
+    dbus_message_unref(reply);
+    dbus_message_unref(message);
+    dbus_connection_unref(connection);
+
+    return EXIT_SUCCESS;
+}
+```
+
+Makefile
+
+```
+.PHONY : client server
+all: client server
+
+client:
+	gcc -o dbus_client dbus_client.c `pkg-config --cflags --libs dbus-1`
+server:
+	gcc -o dbus_service dbus_service.c `pkg-config --cflags --libs dbus-1`
+
+```
+
+编译运行
+
+```
+./dbus_service
+Service running...
+```
+
+client端：
+
+```
+./dbus_client
+Received reply: Method executed successfully!
+```
+
+## 在上面基础上添加signal的pub和sub处理
+
+
+
+## 用dbus-monitor监听分析上面的通信过程
+
+dbus-monitor --session
+
+然后依次启动dbus_service和dbus_client。
+
+得到下面的监听内容：
+
+```
+
+method call time=1723778492.752697 sender=:1.1161 -> destination=org.freedesktop.DBus serial=1 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=Hello
+method return time=1723778492.752721 sender=org.freedesktop.DBus -> destination=:1.1161 serial=1 reply_serial=1
+   string ":1.1161"
+signal time=1723778492.752743 sender=org.freedesktop.DBus -> destination=(null destination) serial=15163 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=NameOwnerChanged
+   string ":1.1161"
+   string ""
+   string ":1.1161"
+signal time=1723778492.752776 sender=org.freedesktop.DBus -> destination=:1.1161 serial=2 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=NameAcquired
+   string ":1.1161"
+method call time=1723778492.753031 sender=:1.1161 -> destination=org.freedesktop.DBus serial=2 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RequestName
+   string "com.example.Service"
+   uint32 2
+signal time=1723778492.753059 sender=org.freedesktop.DBus -> destination=(null destination) serial=15164 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=NameOwnerChanged
+   string "com.example.Service"
+   string ""
+   string ":1.1161"
+signal time=1723778492.753086 sender=org.freedesktop.DBus -> destination=:1.1161 serial=3 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=NameAcquired
+   string "com.example.Service"
+method return time=1723778492.753101 sender=org.freedesktop.DBus -> destination=:1.1161 serial=4 reply_serial=2
+   uint32 1
+method call time=1723778494.850967 sender=:1.1162 -> destination=org.freedesktop.DBus serial=1 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=Hello
+method return time=1723778494.850985 sender=org.freedesktop.DBus -> destination=:1.1162 serial=1 reply_serial=1
+   string ":1.1162"
+signal time=1723778494.851013 sender=org.freedesktop.DBus -> destination=(null destination) serial=15165 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=NameOwnerChanged
+   string ":1.1162"
+   string ""
+   string ":1.1162"
+signal time=1723778494.851048 sender=org.freedesktop.DBus -> destination=:1.1162 serial=2 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=NameAcquired
+   string ":1.1162"
+method call time=1723778494.851135 sender=:1.1162 -> destination=com.example.Service serial=2 path=/com/example/Object; interface=com.example.Interface; member=MethodName
+method return time=1723778494.851239 sender=:1.1161 -> destination=:1.1162 serial=3 reply_serial=2
+   string "Method executed successfully!"
+signal time=1723778494.851322 sender=:1.1161 -> destination=(null destination) serial=4 path=/com/example/Object; interface=com.example.Interface; member=MySignal
+   string "hello from signal"
+
+```
+
+
+
+# bluez的gdbus简单版本使用
+
+unit\test-gdbus-client.c
+
+bluez的gdbus在复杂度和易用性上比较均衡，比原始的dbus api好用，又没有真正的gdbus那么复杂。
+
+server和client的接口都有提供。
+
+整个代码也比较少，属于可以阅读掌握的程度。
+
+依赖了glib的mainloop。
+
+仔细看了一下代码，感觉还是重点在增加mainloop。
+
+message的封装还是没有做。
+
+
+
+## 先分析一下bluez gdbus.h提供的api
+
+命名规范：
+
+结构体以GDBus为前缀。
+
+函数以g_dbus为前缀。
+
+### 结构体
+
+简单概括就是，一个info，四个table。
+
+| 结构体             | 说明                                                         |
+| ------------------ | ------------------------------------------------------------ |
+| GDBusArgInfo       | 2个char *成员。name和signature。                             |
+| GDBusMethodTable   | 5个成员：<br />name<br />flag<br />func指针<br />in arg<br />out arg |
+| GDBusSignalTable   | 3个成员：<br />name<br />flag<br />args                      |
+| GDBusPropertyTable | 6个成员：<br />name<br />type<br />flag<br />3个指针：get、set、exists判断 |
+| GDBusSecurityTable | 这个完全没有使用。                                           |
+
+client这边还有2个不对外暴露成员的结构体
+
+GDBusClient
+
+GDBusProxy
+
+内部成员都非常多。
+
+### 函数类型定义
+
+| 函数类型                            | 说明 |
+| ----------------------------------- | ---- |
+| GDBusWatchFunction                  |      |
+| GDBusMessageFunction                |      |
+| GDBusSignalFunction                 |      |
+| GDBusDestroyFunction                |      |
+| GDBusMethodFunction                 |      |
+| 下面3个就是property的get/set/exists |      |
+| GDBusPropertyGetter                 |      |
+| GDBusPropertySetter                 |      |
+| GDBusPropertyExists                 |      |
+
+### 变量定义宏
+
+| 宏                   | 说明                   |
+| -------------------- | ---------------------- |
+| GDBUS_ARGS           | 初始化GDBusArgInfo数组 |
+| GDBUS_METHOD         | 初始化一个method       |
+| GDBUS_ASYNC_METHOD   | 初始化一个async method |
+| GDBUS_NOREPLY_METHOD | 不用reply的method      |
+| GDBUS_SIGNAL         |                        |
+|                      |                        |
+
+
+
+### 函数
+
+#### 基于connection的函数
+
+这里说的基于connection的函数。是说这些函数的第一个参数是DBusConnection类型。
+
+| 函数                              | 说明                                                         |
+| --------------------------------- | ------------------------------------------------------------ |
+| **interface注册函数**             |                                                              |
+| g_dbus_register_interface         | 注册接口。<br />例如client\player.c文件里。这里注册了MediaEndpoint1的接口，包括函数和属性。 |
+| g_dbus_unregister_interface       |                                                              |
+| **send函数**                      |                                                              |
+| g_dbus_send_message               |                                                              |
+| g_dbus_send_error                 |                                                              |
+| g_dbus_send_reply                 |                                                              |
+| g_dbus_emit_signal                |                                                              |
+| **添加watch函数**                 |                                                              |
+| g_dbus_add_service_watch          |                                                              |
+| g_dbus_add_disconnect_watch       |                                                              |
+| g_dbus_add_signal_watch           |                                                              |
+| g_dbus_add_properties_watch       |                                                              |
+| **移除watch函数**                 |                                                              |
+| g_dbus_remove_watch               |                                                              |
+| g_dbus_remove_all_watches         |                                                              |
+| **property变化通知函数**          |                                                              |
+| g_dbus_emit_property_changed      |                                                              |
+| g_dbus_emit_property_changed_full |                                                              |
+| **object manager函数**            |                                                              |
+| g_dbus_attach_object_manager      |                                                              |
+| g_dbus_detach_object_manager      |                                                              |
+
+#### message函数
+
+是指第一个参数是DBusMessage的函数。
+
+| 函数                | 说明 |
+| ------------------- | ---- |
+| g_dbus_create_error |      |
+| g_dbus_create_reply |      |
+|                     |      |
+
+#### proxy函数
+
+| 函数                            | 说明               |
+| ------------------------------- | ------------------ |
+| **构造函数**                    |                    |
+| g_dbus_proxy_new                | 第一个参数是client |
+| **refcount函数**                |                    |
+| g_dbus_proxy_ref                |                    |
+| g_dbus_proxy_unref              |                    |
+| **3个get函数**                  |                    |
+| g_dbus_proxy_get_path           |                    |
+| g_dbus_proxy_get_interface      |                    |
+| g_dbus_proxy_get_property       |                    |
+| **set property函数**            |                    |
+| g_dbus_proxy_set_property_basic |                    |
+| g_dbus_proxy_set_property_array |                    |
+| **lookup函数**                  |                    |
+| g_dbus_proxy_lookup             |                    |
+| g_dbus_proxy_path_lookup        |                    |
+| **watch设置函数**               |                    |
+| g_dbus_proxy_set_property_watch |                    |
+| g_dbus_proxy_set_removed_watch  |                    |
+| **其他函数**                    |                    |
+| g_dbus_proxy_method_call        |                    |
+
+
+
+#### client函数
+
+在gdbus.h里搜索`g_dbus_client_`。可以看到有9个函数
+
+| 函数                               | 说明                                       |
+| ---------------------------------- | ------------------------------------------ |
+| g_dbus_client_new                  | 3个参数：<br />conn<br />service<br />path |
+| g_dbus_client_new_full             | 4个参数，在上面基础上多了一个root_path     |
+| g_dbus_client_ref                  |                                            |
+| g_dbus_client_unref                |                                            |
+| g_dbus_client_set_connect_watch    | 下面这5个函数都是设置func指针和user_data   |
+| g_dbus_client_set_disconnect_watch |                                            |
+| g_dbus_client_set_signal_watch     |                                            |
+| g_dbus_client_set_ready_watch      |                                            |
+| g_dbus_client_set_proxy_handlers   |                                            |
+
+## api接口的使用分析
+
+在bluetoothctl的main.c的main函数里：就创建了一个client，注册了这些回调。
+
+```c
+//连接dbus连接
+dbus_conn = g_dbus_setup_bus(DBUS_BUS_SYSTEM, NULL, NULL);
+	g_dbus_attach_object_manager(dbus_conn);	
+//创建client
+client = g_dbus_client_new(dbus_conn, "org.bluez", "/org/bluez");
+
+	g_dbus_client_set_connect_watch(client, connect_handler, NULL);
+	g_dbus_client_set_disconnect_watch(client, disconnect_handler, NULL);
+	g_dbus_client_set_signal_watch(client, message_handler, NULL);
+
+	g_dbus_client_set_proxy_handlers(client, proxy_added, proxy_removed,
+							property_changed, NULL);
+
+	g_dbus_client_set_ready_watch(client, client_ready, NULL);
+```
+
+connect_handler 这个就是进行bluetoothctl的prompt 命令行输出。
+
+message_handler 就是打印收到的signal。
+
+proxy_added是这里最重要的一个函数。
+
+处理了各种变化的情况。例如设备连接等。
+
+
 
 # 参考资料
 

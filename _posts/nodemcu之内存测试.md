@@ -12,6 +12,3 @@ tags:
 
 # 参考资料
 
-1、关于NodeMCU的内存测试
-
-https://blog.csdn.net/qq_37258787/article/details/79942561

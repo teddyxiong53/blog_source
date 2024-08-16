@@ -282,6 +282,20 @@ gpio.write(0,gpio.LOW)
 
 
 
+# 内存测试
+
+关于NodeMCU的内存测试
+
+https://blog.csdn.net/qq_37258787/article/details/79942561
+
+# NodeMcu网络服务器搭建
+
+https://blog.csdn.net/FENGYULU_0701/article/details/139823822
+
+# ota
+
+https://blog.csdn.net/CATTLE_L/article/details/104715498
+
 # 参考资料
 
 1、github

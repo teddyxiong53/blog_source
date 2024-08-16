@@ -122,3 +122,6 @@ git push -u gitea master
 
 这样，你就可以将GitHub上的项目提交到自己的Gitea服务器上了。
 
+# gitea上的项目同步到github
+
+https://docs.gitea.com/zh-cn/usage/repo-mirror
