@@ -154,6 +154,71 @@ Go语言作为服务器编程语言，很适合处理日志、数据打包、虚
 
 https://zhuanlan.zhihu.com/p/453462046
 
+# 下载了一个go语言项目后怎么编译运行
+
+https://www.modb.pro/db/497323
+
+```
+git clone https://github.com/sakeven/httpproxy.git
+```
+
+以这个项目为例。
+
+观察一下项目代码，发现里面没有Makefile，有一个入口程序 main.go
+
+在项目目录中没有 go.mod 和 go.sum 模块文件，但有一个 Godeps 和 vendor 目录。这两个目录下一步再讲是做什么的，其它目录都是代码目录。
+
+此时如果直接使用 go build 编译会报错：
+
+单文件的go代码可以直接编译，当代码中有依赖时就需要使用 go modules 来组织。
+
+执行 go mod init 来初始化项目依赖：
+
+```
+$ go mod init
+```
+
+从命令输出可以了解到 go 从 Godeps 中获取了项目的依赖。Godeps 是由 godep 工具创建的，在原始项目中这个目录是自带的，应该是项目作者自己本机安装了 godep 并用 godep 生成了项目依赖。
+
+此时项目目录中已经有了 go.mod 文件：
+
+此时执行 go build 会报错，提示要更新 vendor 目录：
+
+按照提示执行 go mod vendor，再次报错，从报错信息了解到缺 go.sum，我们通过 go mod tidy 添加 go.sum 文件。
+
+添加完 go.sum 后再执行 go mo vendor 不再报错。
+
+此时再执行 go build 已经可以正常编译了。
+
+默认编译的是 windows 版本的可执行文件，如果需要编译 linux 版本的可执行文件，可以执行如下命令，通过更改环境变量进行交叉编译。
+
+```
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main_linux_amd64
+```
+
+# vscode创建基础工程并运行
+
+在main.go中写入以下程序
+
+```go
+package main
+func main(){
+    fmt.Println("Hello")
+}
+```
+
+使用go mod 命令建立项目
+
+```bash
+go mod init github.com/Breeze0806/test
+go mod tidy
+go run main.go
+```
+
+https://www.cnblogs.com/tianqing/p/18064596
+
+
+
 
 
 # IDE
@@ -2029,7 +2094,7 @@ https://github.com/geektutu/7days-golang
    func main() {
       name := "John" // 声明并初始化 name 变量
       age := 25      // 声明并初始化 age 变量
-
+   
       fmt.Println(name, age)
    }
    ```
@@ -2044,10 +2109,10 @@ https://github.com/geektutu/7days-golang
    func main() {
       var name string // 声明一个字符串变量
       name = "John"   // 将 "John" 赋值给 name 变量
-
+   
       var age int     // 声明一个整数变量
       age = 25        // 将 25 赋值给 age 变量
-
+   
       fmt.Println(name, age)
    }
    ```
@@ -2130,7 +2195,7 @@ replace (
    要升级到依赖的最新版本，可以使用 `go get -u` 命令。如果你只想升级到最新的次要版本或补丁版本，可以使用 `go get -u=patch` 或 `go get -u=minor`。
 8. **解决冲突**：
    如果你的代码依赖了不同版本的两个模块，Go 会尝试解决这些冲突，选择一个合适的版本。如果自动解决失败，你可能需要手动调整 `go.mod` 文件。
-`go.mod` 文件是 Go 模块化系统的关键组成部分，它使得依赖管理变得简单和可靠。通过以上步骤，你可以有效地使用和管理 `go.mod` 文件。
+   `go.mod` 文件是 Go 模块化系统的关键组成部分，它使得依赖管理变得简单和可靠。通过以上步骤，你可以有效地使用和管理 `go.mod` 文件。
 
 # go语言项目的pkg目录作用
 
@@ -2767,7 +2832,7 @@ func main() {
    在测试文件中，你可以直接调用测试函数。在命令行中，你可以使用 `go test` 命令来运行测试。
 3. **使用断言**：
    Go 的测试框架提供了断言函数，如 `Equal`、`NotEqual`、`Nil`、`NotNil` 等，用于检查预期结果和实际结果是否匹配。
-下面是一个简单的单元测试示例：
+   下面是一个简单的单元测试示例：
 ```go
 package main
 import "testing"
@@ -2788,7 +2853,7 @@ func TestAdd(t *testing.T) {
    基准测试函数以 `Benchmark` 开头，例如 `BenchmarkAdd`。
 2. **使用 `Benchmark` 函数**：
    在基准测试函数中，你可以使用 `Benchmark` 函数来执行多次计算，并测量执行时间。
-下面是一个简单的基准测试示例：
+   下面是一个简单的基准测试示例：
 ```go
 package main
 import (
@@ -2809,7 +2874,7 @@ func BenchmarkAdd(b *testing.B) {
    性能测试函数以 `Perf` 开头，例如 `PerfAdd`。
 2. **使用 `Perf` 函数**：
    在性能测试函数中，你可以使用 `Perf` 函数来执行多次计算，并测量执行时间。
-下面是一个简单的性能测试示例：
+   下面是一个简单的性能测试示例：
 ```go
 package main
 import (

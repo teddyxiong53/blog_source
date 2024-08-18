@@ -299,3 +299,33 @@ Node.js中的每个`vm`模块实例都可以被看作一个独立的领域，
 另一个常见的方法是使用开发服务器，如Webpack Dev Server或Parcel，这些服务器能够监视源代码文件的变化，并在文件发生变化时自动重新构建应用程序，并通知浏览器刷新页面，以便开发人员可以立即查看更新后的效果。
 
 总的来说，代码热重载是一种提高开发效率的重要工具，可以极大地加速开发过程，并使开发人员更容易地进行实验和调试。
+
+# 官方文档阅读
+
+## api使用
+
+这里说明了如何编译成库，如何在外面连接使用对应的api和库。
+
+https://github.com/jerryscript-project/jerryscript/blob/master/docs/03.API-EXAMPLE.md
+
+## 编码规范
+
+https://github.com/jerryscript-project/jerryscript/blob/master/docs/08.CODING-STANDARDS.md
+
+JerryScript中的每个指针必须是以`_p`后缀结尾的字符串。
+
+JerryScript中的每个类型都必须是以`_t`后缀结尾的字符串。
+
+Type usage conventions 类型使用约定
+
+
+
+- 传递函数调用的参数数量始终为`uint32_t`
+- 字符串大小/长度/位置相关操作应使用`lit_utf8_size_t`
+- 扩展对象内部字段必须为`uint32_t`
+
+# 基于jerryscript的项目
+
+这个是手表。
+
+https://pebble.github.io/rockyjs/
