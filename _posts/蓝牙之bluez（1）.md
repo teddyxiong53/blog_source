@@ -2293,7 +2293,7 @@ https://blog.sina.com.cn/s/blog_602f87700100e5q9.html
    在扫描设备时，记下你想连接的设备的MAC地址（例如：XX:XX:XX:XX:XX:XX）。
 
 7. **配对设备**：
-    
+   
     ```bash
     pair XX:XX:XX:XX:XX:XX
     ```
@@ -2304,7 +2304,7 @@ https://blog.sina.com.cn/s/blog_602f87700100e5q9.html
     ```
 
 9. **连接设备**：
-    
+   
     ```bash
     connect XX:XX:XX:XX:XX:XX
     ```
@@ -2330,7 +2330,9 @@ bluetoothd启动的时候，带上这个选项就可以指定哪些文件打开�
 --debug=src/adapter.c:src/agent.c
 ```
 
+# 
 
+https://juejin.cn/post/6904788133867421704
 
 # 参考资料
 

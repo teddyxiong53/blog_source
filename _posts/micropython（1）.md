@@ -16,6 +16,20 @@ IDE的方式进行编程和下载代码。
 
 https://www.youtube.com/watch?v=YR9v04qzJ5E
 
+
+
+这个系列文章看起来不错。但是是付费专栏。
+
+https://blog.csdn.net/zhangzhechun/category_12622842.html
+
+这个专栏不收费，看起来也不错。
+
+https://blog.csdn.net/superatom01/category_12386277.html
+
+
+
+
+
 ## IDE使用
 
 - [Mu Editor](https://randomnerdtutorials.com/micropython-ides-esp32-esp8266/#mu-editor)
@@ -1218,9 +1232,578 @@ xhl -- func:mp_execute_bytecode, line:204, case:11
 xhl -- func:mp_execute_bytecode, line:204, case:5b
 ```
 
+# mpy-cross 
+
+mpy-cross 是 MicroPython 提供的一个交叉编译工具，
+
+用于将 Python 源文件（.py 文件）预编译成适合目标设备运行的 .mpy 文件。
+
+以下是使用 mpy-cross 的详细步骤和方法：
+
+编译生成mpy-cross文件
+
+```
+git clone --recursive https://github.com/micropython/micropython.git 
+make -C micropython/mpy-cross
+```
+
+也可以用pip安装：
+
+```
+pip install mpy-cross
+```
+
+把python文件编译生成mpy文件：
+
+```
+./mpy-cross sample.py 
+```
+
+在 Thonny 中可以直接安装 mpy-cross 并使用它来生成 .mpy 文件，从而加速运行和加密代码
+
+https://github.com/thonny/thonny
+
+thonny这个工具是用途tkinter编写的IDE，也是挺厉害的。可以看出tkinter的能力也不小。
 
 
-参考资料
+
+也可以添加到环境变量
+
+另外 如果是自定义固件，调试稳定的py文件，最好放到固件里面。详情查看本站其他文章。
+
+**经过测试，同名的模块执行优先级依次为：**
+
+**flash的.py => flash的.mpy => rom的.py => rom的.c**
+
+python 的代码几乎无法完全加密，基本上不可能加密。
+
+核心敏感内容，建议用c来写，micropython不适合做这个事情。 或者 c模块+ mpy的方式也凑合可以。
+
+无论从代码执行效率和mcu资源的利用率，还是代码的保护上 micropython 都是不是好选择。
+
+但是在初期产品阶段micropython 还是非常不错的，上线前 根据情况用c写一部分模块，或者干脆重写就好了。
+
+
+
+## 参考资料
+
+Thonny MicroPython 使用mpy-cross 生成MPY文件加速运行与加密
+
+https://www.cnblogs.com/timseng/p/17112300.html
+
+micropython代码压缩和简单加密 mpy-cross
+
+https://dev.leiyanhui.com/mcu/mpy-cross/
+
+mpy-cross文档
+
+https://github.com/RT-Thread-packages/micropython/blob/master/docs/tools-mpy-cross.md
+
+# mpy默认的文件系统
+
+MicroPython默认使用LittleFS作为其文件系统，而旧版本则使用FAT格式。
+
+MicroPython使用LittleFS文件系统具有以下几个优势：
+
+1. **写入负载均衡**：LittleFS通过写入负载均衡技术，可以显著提高存储闪存的寿命。这意味着在频繁写入数据的应用中，LittleFS能够更有效地管理存储设备的使用，从而延长其使用寿命。
+2. **更好的对电源故障的抵抗能力**：与传统的FAT文件系统相比，LittleFS具有更好的抗电源故障能力。这使得它在需要高可靠性的嵌入式应用中更为适用。
+3. **支持修改时间戳**：LittleFS v2版本允许为文件添加和更新修改时间戳，这对于需要记录文件变更历史的应用非常有用。当启用`mtime`参数时，即使文件没有时间戳，`os.stat ()`也会返回0作为时间戳。
+4. **透明地处理现有文件**：对于已经存在的文件，一旦它们被打开进行写入操作，LittleFS会自动添加或更新时间戳，无需重新格式化整个文件系统。
+5. **易于挂载和使用**：创建一个使用LittleFS的文件系统对象后，可以通过`mount()`方法将其挂载到微Python环境中，这样可以方便地进行文件系统的管理和操作。
+
+
+
+在MicroPython中，FAT格式的文件系统与LittleFS相比有以下不同：
+
+1. **访问方式**：FAT文件系统的主要优点是可以在支持的板卡（例如STM32）上通过USB MSC访问，无需主机PC上的额外驱动程序。这意味着如果需要通过USB设备访问文件系统，FAT可能更方便。
+2. **对写操作期间停电的容忍度**：FAT文件系统不耐受写操作期间的停电，这可能会导致文件系统损坏。而LittleFS设计有强大的复制写保证，如果发生随机电源故障，文件系统将回退到上一次已知的正确状态。
+3. **性能和稳定性**：长期使用后，FAT文件系统的碎片化问题可能导致存储速度下降。LittleFS则具有磨损均衡功能和掉电保护能力，适用于RAM和ROM有限的场景。
+4. **资源占用**：LittleFS高度集成，使用比FAT少的ROM空间（约13K）和RAM空间（少于4K），适合资源受限的MCU。
+
+因此，**对于不需要USB MSC的应用程序，或者对存储性能和稳定性要求较高的应用，建议使用LittleFS。**
+
+
+
+根据最新的MicroPython官方文档，关于文件系统选择的最新指导或更新主要集中在以下几个方面：
+
+1. **执行.mpy文件**：新版本支持直接<u>从文件系统执行.mpy文件，无需先将其复制到RAM中</u>。这显著提高了代码部署速度并减少了内存开销和碎片化。
+2. **更灵活的配置方式**：引入了对分区、文件系统类型以及USB大容量存储等选项的更灵活配置方式。
+3. **自动创建默认配置和检测主文件系统**：MicroPython会自动创建默认配置并自动检测主文件系统，因此用户主要适用于希望修改这些设置的场景。
+4. **兼容性和扩展性**：通过将MicroPython扩展从CPython API中移除，实现了与CPython更好的兼容性，使开发人员能够更容易地编写可在两个平台上运行的代码。
+
+https://wiki.sipeed.com/soft/maixpy/zh/get_started/mpfshell-lite/mpfshell-lite.html
+
+# littlefs
+
+
+
+## 参考资料
+
+littlefs原理分析--存储结构（一）
+
+https://www.51cto.com/article/721451.html
+
+小型文件系统FatFS和LittleFS对比和区别
+
+https://blog.csdn.net/ybhuangfugui/article/details/105780880
+
+# qstr
+
+在MicroPython中，QSTR（uni独特的字符串）是一种用于字符串驻留（ intern）的机制。
+
+其主要目的是为了节省内存和存储空间，
+
+通过将重复出现的字符串存储在一个共享池中来避免重复存储
+
+QSTR表是一个全局性的数据结构，
+
+它将.mpy文件内部的qstr编号映射到运行时环境中该字符串对应的qstr编号。
+
+这种机制使得所有需要使用字符串的地方都可以通过一个唯一的编号来引用，
+
+从而提高了代码的执行效率和内存利用率。
+
+
+
+在编译过程中，MicroPython会生成QSTR头部文件，
+
+这些文件包含了所有需要驻留的字符串及其相关信息，
+
+如长度、哈希值等。
+
+这些信息被存储在ROM或闪存中，
+
+具体取决于模块是否被冻结为字节码。
+
+例如，在某些情况下，如果模块没有完全调试但可以导入并运行，则可以将其源代码树复制到PC上，并使用工具链构建固件。
+
+
+
+使用Incremental Update工具来更新代码中的QSTR数据表是一个有效的最佳实践。这个过程包括五个步骤：
+
+- 使用Incremental Update工具对现有文件进行修改，并生成新的文件`qstr.i.last `。
+- 创建一个空文件`qstr.splitIs `用于跟踪增量更新的运行情况。
+- 将所有匹配的QSTR文件组合到一起，形成`qstrdefs.collected.h `文件，其中包含每个MP_QSTR_Foo的完整列表。
+- 生成一个枚举，将每个MP_QSTR_Foo映射到其对应的索引。然后将`qstrdefs.collected.h `和`qstrdefs*.h`组合在一起，并转换每个Q(Foo)为"Q(Foo)"，以便在预处理器中处理条件编译。
+- 使用`make qstrdata.py `生成`qstrdefs.generated.h `文件，其中包含每个MP_QSTR_Foo的哈希值和相应的索引。
+
+https://metaso.cn/search/8514435144619732992?q=micropython+qstr
+
+
+
+# mpy原理
+
+https://www.limfx.pro/ReadArticle/1115/micropython-yun-hang-yuan-li-yi-ji-ru-he-tong-guocyu-yan-kuo-zhan-micropython-module
+
+
+
+移植micropython到jz2440开发板(samsung s3c2440 soc)记录
+
+https://blog.csdn.net/CallMe_Xu/article/details/107090569
+
+
+
+https://blog.csdn.net/superatom01/article/details/135956214
+
+
+
+# micropython esp8266 编译
+
+https://metaso.cn/search/8514531143766327296?q=micropython+esp8266+%E7%BC%96%E8%AF%91
+
+Python+ESP嵌入式开发快速上手 ，这个有不少的例子。
+
+https://www.cnblogs.com/holychan/p/18262227
+
+
+
+https://docs.01studio.cc/esp8266/quickref.html
+
+这个手册不错。
+
+http://micropython.circuitpython.com.cn/en/latet/esp8266/tutorial/intro.html
+
+
+
+# micropython gc算法
+
+MicroPython使用的是标记和清除（Mark-Sweep）算法来管理内存。该算法分为两个主要阶段：
+
+1. **标记阶段**：此阶段遍历堆，标记所有活动对象，即那些仍然被引用的对象。
+2. **清扫阶段**：随后的清扫阶段则遍历堆，回收所有未被标记的对象。
+
+这种算法的优点在于其简单性和快速性，通常运行周期少于4毫秒。此外，MicroPython还提供了手动触发垃圾回收的功能，可以通过调用`gc.collect ()`来实现。
+
+https://metaso.cn/search/8514561448295223296?q=micropython+gc%E7%AE%97%E6%B3%95
+
+# 编译过程分析
+
+```
+make VARIANT=minimal
+```
+
+
+
+首先是生成一些头文件。靠python脚本处理。
+
+```
+mkdir -p build-minimal/genhdr
+GEN build-minimal/genhdr/mpversion.h
+GEN build-minimal/genhdr/qstr.i.last
+GEN build-minimal/genhdr/qstr.split
+GEN build-minimal/genhdr/qstrdefs.collected.h
+QSTR updated
+GEN build-minimal/genhdr/qstrdefs.generated.h
+GEN build-minimal/genhdr/moduledefs.split
+GEN build-minimal/genhdr/moduledefs.collected
+Module registrations updated
+GEN build-minimal/genhdr/moduledefs.h
+GEN build-minimal/genhdr/root_pointers.split
+GEN build-minimal/genhdr/root_pointers.collected
+Root pointer registrations updated
+GEN build-minimal/genhdr/root_pointers.h
+GEN build-minimal/genhdr/compressed.split
+GEN build-minimal/genhdr/compressed.collected
+Compressed data updated
+GEN build-minimal/genhdr/compressed.data.h
+```
+
+编译文件的顺序：
+
+```
+mkdir -p build-minimal/extmod/
+mkdir -p build-minimal/py/
+mkdir -p build-minimal/shared/libc/
+mkdir -p build-minimal/shared/runtime/
+mkdir -p build-minimal/shared/timeutils/
+CC ../../py/mpstate.c
+CC ../../py/nlr.c
+CC ../../py/nlrx86.c
+CC ../../py/nlrx64.c
+CC ../../py/nlrthumb.c
+CC ../../py/nlraarch64.c
+CC ../../py/nlrmips.c
+CC ../../py/nlrpowerpc.c
+CC ../../py/nlrxtensa.c
+CC ../../py/nlrrv32.c
+CC ../../py/nlrsetjmp.c
+CC ../../py/malloc.c
+CC ../../py/gc.c
+CC ../../py/pystack.c
+CC ../../py/qstr.c
+CC ../../py/vstr.c
+CC ../../py/mpprint.c
+CC ../../py/unicode.c
+CC ../../py/mpz.c
+CC ../../py/reader.c
+CC ../../py/lexer.c
+CC ../../py/parse.c
+CC ../../py/scope.c
+CC ../../py/compile.c
+CC ../../py/emitcommon.c
+CC ../../py/emitbc.c
+CC ../../py/asmbase.c
+CC ../../py/asmx64.c
+CC ../../py/emitnx64.c
+CC ../../py/asmx86.c
+CC ../../py/emitnx86.c
+CC ../../py/asmthumb.c
+CC ../../py/emitnthumb.c
+CC ../../py/emitinlinethumb.c
+CC ../../py/asmarm.c
+CC ../../py/emitnarm.c
+CC ../../py/asmxtensa.c
+CC ../../py/emitnxtensa.c
+CC ../../py/emitinlinextensa.c
+CC ../../py/emitnxtensawin.c
+CC ../../py/asmrv32.c
+CC ../../py/emitnrv32.c
+CC ../../py/emitndebug.c
+CC ../../py/formatfloat.c
+CC ../../py/parsenumbase.c
+CC ../../py/parsenum.c
+CC ../../py/emitglue.c
+CC ../../py/persistentcode.c
+CC ../../py/runtime.c
+CC ../../py/runtime_utils.c
+CC ../../py/scheduler.c
+CC ../../py/nativeglue.c
+CC ../../py/pairheap.c
+CC ../../py/ringbuf.c
+CC ../../py/cstack.c
+CC ../../py/stackctrl.c
+CC ../../py/argcheck.c
+CC ../../py/warning.c
+CC ../../py/profile.c
+CC ../../py/map.c
+CC ../../py/obj.c
+CC ../../py/objarray.c
+CC ../../py/objattrtuple.c
+CC ../../py/objbool.c
+CC ../../py/objboundmeth.c
+CC ../../py/objcell.c
+CC ../../py/objclosure.c
+CC ../../py/objcomplex.c
+CC ../../py/objdeque.c
+CC ../../py/objdict.c
+CC ../../py/objenumerate.c
+CC ../../py/objexcept.c
+CC ../../py/objfilter.c
+CC ../../py/objfloat.c
+CC ../../py/objfun.c
+CC ../../py/objgenerator.c
+CC ../../py/objgetitemiter.c
+CC ../../py/objint.c
+CC ../../py/objint_longlong.c
+CC ../../py/objint_mpz.c
+CC ../../py/objlist.c
+CC ../../py/objmap.c
+CC ../../py/objmodule.c
+CC ../../py/objobject.c
+CC ../../py/objpolyiter.c
+CC ../../py/objproperty.c
+CC ../../py/objnone.c
+CC ../../py/objnamedtuple.c
+CC ../../py/objrange.c
+CC ../../py/objreversed.c
+CC ../../py/objset.c
+CC ../../py/objsingleton.c
+CC ../../py/objslice.c
+CC ../../py/objstr.c
+CC ../../py/objstrunicode.c
+CC ../../py/objstringio.c
+CC ../../py/objtuple.c
+CC ../../py/objtype.c
+CC ../../py/objzip.c
+CC ../../py/opmethods.c
+CC ../../py/sequence.c
+CC ../../py/stream.c
+CC ../../py/binary.c
+CC ../../py/builtinimport.c
+CC ../../py/builtinevex.c
+CC ../../py/builtinhelp.c
+CC ../../py/modarray.c
+CC ../../py/modbuiltins.c
+CC ../../py/modcollections.c
+CC ../../py/modgc.c
+CC ../../py/modio.c
+CC ../../py/modmath.c
+CC ../../py/modcmath.c
+CC ../../py/modmicropython.c
+CC ../../py/modstruct.c
+CC ../../py/modsys.c
+CC ../../py/moderrno.c
+CC ../../py/modthread.c
+CC ../../py/vm.c
+CC ../../py/bc.c
+CC ../../py/showbc.c
+CC ../../py/repl.c
+CC ../../py/smallint.c
+CC ../../py/frozenmod.c
+CC ../../extmod/machine_adc.c
+CC ../../extmod/machine_adc_block.c
+CC ../../extmod/machine_bitstream.c
+CC ../../extmod/machine_i2c.c
+CC ../../extmod/machine_i2s.c
+CC ../../extmod/machine_mem.c
+CC ../../extmod/machine_pinbase.c
+CC ../../extmod/machine_pulse.c
+CC ../../extmod/machine_pwm.c
+CC ../../extmod/machine_signal.c
+CC ../../extmod/machine_spi.c
+CC ../../extmod/machine_timer.c
+CC ../../extmod/machine_uart.c
+CC ../../extmod/machine_usb_device.c
+CC ../../extmod/machine_wdt.c
+CC ../../extmod/modasyncio.c
+CC ../../extmod/modbinascii.c
+CC ../../extmod/modbluetooth.c
+CC ../../extmod/modbtree.c
+CC ../../extmod/modcryptolib.c
+CC ../../extmod/moddeflate.c
+CC ../../extmod/modframebuf.c
+CC ../../extmod/modhashlib.c
+CC ../../extmod/modheapq.c
+CC ../../extmod/modjson.c
+CC ../../extmod/modlwip.c
+CC ../../extmod/modmachine.c
+CC ../../extmod/modnetwork.c
+CC ../../extmod/modonewire.c
+CC ../../extmod/modopenamp.c
+CC ../../extmod/modopenamp_remoteproc.c
+CC ../../extmod/modopenamp_remoteproc_store.c
+CC ../../extmod/modos.c
+CC ../../extmod/modplatform.c
+CC ../../extmod/modrandom.c
+CC ../../extmod/modre.c
+CC ../../extmod/modselect.c
+CC ../../extmod/modsocket.c
+CC ../../extmod/modtls_axtls.c
+CC ../../extmod/modtls_mbedtls.c
+CC ../../extmod/modtime.c
+CC ../../extmod/moductypes.c
+CC ../../extmod/modvfs.c
+CC ../../extmod/modwebrepl.c
+CC ../../extmod/modwebsocket.c
+CC ../../extmod/network_cyw43.c
+CC ../../extmod/network_esp_hosted.c
+CC ../../extmod/network_lwip.c
+CC ../../extmod/network_ninaw10.c
+CC ../../extmod/network_wiznet5k.c
+CC ../../extmod/os_dupterm.c
+CC ../../extmod/vfs.c
+CC ../../extmod/vfs_blockdev.c
+CC ../../extmod/vfs_fat.c
+CC ../../extmod/vfs_fat_diskio.c
+CC ../../extmod/vfs_fat_file.c
+CC ../../extmod/vfs_lfs.c
+CC ../../extmod/vfs_posix.c
+CC ../../extmod/vfs_posix_file.c
+CC ../../extmod/vfs_reader.c
+CC ../../extmod/virtpin.c
+CC ../../shared/libc/abort_.c
+CC ../../shared/libc/printf.c
+CC main.c
+CC gccollect.c
+CC unix_mphal.c
+CC mpthreadport.c
+CC input.c
+CC alloc.c
+CC fatfs_port.c
+CC mpbthciport.c
+CC mpbtstackport_common.c
+CC mpbtstackport_h4.c
+CC mpbtstackport_usb.c
+CC mpnimbleport.c
+CC modtermios.c
+CC modsocket.c
+CC modffi.c
+CC modjni.c
+CC ../../shared/runtime/gchelper_generic.c
+CC ../../shared/timeutils/timeutils.c
+LINK build-minimal/micropython
+   text    data     bss     dec     hex filename
+ 173993   14704    5320  194017   2f5e1 build-minimal/micropython
+```
+
+查看更加详细的编译输出
+
+```
+make VARIANT=minimal V=1
+```
+
+主要看看脚本的调用。
+
+```
+python3 ../../py/makeversionhdr.py build-minimal/genhdr/mpversion.h
+```
+
+
+
+```
+python3 ../../py/makeqstrdefs.py pp gcc -E output build-minimal/genhdr/qstr.i.last cflags  -DFFCONF_H=\"lib/oofatfs/ffconf.h\" -I. -I../.. -Ibuild-minimal -Wall -Werror -Wextra -Wno-unused-parameter -Wpointer-arith -Wdouble-promotion -Wfloat-conversion -std=gnu99 -DUNIX -Os -DNDEBUG -fdata-sections -ffunction-sections -Ivariants/minimal  -g -U _FORTIFY_SOURCE -DMICROPY_ROM_TEXT_COMPRESSION=1 -DNO_QSTR cxxflags -DFFCONF_H=\"lib/oofatfs/ffconf.h\" -I. -I../.. -Ibuild-minimal -Wall -Werror -Wextra -Wno-unused-parameter -Wpointer-arith -Wdouble-promotion -Wfloat-conversion -DUNIX -Os -DNDEBUG -fdata-sections -ffunction-sections -Ivariants/minimal -g -U _FORTIFY_SOURCE -DMICROPY_ROM_TEXT_COMPRESSION=1 -DNO_QSTR sources ../../py/mpstate.c ../../py/malloc.c ../../py/gc.c ../../py/pystack.c ../../py/qstr.c ../../py/vstr.c ../../py/mpprint.c ../../py/unicode.c ../../py/mpz.c ../../py/reader.c 
+//   …………中间省掉一大堆的c文件名字
+../../shared/libc/printf.c main.c gccollect.c unix_mphal.c mpthreadport.c input.c alloc.c fatfs_port.c mpbthciport.c mpbtstackport_common.c mpbtstackport_h4.c mpbtstackport_usb.c mpnimbleport.c modtermios.c modsocket.c modffi.c modjni.c ../../shared/runtime/gchelper_generic.c ../../shared/timeutils/timeutils.c variants/minimal/mpconfigvariant.h ../../py/mpconfig.h mpconfigport.h
+
+```
+
+
+
+```
+python3 ../../py/makeqstrdefs.py split qstr build-minimal/genhdr/qstr.i.last build-minimal/genhdr/qstr _
+```
+
+
+
+```
+python3 ../../py/makeqstrdefs.py cat qstr _ build-minimal/genhdr/qstr build-minimal/genhdr/qstrdefs.collected.h
+```
+
+
+
+```
+python3 ../../py/makeqstrdata.py build-minimal/genhdr/qstrdefs.preprocessed.h > build-minimal/genhdr/qstrdefs.generated.h
+
+```
+
+
+
+```
+python3 ../../py/makeqstrdefs.py split module build-minimal/genhdr/qstr.i.last build-minimal/genhdr/module _
+
+```
+
+```
+python3 ../../py/makeqstrdefs.py cat module _ build-minimal/genhdr/module build-minimal/genhdr/moduledefs.collected
+
+```
+
+```
+python3 ../../py/makemoduledefs.py build-minimal/genhdr/moduledefs.collected > build-minimal/genhdr/moduledefs.h
+```
+
+```
+python3 ../../py/makecompresseddata.py build-minimal/genhdr/compressed.collected > build-minimal/genhdr/compressed.data.h
+
+```
+
+
+
+makeqstrdefs.py 这个脚本需要5个参数：
+
+```
+command 
+mode 
+input_filename 
+output_dir 
+output_file
+```
+
+command有这几个：‘
+
+```
+"pp", // 这个表示预处理。
+"output",
+"cflags",
+"cxxflags",
+"sources",
+"changed_sources",
+"dependencies"
+```
+
+mode有这4种：
+
+```
+# Extract MP_QSTR_FOO macros.
+_MODE_QSTR = "qstr"
+
+# Extract MP_COMPRESSED_ROM_TEXT("") macros.  (Which come from MP_ERROR_TEXT)
+_MODE_COMPRESS = "compress"
+
+# Extract MP_REGISTER_(EXTENSIBLE_)MODULE(...) macros.
+_MODE_MODULE = "module"
+
+# Extract MP_REGISTER_ROOT_POINTER(...) macros.
+_MODE_ROOT_POINTER = "root_pointer"
+```
+
+# nlr：no-local return
+
+nlr_* 函数集是针对 MicroPython 所需的功能专门定制的函数，
+
+因此允许从原本昂贵的异常处理操作中挤出每个 CPU 周期。
+
+SetJMP/LongJMP是在“尽力而为”的基础上工作的通用函数。
+
+它们最初是为了允许快速移植到不同的 Unix 架构而添加的。
+
+https://forum.micropython.org/viewtopic.php?t=1909
+
+https://www.cnblogs.com/juwan/p/13079797.html
+
+
+
+# 参考资料
 
 1、Micropython开发（1）: 认识Micro Python
 

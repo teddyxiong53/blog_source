@@ -127,17 +127,54 @@ SDCC 4.2.0 New Feature List:
 
 # 环境搭建
 
-在这种情况下，鼓励用户自己编译最新的官方 SDCC 版本或最近的快照构建，或者从 Sourceforge 下载页面下载预编译的二进制文件。
+原版的代码是放在source forge上。但是github有人建立了mirror。
 
-
-
-可以通过svn下载代码：
+下载代码：
 
 ```
-svn checkout svn://svn.code.sf.net/p/sdcc/code/trunk/sdcc sdcc
+ git clone https://github.com/darconeous/sdccsdcc
 ```
 
+编译：
 
+```
+./configure
+```
+
+如果有错误提示，根据提示禁用一些配置即可。
+
+```
+make 
+sudo make install
+```
+
+然后编译一下里面自带的ucsim
+
+```
+cd sim/ucsim
+./configure
+make 
+sudo make install
+```
+
+得到的mcs51的模拟器是s51这个命令。
+
+```
+# 输入这个命令就可以进入到模拟器里
+s51 
+```
+
+**MCS51** family is simulated by**s51**.
+**AVR** family is simulated by **savr**.
+**Z80** processor is simulated by **sz80**.
+
+s51的文档在这里：
+
+https://manpages.debian.org/testing/sdcc-ucsim/s51.1.en.html
+
+ucsim的官网：
+
+https://www.ucsim.hu/
 
 # 开发中用到的语言的版本
 
@@ -156,6 +193,8 @@ SDCC uses the common subset of Python 2.7 and Python 3.6.
 
 
 # sdcc手册
+
+https://sdcc.sourceforge.net/doc/sdccman.pdf
 
 一共135页。我看的而这个版本就是2023年5月30日的版本。
 

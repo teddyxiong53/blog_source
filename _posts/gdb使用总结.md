@@ -180,6 +180,14 @@ cgdb ./a.out
 
 https://blog.csdn.net/Bgm_Nilbb/article/details/124853547
 
+# gdb stub
+
+看arduino有个gdb stub的包。
+
+libraries\GDBStub\examples\gdbstub_example\gdbstub_example.ino
+
+看看这个的原理是什么。
+
 
 
 # 参考资料
