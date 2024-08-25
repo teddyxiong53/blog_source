@@ -2409,6 +2409,135 @@ proxy_added是这里最重要的一个函数。
 
 处理了各种变化的情况。例如设备连接等。
 
+## 一个基本的程序框架
+
+```
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <errno.h>
+#include <ctype.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <signal.h>
+#include <sys/signalfd.h>
+
+#include <glib.h>
+
+#include "gdbus/gdbus.h"
+#include "tinylog.h"
+
+static GDBusClient *client = NULL;
+static DBusConnection *dbus_conn;
+static GMainLoop *main_loop;
+
+
+
+static gboolean signal_handler(GIOChannel *channel, GIOCondition condition,
+							gpointer user_data)
+{
+	static unsigned int __terminated = 0;
+	struct signalfd_siginfo si;
+	ssize_t result;
+	int fd;
+
+	if (condition & (G_IO_NVAL | G_IO_ERR | G_IO_HUP)) {
+		g_main_loop_quit(main_loop);
+		return FALSE;
+	}
+
+	fd = g_io_channel_unix_get_fd(channel);
+
+	result = read(fd, &si, sizeof(si));
+	if (result != sizeof(si))
+		return FALSE;
+
+	switch (si.ssi_signo) {
+	case SIGINT:
+	case SIGTERM:
+		if (__terminated == 0)
+			g_main_loop_quit(main_loop);
+
+		__terminated = 1;
+		break;
+	}
+
+	return TRUE;
+}
+
+static guint setup_signalfd(void)
+{
+	GIOChannel *channel;
+	guint source;
+	sigset_t mask;
+	int fd;
+
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGINT);
+	sigaddset(&mask, SIGTERM);
+
+	if (sigprocmask(SIG_BLOCK, &mask, NULL) < 0) {
+		perror("Failed to set signal mask");
+		return 0;
+	}
+
+	fd = signalfd(-1, &mask, 0);
+	if (fd < 0) {
+		perror("Failed to create signal descriptor");
+		return 0;
+	}
+
+	channel = g_io_channel_unix_new(fd);
+
+	g_io_channel_set_close_on_unref(channel, TRUE);
+	g_io_channel_set_encoding(channel, NULL, NULL);
+	g_io_channel_set_buffered(channel, FALSE);
+
+	source = g_io_add_watch(channel,
+				G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_NVAL,
+				signal_handler, NULL);
+
+	g_io_channel_unref(channel);
+
+	return source;
+}
+
+static void connect_handler(DBusConnection *connection, void *user_data)
+{
+    GDBusClient *client = user_data;
+	GDBusProxy *proxy;
+    DEBUG("bt connected ");
+
+}
+static void disconnect_handler(DBusConnection *connection, void *user_data)
+{
+    DEBUG("bt disconnected ");
+}
+int main(int argc, char const *argv[])
+{
+    // basic setup begin
+    guint signal;
+    main_loop = g_main_loop_new(NULL, FALSE);
+	dbus_conn = g_dbus_setup_bus(DBUS_BUS_SYSTEM, NULL, NULL);
+    signal = setup_signalfd();//register signal
+    client = g_dbus_client_new(dbus_conn, "org.bluez", "/org/bluez");
+    g_dbus_client_set_connect_watch(client, connect_handler, client);
+    g_dbus_client_set_disconnect_watch(client, disconnect_handler, NULL);
+    // basic setup end
+    DEBUG("before mainloop\n");
+    g_main_loop_run(main_loop);
+    DEBUG("after mainloop\n");
+    // basic destroy begin
+	g_dbus_client_unref(client);
+    g_source_remove(signal);
+	dbus_connection_unref(dbus_conn);
+	g_main_loop_unref(main_loop);
+    // basic destroy end
+    return 0;
+}
+
+```
+
 
 
 # 参考资料
