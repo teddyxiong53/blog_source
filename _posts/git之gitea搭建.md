@@ -125,3 +125,38 @@ git push -u gitea master
 # gitea上的项目同步到github
 
 https://docs.gitea.com/zh-cn/usage/repo-mirror
+
+# sync fork
+
+gitea目前不支持这个功能。
+
+github是支持的。
+
+就是在web上同步原始仓库到你fork的仓库。
+
+
+
+# PR操作流程
+
+在网页上PR已经会了。
+
+但是因为gitea缺少sync fork机制。所以需要本地操作。
+
+我需要在本地先跟原始仓库同步代码，然后push到我fork后的仓库里。这样来达到同步的目的。
+
+但是怎么来跟原始仓库同步呢？
+
+需要加一个remote。
+
+如果只有origin没有upstream，需要使用“git remote add upstream+源项目地址“”的命令增加上游代码库
+
+```
+git remote add upstream  http://rd03-sz:3456/hanliang.xiong/test1.git
+```
+
+
+
+```
+git fetch upstream
+```
+

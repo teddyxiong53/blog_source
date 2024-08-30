@@ -8,6 +8,48 @@ tags:
 
 --
 
+# 资源收集
+
+riscv指令集
+
+http://www.tup.tsinghua.edu.cn/upload/books/yz/083684-01.pdf
+
+这个网站不错。
+
+https://www.rvmcu.com/
+
+riscv的confluence空间
+
+https://wiki.riscv.org/
+
+spec列表
+
+https://wiki.riscv.org/display/HOME/RISC-V+Technical+Specifications
+
+github仓库说明
+
+https://wiki.riscv.org/display/HOME/GitHub+Repo+Map
+
+jira
+
+https://jira.riscv.org/browse/RVG-4
+
+c api 文档，介绍了各种预定义的宏，adoc文档，可以直接在线查看。
+
+https://github.com/riscv-non-isa/riscv-c-api-doc/blob/main/src/c-api.adoc
+
+官方的学习roadmap
+
+https://github.com/riscv/learn
+
+泰晓科技的资料
+
+https://tinylab.org/cpu-design-part1-riscv-instruction/
+
+
+
+https://gitee.com/tinylab/riscv-lab
+
 # 简介
 
 RISC-V（Reduced Instruction Set Computing - V）是一种基于开放标准的指令集架构（ISA），旨在促进计算机系统硬件的创新和开发。RISC-V的设计是开放的，任何人都可以免费使用，并且可以基于此架构设计、实现和销售处理器芯片，而不受专利或许可的限制。
@@ -454,3 +496,38 @@ RISC-V的架构有两个主要的变体：RV32和RV64。这两者的区别在于
 # 《手把手教你设计CPU——RISC-V处理器》
 
 https://zhuanlan.zhihu.com/p/90104625
+
+# riscv的参数传递
+
+在 RISC-V 架构中，系统调用的参数传递遵循标准的调用约定（calling convention）。
+
+具体来说，前八个参数通过寄存器传递，分别是 `a0` 到 `a7`。
+
+如果参数多于八个，额外的参数将通过栈传递。
+
+1. **寄存器传递参数**
+
+   - `a0`：第一个参数
+   - `a1`：第二个参数
+   - `a2`：第三个参数
+   - `a3`：第四个参数
+   - `a4`：第五个参数
+   - `a5`：第六个参数
+   - `a6`：第七个参数
+   - `a7`：第八个参数
+
+2. **系统调用号**
+
+   - 系统调用号通过 `a7` 寄存器传递。在生成的汇编代码中，`li a7, SYS_${name}` 指令将系统调用号加载到 `a7` 寄存器中。
+
+3. **示例** 假设有一个系统调用 `write`，其参数包括文件描述符、缓冲区地址和字节数。调用 `write` 系统调用的汇编代码可能如下：
+
+   ```assembly
+   li a7, SYS_write  # 将系统调用号加载到 a7 寄存器
+   mv a0, fd         # 将文件描述符加载到 a0 寄存器
+   mv a1, buf        # 将缓冲区地址加载到 a1 寄存器
+   mv a2, count      # 将字节数加载到 a2 寄存器
+   ecall             # 触发系统调用
+   ```
+
+   

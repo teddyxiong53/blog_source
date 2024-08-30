@@ -95,6 +95,18 @@ x env use gitui
 
 安装好之后，直接gitui就可以。使用确实非常方便。
 
+# python版本
+
+```
+x env use python
+```
+
+这样安装一个本地的python。默认是下载安装了3.10的。
+
+是安装在x-cmd的目录下的。
+
+
+
 # x-cmd团队编译的go模块
 
 列举在这里：

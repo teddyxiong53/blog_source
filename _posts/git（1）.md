@@ -62,6 +62,10 @@ git远程建立仓库。
 
 https://zhuanlan.zhihu.com/p/59616525
 
+我下载放在这里了：
+
+![](./git-mindmap.jpg)
+
 # 常用命令速查
 
 # 全局忽略.vscode目录
@@ -296,6 +300,89 @@ e2fd26b4 (hanliang.xiong 2024-08-14 12:26:42 +0000 3) size 1049600
 ```
 
 
+
+# 高级教程
+
+这篇文章非常不错。
+
+https://www.cnblogs.com/fly_dragon/p/10339724.html
+
+# git workflow
+
+https://www.cnblogs.com/fly_dragon/p/10339724.html
+
+这篇文章太棒了。
+
+https://github.com/xirong/my-git/blob/master/git-workflow-tutorial.md
+
+在开发者提交自己功能修改到中央库前，需要先`fetch`在中央库的新增提交，`rebase`自己提交到中央库提交历史之上。 
+
+这样做的意思是在说，『我要把自己的修改加到别人已经完成的修改上。』
+
+**最终的结果是一个完美的线性历史，就像以前的`SVN`的工作流中一样。**
+
+```
+git pull --rebase origin master
+```
+
+如果你忘加了这个选项，`pull`操作仍然可以完成，但每次`pull`操作要同步中央仓库中别人修改时，提交历史会以一个多余的『合并提交』结尾。 
+
+对于集中式工作流，最好是使用`rebase`而不是生成一个合并提交。
+
+**`rebase`操作过程是把本地提交一次一个地迁移到更新了的中央仓库`master`分支之上。** 
+
+这意味着可能要解决在迁移某个提交时出现的合并冲突，而不是解决包含了所有提交的大型合并时所出现的冲突。 
+
+这样的方式让你尽可能保持每个提交的聚焦和项目历史的整洁。
+
+反过来，简化了哪里引入`Bug`的分析，如果有必要，回滚修改也可以做到对项目影响最小。
+
+接着小红编辑这些文件。修改完成后，用老套路暂存这些文件，并让[`git rebase`](https://www.atlassian.com/git/tutorial/rewriting-git-history#!rebase)完成剩下的事：
+
+```
+git add <some-file> 
+git rebase --continue
+```
+
+如果你碰到了冲突，但发现搞不定，不要惊慌。只要执行下面这条命令，就可以回到你执行[`git pull --rebase`](https://www.atlassian.com/git/tutorial/remote-repositories#!pull)命令前的样子：
+
+```
+git rebase --abort
+```
+
+小红完成和中央仓库的同步后，就能成功发布她的修改了：
+
+```
+git push origin master
+```
+
+
+
+# github 技巧
+
+https://github.com/tiimgreen/github-cheat-sheet/blob/master/README.zh-cn.md
+
+# 常用命令
+
+https://github.com/xirong/my-git/blob/master/useful-git-command.md
+
+# nodejs实现git
+
+https://blog.csdn.net/xgangzai/article/details/125454285
+
+# 使用nodejs搭建一个git server
+
+https://blog.csdn.net/hwytree/article/details/124818166
+
+# 探秘 StackDot 的 Node.js Git Server：一款轻量级的自托管 Git 服务
+
+https://blog.csdn.net/gitblog_00087/article/details/138210391
+
+代码：
+
+https://github.com/stackdot/NodeJS-Git-Server
+
+https://github.com/gabrielcsapo/node-git-server
 
 # 参考资料
 

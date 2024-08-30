@@ -98,3 +98,11 @@ git submodule update --init --recursive
 
 - 您想将其用于 ESP8266 或 ESP32 芯片
 - 您正在使用 Windows。
+
+
+
+# 参考资料
+
+1、metaso
+
+https://metaso.cn/search/8516684060694790144?q=tinygo+%E5%B5%8C%E5%85%A5%E5%BC%8F

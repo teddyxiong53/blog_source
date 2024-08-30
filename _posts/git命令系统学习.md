@@ -306,7 +306,7 @@ Date:   Mon Nov 5 11:40:50 2018 +0800
     first commit
 ```
 
-#config子命令
+# config子命令
 
 查看config。我觉得应该是后面的同名的覆盖前面的同名的。例如username。
 

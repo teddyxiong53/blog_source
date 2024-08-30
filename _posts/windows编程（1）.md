@@ -280,15 +280,15 @@ Windows Forms和WPF是两种不同的GUI（图形用户界面）框架，均用�
 1. **安装Visual Studio Code**：
    
 - 首先，您需要下载并安装Visual Studio Code编辑器。您可以从Visual Studio Code官方网站（https://code.visualstudio.com/）下载适用于Windows平台的安装程序，并按照安装向导的步骤进行安装。
-   
+  
 2. **安装C#扩展**：
    
 - 打开Visual Studio Code，转到扩展视图（Extensions view），搜索并安装C#扩展。C#扩展为Visual Studio Code添加了对C#语言的支持，包括语法高亮、智能代码补全、调试支持等功能。
-   
+  
 3. **安装.NET Core SDK**：
    
 - WPF应用程序通常使用.NET框架来进行开发。您需要下载并安装.NET Core SDK，以便在Visual Studio Code中编译和运行WPF应用程序。您可以从Microsoft官方网站（https://dotnet.microsoft.com/download/dotnet）下载最新的.NET Core SDK安装程序，并按照安装向导的步骤进行安装。
-   
+  
 4. **创建WPF项目**：
    - 打开Visual Studio Code，通过命令行工具（如PowerShell）或集成的终端窗口，使用dotnet命令创建一个新的WPF项目。例如，您可以运行以下命令来创建一个名为"MyWpfApp"的新WPF项目：
      ```
@@ -359,4 +359,6 @@ namespace HelloWorld
 3. **兼容性和互操作性**：XML格式是一种通用的数据交换格式，在不同平台和系统之间具有良好的兼容性和互操作性。这意味着您可以将界面描述导出为XML文件，并在不同的开发工具、框架和平台之间共享和重用。
 
 尽管XML在界面描述中具有许多优点，但也有一些缺点，例如XML的语法相对复杂，文件体积较大，可读性较差等。因此，有些开发者更喜欢使用其他格式如JSON来描述界面。JSON具有简洁的语法和良好的可读性，适合于描述简单的数据结构和配置信息。在某些情况下，使用JSON作为界面描述也是完全可行的选择，特别是对于Web应用程序或跨平台开发来说。
+
+# windows的ndk和psdk是什么关系
 

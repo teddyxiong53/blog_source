@@ -1542,6 +1542,37 @@ int main(int argc, char *argv[]) {
 
 通过这两个宏，开发者可以方便地管理自定义类型的声明和定义，使代码结构更清晰。
 
+# boxed type
+
+```
+G_DEFINE_BOXED_TYPE(WpProperties, wp_properties, wp_properties_ref, wp_properties_unref)
+
+```
+
+### 逐步分解
+
+1. **G_DEFINE_BOXED_TYPE**
+   - 这是一个宏，用于定义一个 boxed type。**Boxed type 是 GLib 中的一种类型，它可以被复制和引用计数，但不像对象那样有继承层次结构。**
+2. **WpProperties**
+   - 这是 boxed type 的名称，即我们定义的 boxed type 类型的名字。在这个例子中，`WpProperties` 是我们定义的 boxed type 的类型名。
+3. **wp_properties**
+   - 这是 boxed type 的小写形式名称，通常用于函数和变量命名。在这个例子中，`wp_properties` 是 `WpProperties` 的小写形式。
+4. **wp_properties_ref**
+   - 这是引用函数，用于增加 boxed type 实例的引用计数。在这个例子中，`wp_properties_ref` 是用于增加 `WpProperties` 实例引用计数的函数。
+5. **wp_properties_unref**
+   - 这是取消引用函数，用于减少 boxed type 实例的引用计数。当引用计数减少到零时，实例将被释放。在这个例子中，`wp_properties_unref` 是用于减少 `WpProperties` 实例引用计数的函数。
+
+### 详细解释
+
+- **G_DEFINE_BOXED_TYPE** 宏的作用是定义一个新的 boxed type，并为其生成必要的函数和类型信息。具体来说，它会生成以下内容：
+  - 一个类型注册函数，用于在 GLib 类型系统中注册 `WpProperties` 类型。
+  - 一个类型结构体，包含类型信息和函数指针。
+  - 引用和取消引用函数，用于管理 `WpProperties` 实例的引用计数。
+- **wp_properties_ref** 函数通常会调用 `g_ref_count_inc` 来增加引用计数，并返回增加引用计数后的实例。
+- **wp_properties_unref** 函数通常会调用 `g_ref_count_dec` 来减少引用计数，并在引用计数减少到零时释放实例。
+
+
+
 # 参考资料
 
 1、浅析GLib
