@@ -69,6 +69,43 @@ make install
 export PATH="~/work/test/ct-ng${PATH}"
 ```
 
+# docker方式编译
+
+一种是直接拉取镜像的方式。
+
+```
+docker pull bensuperpc/crosstool-ng
+```
+
+然后进入docker进行使用。
+
+```
+docker run -it bensuperpc/crosstool-ng
+```
+
+
+
+也可以docker代码的方式进行使用。这种方式更加本地化。
+
+https://github.com/bensuperpc/docker-crosstool-ng 代码在这里
+
+
+
+```
+git clone https://github.com/Bensuperpc/docker-crosstool-ng.git
+cd docker-crosstool-ng
+# 配置为avr的
+./crosstool-ng.sh ct-ng avr
+# 开始编译
+./crosstool-ng.sh ct-ng build
+```
+
+总是碰到isl这个包下载不下来的问题。
+
+不管这个了。
+
+以buildroot的来分析工具链就够了。
+
 
 
 # 参考资料

@@ -2805,6 +2805,18 @@ Rust 作为一种现代系统编程语言，近年来受到了广泛关注，并
 
 通过遵循这些最佳实践，你可以编写出高质量、安全和高性能的 Rust 代码。
 
+# rust-by-example
+
+https://doc.rust-lang.org/rust-by-example/
+
+# jupyter notebook for rust
+
+懒得搭建环境，看看有没有这样的简易环境可以用来练习。
+
+https://play.rust-lang.org
+
+
+
 # 参考资料
 
 1、搭建环境和基本入门看这篇就够了。

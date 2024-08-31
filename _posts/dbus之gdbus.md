@@ -1108,7 +1108,11 @@ GLib 和 GIO 库中采用这种命名约定是为了区分不同类别的功能�
 - `g_dbus_connection_call` 是一个异步方法调用，可以通过设置回调函数来处理异步操作的完成。返回值是一个 `GDBusProxy` 对象，表示方法调用的代理对象。
 - `g_dbus_connection_call_finish` 是 GLib 中与 `g_dbus_connection_call` 函数配套使用的函数，用于获取异步 D-Bus 方法调用的结果。`GAsyncResult` 类型的异步操作结果。用完结果后，要在回调函数里释放结果的指针。
 
+# GDBUS编程“&s“和“s“区别
 
+**`&s`和`s`在`g_variant_get()`时的区别在于内存管理，`&s`直接引用内部数据，无需释放，而`s`则会复制数据并需使用`g_free()`释放。**
+
+https://blog.csdn.net/huohongpeng/article/details/115112562
 
 # 参考资料
 

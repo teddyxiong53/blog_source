@@ -280,41 +280,39 @@ spike是运行不了的。
 
 # 各种在线环境
 
-在线riscv汇编环境
+在线riscv汇编环境，这个可以用。但是不能看到寄存器的状态。
 
 https://riscvasm.lucasteske.dev/
 
-康奈尔大学的在线解释器
+康奈尔大学的在线解释器，这个有寄存器状态，但是li这种汇编指令不支持。
 
 https://www.cs.cornell.edu/courses/cs3410/2019sp/riscv/interpreter/
 
-
+这个不支持汇编指令.text这种。
 
 https://riscv.vercel.app/
 
-
+这个是C# 写的，在windows跑的，不是在线的。
 
 https://rizwan3d.github.io/SharpRISCV
 
+这个也不能正常运行。
+
+https://ascslab.org/research/briscv/simulator/simulator.html
+
+这个也能用。但是还是不能识别gas的指令。
+
+https://creatorsim.github.io/creator/
+
+用compiler explorer也能写。
+
+https://godbolt.org/
+
+这个也能用。
+
+https://riscv-programming.org/
 
 
-https://www.riscvassembler.org/
-
-该软件包包含可以将 RISC-V 汇编代码转换为机器代码的工具和函数。
-
-整个过程使用Python实现纯粹是为了易于理解和简单，而不是为了计算效率。
-
-这些工具可用于将给定的代码行或整个文件转换为机器代码。
-
-对于转换，输出文件类型为二进制、文本文件和打印到控制台。
-
-支持的指令类型为 R、I、S、SB、U 和 UJ。
-
-几乎支持所有标准指令，也支持大多数伪指令（请参阅有关添加伪/缺失指令的辅助函数）。
-
-```
-python3 -m pip install riscv-assembler
-```
 
 # RISC-V汇编快速入门
 
@@ -365,6 +363,40 @@ risc-v 有32个通用寄存器（简写 reg），标号为x0 - x31
 
 
 https://blog.csdn.net/m0_62730135/article/details/126799687
+
+# riscv os
+
+https://gitee.com/unicornx/riscv-operating-system-mooc/
+
+这个里面的汇编循序渐进。
+
+是最好的学习材料。
+
+# 芯片仿真
+
+https://webriscv.dii.unisi.it/
+
+# 汇编cheatsheet
+
+https://projectf.io/posts/riscv-cheat-sheet/
+
+指令集
+
+https://www.cs.sfu.ca/~ashriram/Courses/CS295/assets/notebooks/RISCV/RISCV_CARD.pdf
+
+# 汇编指令
+
+这些都在riscv手册里有的。还是一切以这个文档为根本。附录A就是指令列表
+
+http://riscvbook.com/chinese/RISC-V-Reader-Chinese-v2p1.pdf
+
+这里也有一个表格。
+
+https://lgl88911.github.io/2021/02/28/RISC-V%E6%B1%87%E7%BC%96%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/
+
+
+
+https://www.riscv-mcu.com/site/nuclei_n_isa/
 
 # 参考资料
 

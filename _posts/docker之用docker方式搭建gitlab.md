@@ -167,6 +167,12 @@ http://www.ruanyifeng.com/blog/2015/12/git-workflow.html
 
 https://zhuanlan.zhihu.com/p/257857632
 
+# 架构
+
+https://jingwei.link/2018/08/05/gitlab-explore-its-architecture.html
+
+https://blog.csdn.net/gg_18826075157/article/details/107117595
+
 # 参考资料
 
 1、
