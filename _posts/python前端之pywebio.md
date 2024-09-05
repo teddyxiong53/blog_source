@@ -857,7 +857,7 @@ from pywebio.session import info as session_info
 
 run_js和eval_js都是调用了run_script。
 
-eval_js好像可以写得比较复杂。
+eval_js会返回结果。run_js不返回结果。
 
 ```
  ## ----

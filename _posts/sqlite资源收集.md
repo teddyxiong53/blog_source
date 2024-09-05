@@ -16,10 +16,6 @@ https://www.kancloud.cn/wizardforcel/the-definitive-guide-to-sqlite/154144
 
 
 
-入门看这篇文章就好。
-
-https://blog.konghy.cn/2018/07/30/sqlite/
-
 
 
 这个有很多sqlite相关的代码和文档

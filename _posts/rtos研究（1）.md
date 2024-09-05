@@ -45,3 +45,6 @@ https://github.com/cpq/newrtos
 
 这个人是嵌入式的专家，写了很多这些体现基础原理的库。
 
+# 对比
+
+https://blog.csdn.net/qq_38880380/article/details/139485483

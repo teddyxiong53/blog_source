@@ -10,6 +10,24 @@ tags:
 
 打算重新梳理一下shell的知识。
 
+# 资源收集
+
+shell编程规范
+
+https://google.github.io/styleguide/shellguide.html
+
+shell高级用法
+
+https://www.cnblogs.com/gmpy/p/13215152.html
+
+
+
+https://github.com/dylanaraps/pure-bash-bible
+
+
+
+https://github.com/alebcay/awesome-shell
+
 # 主要使用的shell
 
 我主要使用bash。所以下面的内容都只针对bash。
@@ -41,6 +59,49 @@ Bash（Bourne Again SHell）是一种Unix shell和命令语言，
 8. **扩展性：** Bash是一个开源的项目，用户可以根据自己的需要编写自定义的函数和脚本，并且可以利用Bash的扩展机制来扩展其功能。
 
 由于其强大的功能和灵活性，Bash在Unix和类Unix系统中得到了广泛的应用，成为了一个非常受欢迎的命令解释器和脚本语言。
+
+# bash官网
+
+https://www.gnu.org/software/bash/
+
+bash提供的改进：
+
+* 命令行编辑
+* 无限大小的history
+* job control
+* shell function & alias
+* 无限大小的array
+* 2到64进制的数学运算。
+
+官方手册：
+
+https://www.gnu.org/software/bash/manual/bash.html
+
+shell既是解释器，又是编程语言。
+
+shell可以交互式，也可以非交互式执行。
+
+shell允许同步和异步方式执行命令。
+
+shell的操作符：
+
+```
+‘||’, ‘&&’, ‘&’, ‘;’, ‘;;’, ‘;&’, ‘;;&’, ‘|’, ‘|&’, ‘(’, or ‘)’.
+```
+
+返回值：8位的，所以最大值是255
+
+元字符
+
+当不加引号时，用于分隔单词的字符。
+
+元字符包括：
+
+```
+ space, tab, newline, or one of the following characters: ‘|’, ‘&’, ‘;’, ‘(’, ‘)’, ‘<’, or ‘>’
+```
+
+
 
 # bash发展历史
 
@@ -779,6 +840,224 @@ exec ls
 ==简单说，就是你在shell，再手动执行一下bash程序，这个时候执行的就是.bashrc了。==
 
 
+
+# shell编码风格指导
+
+https://google.github.io/styleguide/
+
+## environment
+
+所有的错误消息都应该发送到stderr。
+
+建议使用的错误打印：
+
+```
+err() {
+  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
+}
+
+if ! do_something; then
+  err "Unable to do_something"
+  exit 1
+fi
+```
+
+## 注释的写法
+
+### 文件头部注释
+
+```
+#!/bin/bash
+#
+# Perform hot backups of Oracle databases.
+```
+
+### 函数注释
+
+任何函数都要有注释。
+
+注释应该包含的内容：
+
+* 函数的作用。
+* 使用和修改到的全局变量。
+* 参数。
+* 输出
+* 返回值
+
+```shell
+#######################################
+# Cleanup files from the backup directory.
+# Globals:
+#   BACKUP_DIR
+#   ORACLE_SID
+# Arguments:
+#   None
+#######################################
+function cleanup() {
+  …
+}
+
+#######################################
+# Get configuration directory.
+# Globals:
+#   SOMEDIR
+# Arguments:
+#   None
+# Outputs:
+#   Writes location to stdout
+#######################################
+function get_dir() {
+  echo "${SOMEDIR}"
+}
+
+#######################################
+# Delete a file in a sophisticated manner.
+# Arguments:
+#   File to delete, a path.
+# Returns:
+#   0 if thing was deleted, non-zero on error.
+#######################################
+function del_thing() {
+  rm "$1"
+}
+```
+
+## 格式化
+
+## 命名约定
+
+小写，用下划线分隔单词。
+
+用`::`分隔库。
+
+函数名称后面需要括号。
+
+关键字`function`是可选的，但必须在整个项目中一致使用。
+
+## const、env var、readonly
+
+为了清楚起见，建议`readonly`或`export` ，而不是等效的`declare`命令。您可以一个接一个地执行操作，例如：
+
+```
+# Constant
+readonly PATH_TO_FILES='/some/path'
+export PATH_TO_FILES
+```
+
+## 使用local变量
+
+函数内部使用local变量。
+
+# let的用法
+
+let这个在现代编程语言里很常见的关键词。一般用来声明变量。
+
+在shell里的let应该怎么理解呢？
+
+基本用法也是：
+
+```
+let var=value
+```
+
+后面的value可以进行计算。
+
+```
+let a=5+3
+
+let a=a+1
+
+还可以用括号进行计算。
+let b=(5+3)*a
+
+```
+
+let后面也可以跟一个字符串里进行计算。
+
+```
+let "a=2+3"
+```
+
+不过不如用双小括号的方式。这更加推荐。
+
+```
+(( a = 2 + 3))
+```
+
+# 大括号用法
+
+在shell里，大括号一般用于：
+
+* 参数扩展。
+* 字符串处理。
+
+生成一系列的字符串或者文件名：
+
+```
+echo {a,b,c} # 输出a b c
+echo file{1,2,3} 输出 file1 file2 file3
+```
+
+和循环结合：
+
+```
+for i in {1..5}; do
+	echo $i
+done
+```
+
+复杂组合：
+
+```
+echo {a,b}{1,2}
+# 会得到a1 a2 b1 b2
+```
+
+使用大括号的时候，要注意内部没有任何空格。
+
+# 冒号和双冒号用途
+
+## 冒号
+
+* 空命令。`:`等价于true。
+* 设置变量的默认值。`echo ${VAR:-default_value}`
+* 作为分隔符。例如PATH里的分隔符。
+
+## 双冒号
+
+没有定义。
+
+# pushd/ popd和 cd / cd - 有什么本质区别吗
+
+**`pushd`/`popd`** 和 **`cd`/`cd -`** 都用于在命令行中改变当前工作目录，但它们的工作方式和用途有所不同：
+
+### `pushd` / `popd`
+- **功能**：
+  - `pushd`：将当前目录保存到目录栈中，并切换到新目录。
+  - `popd`：从目录栈中弹出最顶端的目录，并切换到该目录。
+- **目录栈**：
+  - `pushd` 和 `popd` 维护一个目录栈（即一系列保存的目录）。使用 `pushd` 时，当前目录被存储在栈中，随后切换到目标目录。使用 `popd` 时，最顶端的目录被弹出并切换到该目录。
+- **典型用例**：
+  - 适用于需要在多个目录之间频繁切换并希望轻松返回原始目录的场景。栈结构使得可以在一系列目录间依次切换，而无需手动记住路径。
+
+### `cd` / `cd -`
+- **功能**：
+  - `cd`：切换到指定目录。
+  - `cd -`：切换到上一个目录。
+- **无目录栈**：
+  - `cd` 仅切换到指定目录，而不会保存当前目录。`cd -` 是一个特殊用法，它仅切换到上一个目录，而不是一个可以反复使用的栈。
+- **典型用例**：
+  - 适用于在两个目录之间来回切换的简单场景，比如从当前目录跳转到一个目录后再返回。
+
+### 区别总结
+| 特性                 | `pushd`/`popd`                       | `cd`/`cd -`                    |
+| -------------------- | ------------------------------------ | ------------------------------ |
+| 维护目录栈           | 是                                   | 否                             |
+| 切换到新目录时的操作 | 保存当前目录并切换到新目录           | 仅切换到新目录，不保存当前目录 |
+| 返回操作             | `popd` 返回到栈中的上一个目录        | `cd -` 返回到上一个目录        |
+| 使用场景             | 复杂的多目录切换，需保持路径的上下文 | 简单的两目录间切换             |
+
+`pushd`/`popd` 提供了更高级的目录管理功能，适合需要频繁在多个目录之间切换且希望保持访问历史的场景，而 `cd`/`cd -` 更适合简单的路径切换。
 
 # 参考资料
 
