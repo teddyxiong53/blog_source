@@ -7,6 +7,12 @@ tags:
 
 --
 
+# 资源收集
+
+Getting Started with LLVM Core Libraries
+
+https://getting-started-with-llvm-core-libraries-zh-cn.readthedocs.io/zh-cn/latest/index.html
+
 # llvm发展历史
 
 LLVM（Low Level Virtual Machine）是一个开源的编译器基础设施项目，它提供了一组用于构建编译器和相关工具的库和工具链。以下是LLVM的发展历史的主要里程碑：

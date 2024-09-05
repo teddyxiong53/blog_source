@@ -329,3 +329,44 @@ Type usage conventions 类型使用约定
 这个是手表。
 
 https://pebble.github.io/rockyjs/
+
+# 16bit表示指针
+
+在嵌入式系统或资源受限的环境中，使用16位指针（即压缩指针）是一种常见的优化手段。这种优化主要基于以下几个原因：
+
+1. **地址空间限制**：在某些嵌入式系统中，可寻址的内存空间相对较小，通常远小于4GB。例如，如果系统只有64KB的RAM，那么只需要16位就可以完全表示这64KB的地址空间。
+2. **内存节省**：使用16位指针而不是32位或64位指针可以显著减少内存占用。特别是在指针使用频繁的数据结构中，如链表、树等，这种节省会非常明显。
+3. **性能优化**：较小的指针意味着在内存传输和处理时需要更少的CPU周期，从而可能提高性能。
+
+### 具体实现细节
+
+在代码中，`jmem_cpointer_t` 被定义为 `uint16_t` 或 `uint32_t`，具体取决于宏 `JERRY_CPOINTER_32_BIT` 的定义：
+
+```cpp
+#if ENABLED (JERRY_CPOINTER_32_BIT)
+typedef uint32_t jmem_cpointer_t;
+#else /* !ENABLED (JERRY_CPOINTER_32_BIT) */
+typedef uint16_t jmem_cpointer_t;
+#endif /* ENABLED (JERRY_CPOINTER_32_BIT) */
+```
+
+CopyInsert
+
+### 16位指针的表示方法
+
+1. **偏移量表示法**：在16位指针的情况下，通常会使用偏移量来表示指针。例如，假设有一个基地址（base address），那么实际的指针值可以通过基地址加上16位偏移量来计算。
+2. **固定地址空间**：假设系统的内存空间是固定的，例如64KB，那么16位指针可以直接表示这64KB范围内的任何地址，无需额外的基地址。
+
+### 示例
+
+假设有一个基地址 `base_address` 和一个16位偏移量 `offset`，那么实际的指针值可以表示为：
+
+```cpp
+void* actual_pointer = (void*)(base_address + offset);
+```
+
+在代码中，这种转换通常由特定的函数或宏来完成，例如 `jmem_compress_pointer` 和 `jmem_decompress_pointer`。
+
+### 总结
+
+16位指针之所以能够表示指针，是因为在资源受限的环境中，系统的内存空间通常较小，16位足以覆盖整个可寻址的内存范围。通过使用偏移量或固定地址空间的方法，可以在不牺牲功能的情况下，显著减少内存占用和提高性能。
