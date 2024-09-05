@@ -15,7 +15,11 @@ tailwind我觉得比较符合我的需求，够用了。
 
 简单直观。
 
+# 资源收集
 
+直接这里进行练习。非常方便。
+
+https://play.tailwindcss.com/
 
 # 简介
 

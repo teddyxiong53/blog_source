@@ -105,6 +105,46 @@ x env use python
 
 是安装在x-cmd的目录下的。
 
+# 搭建lua环境
+
+```
+mkdir xlua # 新建一个测试目录。
+x lua init # 这个会初始化一个luarocks的环境。
+echo print('hello lua') > test.lua
+x lua check ./test.lua
+x lua i lua-cjson # 安装模块。
+```
+
+用起来非常顺手。很好用。
+
+# x-cmd代码分析
+
+怎样添加到你的环境的？
+
+就是在你是shell启动脚本里加上了这一句。
+
+所以入口就是X这个脚本文件。
+
+```
+[ ! -f "$HOME/.x-cmd.root/X" ] || . "$HOME/.x-cmd.root/X" # boot up x-cmd.
+```
+
+而X脚本文件是直接source了mod/xrc/latest这个脚本。所以这里才是真正的入口。
+
+xrc我估计是x run command的意思。
+
+这个文件有500行。
+
+定义了一下alias，这个定义看起来挺高级的。
+
+```
+alias help:show:ret:64='
+    ___x_cmd help --show >&2
+    unset X_help_cmd
+    return 64 || exit 64
+'
+```
+
 
 
 # x-cmd团队编译的go模块
