@@ -279,7 +279,26 @@ question.html内容省略。
 
 https://github.com/pywebio/PyWebIO/wiki/Why-PyWebIO%3F
 
+# 控制台方式进行测试
+
+```
+>>> from pywebio.input import *
+>>>
+>>>
+>>> from pywebio.output import *
+>>> from pywebio.session import *
+>>> s = input('your name') # 这里会自动打开浏览器，阻塞在浏览器输入操作。
+>>> print(s)
+123
+```
+
+
+
 # input
+
+## pywebio的input action的action是什么？对应了html里的哪个概念？
+
+action就是给input控件输入值的一种方式，
 
 ## 加上action的用法
 
@@ -572,6 +591,10 @@ session.download(name, content)
 
 为当前session设置标题、页面外观、输入栏等内容。
 
+set_env和config的区别是什么？
+
+
+
 ### info
 
 info对象提供了用户的ip地址、语言、浏览器信息等内容。
@@ -715,6 +738,12 @@ config(title='hanliang soft', description='this is hanliang website', theme='yet
 @config(title='this app one')
 def main():
 	pass
+```
+
+可以配置的内容：
+
+```
+config_keys = ['title', 'description', 'js_file', 'js_code', 'css_style', 'css_file', 'theme']
 ```
 
 

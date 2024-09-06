@@ -77,6 +77,25 @@ loop.run_until_complete(task)
 
 通过按照以上步骤，您可以开始使用 `asyncio` 编写异步程序。根据具体的需求，您可以定义更多的异步函数和任务，并将它们添加到事件循环中以便执行。
 
+# 更简单的helloworld
+
+上面的HelloWorld看起来还比较繁琐。
+
+下面的写法更加简单。
+
+```
+import asyncio
+
+async def main():
+    print('hello')
+    await asyncio.sleep(1)
+    print('world')
+    
+asyncio.run(main())
+```
+
+
+
 # 多个任务同步做
 
 在 `asyncio` 中，可以使用多种方法同时执行多个异步任务。以下是几种常见的方法：

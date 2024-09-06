@@ -271,3 +271,7 @@ LSP 的优点在于它将语言相关的功能从编辑器中解耦出来，使�
 这样的插件需要更多的系统资源，因此运行在单独的进程中，这样可以提高系统的稳定性和性能。
 
 总的来说，插件的运行方式取决于插件的功能和设计，一些简单的插件可能在与 Visual Studio Code 主进程相同的进程中运行，而一些复杂的插件可能会在单独的进程中运行。
+
+# theia
+
+https://zhaomenghuan.js.org/blog/theia-tech-architecture.html

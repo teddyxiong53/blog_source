@@ -536,7 +536,21 @@ https://blog.csdn.net/qq_43827595/article/details/105613954
 
 跟百度脑图是一个开源方案的。
 
+# 查询unicode值
 
+因为在看有些代码的时候，里面有不少的emoji表情，就想知道这个标签的unicode值是多少。
+
+插件里搜索unicode，找到这个：
+
+Unicode code point of current character
+
+这个会在状态栏显示当前的符号的unicode值。
+
+点击状态栏，会跳转到网页查看详细信息。
+
+插件代码在这里，实现不复杂。可以学习一下。
+
+https://github.com/zeithaste/cursorCharCode/blob/master/src/extension.ts
 
 # 参考资料
 

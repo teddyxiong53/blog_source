@@ -41,6 +41,18 @@ while not q.empty():
     print q.get()
 ```
 
+# collections.deque和queue.Queue比较
+
+- **`deque`**: 适用于需要高效双端操作的场景，如实现栈或队列。它更灵活，但在多线程环境中需要手动管理线程安全。--------简单来说，就是属于底层的库。
+- **`queue.Queue`**: 适合多线程应用，提供了线程安全的队列操作，使用简单，但功能相对较少，只支持 FIFO 操作。-----------上层适合使用这个，简单。
+
+实际是queue.Queue的内部就是持有了一个deque。
+
+```
+    def _init(self, maxsize):
+        self.queue = deque()
+```
+
 
 
 # 参考资料
