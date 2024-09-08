@@ -26,3 +26,7 @@ Preact.js 是一个轻量级的 JavaScript 库，它是 React.js 的一个高效
 7. **服务器端渲染（SSR）**：Preact 支持服务器端渲染，这有助于提高应用程序的首屏加载速度和 SEO。
 8. **兼容 React 生态**：由于 Preact 与 React 的 API 高度兼容，因此可以使用许多为 React 编写的库和组件，有时甚至不需要任何修改。
 Preact 适合那些希望构建轻量级、高性能的 web 应用程序的开发者，特别是那些对应用程序大小和加载时间有严格要求的场景。然而，需要注意的是，尽管 Preact 尽量与 React 保持兼容，但仍然可能存在一些差异，开发者在迁移现有 React 应用程序到 Preact 时应该仔细测试以确保兼容性。
+
+代码在这里：
+
+https://github.com/preactjs/preact

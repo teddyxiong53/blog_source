@@ -131,3 +131,162 @@ Web 创业的方向有很多，以下是一些值得关注的领域：
 ### 总结
 
 选择创业方向时，考虑市场需求、个人兴趣和技能，以及竞争环境。找到一个结合了这些因素的领域，能够更好地推动你的创业成功。
+
+# web微型库收集
+
+## css库
+
+### skeleton
+
+我觉得这个就可以了。
+
+足够简单。简洁。
+
+## js库
+
+是的，JavaScript 中也有一些轻量级的微型库，类似于 CSS 的 Skeleton。以下是几个简单易用的 JavaScript 微型库：
+
+### 1. **Alpine.js**
+
+- **描述**：一个轻量级的 JavaScript 框架，适用于简单的交互和动态功能。
+- **特点**：
+  - 类似于 Vue 的指令风格。
+  - 小巧（约 10KB）。
+  - 适用于小型项目或增强现有页面。
+
+- **使用示例**：
+  ```html
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs" defer></script>
+  <div x-data="{ open: false }">
+      <button @click="open = !open">Toggle</button>
+      <div x-show="open">Hello, Alpine!</div>
+  </div>
+  ```
+
+### 2. **Cash**
+
+- **描述**：一个轻量级的 jQuery 替代品，提供基本的 DOM 操作和事件处理。
+- **特点**：
+  - 仅约 10KB。
+  - 兼容 jQuery 的一部分 API。
+  
+- **使用示例**：
+  
+  ```html
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cash/7.1.2/cash.min.js"></script>
+  <script>
+      $(document).ready(function() {
+          $('#myButton').on('click', function() {
+              alert('Button clicked!');
+          });
+      });
+  </script>
+  ```
+
+### 3. **Vanilla JS**
+
+- **描述**：虽然不是库，但使用原生 JavaScript 进行 DOM 操作比以往更简单。可以使用简单的函数封装常用功能。
+- **特点**：
+  - 不依赖任何库。
+  - 小巧且高效。
+
+- **使用示例**：
+  ```javascript
+  function openModal() {
+      const modal = document.getElementById('modal');
+      modal.style.display = 'block';
+  }
+  
+  function closeModal() {
+      const modal = document.getElementById('modal');
+      modal.style.display = 'none';
+  }
+  ```
+
+### 4. **Micro.js**
+
+- **描述**：一个非常小的 JavaScript 库，提供基本的 DOM 操作和事件处理。
+- **特点**：
+  - 仅约 3KB。
+  - 提供链式调用。
+
+- **使用示例**：
+  
+  ```html
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/microjs/1.0.0/micro.min.js"></script>
+  <script>
+      micro('#myButton').on('click', function() {
+          alert('Clicked!');
+      });
+  </script>
+  ```
+
+### 5. **Tippy.js**
+
+- **描述**：一个轻量级的工具提示库，简单易用。
+- **特点**：
+  - 约 12KB。
+  - 提供丰富的配置选项。
+  
+- **使用示例**：
+  ```html
+  <script src="https://unpkg.com/@popperjs/core@2"></script>
+  <script src="https://unpkg.com/tippy.js@6"></script>
+  <button data-tippy-content="Hello, Tippy!">Hover me</button>
+  <script>
+      tippy('[data-tippy-content]');
+  </script>
+  ```
+
+### 总结
+
+这些微型 JavaScript 库都非常轻量且易于使用，适合快速开发和小型项目。根据项目需求选择合适的库，可以让开发更加高效。
+
+
+
+# 快速生成公司官网静态网站
+
+快速生成公司官网静态网站的方法有很多，以下是一些推荐的步骤和工具：
+
+### 1. **使用静态网站生成器**
+
+- **选择生成器**：如 Jekyll、Hugo、Gatsby 等。
+- **安装和配置**：根据选定的生成器的文档安装并配置项目。
+- **使用模板**：选择或创建一个适合公司风格的主题或模板。
+
+### 2. **使用网站构建平台**
+
+- **Wix、Squarespace、Webflow**：这些平台提供拖放式界面，适合没有编码经验的用户。
+- **模板选择**：从现有模板中选择，快速定制网站内容和样式。
+
+### 3. **使用内容管理系统（CMS）**
+
+- **选择 CMS**：如 WordPress（配合静态生成插件）、Ghost 等。
+- **安装主题**：选择响应式主题并自定义内容。
+
+### 4. **利用现成的模板**
+
+- **HTML 模板**：从模板市场（如 ThemeForest、BootstrapMade）下载适合公司风格的 HTML 模板。
+- **内容填充**：替换模板中的占位符文本和图片，调整样式以符合公司品牌。
+
+### 5. **使用 Markdown 生成网站**
+
+- **Markdown 文件**：使用 Markdown 编辑内容，结合静态生成器（如 Jekyll）将其转换为 HTML。
+- **简化内容管理**：Markdown 格式易于编辑，适合快速更新。
+
+### 6. **托管与发布**
+
+- **选择托管平台**：如 GitHub Pages、Netlify、Vercel 等。
+- **部署网站**：将生成的静态文件上传到托管平台，设置域名。
+
+### 7. **SEO 和分析工具**
+
+- **基本 SEO 设置**：确保添加适当的 meta 标签和描述。
+- **使用分析工具**：如 Google Analytics，监控网站流量和用户行为。
+
+### 8. **更新与维护**
+
+- **定期更新内容**：确保网站信息的时效性。
+- **监控性能和安全**：定期检查网站性能，确保安全性。
+
+通过这些方法，可以在短时间内快速生成一个功能齐全的公司官网静态网站。选择适合的工具和流程，可以大大简化开发和维护工作。

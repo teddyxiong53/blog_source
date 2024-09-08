@@ -139,7 +139,80 @@ app = DispatchingApp(info.load_app, use_eager_loading=eager_loading)
 
 
 
+# 编译打包
 
+前面的代码和一切操作都安装官方教程来。
+
+在venv环境下进行操作。
+
+```
+pip install flit
+pip list # 查看当前的已经安装的包，可以看到没有flaskr的。
+```
+
+在flaskr的同一层目录，新建pyproject.toml文件。
+
+内容如下：
+
+```
+[project]
+name = "flaskr"
+version= "1.0.0"
+description = "the flaskr blog"
+dependencies = [
+    "flask",
+]
+[build-system]
+requires = ["flit_core<4"]
+build-backend = "flit_core.buildapi"
+```
+
+然后执行：
+
+```
+flit build
+```
+
+会在当前目录下生成一个dist目录，下面有：
+
+```
+dist
+|-- flaskr-1.0.0-py2.py3-none-any.whl
+`-- flaskr-1.0.0.tar.gz
+```
+
+这个whl文件就可以发给别人安装。
+
+```
+pip install dist/flaskr-1.0.0-py2.py3-none-any.whl
+```
+
+安装之后，就可以在任意的目录下执行：
+
+```
+flask --run flaskr run 
+```
+
+
+
+我后续做项目，都保持跟flaskr一样的目录结构模式就好了。
+
+```
+ls
+dist  flaskr  instance  pyproject.toml  venv
+```
+
+# 通过gunicorn执行
+
+```
+./test/py-test/tuturial/venv/bin/python -m gunicorn  -w 4 'flaskr:create_app()'
+```
+
+
+
+# pytest和coverage test
+
+https://flask.palletsprojects.com/en/3.0.x/tutorial/test
 
 # 参考资料
 

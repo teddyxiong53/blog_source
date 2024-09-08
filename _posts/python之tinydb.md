@@ -214,7 +214,17 @@ lru是这样的：
 
 只访问keys。这样是ok的。
 
+# 找找使用了tinydb的项目
 
+https://github.com/msiemens/tinydb/network/dependents
+
+
+
+https://github.com/topics/tinydb?o=desc&s=stars
+
+这个看起来还不错。
+
+https://github.com/pylipp/financeager/tree/master
 
 # 参考资料
 

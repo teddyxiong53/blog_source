@@ -255,7 +255,7 @@ create db ok
 
 
 
-这样读取到的result是空的。为什么？
+这样读取到的result是空的。为什么？因为nodejs的设计风格是错误优先，回调函数的第一个参数是err。
 
 ```
 db.run('select * from oplog', (result, err)=> {
