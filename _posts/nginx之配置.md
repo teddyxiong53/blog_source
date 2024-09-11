@@ -136,9 +136,9 @@ uwsgi_pass
 
 
 
-#一些配置项
+# 一些配置项
 
-##sendfile
+## sendfile
 
 现在的web服务器都提供sendfile的选项来提高服务器的性能。
 
@@ -153,7 +153,7 @@ ssize_t sendfile(int out_fd, int in_fd, off_t *offset, size_t count);
 
 主要是避免多次拷贝。
 
-##tcp_nopush
+## tcp_nopush
 
 这个是在使用sendfile的时候，才可能触发的一个选项。
 

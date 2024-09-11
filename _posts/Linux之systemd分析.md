@@ -22,6 +22,10 @@ systemctl是systemd的。
 
 # 资源收集
 
+官网，这个是最全面和最权威的信息。
+
+https://systemd.io/
+
 systemd 中文版
 
 https://www.bookstack.cn/read/systemd-zh/systemd.md
@@ -1652,6 +1656,41 @@ systemd 在启动过程中会读取和解析多个配置文件，以确定系统
 以上仅列举了一些常见的配置项，实际上 `/etc/systemd/system.conf` 文件中还包含了更多的配置选项，可以根据需要进行定制和调整。在配置文件中，每个配置项的注释都提供了详细的说明，可以参考注释以了解每个配置项的作用和用法。
 
 
+
+`/etc/systemd/system.conf` 是 `systemd` 的全局配置文件，控制系统服务和单元的行为。以下是一些常见的配置项及其描述：
+
+| 配置项                   | 描述                                       |
+| ------------------------ | ------------------------------------------ |
+| `DefaultTimeoutStartSec` | 启动服务的默认超时时间（秒）。             |
+| `DefaultTimeoutStopSec`  | 停止服务的默认超时时间（秒）。             |
+| `DefaultRestart`         | 默认重启策略（如 `no`、`on-failure` 等）。 |
+| `DefaultLimitNOFILE`     | 默认打开的文件描述符限制。                 |
+| `DefaultLimitNPROC`      | 默认进程数限制。                           |
+| `DefaultEnvironment`     | 为服务设置的环境变量。                     |
+| `DefaultTasksMax`        | 默认最大任务数限制。                       |
+| `DefaultLimitAS`         | 默认地址空间限制。                         |
+| `DefaultLimitRSS`        | 默认常驻集大小限制。                       |
+| `DefaultLimitFSIZE`      | 默认文件大小限制。                         |
+
+### 示例
+
+以下是一个 `/etc/systemd/system.conf` 文件的示例：
+
+```ini
+[Manager]
+DefaultTimeoutStartSec=90s
+DefaultTimeoutStopSec=30s
+DefaultRestart=on-failure
+DefaultLimitNOFILE=1024
+DefaultTasksMax=512
+```
+
+### 说明
+
+- **[Manager]**：指定这些配置项适用于 `systemd` 管理器。
+- 大多数配置项可以在单个服务的单元文件中重写。
+
+如果您需要更详细的信息或示例，请随时询问！
 
 # systemd init的main函数入口在哪个文件里
 
@@ -3476,12 +3515,12 @@ getty.target
    ```
    [Unit]
    Description=Disable agetty service
-
+   
    [Service]
    ExecStart=/bin/true
    RemainAfterExit=yes
    Type=oneshot
-
+   
    [Install]
    WantedBy=multi-user.target
    ```
@@ -3568,7 +3607,7 @@ output\build\systemd-252.4\src\sysv-generator\sysv-generator.c
    ```
    RuntimeDirectory=generator
    ```
-这样生成的 systemd 单元文件将存放在 `/run/systemd/generator/` 目录中。
+   这样生成的 systemd 单元文件将存放在 `/run/systemd/generator/` 目录中。
    
 2. 如果你希望将生成的 systemd 单元文件保存到永久存储位置，可以通过修改 `/etc/systemd/system.conf` 配置文件中的 `UnitPath` 选项来指定。例如，你可以将其设置为 `/etc/systemd/system/`：
    ```
@@ -3891,6 +3930,357 @@ systemctl daemon-reload
 请注意，这是一个系统范围的修改，将影响所有服务。如果你只想针对特定的服务禁用自动生成，请参考 systemd unit 文件的相关选项，例如 `Generator`、`ConditionPathExists` 等。
 
 在进行任何系统配置修改之前，请确保备份重要文件，并在测试环境中进行验证。
+
+# cgroups如何进行使用？
+
+使用 `systemd` 中的 cgroups 进行资源管理和限制，可以按照以下步骤进行：
+
+### 1. **查看当前 cgroups 状态**
+
+可以使用以下命令查看当前系统中的 cgroups 状态：
+
+```bash
+# 查看 cgroup 层次结构
+systemd-cgls
+```
+
+### 2. **创建和管理服务单元**
+
+在创建或修改服务单元文件时，可以添加资源限制配置。以下是一个示例单元文件 `/etc/systemd/system/myservice.service`：
+
+```ini
+[Unit]
+Description=My Custom Service
+
+[Service]
+ExecStart=/usr/bin/myapp
+CPUQuota=50%          # 限制 CPU 使用率为 50%
+MemoryLimit=100M     # 限制内存使用为 100MB
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### 3. **重新加载和启动服务**
+
+在修改单元文件后，需要重新加载 `systemd` 配置并启动服务：
+
+```bash
+# 重新加载 systemd 配置
+sudo systemctl daemon-reload
+
+# 启动服务
+sudo systemctl start myservice
+```
+
+### 4. **监控资源使用**
+
+可以使用 `systemctl` 命令查看服务状态：
+
+```bash
+sudo systemctl status myservice
+```
+
+### 5. **使用 `cgset` 和 `cgget` 管理 cgroups**
+
+如果需要更细粒度地控制 cgroups，可以使用 `cgroup-tools` 中的 `cgset` 和 `cgget`：
+
+```bash
+# 设置 cgroup 的资源限制
+sudo cgset -r memory.limit_in_bytes=100M mygroup
+
+# 获取 cgroup 的资源使用情况
+sudo cgget -r memory.usage_in_bytes mygroup
+```
+
+### 6. **使用 `systemd` 直接管理 cgroups**
+
+也可以通过 `systemd` 直接管理特定的 cgroups：
+
+```bash
+# 创建一个新的 cgroup
+sudo systemctl set-property myservice.service MemoryLimit=200M
+```
+
+### 7. **停止或重启服务**
+
+要停止或重启服务，可以使用以下命令：
+
+```bash
+# 停止服务
+sudo systemctl stop myservice
+
+# 重启服务
+sudo systemctl restart myservice
+```
+
+### 总结
+
+通过以上步骤，您可以有效地使用 `systemd` 中的 cgroups 来管理和限制系统资源，以提高系统的稳定性和性能。如有其他问题，请随时询问！
+
+# systemd的namespace包括哪些内容
+
+`systemd` 中的命名空间（namespace）用于提供资源隔离和管理，主要包括以下几种类型：
+
+### 1. **Mount Namespace**
+   - 隔离文件系统挂载点，允许不同进程有不同的视图。
+
+### 2. **PID Namespace**
+   - 隔离进程 ID，允许在不同的命名空间中重用相同的进程 ID。
+
+### 3. **Network Namespace**
+   - 隔离网络接口、IP 地址、路由表等，允许进程在不同的网络环境中运行。
+
+### 4. **User Namespace**
+   - 隔离用户和组 ID，允许进程以不同的用户权限运行而不影响系统全局设置。
+
+### 5. **IPC Namespace**
+   - 隔离进程间通信（IPC）资源，如共享内存和信号量，确保不同命名空间的进程不能相互访问 IPC 资源。
+
+### 6. **Cgroup Namespace**
+   - 隔离 cgroups，允许不同命名空间中的进程独立地管理资源限制。
+
+### 使用示例
+
+在 `systemd` 单元文件中，可以通过以下指令来配置命名空间：
+
+```ini
+[Service]
+PrivateTmp=true               # 使用独立的临时文件系统
+ProtectSystem=full            # 保护系统目录
+ProtectHome=yes               # 保护用户主目录
+NoNewPrivileges=true           # 防止新进程获得额外权限
+```
+
+### 总结
+
+通过使用命名空间，`systemd` 能够为服务提供更好的资源隔离和安全性，增强系统的可靠性和安全性。如果您有其他问题或需要更多细节，请告知！
+
+# 具体有什么命令可以使用
+
+在 `systemd` 中，可以使用以下命令来管理和操作命名空间及相关功能：
+
+### 1. **systemctl**
+用于管理 `systemd` 服务和单元。
+
+```bash
+# 启动服务
+sudo systemctl start <service-name>
+
+# 停止服务
+sudo systemctl stop <service-name>
+
+# 查看服务状态
+sudo systemctl status <service-name>
+
+# 重新加载服务配置
+sudo systemctl daemon-reload
+```
+
+### 2. **systemd-run**
+用于创建新的服务或单元，并指定命名空间。
+
+```bash
+# 在新的网络命名空间中启动命令
+sudo systemd-run --scope --property=PrivateNetwork=yes /path/to/command
+```
+
+### 3. **systemd-nspawn**
+用于创建轻量级容器，支持多种命名空间。
+
+```bash
+# 启动一个新的 nspawn 容器
+sudo systemd-nspawn -D /path/to/container
+```
+
+### 4. **ip**
+用于管理网络命名空间。
+
+```bash
+# 创建网络命名空间
+ip netns add <namespace-name>
+
+# 进入网络命名空间
+ip netns exec <namespace-name> /bin/bash
+```
+
+### 5. **unshare**
+用于创建新命名空间并运行命令。
+
+```bash
+# 创建一个新的 PID 命名空间并运行命令
+sudo unshare --fork --pid /bin/bash
+```
+
+### 6. **lsns**
+用于列出当前系统中的所有命名空间。
+
+```bash
+# 列出所有命名空间
+lsns
+```
+
+### 7. **nsenter**
+用于进入另一个进程的命名空间。
+
+```bash
+# 进入指定 PID 的命名空间
+sudo nsenter --target <pid> --mount --uts --ipc --net --pid
+```
+
+### 示例
+
+创建和使用命名空间的简单示例：
+
+```bash
+# 创建一个新的网络命名空间
+ip netns add mynamespace
+
+# 在新的命名空间中执行命令
+ip netns exec mynamespace ip addr
+```
+
+这些命令可以帮助您管理和操作 `systemd` 中的命名空间及其相关功能。如有其他问题，请随时询问！
+
+# systemd会有哪些后台进程在运行？分别起什么作用？
+
+在 `systemd` 中，多个后台进程（服务）可能会同时运行，每个进程都有特定的作用。以下是一些常见的 `systemd` 后台进程及其功能：
+
+### 1. **systemd**
+   - **作用**：`systemd` 本身是系统和服务管理器，负责启动和管理其他服务，处理系统引导和关闭。
+
+### 2. **systemd-journald**
+   - **作用**：管理系统日志，收集和存储日志信息，提供日志查询功能。
+
+### 3. **systemd-logind**
+   - **作用**：管理用户登录会话，包括用户登录、注销、会话管理等。
+
+### 4. **systemd-networkd**
+   - **作用**：管理网络配置和连接，支持静态和动态 IP 配置。
+
+### 5. **systemd-resolved**
+   - **作用**：提供 DNS 解析服务，处理名称解析请求。
+
+### 6. **systemd-timesyncd**
+   - **作用**：提供时间同步功能，确保系统时间与网络时间服务器同步。
+
+### 7. **systemd-udevd**
+   - **作用**：处理设备事件，动态管理设备节点，执行设备相关的规则。
+
+### 8. **systemd-tmpfiles**
+   - **作用**：管理临时文件和目录的创建、清理和删除。
+
+### 9. **systemd-cgls**
+   - **作用**：用于查看和管理控制组（cgroups），显示当前 cgroup 层次结构。
+
+### 10. **systemd-userdbd**
+   - **作用**：管理用户和组数据库，提供用户信息查询。
+
+### 11. **systemd-oomd**
+   - **作用**：监控内存使用并在必要时杀死进程，以防止系统耗尽内存。
+
+### 总结
+
+这些后台进程共同工作，以确保系统的稳定性、可管理性和安全性。`systemd` 通过这些组件来提供强大的服务管理和资源控制功能。如果您需要了解某个特定进程的更多细节，欢迎询问！
+
+# systemd的log怎么打印和查看
+
+在 `systemd` 中，日志的打印和查看主要通过 `journalctl` 工具和 `systemd-journald` 服务来实现。以下是如何打印和查看日志的步骤：
+
+### 1. **打印日志**
+
+#### 使用 `journalctl`
+
+- **查看所有日志**：
+  ```bash
+  journalctl
+  ```
+
+- **查看最新日志**（实时更新）：
+  ```bash
+  journalctl -f
+  ```
+
+- **查看特定服务的日志**：
+  ```bash
+  journalctl -u <service-name>
+  ```
+
+- **查看自某个时间点以来的日志**：
+  ```bash
+  journalctl --since "2024-09-01 12:00:00"
+  ```
+
+- **查看特定优先级的日志**：
+  ```bash
+  journalctl -p warning   # 查看警告及更高优先级的日志
+  ```
+
+- **查看特定用户的日志**：
+  ```bash
+  journalctl _UID=<user-id>
+  ```
+
+### 2. **格式化输出**
+
+- **以 JSON 格式输出**：
+  ```bash
+  journalctl -o json
+  ```
+
+- **以短格式输出**：
+  ```bash
+  journalctl -o short
+  ```
+
+### 3. **持久化日志**
+
+默认情况下，`systemd-journald` 将日志存储在内存中。要使日志持久化，您需要创建一个目录 `/var/log/journal`：
+
+```bash
+sudo mkdir /var/log/journal
+sudo systemd-tmpfiles --create --prefix /var/log/journal
+```
+
+### 4. **查看系统日志**
+
+- **查看系统日志**（包括内核消息）：
+  ```bash
+  journalctl -k
+  ```
+
+### 5. **清理日志**
+
+- **清理过期的日志**：
+  ```bash
+  journalctl --vacuum-time=2weeks   # 删除2周前的日志
+  ```
+
+### 总结
+
+通过这些命令，您可以方便地打印和查看 `systemd` 的日志，帮助您进行系统故障排查和监控。如果有其他问题，请随时询问！
+
+# 那些以*ctl为后缀的命令呢？例如timedatectl这些
+
+以下是以 `*ctl` 为后缀的常用 `systemd` 命令的列表：
+
+| 命令              | 描述                                                  |
+| ----------------- | ----------------------------------------------------- |
+| `systemctl`       | 管理系统服务和单元                                    |
+| `journalctl`      | 查看和管理系统日志                                    |
+| `timedatectl`     | 管理系统时间和日期                                    |
+| `hostnamectl`     | 管理系统主机名                                        |
+| `localectl`       | 管理本地化设置（语言和键盘布局）                      |
+| `loginctl`        | 管理用户会话和登录信息                                |
+| `udevadm control` | 管理设备管理器（udev）的行为                          |
+| `resolvectl`      | 管理 DNS 解析（在某些系统中命名为 `systemd-resolve`） |
+| `machinectl`      | 管理本地和远程容器                                    |
+| `networkctl`      | 管理网络连接和状态                                    |
+| `coredumpctl`     | 查看和管理核心转储文件                                |
+| `busctl`          | 与 D-Bus 消息总线进行交互                             |
+| `systemd-analyze` | 分析启动性能和服务依赖                                |
+
+这些命令提供了对系统各种功能的控制和管理。如果您需要更详细的说明或具体用法，请随时询问！
 
 # 参考资料
 

@@ -34,3 +34,8 @@ vue-cli工具使用
 2、看官网这里。重点看todomvc。
 ```
 
+看简单的例子，就看vue和vuex的example目录下的代码。
+
+简单直观。
+
+https://github.com/vuejs/vuex/blob/3.x/examples

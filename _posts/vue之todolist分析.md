@@ -97,7 +97,7 @@ npm install buefy --save
 npm install axios --save 
 ```
 
-buefy是一个基于Bulma的用户界面组件库。是ui的css饭gan
+buefy是一个基于Bulma的用户界面组件库。
 
 目前src目录下自动生成了这些内容。
 

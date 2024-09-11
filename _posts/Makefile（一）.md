@@ -31,6 +31,16 @@ Makefile是一种用于构建和编译软件项目的工具，它的发展历史
 
 总的来说，Makefile作为一种构建工具，经历了几十年的发展和演进，仍然在软件开发中发挥着重要的作用，并在不同的环境和项目中继续使用。
 
+# 一行命令的编译
+
+这个写法不错。大部分的简单项目都够用了。
+
+```
+gcc -Wall logger/*.c util/*.c cmdparser/*.c docker/*.c main.c -lcrypto -o tinydocker
+```
+
+
+
 # 变量
 
 Makefile里自带的变量分为3种：
