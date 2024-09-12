@@ -311,7 +311,115 @@ paginate() 标页数。返回指定范围内的结果。
 
 
 
+# sqlalchemy基本用法
 
+SQLAlchemy 是一个强大的 Python ORM（对象关系映射）库，提供了高效的数据库访问和操作接口。它支持多种数据库，包括 SQLite、PostgreSQL、MySQL、Oracle 等。
+
+### 主要特性
+
+1. **ORM（对象关系映射）**：
+   - 允许你使用 Python 对象而不是 SQL 语句来操作数据库。
+
+2. **SQL 表达式语言**：
+   - 提供灵活的 SQL 表达式构建工具，可以直接生成 SQL 查询。
+
+3. **多数据库支持**：
+   - 支持多种数据库后端，易于移植。
+
+4. **事务管理**：
+   - 提供强大的事务管理功能，确保数据一致性。
+
+5. **关系映射**：
+   - 支持一对多、多对多等复杂关系的建模。
+
+### 基本用法
+
+以下是 SQLAlchemy 的基本用法示例：
+
+#### 1. 安装 SQLAlchemy
+
+```bash
+pip install SQLAlchemy
+```
+
+#### 2. 创建数据库连接
+
+```python
+from sqlalchemy import create_engine
+
+# 创建数据库引擎
+engine = create_engine('sqlite:///example.db')
+```
+
+#### 3. 定义模型
+
+```python
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String
+
+Base = declarative_base()
+
+class User(Base):
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    age = Column(Integer)
+
+    def __repr__(self):
+        return f"<User(name='{self.name}', age='{self.age}')>"
+```
+
+#### 4. 创建数据库表
+
+```python
+Base.metadata.create_all(engine)
+```
+
+#### 5. 增加数据
+
+```python
+from sqlalchemy.orm import sessionmaker
+
+Session = sessionmaker(bind=engine)
+session = Session()
+
+# 添加新用户
+new_user = User(name='Alice', age=30)
+session.add(new_user)
+session.commit()
+```
+
+#### 6. 查询数据
+
+```python
+# 查询所有用户
+users = session.query(User).all()
+for user in users:
+    print(user)
+```
+
+#### 7. 更新数据
+
+```python
+# 更新用户信息
+user_to_update = session.query(User).filter_by(name='Alice').first()
+user_to_update.age = 31
+session.commit()
+```
+
+#### 8. 删除数据
+
+```python
+# 删除用户
+user_to_delete = session.query(User).filter_by(name='Alice').first()
+session.delete(user_to_delete)
+session.commit()
+```
+
+### 总结
+
+SQLAlchemy 是一个功能强大且灵活的 ORM 工具，适用于各种规模的数据库应用。通过使用 SQLAlchemy，你可以更方便地管理数据库操作，提高开发效率。
 
 
 

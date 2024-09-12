@@ -8,7 +8,11 @@ tags:
 
 --
 
-**Scss 与 Sass的区别**
+# 在线练习
+
+https://jsfiddle.net/boilerplate/scss
+
+# **Scss 与 Sass的区别**
 
 Sass 和 Scss 其实就是同一种东西，我们平时都称之为 Sass，两者之间不同之处主要有以下两点：
 
@@ -45,11 +49,37 @@ extend只能继承选择器。
 
 
 
+# 基本语法
+
+## 变量
+
+```
+//数据类型
+$w: 100px;               //数值类型，带单位
+$img-path: './src/images';  //字符串
+$bgc: #ffaa;              //颜色
+$is-light: true;            //bool类型
+$var:null;                  //null
+$size-list: xs, sm,md, lg, xl;  //list类型
+$map: (key1:value1, key2: value2)  //map类型
+
+$var1: var; // 一个变量的值可以是另外一个变量
+```
+
+## 条件判断
+
+```
+$dark-theme: true
+@if $dark-theme {
+	//...
+}
+```
 
 
 
+https://juejin.cn/post/7242258285159186488
 
-参考资料
+# 参考资料
 
 1、SCSS语法
 

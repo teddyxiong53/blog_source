@@ -160,6 +160,61 @@ git remote add upstream  http://rd03-sz:3456/hanliang.xiong/test1.git
 git fetch upstream
 ```
 
+
+
+在 GitHub 上发起 PR（Pull Request）并被对方接收后，你可以通过以下步骤将对方的仓库的代码和提交日志同步到你自己的仓库：
+
+### 步骤
+
+1. **添加远程仓库**：
+   如果你还没有将对方的仓库添加为远程仓库，使用以下命令：
+
+   ```bash
+   git remote add upstream <对方仓库的URL>
+   ```
+
+   将 `<对方仓库的URL>` 替换为对方仓库的 Git URL。
+
+2. **获取最新代码**：
+   获取对方仓库的最新提交和分支信息：
+
+   ```bash
+   git fetch upstream
+   ```
+
+3. **合并代码**：
+   切换到你的主分支（通常是 `main` 或 `master`）：
+
+   ```bash
+   git checkout main
+   ```
+
+   然后将对方的主分支合并到你的分支中：
+
+   ```bash
+   git merge upstream/main
+   ```
+
+   如果对方的分支是 `master`，请相应地替换 `upstream/main` 为 `upstream/master`。
+
+4. **推送到你的仓库**：
+   将合并后的代码推送到你自己的 GitHub 仓库：
+
+   ```bash
+   git push origin main
+   ```
+
+### 确保代码和提交日志一致
+
+通过上述步骤，你的仓库将与对方的仓库同步，同时保留所有的提交日志。这样，你的提交历史将与对方的仓库保持一致。
+
+### 额外提示
+
+- 如果你在合并时遇到冲突，请解决冲突后再进行提交。
+- 确保在合并前，你的本地分支是最新的，以避免不必要的冲突。
+
+通过这些步骤，你能确保你的代码和提交日志与对方的仓库一致。
+
 # 通过drone来实现持续集成
 
 https://www.cnblogs.com/Gitea/p/drone.html

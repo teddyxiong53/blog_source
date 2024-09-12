@@ -3236,6 +3236,158 @@ func main() {
 在主 goroutine 中，我们调用 `wg.Wait()` 方法来等待所有 goroutine 完成。只有当 `wg` 的计数器变为 0 时，`wg.Wait()` 才会返回，这意味着所有 goroutine 都已经完成执行。
 最后，我们输出 "All goroutines are done"，表示所有 goroutine 都已经完成执行。
 
+# 写一个类似docker命令行工具
+
+创建一个类似 Docker 命令行工具的 Go 项目是一个有趣且具有挑战性的任务。以下是一个更复杂的示例，展示如何构建一个简单的命令行工具，并使用多个依赖。
+
+### 项目结构
+
+首先，创建以下目录结构：
+
+```
+my-docker-cli/
+├── go.mod
+├── go.sum
+├── main.go
+└── commands/
+    ├── run.go
+    ├── ps.go
+    └── pull.go
+```
+
+### 1. **初始化 Go 模块**
+
+在命令行中，进入你的项目目录并初始化模块：
+
+```bash
+mkdir my-docker-cli
+cd my-docker-cli
+go mod init my-docker-cli
+```
+
+### 2. **安装依赖**
+
+我们将使用 `cobra` 库来处理命令行界面。运行以下命令安装 `cobra`：
+
+```bash
+go get github.com/spf13/cobra
+```
+
+### 3. **创建主文件**
+
+创建 `main.go` 文件，并添加以下内容：
+
+```go
+package main
+
+import (
+    "my-docker-cli/commands"
+    "github.com/spf13/cobra"
+    "os"
+)
+
+func main() {
+    var rootCmd = &cobra.Command{Use: "my-docker-cli"}
+
+    rootCmd.AddCommand(commands.RunCmd)
+    rootCmd.AddCommand(commands.PsCmd)
+    rootCmd.AddCommand(commands.PullCmd)
+
+    if err := rootCmd.Execute(); err != nil {
+        os.Exit(1)
+    }
+}
+```
+
+### 4. **创建命令文件**
+
+#### 4.1. 创建 `commands/run.go`
+
+```go
+package commands
+
+import (
+    "fmt"
+    "github.com/spf13/cobra"
+)
+
+var RunCmd = &cobra.Command{
+    Use:   "run [image]",
+    Short: "Run a container",
+    Long:  "Run a container based on the specified image.",
+    Args:  cobra.ExactArgs(1),
+    Run: func(cmd *cobra.Command, args []string) {
+        image := args[0]
+        fmt.Printf("Running container from image: %s\n", image)
+        // 这里可以添加运行容器的逻辑
+    },
+}
+```
+
+#### 4.2. 创建 `commands/ps.go`
+
+```go
+package commands
+
+import (
+    "fmt"
+    "github.com/spf13/cobra"
+)
+
+var PsCmd = &cobra.Command{
+    Use:   "ps",
+    Short: "List containers",
+    Long:  "List all running containers.",
+    Run: func(cmd *cobra.Command, args []string) {
+        fmt.Println("Listing running containers...")
+        // 这里可以添加列出容器的逻辑
+    },
+}
+```
+
+#### 4.3. 创建 `commands/pull.go`
+
+```go
+package commands
+
+import (
+    "fmt"
+    "github.com/spf13/cobra"
+)
+
+var PullCmd = &cobra.Command{
+    Use:   "pull [image]",
+    Short: "Pull an image",
+    Long:  "Pull an image from a remote registry.",
+    Args:  cobra.ExactArgs(1),
+    Run: func(cmd *cobra.Command, args []string) {
+        image := args[0]
+        fmt.Printf("Pulling image: %s\n", image)
+        // 这里可以添加拉取镜像的逻辑
+    },
+}
+```
+
+### 5. **构建和运行**
+
+在项目的根目录下，运行以下命令构建可执行文件：
+
+```bash
+go build
+```
+
+然后，你可以通过以下命令运行你的 CLI 工具：
+
+```bash
+./my-docker-cli run ubuntu
+./my-docker-cli ps
+./my-docker-cli pull nginx
+```
+
+### 总结
+
+通过以上步骤，你创建了一个简单的命令行工具，类似于 Docker，具备基础的命令处理能力。你可以继续扩展这个项目，添加更多命令和功能，甚至与 Docker API 集成。这个示例使用了 `cobra` 库，适合处理复杂的命令行应用。
+
 # 参考资料
 
 1、
