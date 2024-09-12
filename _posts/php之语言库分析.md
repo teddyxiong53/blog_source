@@ -16,13 +16,13 @@ C:\Program Files\Zend\Zend Studio 13.6.1\configuration\org.eclipse.osgi\350\0\.c
 
 # core.php
 
-##stdClass类
+## stdClass类
 
 php的内部保留类。
 
 减少了资源的占用。
 
-##Traversable接口
+## Traversable接口
 
 有子接口：
 

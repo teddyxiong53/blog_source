@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 在aosp/system/init/readme.txt里，提到了Android  Init Language。这个就是指rc这些脚本。
 

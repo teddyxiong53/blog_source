@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 服务器是多核，但是普通的grep，还是单核的，速度比较慢。
 
@@ -16,6 +16,7 @@ tags:
 alias mygrep='find . -type f -print0  | xargs -0 -P `nproc` grep'
 ```
 
+使用rg这个新的工具。自然就是多线程的。
 
 
 

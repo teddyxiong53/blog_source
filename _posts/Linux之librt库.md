@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 librt是posix的实时扩展库。
 

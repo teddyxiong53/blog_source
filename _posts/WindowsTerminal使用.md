@@ -5,7 +5,7 @@ tags:
 	- Windows
 ---
 
-1
+
 
 windows store安装特别慢，从网上下载安装包手动安装。
 

@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 `gralloc`是Android中负责申请和释放`GraphicBuffer`的HAL层模块，由硬件驱动提供实现，为`BufferQueue`机制提供了基础。`gralloc`分配的图形Buffer是进程间共享的，且根据其Flag支持不同硬件设备的读写。
 

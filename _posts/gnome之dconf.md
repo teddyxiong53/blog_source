@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 gconf和dconf都是gnome下的配置工具。
 

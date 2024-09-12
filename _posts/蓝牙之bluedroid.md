@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 Android为什么要把蓝牙协议栈从bluez替换为bluedroid？
 

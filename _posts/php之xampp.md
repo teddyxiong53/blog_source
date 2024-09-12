@@ -8,7 +8,6 @@ tags:
 
 
 
-1
 
 为了快速在windows上搭建php环境，使用xampp。
 

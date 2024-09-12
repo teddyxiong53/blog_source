@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 pstore就是persistent store。是一种ramfs。
 

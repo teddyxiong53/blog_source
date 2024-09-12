@@ -6,7 +6,7 @@ tags:
 
 ---
 
-1
+
 
 ```
 plink.exe -ssh -pw admin root@192.168.1.1 "tcpdump -ni br-lan -s 0 -w - not port 22" | "C:\Program Files (x86)\Wireshark\Wireshark.exe" -k -i -
