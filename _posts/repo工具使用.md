@@ -317,6 +317,16 @@ git remote update
 git rebase origin/<branch>
 ```
 
+## 怎样减少下载的数据量
+
+1、使用-b选项。
+
+2、使用sparsecheckout。这个是对单个git仓库有用。就是在.git/info/sparse-checkout文件里，列出你想要下载的文件。这个不实用。
+
+3、清理掉不需要的xml内容。
+
+4、删除不需要的分支和标签。
+
 # repo upload
 
 后面可以跟project的名字。
@@ -326,10 +336,6 @@ git rebase origin/<branch>
 
 
 # repo源代码分析
-
-repo就是一个900行的python脚本。
-
-
 
 整个工作过程是：
 

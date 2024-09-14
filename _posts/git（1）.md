@@ -66,7 +66,7 @@ https://zhuanlan.zhihu.com/p/59616525
 
 ![](./git-mindmap.jpg)
 
-# 常用命令速查
+
 
 # 全局忽略.vscode目录
 
@@ -79,6 +79,10 @@ https://zhuanlan.zhihu.com/p/59616525
 https://blog.csdn.net/zhangchilei/article/details/105538854
 
 # git am的用法
+
+ git-am - Apply a series of patches from a mailbox
+
+从这个说明就可以看出命令命令的由来。是指通过邮件发送patch的场景。
 
  因为在git使用当中，会有很多时候别人（供应商或者其他的开发人员）发过来一系列的**patch**，这些patch通常的是类似这样的名字：
 
@@ -383,6 +387,65 @@ https://blog.csdn.net/gitblog_00087/article/details/138210391
 https://github.com/stackdot/NodeJS-Git-Server
 
 https://github.com/gabrielcsapo/node-git-server
+
+# git branch看到的remotes是什么
+
+remotes是一个复数，所以是表示多个remote。
+
+而remote，指的是origin这些远程地址。
+
+remotes当然就是指包括origin在内的多个远程地址。
+
+而在使用repo工具来管理git仓库的时候，默认的remote名字，是跟你在manifest.xml里写的remote名字一致的。
+
+当你clone一个远程仓库时，
+
+git命令会自动为远程仓库的每个分支在本地创建一个名为 remotes/origin/branch_name的引用。
+
+例如：remotes/origin/master 就是表示远程仓库origin的master分支在本地的引用。
+
+这个引用可以让你在本地直接查看远程分支的信息，进行本地分支和远程分支的比较这些操作。
+
+你在本地创建了一个跟远程分支名一样的分支时，例如master，
+
+git会自动在你的本地分支和远程分支之间建立跟踪关系。
+
+# 对remote进行重命名
+
+```
+git remote rename origin myremote
+```
+
+# git checkout --track的track怎么理解
+
+执行这个命令时，
+
+git会根据指定的远程分支在本地创建一个同名分支。
+
+例如，远程origin有一个分支名叫`feature/new-feature`，
+
+执行：
+
+```
+git checkout --track origin/feature/new-feature
+```
+
+会在本地创建一个名为`feature/new-feature`的分支。
+
+同时，因为track，
+
+新创建的本地分支被设置为跟踪对应的远程分支，（相当于建立了bind关系）
+
+这个意味着：
+
+* 你使用git pull的时候，git 会自动从对应的远程分支pull。
+* git push的时候，也会自动push到对应的远程分支上。
+
+这个对于开发时是非常方便的。
+
+分支名里的 / 对应了.git/refs/origin/下面的分支名的目录层次关系。
+
+
 
 # 参考资料
 
