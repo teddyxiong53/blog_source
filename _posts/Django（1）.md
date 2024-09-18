@@ -382,5 +382,64 @@ admin.site.register(Book)
 
 
 
-# django表单
+# django.contrib下面有哪些内容
 
+`django.contrib` 是 Django 框架中的一个包，包含了许多内置的应用程序和工具。这些应用程序和工具可以帮助你快速构建和开发 Web 应用程序。以下是一些 `django.contrib` 下面的内容：
+
+*   `admin`: 管理后台应用程序
+*   `auth`: 认证和授权应用程序
+*   `contenttypes`: 内容类型应用程序，用于管理模型之间的关系
+*   `sessions`: 会话应用程序，用于管理用户会话
+*   `messages`: 消息应用程序，用于显示消息给用户
+*   `staticfiles`: 静态文件应用程序，用于管理静态文件
+*   `humanize`: 人性化应用程序，用于格式化数据
+*   `flatpages`: 平面页面应用程序，用于管理静态页面
+*   `redirects`: 重定向应用程序，用于管理 URL 重定向
+*   `sites`: 站点应用程序，用于管理多个站点
+*   `sitemaps`: 站点地图应用程序，用于生成站点地图
+*   `syndication`: 联盟应用程序，用于生成 RSS 和 Atom Feed
+
+这些应用程序和工具可以帮助你快速构建和开发 Web 应用程序。
+
+# django.middleware有哪些常用的
+
+在Django中，`django.middleware`模塊包含了一些常用的中间件（middleware），用于处理请求和响应的流程。以下是一些常用的中间件：
+
+1. `CommonMiddleware`：提供了一些通用的中间件，包括处理静态文件、处理404错误、处理403错误等。
+2. `CsrfViewMiddleware`：用于保护POST请求免受跨站请求伪造（CSRF）攻击。
+3. `SessionMiddleware`：将用户的会话信息存储在Cookie中，并在请求中传递给视图。
+4. `AuthenticationMiddleware`：用于验证用户身份并设置用户的会话信息。
+5. `GZipMiddleware`：用于压缩响应内容，减小传输大小并提高性能。
+6. `SecurityMiddleware`：用于保护应用程序免受常见的安全威胁，包括点击劫持、XSS攻击等。
+7. `CacheMiddleware`：用于缓存响应，以提高应用程序的性能。
+8. `ConditionalGetMiddleware`：用于检查资源是否已更改，并在未更改时返回HTTP 304状态码。
+9. `LocaleMiddleware`：用于根据用户的语言设置本地化应用程序。
+10. `CsrfMiddleware`：用于保护POST请求免受跨站请求伪造（CSRF）攻击（与`CsrfViewMiddleware`不同）。
+
+这些中间件可以通过Django的`MIDDLEWARE`设置进行配置。您可以根据需要选择性地启用或禁用这些中间件。
+
+# Django template 跟jinja对比
+
+Django 模板和 Jinja2 是两种流行的模板引擎，用于在 Python 应用程序中渲染 HTML 模板。以下是它们的对比：
+
+**语法**
+
+* Django 模板：使用 Django 自定义的模板语法，例如 `{% if %}`、`{% for %}`、`{{ variable }}` 等。
+* Jinja2：使用类似 Python 的语法，例如 `{% if condition %}`、`{% for item in iterable %}`、`{{ variable }}` 等。
+
+**功能**
+
+* Django 模板：内置支持 Django 模型、视图和 URL 的语法，例如 `{% url %}`、`{% csrf_token %}` 等。
+* Jinja2：提供了更多的控制结构和函数，例如 `if`、`for`、`while`、`macro` 等。
+
+**性能**
+
+* Django 模板：由于 Django 的模板引擎是内置的，因此性能较好。
+* Jinja2：作为一个独立的模板引擎，Jinja2 的性能也较好，但可能不如 Django 模板引擎。
+
+**使用场景**
+
+* Django 模板：适合用于 Django 项目中，特别是当需要使用 Django 模型、视图和 URL 的语法时。
+* Jinja2：适合用于非 Django 项目中，或者需要更灵活的模板语法时。
+
+总的来说，Django 模板和 Jinja2 都是强大的模板引擎，选择哪一个取决于具体的项目需求和个人偏好。
