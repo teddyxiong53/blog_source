@@ -514,6 +514,145 @@ docker run -it --rm  -e USER_ID=$UID -v $(pwd):/home/br my_test_image
 
 总之，通过将 Docker 守护进程的 UNIX 套接字映射到容器内部，可以实现容器内与宿主机上 Docker 引擎的交互，从而使得容器内的操作可以直接影响到宿主机上的 Docker 守护进程。
 
+# dockerfile里的cmd和entrypoint区别
+
+`CMD` 和 `ENTRYPOINT` 是 Dockerfile 中用来指定容器启动时执行的命令的指令，但它们有不同的用途和行为。
+
+### `CMD`
+
+- **用途**：用于提供容器启动时的默认命令和参数。
+- **可被覆盖**：如果在 `docker run` 命令中提供了其他命令或参数，`CMD` 会被覆盖。
+- **格式**：
+  - **Shell 格式**：`CMD command param1 param2`
+  - **Exec 格式**：`CMD ["executable", "param1", "param2"]`
+
+#### 示例：
+
+```dockerfile
+FROM ubuntu
+CMD ["echo", "Hello, World!"]
+```
+
+### `ENTRYPOINT`
+
+- **用途**：用于定义容器的主命令，通常是容器的主要功能。
+- **不易被覆盖**：如果在 `docker run` 中提供了其他命令，这些命令会作为参数传递给 `ENTRYPOINT` 指定的命令，而不会覆盖它。
+- **格式**：
+  - **Shell 格式**：`ENTRYPOINT command param1 param2`
+  - **Exec 格式**：`ENTRYPOINT ["executable", "param1", "param2"]`
+
+#### 示例：
+
+```dockerfile
+FROM ubuntu
+ENTRYPOINT ["echo"]
+```
+
+### 结合使用
+
+可以将 `ENTRYPOINT` 和 `CMD` 结合使用，以便提供默认参数给 `ENTRYPOINT`：
+
+```dockerfile
+FROM ubuntu
+ENTRYPOINT ["echo"]
+CMD ["Hello, World!"]
+```
+
+在这种情况下，`docker run` 会执行 `echo Hello, World!`。如果在 `docker run` 中提供其他参数，例如：
+
+```bash
+docker run my-image "Goodbye!"
+```
+
+则会执行 `echo Goodbye!`。
+
+### 总结
+
+- **`CMD`** 是默认命令，可以被覆盖。
+- **`ENTRYPOINT`** 是主要命令，不易被覆盖，适合用于实现容器的主要功能。
+
+
+
+# 通过docker包装的方式运行一下echo hello ，跟直接本地执行echo hello，效率对比
+
+通过 Docker 容器运行 `echo hello` 与直接在本地执行 `echo hello` 的效率对比可以从以下几个方面进行分析：
+
+### 1. 启动时间
+
+- **Docker 容器**：
+  - 启动 Docker 容器需要一定的时间，包括创建容器、分配网络和文件系统等资源。
+  - 即使是一个简单的命令，Docker 也需要处理这些开销。
+
+- **本地执行**：
+  - 直接在命令行中执行 `echo hello` 几乎是瞬时的，因为不需要任何额外的开销。
+
+### 2. 资源消耗
+
+- **Docker 容器**：
+  - Docker 会消耗额外的资源（如内存和 CPU）来管理容器环境。
+  - 每次运行都需要加载 Docker 引擎及其相关资源。
+
+- **本地执行**：
+  - 直接执行 `echo hello` 只占用非常少的系统资源，几乎可以忽略不计。
+
+### 3. 输出延迟
+
+- **Docker 容器**：
+  - 由于启动和环境设置，可能会有轻微的输出延迟。
+
+- **本地执行**：
+  - 输出几乎是即时的。
+
+### 4. 总结
+
+- **效率**：
+  - 直接在本地执行 `echo hello` 效率更高，几乎没有延迟和开销。
+  - 使用 Docker 容器运行 `echo hello` 的效率较低，主要由于容器启动和资源管理的开销。
+
+### 结论
+
+对于简单的命令，如 `echo hello`，直接在本地执行明显更高效。如果只是需要执行简单的命令，Docker 的开销会使得其效率较低。Docker 更适合用于需要隔离、依赖管理或多环境部署的复杂应用场景。
+
+如果您还有其他问题或想要更深入的讨论，请告诉我！
+
+# buildroot docker编译环境搭建
+
+https://hub.docker.com/r/amllinux/buildroot
+
+
+
+# FROM scratch 代表了什么
+
+`FROM scratch` 是 Dockerfile 中的一个特殊指令，表示构建一个完全空的基础镜像。它通常用于以下几个场景：
+
+### 1. **构建最小化镜像**
+
+- **无任何基础层**：使用 `FROM scratch` 创建的镜像不包含任何操作系统层或预装的库。这使得最终镜像的体积非常小，适合对安全性和性能有高要求的应用。
+
+### 2. **静态编译的应用**
+
+- **静态链接**：通常与 Go 或 Rust 等语言一起使用，这些语言能够生成静态链接的可执行文件。这样的可执行文件不依赖外部库，可以直接在 `scratch` 镜像中运行。
+
+### 3. **提高安全性**
+
+- **攻击面减小**：由于没有操作系统或其他软件的支持，使用 `FROM scratch` 的镜像可以减少潜在的安全漏洞，从而提高应用的安全性。
+
+### 示例
+
+下面是一个简单的 Dockerfile 示例，展示了如何使用 `FROM scratch`：
+
+```dockerfile
+FROM scratch
+COPY myapp /myapp
+CMD ["/myapp"]
+```
+
+在这个示例中，`myapp` 是一个静态编译的二进制文件，直接从 `scratch` 镜像中运行。
+
+### 总结
+
+使用 `FROM scratch` 适合需要高效、轻量和安全的容器化应用，特别是在构建静态链接的可执行文件时。
+
 # 参考资料
 
 1、怎么才是 docker 最佳实践
