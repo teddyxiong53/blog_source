@@ -8,6 +8,16 @@ tags:
 
 --
 
+# 资源收集
+
+官网资料
+
+https://www.jenkins.io/zh/doc/pipeline/tour/getting-started/
+
+
+
+# 环境搭建
+
 https://github.com/jenkinsci/jenkins
 
 先看看docker搭建一个。
@@ -75,6 +85,16 @@ gcc找不到。进入到容器，安装gcc。
 ```
 /var/jenkins_home/workspace/c_test
 ```
+
+# 直接运行war文件的方式
+
+```
+java -jar jenkins.war --httpPort=8080
+```
+
+这个需要openjdk11版本以上才行。
+
+
 
 # jenkins跟gitlab结合
 

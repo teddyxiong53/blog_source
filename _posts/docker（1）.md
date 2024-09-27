@@ -5,7 +5,7 @@ tags:
 	- docker
 ---
 
-1
+--
 
 这个主要是把docker日常的疑问解答汇总起来。
 
@@ -19,7 +19,11 @@ tags:
 
 
 
+# 资源收集
 
+Linuxserver这个开源组织很不错。维护了很多的容器镜像。做法值得参考。他们的博客写得也不错。
+
+https://www.linuxserver.io/blog
 
 # 进入正在运行的容器的shell
 
@@ -486,18 +490,6 @@ docker run -it --rm  -e USER_ID=$UID -v $(pwd):/home/br my_test_image
 
 
 
-### 编写 Dockerfile
-
-安装完 Docker 之后，接下来我们便可以来编写我们自己的项目开发环境了。本文将以前端开发环境为例，构建 Dockerfile。
-
-包含环境：
-
-- node.js 14.17
-- npm 6.14
-- yarn 1.22
-
-
-
 # docker  run --privileged 这个参数的作用
 
 `--privileged` 参数是在运行 Docker 容器时可选的一个选项。它的作用是提供容器内部的进程对主机系统的更高权限，允许容器中的进程访问主机上的特权操作。
@@ -518,7 +510,7 @@ docker run -it --rm  -e USER_ID=$UID -v $(pwd):/home/br my_test_image
 
 `CMD` 和 `ENTRYPOINT` 是 Dockerfile 中用来指定容器启动时执行的命令的指令，但它们有不同的用途和行为。
 
-### `CMD`
+`CMD`
 
 - **用途**：用于提供容器启动时的默认命令和参数。
 - **可被覆盖**：如果在 `docker run` 命令中提供了其他命令或参数，`CMD` 会被覆盖。
@@ -526,14 +518,14 @@ docker run -it --rm  -e USER_ID=$UID -v $(pwd):/home/br my_test_image
   - **Shell 格式**：`CMD command param1 param2`
   - **Exec 格式**：`CMD ["executable", "param1", "param2"]`
 
-#### 示例：
+示例：
 
 ```dockerfile
 FROM ubuntu
 CMD ["echo", "Hello, World!"]
 ```
 
-### `ENTRYPOINT`
+`ENTRYPOINT`
 
 - **用途**：用于定义容器的主命令，通常是容器的主要功能。
 - **不易被覆盖**：如果在 `docker run` 中提供了其他命令，这些命令会作为参数传递给 `ENTRYPOINT` 指定的命令，而不会覆盖它。
@@ -541,14 +533,14 @@ CMD ["echo", "Hello, World!"]
   - **Shell 格式**：`ENTRYPOINT command param1 param2`
   - **Exec 格式**：`ENTRYPOINT ["executable", "param1", "param2"]`
 
-#### 示例：
+示例：
 
 ```dockerfile
 FROM ubuntu
 ENTRYPOINT ["echo"]
 ```
 
-### 结合使用
+结合使用
 
 可以将 `ENTRYPOINT` 和 `CMD` 结合使用，以便提供默认参数给 `ENTRYPOINT`：
 
@@ -566,7 +558,7 @@ docker run my-image "Goodbye!"
 
 则会执行 `echo Goodbye!`。
 
-### 总结
+总结
 
 - **`CMD`** 是默认命令，可以被覆盖。
 - **`ENTRYPOINT`** 是主要命令，不易被覆盖，适合用于实现容器的主要功能。
@@ -577,7 +569,7 @@ docker run my-image "Goodbye!"
 
 通过 Docker 容器运行 `echo hello` 与直接在本地执行 `echo hello` 的效率对比可以从以下几个方面进行分析：
 
-### 1. 启动时间
+1. 启动时间
 
 - **Docker 容器**：
   - 启动 Docker 容器需要一定的时间，包括创建容器、分配网络和文件系统等资源。
@@ -586,7 +578,7 @@ docker run my-image "Goodbye!"
 - **本地执行**：
   - 直接在命令行中执行 `echo hello` 几乎是瞬时的，因为不需要任何额外的开销。
 
-### 2. 资源消耗
+2. 资源消耗
 
 - **Docker 容器**：
   - Docker 会消耗额外的资源（如内存和 CPU）来管理容器环境。
@@ -595,7 +587,7 @@ docker run my-image "Goodbye!"
 - **本地执行**：
   - 直接执行 `echo hello` 只占用非常少的系统资源，几乎可以忽略不计。
 
-### 3. 输出延迟
+3. 输出延迟
 
 - **Docker 容器**：
   - 由于启动和环境设置，可能会有轻微的输出延迟。
@@ -603,13 +595,13 @@ docker run my-image "Goodbye!"
 - **本地执行**：
   - 输出几乎是即时的。
 
-### 4. 总结
+4. 总结
 
 - **效率**：
   - 直接在本地执行 `echo hello` 效率更高，几乎没有延迟和开销。
   - 使用 Docker 容器运行 `echo hello` 的效率较低，主要由于容器启动和资源管理的开销。
 
-### 结论
+结论
 
 对于简单的命令，如 `echo hello`，直接在本地执行明显更高效。如果只是需要执行简单的命令，Docker 的开销会使得其效率较低。Docker 更适合用于需要隔离、依赖管理或多环境部署的复杂应用场景。
 
@@ -625,19 +617,19 @@ https://hub.docker.com/r/amllinux/buildroot
 
 `FROM scratch` 是 Dockerfile 中的一个特殊指令，表示构建一个完全空的基础镜像。它通常用于以下几个场景：
 
-### 1. **构建最小化镜像**
+1. **构建最小化镜像**
 
 - **无任何基础层**：使用 `FROM scratch` 创建的镜像不包含任何操作系统层或预装的库。这使得最终镜像的体积非常小，适合对安全性和性能有高要求的应用。
 
-### 2. **静态编译的应用**
+2. **静态编译的应用**
 
 - **静态链接**：通常与 Go 或 Rust 等语言一起使用，这些语言能够生成静态链接的可执行文件。这样的可执行文件不依赖外部库，可以直接在 `scratch` 镜像中运行。
 
-### 3. **提高安全性**
+3. **提高安全性**
 
 - **攻击面减小**：由于没有操作系统或其他软件的支持，使用 `FROM scratch` 的镜像可以减少潜在的安全漏洞，从而提高应用的安全性。
 
-### 示例
+示例
 
 下面是一个简单的 Dockerfile 示例，展示了如何使用 `FROM scratch`：
 
@@ -649,9 +641,147 @@ CMD ["/myapp"]
 
 在这个示例中，`myapp` 是一个静态编译的二进制文件，直接从 `scratch` 镜像中运行。
 
-### 总结
+总结
 
 使用 `FROM scratch` 适合需要高效、轻量和安全的容器化应用，特别是在构建静态链接的可执行文件时。
+
+# ENV DEBIAN_FRONTEND=noninteractive
+
+在 Dockerfile 中使用 `ENV DEBIAN_FRONTEND=noninteractive` 的主要目的
+
+是在构建过程中避免交互式提示。
+
+这在安装 Debian 或 Ubuntu 系统的软件包时特别有用，确保安装过程自动化，不会因为需要用户输入而中断。
+
+注意：
+
+- 在使用该设置时，某些软件包的默认配置可能会被跳过，确保你了解这些软件包的默认行为。
+- 如果需要特定的配置选项，可以考虑使用 `debconf-set-selections` 来预先配置软件包。
+
+
+
+# RUN dpkg --add-architecture i386
+
+在 Dockerfile 中使用 `RUN dpkg --add-architecture i386` 的目的是将 i386 架构（32 位架构）添加到当前的 Debian 或 Ubuntu 系统中。这通常用于需要安装 32 位软件包的场景。
+
+# 怎么实现容器内外用户权限一样
+
+https://blog.csdn.net/DreamHome_S/article/details/106543701
+
+我看linuxserver/webtop的就是容器内容的权限一样的。
+
+看看他们的Dockerfile是怎么写的。
+
+https://github.com/linuxserver/docker-webtop
+
+要看这个基础镜像的做法：
+
+https://github.com/linuxserver/docker-baseimage-kasmvnc
+
+分析里面跟user相关的代码。
+
+```
+echo "**** user perms ****" &&
+echo "abc:abc" | chpasswd &&
+usermod -s /bin/bash abc &&
+echo '%wheel ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/wheel &&
+adduser abc wheel 
+```
+
+这段代码的整体作用是：
+
+- 创建一个名为 `abc` 的用户，设置其密码为 `abc`。
+- 将该用户的登录 shell 修改为 Bash。
+- 配置 `wheel` 组的用户可以无密码使用 sudo。
+- 将用户 `abc` 添加到 `wheel` 组，使其获得 sudo 权限。
+
+`wheel` 组是一个用于权限管理的特殊组，通过将用户添加到该组，系统管理员可以有效控制用户的管理权限，确保系统的安全与稳定。
+
+
+
+目前docker的ubuntu默认是没有sudo的。
+
+如果要使用sudo，那么需要su先切换到root用户，安装sudo工具。
+
+
+
+看了上面的代码，没有看出具体是怎么把容器内外的用户统一权限的。
+
+要达到运行时，其他用户也能正常使用的效果。
+
+肯定是需要在运行的时候，加上当前的用户信息的。
+
+所以entrypoint是需要做一些事情的。
+
+问chatgpt问出来了。
+
+我看前面的csdn那篇文章是使用的fixuid这个工具来做的。
+
+自己加几行脚本也可以达到相同的效果。
+
+就不用引入新的工具了。
+
+
+
+现在居然是需要输入密码的。
+
+这个不执行su就好了
+
+```
+exec /bin/bash --login
+```
+
+
+
+
+
+# 不以root用户运行
+
+https://www.linuxea.com/2301.html
+
+
+
+# dockerfile里的VOLUME跟docker run的-v是什么关系
+
+`Dockerfile` 中的 `VOLUME` 指令和 `docker run` 的 `-v` 选项都涉及到挂载卷，但它们的使用场景和控制范围不同。下面是它们之间的区别和联系：
+
+1. **VOLUME 指令 (Dockerfile)**
+
+- **定义**：在 `Dockerfile` 中，`VOLUME` 指令声明了一个挂载点，这个挂载点将在运行容器时自动关联到 Docker 的卷管理系统。
+- **作用**：它告诉 Docker 这个路径应该被挂载为卷，以便数据能够在容器的生命周期之外持久化，且不会随着容器被删除而丢失。
+- **作用范围**：一旦容器启动，`VOLUME` 定义的目录会自动与 Docker 的卷关联，Docker 会在内部创建一个匿名卷（如果没有指定其他卷）。
+
+**示例：**
+
+```Dockerfile
+VOLUME /data
+```
+当容器运行时，`/data` 将被挂载到一个自动生成的 Docker 卷中。
+
+2. **`-v` 选项 (docker run)**
+
+- **定义**：`docker run -v` 选项用于在运行时挂载宿主机的目录或文件到容器内的某个路径。
+- **作用**：它提供了更灵活的方式，将宿主机的文件系统中的目录直接挂载到容器的特定路径上，允许容器和宿主机之间共享文件。
+- **作用范围**：`-v` 选项可以覆盖 `VOLUME` 指令的默认行为。在 `docker run` 命令中指定 `-v` 选项时，`-v` 挂载的内容会优先于 `VOLUME`。
+
+**示例：**
+
+```bash
+docker run -v /host/path:/container/path my_image
+```
+将宿主机的 `/host/path` 挂载到容器的 `/container/path`。
+
+3. **联系**
+
+- 如果在 `Dockerfile` 中声明了 `VOLUME /data`，但在 `docker run` 时使用了 `-v /host/path:/data`，则 `-v` 选项会覆盖 `VOLUME` 指定的挂载卷，将宿主机的 `/host/path` 挂载到容器的 `/data`。
+- **总结**：`VOLUME` 提供了一个默认的挂载机制，而 `-v` 允许用户在运行时自定义挂载，`-v` 会覆盖 `VOLUME` 的默认行为。
+
+4. **实际应用场景**
+
+- **VOLUME**：适合在 Dockerfile 中定义那些需要持久化但可能不关心挂载具体路径的目录，或者希望让卷默认持久化数据。
+- **`-v`**：适合用户在运行容器时精确控制哪些宿主机路径应与容器共享或挂载。
+
+两者相辅相成，`VOLUME` 是一种默认的设置，而 `-v` 提供了灵活的定制选项。
 
 # 参考资料
 

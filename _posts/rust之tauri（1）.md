@@ -190,3 +190,40 @@ Tauri 的设计哲学是将 Rust、Web 技术和原生桌面应用程序结合�
 相比之下，Electron 更加注重提供丰富的功能和便利性，它将整个 Chromium 浏览器打包到应用程序中，以提供完整的 Web 技术栈和丰富的 API，使得开发者可以轻松地构建功能丰富的桌面应用程序。然而，这也导致了 Electron 应用程序通常较大，并且可能在性能和资源消耗方面不如 Tauri。
 
 因此，尽管 Tauri 和 Electron 都是基于 Web 技术的桌面应用程序框架，但它们在设计哲学和目标方面存在一些区别，Tauri 更注重轻量级、高性能，而 Electron 则更注重功能丰富性和便利性。
+
+
+
+# tauri插件写法
+
+https://v2.tauri.app/zh-cn/develop/plugins/
+
+
+
+Tauri 插件具有一个前缀（Rust 包使用 `tauri-plugin-` 前缀，NPM 包使用 `@tauri-apps/plugin-` 前缀），随后是插件名称。
+
+创建插件：
+
+```
+npm run tauri plugin new [name]
+```
+
+生成的插件目录结构：
+
+```
+. tauri-plugin-[name]/
+├── src/                - Rust 代码
+│ ├── commands.rs       - 定义 webview 可用的命令
+| ├── desktop.rs        - 桌面实现
+| ├── error.rs          - 用于返回 results 的默认的错误类型
+│ ├── lib.rs            - 重新导出适当的实现、设置状态……
+│ ├── mobile.rs         - 移动端实现
+│ └── models.rs         - 公共的结构体
+├── permissions/        - 这将托管（生成的）命令的权限文件
+├── android             - 安卓库
+├── ios                 - Swift 包
+├── guest-js            - JavaScript API 绑定的源代码
+├── dist-js             - 从 guest-js 转译的资源
+├── Cargo.toml          - Cargo 包元数据
+└── package.json        - NPM 包元数据
+```
+

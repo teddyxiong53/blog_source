@@ -991,3 +991,98 @@ python是动态语言，面向对象更加彻底
 ./test/py-test/tuturial/venv/bin/python -m flask --app flaskr run 
 ```
 
+# dataclass
+
+`dataclass` 是 Python 3.7 引入的一种装饰器，旨在简化数据类的创建。数据类是一种用于存储数据的类，它自动生成一些常用方法，如 `__init__`、`__repr__`、`__eq__` 等，使得类的定义更加简洁和清晰。
+
+基本用法
+
+使用 `@dataclass` 装饰器可以轻松创建一个数据类。下面是基本的示例：
+
+```python
+from dataclasses import dataclass
+
+@dataclass
+class Point:
+    x: float
+    y: float
+
+# 创建实例
+p = Point(1.0, 2.0)
+print(p)  # 输出: Point(x=1.0, y=2.0)
+```
+
+自动生成的方法
+
+使用 `@dataclass` 后，Python 会自动生成以下方法：
+
+- `__init__()`：自动生成构造函数。
+- `__repr__()`：提供一个易于阅读的字符串表示。
+- `__eq__()`：支持对象之间的比较。
+  
+
+可选参数
+
+可以通过参数自定义数据类的行为：
+
+- `frozen=True`：使数据类不可变（类似于元组）。
+  
+```python
+@dataclass(frozen=True)
+class Point:
+    x: float
+    y: float
+
+p1 = Point(1.0, 2.0)
+# p1.x = 3.0  # 将引发异常
+```
+
+- `order=True`：自动生成比较方法，支持排序。
+
+```python
+@dataclass(order=True)
+class Point:
+    x: float
+    y: float
+
+p1 = Point(1.0, 2.0)
+p2 = Point(2.0, 1.0)
+print(p1 < p2)  # 输出: True
+```
+
+默认值和默认工厂
+
+可以为字段提供默认值或使用默认工厂：
+
+```python
+from dataclasses import field
+
+@dataclass
+class Rectangle:
+    width: float
+    height: float = 1.0  # 默认值
+
+    # 使用默认工厂
+    tags: list = field(default_factory=list)
+
+r = Rectangle(5.0)
+print(r)  # 输出: Rectangle(width=5.0, height=1.0, tags=[])
+```
+
+嵌套数据类
+
+数据类可以包含其他数据类：
+
+```python
+@dataclass
+class Circle:
+    center: Point
+    radius: float
+
+c = Circle(Point(0.0, 0.0), 5.0)
+print(c)  # 输出: Circle(center=Point(x=0.0, y=0.0), radius=5.0)
+```
+
+总结
+
+`dataclass` 提供了一种简洁而高效的方式来创建用于存储数据的类，减少了样板代码的编写。它非常适合用于数据模型、配置类等场景。如果你有更多问题或想了解更具体的应用，请告诉我！

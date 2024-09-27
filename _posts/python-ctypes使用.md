@@ -24,10 +24,21 @@ c_void_p               void *
 ```
 # 调用dll库里面的函数
 ctypes的一个主要用途是用来调用c语言的动态库文件。
+
 python有一个绰号叫“胶水语言”，就在于它可以比较好地黏合其他语言的库来完成功能。
-我们先产生一个dll动态库文件。简单起见，不用visual studio来做了。
-一般安装git的windows客户端的时候，会安装一个mingw。我一般会另外在windows上安装gcc编译器。
-然后gcc和mingw配合，在git bash里就可以用linux的方式来进行基本的编译了。这样比较简单快捷。
+
+我们先产生一个dll动态库文件。
+
+简单起见，不用visual studio来做了。
+
+一般安装git的windows客户端的时候，会安装一个mingw。
+
+我一般会另外在windows上安装gcc编译器。
+
+然后gcc和mingw配合，在git bash里就可以用linux的方式来进行基本的编译了。
+
+这样比较简单快捷。
+
 现在我们用gcc编译生成一个dll文件，顺便测试一下是否可用。方法如下：
 
 ```
@@ -61,7 +72,6 @@ testdll = windll.LoadLibrary(r'D:\work\test\dll-test\dlltest.dll')
 testdll.dllprint()
 ```
 运行这个test.py文件，就可以看到效果了。
-
 
 
 

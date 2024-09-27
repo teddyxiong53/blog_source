@@ -17,6 +17,12 @@ https://docs.python.org/zh-cn/3.6/library/tkinter.html
 
 https://www.jiyik.com/w/tkinter/tkinter-label
 
+
+
+tkinter其实是值得研究的，因为有很多人研究，做出了很多有意思的东西。
+
+比wxpython的开源项目要多得多。
+
 # 基本信息
 
 Tcl/Tk集成到Python中已经有一些年头了。
@@ -216,6 +222,7 @@ Tkinter提供了三种主要的布局管理器：`pack`、`grid`和`place`。这
 
 ### 1. 安装与导入
 **wxPython**：
+
 ```python
 import wx
 
@@ -280,6 +287,7 @@ button.config(command=on_button_click)
 
 ### 6. 综合示例
 **wxPython**：
+
 ```python
 import wx
 

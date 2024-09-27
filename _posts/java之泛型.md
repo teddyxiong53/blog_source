@@ -57,7 +57,7 @@ List<String> list = new ArrayList();
 
 
 
-#3. 泛型的分类
+# 3. 泛型的分类
 
 E：Element。在集合中使用。因为集合中存放的是元素。
 

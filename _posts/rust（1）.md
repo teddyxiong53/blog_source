@@ -12,9 +12,17 @@ tags:
 
 方便阅读碰到的rust代码。
 
-# 资料
+# 资料收集
 
 https://course.rs/basic/lifetime.html
+
+ffmpeg rust binding学习
+
+https://github.com/zmwangx/rust-ffmpeg/blob/master/examples/transcode-audio.rs
+
+tauri应用，这个复杂度适中。各个特性都有。
+
+https://github.com/zzzgydi/clash-verge
 
 # rust环境搭建
 
@@ -1636,6 +1644,11 @@ fn divide(x: f64, y: f64) -> Result<f64, &'static str> {
 
 总之，任何可能会失败并且需要提供详细错误信息的操作都应该返回 `Result` 类型。这样可以使得调用者能够清楚地知道操作是否成功，以及在失败时可以得到什么样的错误信息，从而更好地进行错误处理。
 
+# 返回Result和返回Option区别
+
+- **`Option`** 用于表示值的存在与否，不关心具体的错误原因。
+- **`Result`** 用于处理可能的错误，提供了具体的错误信息。
+
 # rust的async
 
 在 Rust 中，`async` 关键字用于定义异步函数。异步函数是一种特殊的函数，可以在执行过程中暂停并在后续某个时间点恢复执行。这使得程序可以高效地处理并发任务，而无需阻塞线程等待 I/O 操作完成。
@@ -2820,6 +2833,73 @@ https://play.rust-lang.org
 https://github.com/rust-lang/rustlings
 
 
+
+# anyhow::Result 跟rust默认的Result比较
+
+`anyhow::Result` 和 Rust 默认的 `Result` 类型有一些重要的区别，主要在于错误处理的简便性和灵活性。
+
+### Rust 默认的 `Result`
+
+- **定义**：
+
+  ```rust
+  enum Result<T, E> {
+      Ok(T),    // 表示成功的结果
+      Err(E),   // 表示错误的结果
+  }
+  ```
+
+- **使用**：
+  - 必须显式定义错误类型 `E`。
+  - 常用于函数返回值，便于详细描述错误类型。
+
+- **示例**：
+
+  ```rust
+  fn example() -> Result<i32, String> {
+      // 具体错误类型
+      if false {
+          Ok(42)
+      } else {
+          Err("Error occurred".to_string())
+      }
+  }
+  ```
+
+### `anyhow::Result`
+
+- **定义**：
+  - `anyhow::Result<T>` 是一个别名，通常定义为 `Result<T, anyhow::Error>`。
+  - `anyhow::Error` 是一个通用错误类型，可以包装任何错误。
+
+- **优点**：
+  - 简化错误处理：不需要指定具体的错误类型，方便快速开发。
+  - 可以使用 `?` 运算符轻松传播错误。
+
+- **示例**：
+
+  ```rust
+  use anyhow::Result;
+  
+  fn example() -> Result<i32> {
+      // 任何错误都可以返回
+      if false {
+          Ok(42)
+      } else {
+          Err(anyhow::anyhow!("Error occurred"))
+      }
+  }
+  ```
+
+### 总结
+
+- **`Result<T, E>`**：
+  - 需要明确错误类型，适合需要详细错误处理的场景。
+  
+- **`anyhow::Result<T>`**：
+  - 简化错误处理，适合快速原型开发或不需要详细错误信息的场景。
+
+选择使用 `anyhow::Result` 还是 Rust 默认的 `Result` 取决于具体的应用场景和对错误处理的需求。
 
 # 参考资料
 
