@@ -127,7 +127,99 @@ https://minhaskamal.github.io/DownGit/#/home?url=
 
 了解一下这个过程。
 
+# Github Actions
 
+当然可以！GitHub Actions 是一个强大的 CI/CD 工具，可以帮助你自动化软件开发流程。以下是一步步掌握 GitHub Actions 的方法：
+
+### 第一步：了解基本概念
+
+1. **工作流 (Workflow)**：工作流是一个自动化过程，定义了要执行的任务。
+2. **事件 (Event)**：工作流可以在特定事件发生时触发，如代码推送、拉取请求等。
+3. **作业 (Job)**：工作流包含一个或多个作业，每个作业可以在一个或多个虚拟环境中运行。
+4. **步骤 (Step)**：每个作业由多个步骤组成，步骤是具体的任务，可以是运行命令或调用其他操作。
+
+### 第二步：创建你的第一个工作流
+
+1. **创建 `.github/workflows` 目录**：
+   在你的 GitHub 仓库中，创建一个目录 `.github/workflows`。
+
+2. **添加工作流文件**：
+   在该目录下创建一个 YAML 文件，例如 `ci.yml`。以下是一个简单的示例：
+
+   ```yaml
+   name: CI
+   
+   on: [push, pull_request]
+   
+   jobs:
+     build:
+       runs-on: ubuntu-latest
+   
+       steps:
+         - name: Checkout code
+           uses: actions/checkout@v2
+   
+         - name: Set up Node.js
+           uses: actions/setup-node@v2
+           with:
+             node-version: '14'
+   
+         - name: Install dependencies
+           run: npm install
+   
+         - name: Run tests
+           run: npm test
+   ```
+
+### 第三步：理解工作流的结构
+
+- **name**：工作流的名称。
+- **on**：定义触发工作流的事件。
+- **jobs**：定义要执行的作业。
+- **steps**：在作业中定义具体的步骤。
+
+### 第四步：运行和监控工作流
+
+1. **提交代码**：将你的更改提交到 GitHub。
+2. **查看运行状态**：
+   - 转到你的 GitHub 仓库，点击 "Actions" 标签。
+   - 你可以看到工作流的运行记录和状态。
+
+### 第五步：使用动作 (Actions)
+
+- GitHub 提供了很多现成的动作，你可以在社区中找到许多有用的动作。
+- 在步骤中使用动作的基本语法是：
+
+  ```yaml
+  - name: Action name
+    uses: username/repo@version
+  ```
+
+### 第六步：调试和优化
+
+- 如果工作流失败，点击失败的步骤查看日志，找出问题所在。
+- 你可以使用条件来控制步骤的执行，例如：
+
+  ```yaml
+  if: github.event_name == 'push'
+  ```
+
+### 第七步：深入学习
+
+- 阅读 [GitHub Actions 官方文档](https://docs.github.com/en/actions) 以获取更多高级功能。
+- 尝试使用矩阵构建、缓存依赖项等高级特性。
+
+### 总结
+
+通过以上步骤，你可以逐步掌握 GitHub Actions 的基本用法。建议多实践，试着创建不同的工作流以加深理解。祝你好运！
+
+
+
+https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions
+
+这里可以找到actions
+
+https://github.com/marketplace?type=actions
 
 # 参考资料
 

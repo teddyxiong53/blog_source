@@ -243,3 +243,82 @@ Gitness 和 Gitea 都是开源的代码托管平台，支持 Git 版本控制和
 - **Gitea**：轻量级、简单易用，适合需要 Git 托管、代码审查和基本协作功能的中小型团队或个人开发者，且其扩展性较好，社区资源丰富。
 
 两者的选择取决于你的团队需求。如果你注重 CI/CD 和开发流程的集成，**Gitness** 是不错的选择；而如果你需要的是简单、高效的 Git 托管平台，**Gitea** 可能更适合。
+
+# Gitea Actions
+
+从gitea1.19版本开始，actions就成为了内置的CI/CD方案。
+
+跟其他的CI/CD方案一样，Gitea不会自己运行Job。
+
+而是把Job委托给Runner。
+
+Gitea Actions的Runner被称为act runner。
+
+它 是一个独立的程序，是go语言编写的。
+
+它是基于nektos/act的一个分支。
+
+由于Runner是独立部署的，可能存在潜在的安全问题。
+
+为了避免这些问题，需要遵循下面这2个基本原则：
+
+* 不要使用你不信任的Runner。
+* 不要为了你不信任的组织提供Runner。
+
+对于企业内部，不用考虑这个，因为天然就是信任安全的。
+
+## 设置
+
+从1.21.0开始，Actions默认是开启的。
+
+我当前是1.20.4版本。
+
+需要在配置文件里添加：
+
+```
+[actions]
+ENABLED=true
+```
+
+
+
+你需要下载act runner这程序的二进制文件。
+
+https://dl.gitea.com/act_runner/
+
+在运行act_runner之前，你需要先把它注册到你的gitea上。
+
+对二者进行关联。
+
+```
+./act_runner register --no-interactive --instance <instance> --token <token>
+```
+
+instance对应你的gitea的运行地址。
+
+token用于身份验证。
+
+一个token只能被注册一次。
+
+token跟gitea不同级别的实体对应。
+
+全局级别的：从xx/admin/actions/runner的页面获取token。
+
+组织级别的：xx/<org>/settings/actions/runner的页面获取token。
+
+仓库级别的：从xx/yy/zz/settings/actions/runner的页面获取token。xx是域名，yy是username，zz是仓库名。
+
+即使开启了全局的runner。每个仓库本身的action还是需要手动去打开的。
+
+到仓库的设置里打开action即可。
+
+
+
+# nektos/act分析
+
+https://github.com/nektos/act
+
+这个是gitea的action的
+
+https://nektosact.com/
+
