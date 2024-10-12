@@ -26,3 +26,6 @@ repo sync -j16
 
 有488个仓库。
 
+# 规范
+
+https://gitee.com/openharmony/docs/blob/master/zh-cn/design/OpenHarmony-API-quality.md#https://gitee.com/openharmony/docs/blob/master/zh-cn/contribute/OpenHarmony-c-cpp-secure-coding-guide.md

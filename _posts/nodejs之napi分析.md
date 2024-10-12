@@ -188,3 +188,6 @@ napi_async_destroy
 napi_make_callback
 ```
 
+# c++ api
+
+https://github.com/nodejs/node-addon-api/blob/main/doc/hierarchy.md

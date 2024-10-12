@@ -221,6 +221,42 @@ https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-
 
 https://github.com/marketplace?type=actions
 
+# github里的开源项目的标准文件有哪些？README.md、LICENSE，还有哪些
+
+在 GitHub 上的开源项目中，除了 `README.md` 和 `LICENSE` 文件，通常还会包含以下标准文件：
+
+### 1. **CONTRIBUTING.md**
+- **说明**：详细描述如何为项目贡献代码，包括提交规范、代码风格、测试要求等。
+
+### 2. **CODE_OF_CONDUCT.md**
+- **说明**：定义社区行为规范，确保项目参与者之间的尊重与包容。
+
+### 3. **INSTALL.md 或 INSTALLATION.md**
+- **说明**：提供项目的安装步骤和依赖项说明。
+
+### 4. **CHANGELOG.md**
+- **说明**：记录项目的版本历史及每个版本的变更内容。
+
+### 5. **FAQ.md**
+- **说明**：回答常见问题，帮助用户解决在使用项目时可能遇到的问题。
+
+### 6. **.gitignore**
+- **说明**：定义哪些文件和目录在 Git 中应被忽略，防止将不必要的文件提交到版本控制中。
+
+### 7. **Makefile 或 build系统文件**
+- **说明**：用于定义如何构建和编译项目的指令，通常用于 C/C++ 项目。
+
+### 8. **docs/** 目录
+- **说明**：包含项目的文档，可能包括 API 文档、用户指南等。
+
+### 9. **LICENSE-*.md**
+- **说明**：如果项目使用了多种许可证，可能会有不同的许可证文件。
+
+### 10. **Dockerfile**
+- **说明**：如果项目可以通过 Docker 部署，通常会包含 Dockerfile。
+
+这些文件有助于用户更好地理解、使用和贡献项目，同时也能提升项目的可维护性和社区参与度。
+
 # 参考资料
 
 1、解决GitHub下载速度太慢的问题
