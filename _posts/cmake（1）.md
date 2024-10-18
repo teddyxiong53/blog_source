@@ -948,7 +948,7 @@ add_library(MultipartParser INTERFACE)
    set(UPPER_CASE "hello, cmake!")
    string(TOUPPER ${UPPER_CASE} UPPER_RESULT)
    message(${UPPER_RESULT})
-
+   
    set(LOWER_CASE "Hello, CMake!")
    string(TOLOWER ${LOWER_CASE} LOWER_RESULT)
    message(${LOWER_RESULT})
@@ -1172,10 +1172,10 @@ add_library(MultipartParser INTERFACE)
        message("Value of VAR1: ${VAR1}")
        message("Value of VAR2: ${VAR2}")
    endmacro()
-
+   
    set(VAR1 "Value 1")
    set(VAR2 "Value 2")
-
+   
    PrintVariables()
    ```
 
@@ -1188,7 +1188,7 @@ add_library(MultipartParser INTERFACE)
        else()
            message("Second argument not provided.")
        endif()
-endmacro()
+   endmacro()
    
    OptionalMacro("First Argument")
    OptionalMacro("First Argument" "Second Argument")
@@ -1215,11 +1215,11 @@ endmacro()
        InnerMacro()
        message("Outer macro finished.")
    endmacro()
-
+   
    macro(InnerMacro)
        message("Inner macro called.")
    endmacro()
-
+   
    OuterMacro()
    ```
 
@@ -1463,6 +1463,118 @@ target_link_libraries(my_app ${OPENSSL_LIBRARIES})
 # cmake中文手册
 
 https://modern-cmake-cn.github.io/Modern-CMake-zh_CN/chapters/intro/running.html
+
+
+
+# cmake的关键词有哪些
+
+CMake有许多关键词和命令，用于配置和生成构建系统。以下是一些常用的CMake关键词和命令分类：
+
+### 配置与设置
+- `project()`: 定义项目名称和语言。
+- `cmake_minimum_required()`: 设置CMake的最低版本要求。
+- `set()`: 设置变量的值。
+- `option()`: 定义布尔选项，供用户在配置时选择。
+- `message()`: 输出信息到控制台。
+
+### 文件与目录
+- `include()`: 包含其他CMake文件。
+- `add_subdirectory()`: 添加子目录来处理其CMakeLists.txt。
+- `file()`: 执行文件操作，如复制、删除等。
+
+### 目标管理
+- `add_executable()`: 定义可执行文件目标。
+- `add_library()`: 定义库目标。
+- `target_link_libraries()`: 指定目标链接的库。
+- `target_include_directories()`: 设置目标的包含目录。
+
+### 选项与条件
+- `if()`, `elseif()`, `else()`, `endif()`: 条件语句。
+- `foreach()`, `endforeach()`: 循环语句。
+- `list()`: 操作列表变量。
+
+### 查找与导入
+- `find_package()`: 查找外部包和库。
+- `find_library()`: 查找库文件。
+- `find_path()`: 查找包含文件路径。
+
+### 构建选项
+- `set_target_properties()`: 设置目标的属性。
+- `set_property()`: 设置全局或目标特定的属性。
+
+### 安装与打包
+- `install()`: 定义安装规则。
+- `include(InstallRequiredSystemLibraries)`: 包含系统库的安装规则。
+
+### 其他
+- `configure_file()`: 配置文件并生成输出文件。
+- `string()`: 字符串操作函数。
+
+这些只是CMake的一部分关键词和命令，CMake的功能非常强大，可以满足多种构建需求。如果你有特定的命令或功能想深入了解，请告诉我！
+
+# add_custom_command
+
+`add_custom_command` 是 CMake 中用于创建自定义构建步骤的命令，可以用来定义在构建过程中执行的特定操作。这些操作通常不涉及直接生成目标文件，但可以用于生成文件、运行脚本等。
+
+### 语法
+
+```cmake
+add_custom_command(
+    OUTPUT output1 [output2 ...]
+    COMMAND command1 [args1...]
+    [COMMAND command2 [args2...]]
+    [DEPENDS depend1 [depend2 ...]]
+    [WORKING_DIRECTORY dir]
+    [COMMENT comment]
+    [VERBATIM]
+    [APPEND]
+)
+```
+
+### 参数说明
+
+- **OUTPUT**: 指定该命令生成的文件。这些文件将在构建过程中被 CMake 追踪。
+- **COMMAND**: 要执行的命令。可以有多个 `COMMAND` 行。
+- **DEPENDS**: 指定该命令依赖的文件。如果依赖的文件发生变化，`add_custom_command` 将会重新执行。
+- **WORKING_DIRECTORY**: 设置命令执行时的工作目录。
+- **COMMENT**: 为该命令添加说明，便于调试和了解构建过程。
+- **VERBATIM**: 确保命令参数被完全按照给定的方式传递，不进行任何转义。
+- **APPEND**: 允许将新的命令添加到现有命令的末尾。
+
+### 示例
+
+下面是一个简单的示例，演示如何使用 `add_custom_command` 来生成一个文件：
+
+```cmake
+add_custom_command(
+    OUTPUT my_output_file.txt
+    COMMAND echo "Hello, World!" > my_output_file.txt
+    COMMENT "Generating output file"
+)
+```
+
+### 注意事项
+
+- `add_custom_command` 只定义了自定义命令，并不会直接执行。要在构建时执行该命令，通常需要将其与一个目标关联，通常使用 `add_custom_target` 或者将其作为其他目标的依赖。
+  
+### 示例与目标关联
+
+```cmake
+add_custom_command(
+    OUTPUT my_output_file.txt
+    COMMAND echo "Hello, World!" > my_output_file.txt
+    COMMENT "Generating output file"
+)
+
+add_custom_target(
+    generate_file ALL
+    DEPENDS my_output_file.txt
+)
+```
+
+在这个例子中，`generate_file` 是一个自定义目标，构建时将生成 `my_output_file.txt`。
+
+如果你有更多具体问题或者需要更详细的用法，可以继续问我！
 
 # 参考资料
 

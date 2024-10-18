@@ -525,6 +525,76 @@ fetchUserInfo(1)
 
 最后，我们调用`fetchUserInfo(1)`函数来获取id为1的用户信息。在`then`方法中，我们处理成功的情况，打印用户信息；在`catch`方法中，我们处理失败的情况，打印错误信息。
 
+# Promise.resolve()
+
+`Promise.resolve()` 是 JavaScript 中的一个静态方法，用于返回一个已解决（fulfilled）的 `Promise` 对象。这个方法可以接收一个值，并将其包装在一个 `Promise` 中。如果传入的值已经是一个 `Promise`，则会直接返回这个 `Promise`。
+
+### 语法
+
+```javascript
+Promise.resolve(value);
+```
+
+- **value**: 要包装成 `Promise` 的值。可以是任何类型，包括对象、数组、字符串、数字等。
+
+### 返回值
+
+- 返回一个 `Promise` 对象，状态为已解决（fulfilled），并且其值为传入的 `value`。
+
+### 示例
+
+1. **基本用法**:
+
+```javascript
+const promise = Promise.resolve(42);
+promise.then(value => {
+    console.log(value); // 输出: 42
+});
+```
+
+2. **传入一个已解决的 Promise**:
+
+```javascript
+const existingPromise = Promise.resolve('Hello');
+const promise = Promise.resolve(existingPromise);
+
+promise.then(value => {
+    console.log(value); // 输出: Hello
+});
+```
+
+3. **传入一个非 Promise 值**:
+
+```javascript
+const promise1 = Promise.resolve('World');
+const promise2 = Promise.resolve(100);
+
+promise1.then(value => {
+    console.log(value); // 输出: World
+});
+
+promise2.then(value => {
+    console.log(value); // 输出: 100
+});
+```
+
+4. **使用 `Promise.resolve()` 与异步操作**:
+
+```javascript
+async function fetchData() {
+    return Promise.resolve({ data: 'Sample Data' });
+}
+
+fetchData().then(result => {
+    console.log(result); // 输出: { data: 'Sample Data' }
+});
+```
+
+### 总结
+
+- `Promise.resolve()` 是一个非常有用的方法，可以方便地将值转换为 `Promise` 对象。
+- 它在处理异步操作时特别有用，可以确保返回值始终是一个 `Promise`，使得代码更具一致性和可读性。
+
 # 参考资料
 
 1、理解 Promise 的工作原理
