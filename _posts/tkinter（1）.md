@@ -788,6 +788,53 @@ https://cloud.tencent.com/developer/article/1919868
 
 https://blog.csdn.net/jumpbull01/article/details/127306081
 
+# Variable
+
+```
+from tkinter import Variable, StringVar, IntVar, DoubleVar, BooleanVar
+```
+
+这个Variable是做什么的？
+
+`tkinter` 的 `Variable` 类及其子类提供了一种简单的方式来管理和更新 GUI 组件的状态，使得应用程序更加动态和响应式。
+
+在 `tkinter` 中，`Variable` 是一个基类，用于创建与界面组件（如标签、按钮、输入框等）绑定的变量。这些变量可以是 `StringVar`、`IntVar`、`DoubleVar` 或 `BooleanVar` 等类型，用于管理和更新 GUI 元素的状态。
+
+# filedialog
+
+看这个例子就好了。
+
+```
+import tkinter as tk
+from tkinter import filedialog
+
+def open_file():
+    file_path = filedialog.askopenfilename(title="选择文件", filetypes=[("文本文件", "*.txt"), ("所有文件", "*.*")])
+    if file_path:
+        with open(file_path, 'r') as file:
+            content = file.read()
+            print(content)
+
+def save_file():
+    save_path = filedialog.asksaveasfilename(title="保存文件", defaultextension=".txt", filetypes=[("文本文件", "*.txt"), ("所有文件", "*.*")])
+    if save_path:
+        with open(save_path, 'w') as file:
+            file.write("这是一个示例文本。")
+
+app = tk.Tk()
+app.title("文件对话框示例")
+
+open_button = tk.Button(app, text="打开文件", command=open_file)
+open_button.pack(pady=10)
+
+save_button = tk.Button(app, text="保存文件", command=save_file)
+save_button.pack(pady=10)
+
+app.mainloop()
+```
+
+
+
 # 参考资料
 
 1、
