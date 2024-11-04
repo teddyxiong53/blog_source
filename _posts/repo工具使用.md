@@ -783,7 +783,8 @@ repo sync -c -f --no-tags --no-clone-bundle -j`nproc`
 **-f 如果sync失败，继续同步（想想当年LZ写了一个while循环解决同步失败终止问题的）**
 **--force-sync 如果文件目录有差异，强制覆盖掉**
 
- repo回滚
+#  repo回滚
+
 repo sync -d 可以将所有git 仓库的HEAD重置为manifest文件的指定版本。同时，处于暂存或者修改的目录变化不会被重置。
 
 当然，-d 重置版本的妙用就是回滚，结合以下命令，可以让被指飞的git仓库门，全部恢复成干净的代码。
@@ -928,6 +929,58 @@ https://blog.csdn.net/Luoshengyang/article/details/18195205
 # 说明
 
 https://pillow-blog.top/index.php/archives/59/#readmode
+
+# 把repo整个打包分享给其他人使用
+
+这个是因为repo sync非常慢。
+
+所以有这种需求。
+
+先打包整个.repo目录。
+
+```
+tar -czvf full_repo_package.tar.gz .repo *
+```
+
+**说明**：`*`用于包含所有项目文件。如果项目特别大，可以根据需要选择性打包部分代码。
+
+使用压缩比较消耗时间，我是在本地做实验。所以，不压缩。只打包。
+
+```
+tar -cvf full_repo_package.tar .repo
+```
+
+
+
+在新的目录下，解压：
+
+```
+tar -xzvf full_repo_package.tar.gz
+```
+
+运行repo init，注意--reference参数。
+
+```
+repo init -u <manifest-url> -b <branch> --reference=./.repo
+```
+
+（这里-u是可以没有的）
+
+我就是这样执行的：
+
+```
+repo init -m default-basic.xml -b main --reference=./.repo
+```
+
+工作正常。
+
+然后执行：
+
+```
+repo sync
+```
+
+
 
 # 参考资料
 

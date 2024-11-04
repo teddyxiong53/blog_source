@@ -45,6 +45,8 @@ BitBake 使用一种声明式的构建描述语言，称为 BitBake Recipe。每
 
 希望以上信息对你有所帮助！如果还有其他问题，请随时提问。
 
+
+
 # bitbake语法简单描述
 
 BitBake 是一个构建工具，用于构建嵌入式 Linux 系统，特别是在 Yocto Project 中广泛使用。它具有自己的领域特定语言（DSL）和规则，以下是一些 BitBake 的主要语法元素和规则的简单描述：

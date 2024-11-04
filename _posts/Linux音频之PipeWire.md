@@ -1006,7 +1006,7 @@ context.modules = [
 默认情况下，PipeWire 不会将立体声音频上混为多声道 5.1 或 7.1 音频，因为默认行为应该是按原样路由音频，而不是对音频应用滤波器。
 
 
-您需要在 PulseAudio 客户端、Native PipeWire 客户端和蓝牙设备中手动启用 umixing。
+您需要在 PulseAudio 客户端、Native PipeWire 客户端和蓝牙设备中手动启用 upmixing。
 
 当pipewire用作蓝牙接收器（扬声器）时，传入的立体声信号可以上混为多声道。
 
@@ -1057,7 +1057,7 @@ stream.properties = {
 }
 ```
 
-要为 wirelumber 制作的 ALSA 节点启用volume限制，请创建一个包含以下内容的文件 `~/.config/wireplumber/wireplumber.conf.d/60-volume-limit.conf` ：
+要为 wireplumber 制作的 ALSA 节点启用volume限制，请创建一个包含以下内容的文件 `~/.config/wireplumber/wireplumber.conf.d/60-volume-limit.conf` ：
 
 ```
 monitor.alsa.rules = [
@@ -1675,11 +1675,9 @@ pw-link my-combined-sink:monitor_FR my-virtualmic:input_FR
 1. 创建 Null Sink：
 
    ```
-   sh
-   复制代码
    pw-cli create-node adapter node.name=my-combined-sink media.class=Audio/Sink object.linger=true
    ```
-
+   
 2. 获取 Node ID：
 
    ```
@@ -2202,7 +2200,29 @@ pw-play --target alsa-hw01 /data/1.wav
 
 alsa-hw01对应node.name生成的名字。
 
+# 很多struct impl，这是什么设计模式？
 
+这是一个常见的设计模式，称为"结构体实现"（Struct Implementation）或"结构体封装"（Struct Encapsulation）。
+
+在这种设计模式中，一个结构体（struct）被用来封装数据和实现某些功能，而不是直接将数据和功能暴露给外部。这种设计模式的主要目的是：
+
+1.  隐藏实现细节：通过将数据和实现封装在结构体中，可以隐藏实现细节，使得外部代码无法直接访问内部数据和实现。
+2.  提高代码组织性：结构体可以将相关的数据和功能组织在一起，使得代码更易于理解和维护。
+3.  提高代码重用性：结构体可以被重用在不同的上下文中，减少代码冗余。
+
+在 PipeWire 中，`struct pw_impl_client` 是一个实现客户端连接的结构体，它封装了客户端连接相关的数据和功能，提供了一种抽象的方式来访问和操作客户端连接。
+
+这种设计模式在 C 语言中非常常见，因为 C 语言不支持面向对象编程（OOP）的概念，如类和对象。结构体实现模式提供了一种类似于 OOP 的封装和抽象的方式来组织代码。
+
+# 为什么要把buffer重新放回队列，这样不永远都在队列吗？
+
+把缓冲区重新放回队列是为了让 PipeWire 流媒体框架能够继续处理数据。队列中的缓冲区是循环使用的，当一个缓冲区被取出、填充数据后，需要把它重新放回队列中，以便框架可以继续使用它。
+
+这样做的原因是， PipeWire 流媒体框架使用了一个叫做“环形缓冲区”（ring buffer）的数据结构来管理缓冲区。环形缓冲区是一种先进先出的数据结构，数据从一个端进入，另一端离开。当一个缓冲区被取出后，如果不重新放回队列中，框架就无法继续使用它，而是会认为这个缓冲区已经被释放了。
+
+通过重新放回队列中，缓冲区可以被框架继续使用，避免了不必要的内存分配和释放操作，从而提高了系统的性能和效率。
+
+==而且， PipeWire 流媒体框架有一个机制来避免缓冲区在队列中停留太久，当缓冲区在队列中停留太久时，框架会自动将其释放掉，以避免队列中的缓冲区数量过多，从而导致系统资源浪费。==
 
 # 参考资料
 

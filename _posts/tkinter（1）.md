@@ -835,6 +835,379 @@ app.mainloop()
 
 
 
+tk提供了一些class，用来显示、布局和控件。
+
+顶层控件是Tk和TopLevel这2个。
+
+其他控件：
+
+Frame、Label、Entry、Text、Canvas、Button、RadioButton
+
+CheckButton、Scale、Listbox、Scrollbar、OptionMenu、Spinbox
+
+LabelFrame、PanedWindow
+
+LabelFrame是这个样子。
+
+```
+import tkinter as tk
+
+# 创建主窗口
+root = tk.Tk()
+root.title("LabelFrame 示例")
+
+# 创建 LabelFrame
+label_frame = tk.LabelFrame(root, text="我的框架", padx=10, pady=10)
+label_frame.pack(padx=10, pady=10)
+
+# 在 LabelFrame 中添加控件
+label = tk.Label(label_frame, text="这是一个标签")
+label.pack()
+
+button = tk.Button(label_frame, text="这是一个按钮")
+button.pack()
+
+# 启动主循环
+root.mainloop()
+```
+
+
+
+![image-20241023152106930](images/random_name2/image-20241023152106930.png)
+
+
+
+PanedWindow是这样：
+
+```
+import tkinter as tk
+
+# 创建主窗口
+root = tk.Tk()
+root.title("PanedWindow 示例")
+
+# 创建 PanedWindow
+paned_window = tk.PanedWindow(root, orient=tk.HORIZONTAL)
+paned_window.pack(fill=tk.BOTH, expand=True)
+
+# 添加第一个面板
+frame1 = tk.Frame(paned_window, bg="lightblue", width=200, height=200)
+paned_window.add(frame1)
+
+# 添加第二个面板
+frame2 = tk.Frame(paned_window, bg="lightgreen", width=200, height=200)
+paned_window.add(frame2)
+
+# 向第一个面板添加控件
+label1 = tk.Label(frame1, text="这是第一个面板")
+label1.pack(pady=20)
+
+# 向第二个面板添加控件
+label2 = tk.Label(frame2, text="这是第二个面板")
+label2.pack(pady=20)
+
+# 启动主循环
+root.mainloop()
+```
+
+
+
+![image-20241023152223447](images/random_name2/image-20241023152223447.png)
+
+
+
+控件的属性是通过keyword参数来指定的。
+
+控件的布局通过这3种几何管理器做的：
+
+* Place。
+* Pack。
+* Grid。
+
+# cursor样式
+
+https://www.tcl.tk/man/tcl8.6/TkCmd/cursors.htm
+
+# tcl/tk文档
+
+https://www.tcl.tk/man/tcl8.6/contents.htm
+
+
+
+# configure 方法
+
+在 Tkinter 中，`configure` 方法用于动态修改控件的属性。这使得你可以在程序运行时更改控件的外观和行为。几乎所有 Tkinter 控件（如 `Button`、`Label`、`Frame` 等）都可以使用 `configure` 方法。
+
+### 常用参数
+
+1. **bg (或 background)**: 设置控件的背景颜色。
+2. **fg (或 foreground)**: 设置控件的文本颜色。
+3. **font**: 设置字体样式和大小。
+4. **text**: 设置按钮或标签显示的文本。
+5. **relief**: 设置控件的边框样式（如 `flat`, `raised`, `sunken`, `groove`, `ridge`）。
+6. **cursor**: 设置鼠标悬停时的光标样式（如 `hand2`, `arrow` 等）。
+7. **width**: 设置控件的宽度（以字符为单位，适用于文本控件）。
+8. **height**: 设置控件的高度（以行数为单位，适用于文本控件）。
+9. **state**: 设置控件的状态（如 `normal`, `disabled`, `active`）。
+
+
+
+# StringVar用法
+
+**创建 StringVar**：使用 `StringVar()` 创建实例。
+
+**设置值**：使用 `set()` 方法设置变量的值。
+
+**获取值**：使用 `get()` 方法获取当前值。
+
+# Menu 的tearoff表示什么
+
+在 Tkinter 中，`Menu` 的 `postcommand` 属性用于指定一个回调函数，该函数在菜单显示之前被调用。这可以用于动态更新菜单的内容或状态，或者执行一些其他操作。
+
+### postcommand 属性
+
+- **类型**: 应该是一个无参数的函数。
+- **用途**: 当菜单被请求显示时（例如，当用户点击菜单按钮），`postcommand` 指定的函数将被调用。这使得你可以在菜单显示前更新菜单项的状态（如启用或禁用某些项）。
+
+# compound
+
+在 Tkinter 中，`compound` 是一个用于配置控件（如 `Button`、`Label` 等）中文本和图像位置的属性。它允许你在控件中同时显示文本和图像，并指定它们的相对位置。
+
+### compound 属性
+
+- **类型**: 字符串
+- 可用选项
+  - `tk.LEFT`: 图像在文本的左侧。
+  - `tk.RIGHT`: 图像在文本的右侧。
+  - `tk.TOP`: 图像在文本的上方。
+  - `tk.BOTTOM`: 图像在文本的下方。
+  - `tk.CENTER`: 图像和文本重叠（默认情况下）。
+
+# 资源管理器布局
+
+```
+import tkinter as tk
+from tkinter import ttk, messagebox
+
+class FileExplorer(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("简易资源管理器")
+        self.geometry("600x400")
+
+        # 创建树形视图
+        self.tree = ttk.Treeview(self)
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # 创建滚动条
+        scrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.tree.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.tree.configure(yscrollcommand=scrollbar.set)
+
+        # 插入示例文件夹和文件
+        self.insert_example_data()
+
+        # 绑定选中事件
+        self.tree.bind("<<TreeviewSelect>>", self.on_item_selected)
+
+        # 创建文本区域
+        self.text_area = tk.Text(self, height=10)
+        self.text_area.pack(side=tk.BOTTOM, fill=tk.X)
+
+    def insert_example_data(self):
+        # 添加根节点
+        root_node = self.tree.insert("", "end", text="根目录", open=True)
+        
+        # 添加子文件夹和文件
+        folder1 = self.tree.insert(root_node, "end", text="文件夹1", open=True)
+        self.tree.insert(folder1, "end", text="文件1.txt")
+        self.tree.insert(folder1, "end", text="文件2.txt")
+
+        folder2 = self.tree.insert(root_node, "end", text="文件夹2", open=True)
+        self.tree.insert(folder2, "end", text="文件3.txt")
+
+    def on_item_selected(self, event):
+        selected_item = self.tree.selection()
+        item_text = self.tree.item(selected_item)['text']
+        self.text_area.delete(1.0, tk.END)
+        
+        if self.tree.parent(selected_item):
+            self.text_area.insert(tk.END, f"选中的文件: {item_text}")
+        else:
+            self.text_area.insert(tk.END, f"选中的文件夹: {item_text}")
+
+if __name__ == "__main__":
+    app = FileExplorer()
+    app.mainloop()
+```
+
+# 写一个浏览器
+
+```
+import tkinter as tk
+from tkinter import ttk
+from tkinterweb import HtmlFrame  # 确保安装 tkinterweb 库
+
+class SimpleBrowser(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("简易浏览器")
+        self.geometry("800x600")
+
+        # 创建地址栏
+        self.address_bar = ttk.Entry(self, width=60)
+        self.address_bar.pack(pady=10, padx=10)
+
+        # 创建导航按钮
+        self.go_button = ttk.Button(self, text="前往", command=self.load_page)
+        self.go_button.pack(pady=10)
+
+        # 创建网页显示区域
+        self.browser_frame = HtmlFrame(self, horizontal_scrollbar="auto")
+        self.browser_frame.pack(fill=tk.BOTH, expand=True)
+
+    def load_page(self):
+        url = self.address_bar.get()
+        if not url.startswith("http://") and not url.startswith("https://"):
+            url = "http://" + url
+        self.browser_frame.load_website(url)
+
+if __name__ == "__main__":
+    app = SimpleBrowser()
+    app.mainloop()
+```
+
+# 类似utools
+
+```
+import tkinter as tk
+from tkinter import messagebox
+import pystray
+from PIL import Image, ImageDraw
+import threading
+
+class SearchApp(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("全局搜索框")
+        self.geometry("400x100")
+
+        # 创建搜索框
+        self.search_entry = tk.Entry(self, font=("Arial", 16))
+        self.search_entry.pack(pady=20, padx=20, fill=tk.X)
+
+        # 创建托盘图标
+        self.tray_icon = None
+        self.create_tray_icon()
+
+        # 绑定关闭事件
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+    def create_tray_icon(self):
+        # 创建托盘图标
+        image = self.create_image()
+        self.tray_icon = pystray.Icon("SearchApp", image, "全局搜索应用", menu=self.create_tray_menu())
+        threading.Thread(target=self.tray_icon.run, daemon=True).start()
+
+    def create_image(self):
+        # 创建托盘图标的图像
+        width = 64
+        height = 64
+        image = Image.new("RGB", (width, height), (255, 255, 255))
+        draw = ImageDraw.Draw(image)
+        draw.ellipse((width // 4, height // 4, width * 3 // 4, height * 3 // 4), fill="blue")
+        return image
+
+    def create_tray_menu(self):
+        # 创建托盘菜单
+        from pystray import MenuItem as item
+        return (item("恢复", self.show), item("退出", self.quit))
+
+    def on_closing(self):
+        # 最小化到系统托盘
+        self.withdraw()
+        self.tray_icon.visible = True
+
+    def show(self):
+        # 显示主窗口
+        self.deiconify()
+        self.tray_icon.visible = False
+
+if __name__ == "__main__":
+    import pystray
+    from PIL import Image
+
+    app = SearchApp()
+    app.mainloop()
+```
+
+# 烧录工具
+
+```
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
+
+class FlashTool(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("烧录工具")
+        self.geometry("400x300")
+
+        # 文件选择
+        self.file_label = ttk.Label(self, text="选择固件文件:")
+        self.file_label.pack(pady=10)
+
+        self.file_entry = ttk.Entry(self, width=50)
+        self.file_entry.pack(padx=10)
+
+        self.browse_button = ttk.Button(self, text="浏览", command=self.browse_file)
+        self.browse_button.pack(pady=5)
+
+        # 目标设备选择
+        self.device_label = ttk.Label(self, text="选择目标设备:")
+        self.device_label.pack(pady=10)
+
+        self.device_combo = ttk.Combobox(self, values=["设备1", "设备2", "设备3"])
+        self.device_combo.pack(pady=5)
+
+        # 烧录进度条
+        self.progress = ttk.Progressbar(self, orient="horizontal", length=300, mode="determinate")
+        self.progress.pack(pady=20)
+
+        # 烧录按钮
+        self.flash_button = ttk.Button(self, text="开始烧录", command=self.start_flashing)
+        self.flash_button.pack(pady=10)
+
+    def browse_file(self):
+        file_path = filedialog.askopenfilename(filetypes=[("固件文件", "*.bin;*.hex")])
+        if file_path:
+            self.file_entry.delete(0, tk.END)
+            self.file_entry.insert(0, file_path)
+
+    def start_flashing(self):
+        file_path = self.file_entry.get()
+        device = self.device_combo.get()
+
+        if not file_path or not device:
+            messagebox.showwarning("警告", "请先选择固件文件和目标设备！")
+            return
+
+        # 模拟烧录过程
+        self.progress['value'] = 0
+        self.progress['maximum'] = 100
+        
+        for i in range(101):
+            self.progress['value'] = i
+            self.update_idletasks()
+            self.after(50)  # 模拟时间延迟
+
+        messagebox.showinfo("完成", "烧录完成！")
+
+if __name__ == "__main__":
+    app = FlashTool()
+    app.mainloop()
+```
+
 # 参考资料
 
 1、
