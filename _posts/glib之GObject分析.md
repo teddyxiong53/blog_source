@@ -618,6 +618,313 @@ GStreamer提供了类型及其参数的定义框架，但是对于类型的含�
 
 # 生成python binding
 
+# gobject手册
+
+https://www.geany.org/manual/gtk/gobject/index.html
+
+# gobject-builder
+
+https://www.jirka.org/gob2.1.html
+
+GObject 构建器是一个简单的预处理器，用于轻松创建 GObject 对象。它不解析任何 C 代码，也不忽略任何 C 错误。在精神上，它类似于 lex 或 yacc 这样的东西。在某些方面，它也类似于 Java。但它实际上只是一个简单的预处理器，用于在 C 或 C++ 中创建 GObjects，并不是一个编程语言。
+
+
+
+## typename
+
+因为我们需要解析 typename 的不同部分，
+
+有时需要使用一些特殊的语法来指定 typename。
+
+类型以大写字母形式指定，
+
+单词之间用':'分隔。
+
+类型的第一部分（可以为空）是“命名空间”。
+
+这一事实用于类型检查宏和类型宏。
+
+对于"Gtk:New:Button"，
+
+宏将为 GTK_IS_NEW_BUTTON 和 GTK_TYPE_NEW_BUTTON。
+
+typename 用分号分隔的格式在类声明头文件和方法参数类型中使用。
+
+## 输出文件
+
+文件名由 typename 创建。
+
+单词之间用'-'分隔（可以通过--file-sep 选项更改），
+
+全部转换为小写。
+
+例如，对于名为"Gtk:New:Button"的对象，
+
+文件为 gtk-new-button.c 和 gtk-new-button.h。
+
+如果你使用 C++模式，输出的.c 文件实际上是一个.cc 文件。
+
+如果有任何私有数据成员，还会创建一个名为-private.h 的私有头文件（在上述示例中为 gtk-new-button-private.h）。
+
+公共头文件用于人类可读和作为对象的参考。
+
+.c 源文件不是人类可读的源文件，充斥着#line 语句，这些语句使编译器在解析错误时尝试指向你的.gob 文件中的正确行。
+
+==输出不应手动编辑，你应该只编辑.gob 文件。==
+
+## 在输出的c文件里包含一些指定的内容
+
+在输出 C 文件中直接包含一些代码，
+
+请在空白行上开始和结束代码，
+
+分别使用'%'{}'。
+
+这些部分将按照给出的顺序出现在输出文件中。
+
+还有其他几个可以放置代码的区域。
+
+你可以将代码放在'header'部分（可以简写为'h'），它将进入公共头文件。
+
+你也可以将代码放在'privateheader'部分（简写为'ph'），
+
+这会使代码进入私有头文件。
+
+有时你希望在 extern "C"和保护定义之前包含一些代码（其他包含）。
+
+为此，你可以将它们放入'headertop'（或'ht'）部分。
+
+你可能希望在所有文件中包含代码或注释，
+
+可以通过将它们放入'all'（或'a'）部分来实现。
+
+同样，你希望在所有文件顶部出现的代码应放入'alltop'（或'at'）部分。
+
+当你希望代码像'alltop'那样出现，但只在 cfile 中时，使用'ctop'（或'ct'）部分。
+
+请注意，ctop 需要 2.0.18 版本。
+
+最后，'afterdecls'在声明和方法实现之间包含代码，但请注意，'afterdecls'需要 2.0.16 版本。
+
+例如：
+
+```
+  %alltop{
+        /* this will be at the very top of all output files */
+  %}
+
+  %ctop{
+        /* this will be at the very top of the C file */
+        /* Requires 2.0.18 */
+  %}
+
+  %headertop{
+        /* this will be on top of the public header */
+  %}
+
+  %privateheader{
+        /* this will go into the private header file */
+  %}
+
+  %h{
+        /* will be included in the header */
+        void somefunc(int i);
+  %}
+
+  %a{
+        /* will be included in all files */
+  %}
+
+  %afterdecls{
+        /* between the declarations and the method implementations */
+        /* Requires gob version 2.0.16 */
+  %}
+
+  %{
+        /* will be included in the C file */
+        void somefunc(int i)
+        {
+              /* some code */
+        }
+  %}
+
+```
+
+
+
+
+
+Gob 将在 .c 源文件的顶部自动包含类头文件。
+
+如果您希望在其他位置包含它，
+
+请将包含放入一些 %{ %} 部分的上方，
+
+且在类定义之前，Gob 将不会自动包含。
+
+这样，您可以避免循环包含，并控制您希望在文件中包含头文件的位置。
+
+
+如果创建了任何私有数据成员，gob 也会生成一个源文件，该文件将被命名为 -private.h。
+
+对于这个文件的规则与常规头文件相同。
+
+如果你明确包含常规头文件，你应该始终在它下面包含这个私有头文件。
+
+也就是说，如果你使用了任何私有数据成员。
+
+如果不这样做，私有头文件会自动包含公共头文件，因此公共头文件将间接在文件的最顶部被包含。
+
+# gob2的代码
+
+https://github.com/dov/gob2
+
+可以看这个例子。
+
+https://github.com/dov/gob2/blob/main/examples/my-person.gob
+
+# 让gpt写python脚本实现gobject代码生成
+
+```python
+import os
+
+# 定义生成GObject模块的模板
+HEADER_TEMPLATE = """
+#ifndef __{module_upper}_H__
+#define __{module_upper}_H__
+
+#include <glib-object.h>
+
+G_BEGIN_DECLS
+
+#define {module_upper}_TYPE_{class_upper} ({module_lower}_{class_lower}_get_type())
+G_DECLARE_FINAL_TYPE({ModuleClass}, {module_lower}_{class_lower}, {MODULE_LOWER}, {CLASS_LOWER}, GObject)
+
+struct _{ModuleClass}
+{{
+    GObject parent_instance;
+}};
+
+struct _{ModuleClass}Class
+{{
+    GObjectClass parent_class;
+}};
+
+{ModuleClass} *{module_lower}_{class_lower}_new(void);
+
+G_END_DECLS
+
+#endif /* __{module_upper}_H__ */
+"""
+
+SOURCE_TEMPLATE = """
+#include "{module_lower}-{class_lower}.h"
+
+struct _{ModuleClass}
+{{
+    GObject parent_instance;
+}};
+
+G_DEFINE_TYPE({ModuleClass}, {module_lower}_{class_lower}, G_TYPE_OBJECT)
+
+static void {module_lower}_{class_lower}_class_init({ModuleClass}Class *klass)
+{{
+    /* class initialization code */
+}}
+
+static void {module_lower}_{class_lower}_init({ModuleClass} *self)
+{{
+    /* instance initialization code */
+}}
+
+{ModuleClass} *{module_lower}_{class_lower}_new(void)
+{{
+    return g_object_new({module_upper}_TYPE_{class_upper}, NULL);
+}}
+"""
+
+# Python 脚本生成 GObject 模块
+def create_gobject_module(module_name, class_name):
+    # 创建目录
+    os.makedirs(module_name, exist_ok=True)
+    
+    # 设置宏和命名
+    module_lower = module_name.lower()
+    module_upper = module_name.upper()
+    class_lower = class_name.lower()
+    class_upper = class_name.upper()
+    ModuleClass = f"{module_name.capitalize()}{class_name.capitalize()}"
+    MODULE_LOWER = module_name.upper()
+    CLASS_LOWER = class_name.upper()
+
+    # 创建头文件
+    header_content = HEADER_TEMPLATE.format(
+        module_upper=module_upper,
+        module_lower=module_lower,
+        ModuleClass=ModuleClass,
+        class_upper=class_upper,
+        class_lower=class_lower,
+        MODULE_LOWER=MODULE_LOWER,
+        CLASS_LOWER=CLASS_LOWER
+    )
+
+    with open(os.path.join(module_name, f"{module_lower}-{class_lower}.h"), "w") as header_file:
+        header_file.write(header_content)
+
+    # 创建源文件
+    source_content = SOURCE_TEMPLATE.format(
+        module_lower=module_lower,
+        module_upper=module_upper,
+        ModuleClass=ModuleClass,
+        class_upper=class_upper,
+        class_lower=class_lower
+    )
+
+    with open(os.path.join(module_name, f"{module_lower}-{class_lower}.c"), "w") as source_file:
+        source_file.write(source_content)
+
+    print(f"GObject module '{module_name}-{class_name}' created successfully!")
+
+
+# 示例用法：输入模块和类名
+module_name = input("Enter module name: ")
+class_name = input("Enter class name: ")
+create_gobject_module(module_name, class_name)
+
+```
+
+# gobject编程里的PROP枚举
+
+在 GObject 编程中，`PROP_0` 和其他 `PROP_*` 常量通常用于定义对象的属性。这些常量是在 GObject 相关类中注册和使用的，目的是提供一种方便的方式来处理对象属性。下面是对这些常量的详细解释。
+
+### 常量解析
+
+1. **`PROP_0`**
+   - **描述**: 常用于占位符，表示没有属性。这通常是属性枚举的起始值。它的存在是为了确保后续属性的索引从 1 开始。
+   - **用途**: 在属性的注册和访问过程中，通常不使用该值。
+2. **`PROP_NAME`**
+   - **描述**: 代表一个名为 `name` 的属性。这个属性可以用来存储对象的名称或标识符。
+   - **用途**: 在对象中实现时，可以使用 `g_object_set()` 和 `g_object_get()` 函数来访问该属性。
+3. **`PROP_PROPERTIES`**
+   - **描述**: 代表一个名为 `properties` 的属性。它可以用于存储与对象相关的其他属性或特征。
+   - **用途**: 这可以是一个复杂的结构，允许用户通过该属性访问多个子属性。
+
+然后会有xx_set_property和xx_get_property这2个处理函数。
+
+在xx_new的时候，会注册属性进去：
+
+```
+WpConf *
+wp_conf_new (const gchar * name, WpProperties * properties)
+{
+  g_return_val_if_fail (name, NULL);
+  g_autoptr (WpProperties) props = properties;
+  return g_object_new (WP_TYPE_CONF, "name", name, //这里注册property
+                       "properties", props,
+                       NULL);
+}
+```
+
 
 
 # 参考资料

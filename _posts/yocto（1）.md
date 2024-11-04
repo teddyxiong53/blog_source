@@ -1227,6 +1227,8 @@ KERNEL_MODULE_AUTOLOAD += "chardev"
 
 # RREPLACES
 
+`RREPLACES` 是一个变量，用于指示某个软件包将替代其他软件包。这在处理包的版本更新、重命名或合并时非常有用。
+
 # RPROVIDES
 
 A list of package name aliases that a package also provides.
@@ -1254,8 +1256,6 @@ RCONFLICTS_${PN} = "openssh-sshd openssh"
 native表示在服务器上使用的内容，跟板端相对。
 
 
-
-# 
 
 
 

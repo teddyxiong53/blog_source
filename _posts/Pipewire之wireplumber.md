@@ -473,6 +473,24 @@ ALSA 监视器默认启用，可以使用配置文件中的 `monitor.alsa` 功�
 
 > 这里值得记住的一件事是，在 ALSA 中，“卡”代表物理声音控制器设备，而“设备”是逻辑访问点，代表卡的一部分的一组输入和/或输出。在 PipeWire 中，“设备”直接相当于 ALSA“卡”，而“节点”几乎相当于（接近，但不完全）ALSA“设备”。
 
+### acp
+
+```
+monitor.alsa.properties = {
+  alsa.use-acp = true
+}
+```
+
+这将探测设备并配置可用的配置文件、端口和混音设置。
+
+用于执行此操作的代码直接来自 PulseAudio，
+
+提供看起来和感觉完全像 PulseAudio 设备的设备。
+
+跟ACP对等的一个配置是UCM。
+
+
+
 ## 蓝牙配置
 
 # 会话管理
@@ -1189,6 +1207,58 @@ monitor.alsa.rules = [
     actions = {
       update-props = {
         node.description = "Laptop"
+      }
+    }
+  }
+]
+```
+
+# 修改一个alsa节点的名字
+
+例如，要更改 ALSA 节点的描述，您会创建一个文件，如：
+
+```
+/etc/wireplumber/wireplumber.conf.d/51-device-rename.conf
+```
+
+```
+monitor.alsa.rules = [
+  {
+    matches = [
+      {
+        node.name = "alsa_output.pci-0000_00_1f.3.output_analog-stereo"
+      }
+    ]
+    actions = {
+      update-props = {
+        node.description = "Laptop"
+      }
+    }
+  }
+]
+```
+
+如果要更改蓝牙节点或设备上的某些内容，可以创建一个文件
+
+创建这样的一个文件：
+
+```
+/etc/wireplumber/wireplumber.conf.d/52-bluez-rename.conf 
+```
+
+内容：
+
+```
+monitor.bluez.rules = [
+  {
+    matches = [
+      {
+        node.name = "bluez_output.02_11_45_A0_B3_27.a2dp-sink"
+      }
+    ]
+    actions = {
+      update-props = {
+        node.nick = "Headphones"
       }
     }
   }
