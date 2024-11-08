@@ -925,7 +925,40 @@ wp_conf_new (const gchar * name, WpProperties * properties)
 }
 ```
 
+# g_autofree 和g_autoptr区别
 
+`g_autofree` 和 `g_autoptr` 都是 GLib 提供的宏，用于自动管理内存，避免内存泄漏，但它们的使用场景不同。
+
+### g_autofree
+
+- **作用**：用于自动释放通过 `g_malloc()`、`g_new()` 等函数分配的内存。
+- **类型**：通常用于指针类型，如 `char*` 或其他基本类型的指针。
+- **使用示例**：
+
+  ```c
+  g_autofree char *str = g_strdup("Hello, World!");
+  ```
+
+  在这个例子中，`str` 会在作用域结束时自动释放。
+
+### g_autoptr
+
+- **作用**：用于自动管理 GLib 对象的引用计数，适用于 GObject 类型。
+- **类型**：主要用于 GObject 派生类型，例如 `GObject*`、`GList*`、`GHashTable*` 等。
+- **使用示例**：
+
+  ```c
+  g_autoptr(GList) list = g_list_append(NULL, "Item");
+  ```
+
+  在这个例子中，`list` 会在作用域结束时自动释放，减少了手动调用 `g_object_unref()` 的需要。
+
+### 总结
+
+- 使用 `g_autofree` 处理基本内存分配的情况。
+- 使用 `g_autoptr` 处理 GObject 类型的引用计数管理。
+
+通过这两种宏，可以有效地减少内存管理中的错误和复杂性。
 
 # 参考资料
 

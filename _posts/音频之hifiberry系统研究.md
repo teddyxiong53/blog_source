@@ -66,6 +66,43 @@ BeoCreate2是BeoCreate这个4ch放大器的板端软件。
 ./compile 4 hifiberry
 ```
 
+# 简介
+
+HiFiBerry 是一个专为树莓派设计的高品质音频扩展板，
+
+旨在提升树莓派的音频性能。
+
+它提供了一系列不同的音频产品，适用于多种应用，包括音乐播放、数字音频播放和音频流媒体服务。
+
+### 主要特点
+
+1. **高品质音频输出**：
+   - HiFiBerry 使用高质量的DAC（数模转换器），提供清晰、准确的音频输出。
+   - 支持高分辨率音频，能够播放高达192kHz/24bit的音频格式。
+
+2. **多种型号**：
+   - HiFiBerry DAC+：适用于大多数音频应用，提供优质的模拟输出。
+   - HiFiBerry DAC+ Pro：增加了更高质量的组件，支持更低的噪音和失真。
+   - HiFiBerry Digi+：数字输出扩展板，适合需要数字音频输出的用户。
+
+3. **简单的安装与配置**：
+   - 兼容树莓派的标准接口，安装过程简单。
+   - 支持多种操作系统，如Raspbian、Volumio和Moode等，用户可以轻松配置和管理音频播放。
+
+4. **开源和社区支持**：
+   - HiFiBerry 提供开源驱动程序，用户可以根据需要进行定制。
+   - 拥有活跃的社区支持，用户可以在论坛上获取帮助和分享经验。
+
+### 应用场景
+
+- **家庭音频系统**：将树莓派与 HiFiBerry 结合，可以构建一个高保真音频播放系统。
+- **网络音乐播放器**：利用流媒体服务（如Spotify、Tidal等）进行高质量音乐播放。
+- **DIY 音频项目**：适合音频爱好者和开发者，进行各种音频相关的DIY项目。
+
+### 总结
+
+HiFiBerry 是树莓派用户提升音频体验的理想选择，无论是用于家庭娱乐系统还是个人项目，它都能提供卓越的音质和灵活的功能。通过简单的安装和配置，用户可以轻松享受高保真的音频体验。
+
 # package分析
 
 这个是自己写了很多的package。
@@ -94,9 +131,21 @@ nodejs写的。
 
 应该是用户控制界面。
 
+# 官方文档
 
+https://github.com/hifiberry/hifiberry-os/blob/master/doc/readme.md
 
-参考资料
+https://www.hifiberry.com/docs/
+
+# 音频测试
+
+https://www.audiosciencereview.com/forum/index.php?threads/hifiberry-dac2-hd-review-rpi-hat.21034/
+
+# 手册
+
+https://gzhls.at/blob/ldb/8/8/1/2/d368e86e380de104a54edfe3586b75943e53.pdf
+
+# 参考资料
 
 1、更新机制
 

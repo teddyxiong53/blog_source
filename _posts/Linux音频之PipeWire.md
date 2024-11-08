@@ -2081,6 +2081,15 @@ context.modules = [
 
 ```
 
+pactl还可以用。pacmd不能用。
+
+```
+# pacmd list-modules
+No PulseAudio daemon running, or not running as session daemon.
+```
+
+
+
 # 模块的入口函数
 
 ```

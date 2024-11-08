@@ -14,6 +14,10 @@ tags:
 
 https://pipewire.pages.freedesktop.org/wireplumber/
 
+重构wireplumber的配置文件系统：从lua到json
+
+https://www.collabora.com/news-and-blog/blog/2022/10/27/from-lua-to-json-refactoring-wireplumber-configuration-system/
+
 # 简介
 
 PipeWire 的主要目的是充当应用程序和设备之间的中间层。
@@ -1264,6 +1268,856 @@ monitor.bluez.rules = [
   }
 ]
 ```
+
+# lua配置切换到json
+
+https://www.collabora.com/news-and-blog/blog/2022/10/27/from-lua-to-json-refactoring-wireplumber-configuration-system/
+
+使用 Lua 作为配置语言有一些优势，
+
+因为它可以轻松且直接地与 Lua 代码和 C 代码集成。
+
+此外，基于规则/条件的设置实现（这是 PipeWire 的特色，即其中的每个实体都是一个对象，每个对象都有属性，这些属性可以用于应用设置）在 Lua 中实现起来非常简便。
+
+然而，存在一些明显的缺点。
+
+举几个例子：
+
+设置无法在运行时更改，因为它们是静态设置，用户可以进行覆盖，但这既不优雅也不直观，而且使用模式验证配置几乎是不可能的。
+
+就其价值而言，我非常享受使用 Lua 作为脚本语言和配置系统。然而，是时候告别将其用作配置系统了。
+
+
+
+经过深思熟虑，我们决定使用 PipeWire 的 JSON 语法来定义设置。
+
+这克服了 Lua 配置的缺点，并在整个 PipeWire 生态系统中提供了一种更统一的配置方法。
+
+
+
+PipeWire 的 JSON 语法是 JSON 的一种变体，称为“SPA JSON”，它是 PipeWire 内置的。
+
+SPA JSON 解析器是一个非常轻量级的解析器，
+
+主要忽略所有中间字符，
+
+因此可以解析各种变体，包括严格的 JSON。
+
+
+
+
+
+现在回到新的 JSON 配置系统。
+
+设置现在在主配置文件（wireplumber.conf）中的新部分 "wireplumber.settings" 下定义。
+
+这个部分不是作为一个整体定义的，
+
+而是分布在不同的设置文件（*.conf）下，
+
+位于 `wireplumber.conf.d/` 下。
+
+WirePlumber 将在启动时浏览这些文件并将其缝合在一起。
+
+
+
+每个 conf 文件是一个设置、模块和脚本的逻辑分组。
+
+例如：以下是 `device.conf` ，其中包含所有设备相关的配置。
+
+```
+# Settings to Track/store/restore user choices about devices
+
+wireplumber.settings = {
+  # Below syntax defines key-value pair style settings.
+  device.use-persistent-storage = true
+  device.auto-echo-cancel = true
+  device.echo-cancel-sink-name = echo-cancel-sink
+  device.echo-cancel-source-name = echo-cancel-source
+
+  # Below syntax defines a rule/condition based settings.
+  device.rules = [
+    {
+      matches = [
+          # Matches all devices
+          { device.name = "~*" }
+      ]
+      actions = {
+        update-props = {
+          profile_names = "off pro-audio"
+        }
+      }
+    }
+  ]
+}
+
+# WirePlumber modules and scripts are also loaded from the config files.
+wireplumber.components = [
+  { name = libwireplumber-module-default-nodes , type = module }
+  { name = policy-device-profile.lua, type = script/lua }
+]
+```
+
+为了方便熟悉 Lua 配置的用户，我整理了以下表格，映射了旧的 Lua 配置文件及其对应的新的 JSON 配置文件：
+
+| Old Lua config file 旧的 Lua 配置文件                        | New JSON config file 新 JSON 配置文件 |
+| ------------------------------------------------------------ | ------------------------------------- |
+| 10-default-policy.lua                                        | policy.conf                           |
+| **40-device-defaults.lua, 50-default-access-config.lua 40 ** | device.conf                           |
+| 40-stream-defaults.lua                                       | stream.conf                           |
+| 20-default-access.lua                                        | access.conf                           |
+| **30-alsa-monitor.lua, 50-alsa-config.lua**                  | alsa.conf                             |
+| 30-libcamera-monitor.lua, 50-libcamera-config.lua            | libcamera.conf                        |
+| 30-v4l2-monitor.lua, 50-v4l2-config.lua                      | v4l2.conf                             |
+
+您可能已经注意到，在某些情况下，两个 Lua 配置文件（如上加粗所示）被合并成一个 JSON 配置文件。
+
+我们希望这将使功能模块化大为简化。
+
+现在让我们来看看这个新的 JSON 配置系统的系统特性和设计，以及客户端功能。
+
+
+
+启动时，WirePlumber 从 .conf 文件==加载所有设置到名为 "sm-settings" 的 PipeWire 元数据对象中。==
+
+Lua 脚本、模块和 WirePlumber 客户端可以使用 PipeWire 元数据工具和 API 在运行时更改设置。
+
+正如您可能知道的，这些命令也可以从命令提示符中发出。
+
+```
+pw-metadata -n sm-settings 0 "policy.default.move" true Spa:String:JSON
+pw-metadata -n sm-settings 0 "device.echo-cancel-source-name" "echo-cancel-source-bal" Spa:String:JSON
+```
+
+上述命令不仅在运行时更改设置，而且还会实时应用到 WirePlumber 上，如下面的部分所解释的。
+
+
+
+Lua 脚本、模块或 WirePlumber 客户端，
+
+如果对任何设置感兴趣，也可以订阅回调以了解设置的变化。
+
+这使它们不仅能够知道设置的变化，还可以实时应用这些变化。
+
+让我举个例子来强调这一点。
+
+你必须知道，WirePlumber 会保存流的属性（音量、静音状态等）。
+
+现在，你可以使用以下命令关闭此行为的运行时，无需重启/重置。真棒，不是吗？
+
+```
+pw-metadata -n sm-settings 0 stream.restore-props false Spa:String:JSON
+```
+
+
+
+轻松的用户自定义是这次整个操作最方便的结果。
+
+听起来太正式了？
+
+让我把事情放在合适的角度。
+
+比如说，如果一个用户想要自定义 WirePlumber 的流设置。
+
+他们需要复制流配置文件（ `/usr/share/wireplumber/40-stream-defaults.lua` ），更改他们需要的部分，然后将其放置在 `/etc/wireplumber/40-stream-defaults.lua` ，并重新启动 WirePlumber。
+
+WirePlumber 总是加载这个新的配置文件，而忽略默认的配置文件。
+
+那么，如果这个文件在上游发生了变化呢？
+
+在这种情况下，一旦 WirePlumber 升级，用户很可能会遇到麻烦。
+
+今天，override功能在配置文件级别工作。
+
+override将此扩展到单个设置级别。
+
+这意味着用户只能触及他们感兴趣的设置。我们希望这将使分发包构建者的工作更加轻松。
+
+WirePlumber 设置将遵循 PipeWire 和 WirePlumber 配置的其余部分相同的语法。
+
+换句话说，WirePlumber 设置与其他 PipeWire 配置一样。
+
+
+
+如果用户/客户端希望在运行时更改设置（使用 pw-metadata，如在动态设置中所解释的），我们建议考虑启用持久行为（或简单地持久性），这样设置更改将被保存到状态文件中，并在重新启动后被记住。
+
+
+
+当持久性启用时，设置将仅从配置文件中读取一次，对于后续重启，将从状态文件中初始化。
+
+请注意，持久性默认是禁用的。
+
+可以通过以下设置在 wireplumber.conf 中启用它。
+
+```
+wireplumber.settings = {
+  persistent.settings = true
+}
+```
+
+
+
+使用 WirePlumber 库构建的客户端现在能够透明地访问 WirePlumber 守护进程当前正在运行的运行时设置。
+
+向您提出另一种可能性，
+
+用户现在可以在 .conf 中添加新的设置，
+
+或者通过 pw-metadata，
+
+并从他们的脚本/模块中开始查询它们，围绕这些设置构建逻辑。
+
+构建这种开发者友好的功能正是我们持续前进的动力。
+
+
+
+JSON 设置允许我们针对模式进行验证。这一功能已被考虑在内，但不会包含在新系统的第一版中，因为还需要更多的工作来完成它。
+
+![img](images/random_name2/WirePlumber-JSON-config-17307062606933.jpg)
+
+如您所见，与 Lua 相比，我们不得不构建了大量的基础设施。我个人在这项工作上已经进行了 2-3 个月。我们相信这一切都是值得的，因为上面描述的功能非常丰富。
+
+# WirePlumber 的事件分发器
+
+https://www.collabora.com/news-and-blog/blog/2023/06/15/wireplumber-event-dispatcher-new-simplified-way-handling-pipewire-events/
+
+事件调度器是一种自定义的 PipeWire 事件调度机制，
+
+旨在解决 WirePlumber 中的许多基本问题。
+
+这个想法是由我的同事兼导师乔治·基亚加达基斯提出的，
+
+他是 WirePlumber 的主要作者，我有幸与他合作。
+
+乔治不仅提出了这个想法，
+
+还对核心 WirePlumber 库（libwireplumber）进行了所有更改，以支持这种机制。
+
+当他接近完成核心更改时，他向我们介绍了这个想法。
+
+我立即认识到这个想法的价值，
+
+并很高兴他让我将所有 Lua 脚本和 WirePlumber 模块移植到新的事件分发器。
+
+我们已经在这个项目上工作了将近七个月。
+
+在这个过程中，我移植了所有脚本和模块，并对核心事件分发器做了一些关键的修改。
+
+完成所有这些工作后，我觉得 WirePlumber 已经成熟，现在准备好处理任何实际世界的问题。
+
+
+
+PipeWire 保持一组对象的集合，
+
+如设备、节点、端口和链接，
+
+这些对象通过本地 Unix 套接字上的协议进行查询和更新。
+
+尽管协议本身是同步的，
+
+==但在获取或更新对象信息时，往往需要多个连续的协议调用，==
+
+这意味着任何操作可能需要非平凡的时间。
+
+在此期间，其他 PipeWire 客户端也可能查询和/或更新相同的对象，
+
+从单个客户端的角度来看，这会导致并发问题。
+
+为了解决这些问题，WirePlumber 已被设计为==通过异步对象 API 隐藏协议的复杂性==。
+
+然后，该 API 被模块和脚本消费，用于构建与 PipeWire 对象交互的逻辑。
+
+
+
+不幸的是，这个 API 有一些限制。
+
+首先，为了接收这些对象、模块和脚本上的事件通知，需要注册回调。
+
+尽管 WirePlumber 是单线程的，
+
+但没有机制保证这些回调执行的顺序。
+
+这意味着需要对相同事件做出反应的不同模块可能会以随机顺序触发。
+
+其次，对任何 PipeWire 对象进行更改会启动异步操作。
+
+通常，这些更改需要在某些事件的响应下进行，但由于存在多个在相同事件上做出反应的回调在不同模块中，因此有可能所有回调都会开始对同一个 PipeWire 对象进行类似的更改，而没有等待彼此完成。
+
+这可能导致操作之间的干扰，引发问题，并需要额外的处理来防止这些问题。
+
+
+
+这个问题通过一个例子解释得更好。
+
+考虑一个新的设备（例如，USB 耳机）连接到系统。
+
+然后，ALSA 设备监控器在 PipeWire 上创建一个新的设备对象。
+
+这在 WirePlumber 中表现为一个新的设备添加信号，触发 policy-device-profile.lua 脚本，该脚本选择并设置设备的配置文件。
+
+在同一信号下，另一个脚本（policy-device-routes.lua）启用设备的路由（即子设备路径，如声音卡上的扬声器或耳机）。
+
+然而，路由依赖于配置文件，
+
+因此理想情况下，首先需要选择配置文件。
+
+否则，路由脚本将为初始设备配置文件选择路由，当第一个脚本更改配置文件时，需要重新评估路由。
+
+
+
+当配置被选择时，设备监控器开始创建一个或多个节点，
+
+对应于个人输入和输出（例如，扬声器和麦克风）。
+
+这会产生一个或多个新的节点添加信号。
+
+然后，触发 restore-stream.lua 脚本检查节点是否为流，以便恢复之前存储的流属性，如音量、静音状态、通道映射和通道音量。
+
+在同一信号上，module-default-nodes.c 模块重新计算默认输出和输入，
+
+而 create-item.lua 脚本创建一个会话项对象来控制这个节点。
+
+
+
+不幸的是，设备监控器不会等待policy-device-profile.lua   脚本选择配置文件，可能会提前为初始设备配置创建节点。
+
+这意味着，在新添加的节点开始执行其逻辑时，节点实际上可能会被销毁和重新创建，导致所有操作都需要再次执行。
+
+
+
+最终，当会话项创建时，会触发一个会话项创建信号，
+
+启动 policy-node.lua 脚本重新扫描图，
+
+并可能将一些节点连接在一起（例如，流节点与设备节点）。
+
+此脚本的逻辑取决于已选择的默认接收器和源。
+
+然而，不能保证 module-default-nodes.c 会更早完成其操作，因此需要检查以确保 policy-node.lua 不将流连接到旧的默认接收器或发送器。
+
+可以看到，有很多信号处理器在监听相同的信号并启动可能相互干扰的操作。
+
+这种情况导致了许多竞态条件，
+
+并需要丑陋的补丁作为解决方法（主要策略脚本，policy-node.lua，充满了这些补丁）。
+
+这也导致了代码中的大量冗余，因为在不同的地方进行了类似的检查。
+
+## 优雅的解决方案：事件分发器
+
+为了解决这个问题，我们提出了一种新的方法：事件调度器。
+
+这种新的机制将所有 PipeWire 事件信号转换为事件对象，
+
+并将这些事件对象推入具有预定义优先级编号的优先队列中。
+
+然后根据这些事件的优先级进行分发，从而实现执行顺序的可预测性。
+
+
+
+不同于直接在 pipewire 对象上注册回调的先前方法，
+
+现在所有信号处理器都作为挂钩对象实现，
+
+它们会自己向队列中的事件注册。
+
+这些挂钩之间存在依赖关系，这确保了它们执行的顺序也是可预测的。
+
+
+
+钩子可能是同步或异步的。
+
+同步意味着它们只包含一个执行任务并立即完成操作的函数。
+
+异步意味着它们包含多个函数，并对可能需要一些时间才能完成操作的对象执行操作。
+
+
+
+在任何情况下，事件分发器只允许一次运行一个挂钩。
+
+对于异步挂钩，这意味着在执行另一个挂钩之前，整个操作需要完成。
+
+这确保了操作之间没有干扰。
+
+事件对象是瞬态的，
+
+意味着它们是响应 PipeWire 事件创建的，
+
+它们被放置在优先队列中，并在分发后被销毁，即所有注册的挂钩都已执行。
+
+另一方面，挂钩对象是持久的，意味着它们总是与事件调度器注册，并等待事件。
+
+
+
+每个钩子都可以声明对特定事件的兴趣。
+
+当钩子对事件“感兴趣”时，
+
+意味着 Interest 对象上声明的属性与事件的属性相匹配。
+
+当事件被推入队列时，
+
+对这个事件“感兴趣”的钩子被收集到事件对象上的一个列表中，
+
+并根据它们的相互依赖性进行排序。
+
+当事件被分发时，收集到的钩子将按列表中出现的顺序一个接一个地执行。
+
+
+
+事件调度器还支持抢占。
+
+允许更高优先级的事件中断并优先于当前正在处理的较低优先级事件。
+
+在事件处理过程中，
+
+一旦特定事件的钩子执行完毕，
+
+事件调度器会检查队列中是否还有更高优先级的事件等待处理。
+
+如果有，事件调度器会切换当前正在处理的事件，开始执行更高优先级事件相关的钩子。
+
+
+
+当乔治第一次提出这个想法时，我们花了些时间去理解。
+
+它需要一些思考。
+
+为了帮助你理解这一点，下面的简短视频演示了在常见场景中事件分发器的工作方式：蓝牙自动切换。
+
+在这个场景中，蓝牙耳机已经连接并设置为 A2DP 配置文件，该配置文件具有高质量音频但麦克风被禁用。
+
+然后，用户开始使用 Zoom 通话，需要音频输入。
+
+WirePlumber 然后自动将耳机切换到 HFP 配置文件，该配置文件允许麦克风工作。
+
+
+
+事件调度器不仅解决了我们面临的主要问题，
+
+而且还从根本上改变了我们处理 WirePlumber 的 Lua 脚本的方式。
+
+我们现在将每个脚本视为响应事件的挂钩，
+
+这些事件由响应相同事件的不同挂钩执行一系列操作的一部分。
+
+==这使我们能够将 WirePlumber 想象为响应各种事件的挂钩集合，==
+
+对决策和操作产生微小的影响。
+
+
+
+我们已经回顾并重新整理了所有主要任务和脚本，
+
+如 restore-stream、default-nodes、policy-node 等，
+
+通过事件调度器的视角审视它们。
+
+在这个过程中，我们有机会对其进行清理，移除大量 hack，
+
+并将其分解为更小、更易于管理的部分。
+
+结果是 Lua 代码模块化、用户可配置，并且易于扩展。
+
+在我的下一篇文章中，我可能会更详细地讨论策略清理的话题。
+
+
+
+这是一个挂钩，
+
+它使用之前挂钩选择的默认 sink 或 source，
+
+并通过更新 PipeWire 元数据来应用它。
+
+目前，这个任务由 WirePlumber 模块，module-default-nodes.c 完成，这个模块不太模块化。
+
+```
+SimpleEventHook {
+  name = "default-nodes/apply-default-node",
+  after = { "default-nodes/find-best-default-node",
+            "default-nodes/find-echo-cancel-default-node",
+            "default-nodes/find-selected-default-node",
+            "default-nodes/find-stored-default-node" },
+  interests = {
+    EventInterest {
+      Constraint { "event.type", "=", "select-default-node" },
+    },
+  },
+  execute = function (event)
+    local source = event:get_source ()
+    local props = event:get_properties ()
+    local def_node_type = props ["default-node.type"]
+    local selected_node = event:get_data ("selected-node")
+
+    local om = source:call ("get-object-manager", "metadata")
+    local metadata = om:lookup { Constraint { "metadata.name", "=", "default" } }
+
+    if selected_node then
+      local key = "default." .. def_node_type
+
+      Log.info ("set default node for " .. key .. " " .. selected_node)
+
+      metadata:set (0, key, "Spa:String:JSON",
+          Json.Object { ["name"] = selected_node }:to_string ())
+    else
+      metadata:set (0, "default." .. def_node_type, nil, nil)
+    end
+  end
+}:register ()
+```
+
+这是钩子的解剖结构
+
+- 每个钩子都有一个 `name` 。
+- 钩子排序（排序）使用 `after` / `before` 标签控制，灵感来源于 systemd，可以列出必须在当前钩子之前或之后执行的其他钩子的名称，分别对应。
+- 钩子可以表示其 `interests` 来选择它们响应的事件。 `EventInterest` 表使用与 `WpObjectInterest` API 相同的 API，该 API 也用于 `ObjectManager` 今天。约束不仅限于事件类型，还可以列出导致此事件的对象的属性，允许更复杂的筛选。
+- 每个钩子都有一个主体功能，并被赋予指向 `event` 的引用。这是为了简单的（同步）钩子。异步钩子有一个状态机，其主体包含多个函数。
+- 每个钩子最终都是一个对象，被 `register` 事件分发器绑定。
+
+审视这个钩子，
+
+想象一下，如果你想影响选择默认接收器的逻辑。而不是编辑现有的脚本，
+
+你可以在自己的 Lua 源文件中编写你的逻辑作为钩子。
+
+添加 `before = "default-nodes/apply-default-node"` 标签和 `after` 标签，列出所有其他上游钩子（如上所示），就完成了！
+
+你的钩子现在将在显示的钩子执行之后，所有其他选择逻辑已经执行完毕，执行。
+
+在主体函数中，你现在有机会在应用到元数据之前改变选择的默认接收器，而无需更改上游的任何代码。
+
+今天，所有这些逻辑都集中在单一的模块（module-default-nodes.c）中，进行这样的干预需要你理解所有内容并进行更改。
+
+
+
+# 探索使用事件分发器的 Lua 脚本
+
+这是关于即将发布的 WirePlumber 0.5 版本的一系列博客文章中的第三篇。
+
+前两篇讨论了配置系统重构以及新事件调度器的介绍。
+
+最新的一篇探索了 WirePlumber 的 Lua 脚本如何通过事件调度器进行转换。
+
+WirePlumber lua 脚本通过事件分发器进行转换，
+
+它们看起来和感觉完全不同。
+
+它们更加模块化和可扩展，几乎没有重复处理，
+
+并且几乎没有 hack。
+
+传统上，它们使用对象管理器 API，正如上一篇博客文章中解释的原因，我们已经将它们转移到了事件分发器。
+
+现在，它们是一系列响应适当事件的挂钩。
+
+对于 WirePlumber 的所有系统脚本（如 policy-node.lua，default-nodes，restore-stream，monitor/alsa.lua 等），
+
+您可以在 PipeWire Media Session 项目中找到它们的.c 对应版本。
+
+在 WirePlumber 的初期，我们将这种 C 逻辑翻译成了 Lua；
+
+当然，这是在考虑了 WirePlumber 元素如 Object Manager 的情况下。
+
+但是随着 Event Dispatcher 的出现，它们已经不再是原来的模样。
+
+在本文中，我将分解它们发生了什么变化。
+
+
+
+policy-node.lua 是主要的链接脚本。
+
+它就像整个 pipewire 交响乐的指挥，
+
+因此，为了应对任务的复杂性，它能够从一个单一的 lua 源文件中实现如此多的功能。
+
+让我尽量简洁地总结一下它的功能。
+
+它寻找新启动的流，新增的设备，以及用户偏好的变化，
+
+并重新扫描图形，即扫描所有可连接的节点并连接它们，以便媒体开始通过管道流动（而不是 PipeWire :)）。
+
+整个复杂性都从一个单一的文件中处理，即 policy-node.lua 文件，
+
+主要集中在其中的一个单一函数，即 handleLinkable 函数。
+
+让我尝试概述这个函数的功能。
+
+handleLinkable 尝试为给定的流节点（例如 pw-play/pw-cat 客户端节点）找到目标节点；
+
+为此，它首先查找用户首选的目标，然后是默认目标。
+
+如果两者都不可用，它会查找可用目标中最好的一个。
+
+最后，它准备并链接它们，因此代码并不模块化。
+
+
+
+再加上，有很多技巧和相当多的冗余处理。
+
+所有 WirePlumber 模块和脚本都注册了对象管理器回调。
+
+有时它们会为同一个回调注册（例如 node-added，default-nodes-changed）。
+
+由于无法控制这些回调执行的顺序，
+
+模块和脚本被迫添加冗余检查和处理。
+
+由于链接脚本处理这种类型的许多通用对象管理器，
+
+它注册了如此多的回调，
+
+因此存在许多这些冗余检查和处理，
+
+例如 scheduleRescan()被多次调用，从代码的不同部分调用。
+
+
+
+这段是 WirePlumber 不太令人愉快的部分。
+
+从我之前的工作公司来，
+
+WirePlumber/PipeWire 的代码和设计看起来相当整洁，
+
+但 rescan()的处理方式对我来说难以接受。
+
+它被调用的事件太多，大多数时候函数会空手而归。
+
+也就是说，它没有进行处理，
+
+更糟糕的是，在处理过程中，由于未满足某些条件或出现了需要中止当前处理的新回调，它会在中途退出。
+
+经常，它会自行排队进行重新扫描并退出，这是设计平庸的典型迹象，
+
+因此，当我们有机会自己清理混乱时，感觉更加满足和值得挽回。
+
+
+
+有时，链接脚本会在对象管理器回调中改变对象管理器中 Pipewire 对象的属性/状态，
+
+而其他一些脚本可能依赖于相同对象的状态，
+
+因此代码容易出现像这种情况的竞态条件。
+
+解决这些情况的方法是使用 hack。
+
+
+
+当我进行了冗余处理时，
+
+一有扫描事件突然触发，
+
+这就是问题的关键。
+
+在事件分发器的帮助下，现在扫描事件被转换为事件，并被赋予最低优先级，这意味着在处理完所有更高优先级的事件后，它才有机会执行，也就是在所有混乱都平息之后。
+
+欢迎查看上一篇博客中的这个视频，以了解它是如何实现的。
+
+
+
+因此，Link放到最后才进行，消除了大部分冗余处理。
+
+policy-node.lua被拆分成多个模块。
+
+
+
+rescan.lua 对于重新扫描事件注册了一个挂钩，
+
+该事件的优先级最低，
+
+并为特定的源流节点（例如 pw-play/pw-cat 客户端节点）触发一个 `select-target` 事件。
+
+请注意，只有在处理更高优先级事件（如节点添加/移除等）之后才会捕获重新扫描事件。
+
+如果这让你感到困惑，我再次建议你观看视频来理解其中的关联。
+
+
+
+select-event 遍历 `find*`钩子，用来选择target。
+
+选择的目标被准备（prepare-link.lua）并最终链接（link-target.lua）。
+
+有三个 find 钩子，
+
+- 第一个（find-defined-target.lua）寻找定义的目标，
+- 如果没有定义的目标，第二个钩子出现并检查定义的目标（find-default-target.lua）。
+- 如果目标仍然找不到，第三个钩子（find-best-target.lua）帮助选择最佳目标。
+
+
+
+所有钩子按照上述顺序运行，
+
+这得益于它们内置的优先级机制。
+
+钩子使用 `before` 和 `after` 标签定义（灵感来源于 systemd）。
+
+对于更详细的钩子解析，请参阅我们之前的博客文章（查找“一个示例钩子”部分）
+
+
+
+用户可以通过选择正确的事件
+
+并使用正确的优先级针对此事件注册自定义挂钩，
+
+从而覆盖 WirePlumber 的默认处理方式。
+
+只需在单独的 Lua 源文件中添加这个新挂钩，
+
+然后在 wireplumber.conf 中添加一条记录。
+
+然后，你的挂钩就会被执行，而无需更改任何上游代码的一行。
+
+
+
+例如，find-user-target.lua.example 是一个示例挂钩，
+
+展示了如何添加自定义方法来选择链接的目标。
+
+这是一个针对 select-target 事件注册的挂钩，它将是此事件的第一个挂钩运行。
+
+
+
+应用相似的推理，剩余的系统脚本，
+
+如默认节点模块、设备配置选择脚本和设备路由选择脚本，也逻辑地分解为重新扫描、查找和应用。
+
+
+
+WirePlumber 用户脚本是一些从较小到相当大的 Lua 代码片段，
+
+主要使用对象管理器编写，这里有一大堆示例。
+
+如果你还没有尝试过，你应该试一试，这是一种通过 WirePlumber Lua API 利用 PipeWire 功能非常简单的方法。
+
+
+
+这些脚本只需使用 `wpexec` 运行。
+
+另一种方法是将它们复制到 src/scripts 文件夹，
+
+并在 wireplumber.conf 中添加一条记录。
+
+使用 wpexec，它作为单独的进程运行，
+
+在后一种方法中，它作为 WirePlumber 服务的一部分运行。
+
+
+
+现在，对于这种使用场景，我们建议继续使用对象管理器。
+
+然而，如果用户对影响 WirePlumber 守护进程逻辑感兴趣，例如链接、默认节点、配置文件、路由等，我们邀请他/她通过事件和挂钩来实现。
+
+借助事件分发器，WirePlumber 可以轻松地被覆盖或扩展。
+
+
+
+
+
+您可能希望同时向板载和外部设备输出声音，
+
+即使外部设备不总是插在插孔中也是如此。
+
+为了实现这一目标，我们创建了一个虚拟节点，
+
+该节点始终存在，无论插入了什么硬件。
+
+然后，每当它们被插入时，我们将瞬态硬件（例如 USB 耳机）链接到虚拟节点。
+
+首先创建一个脚本，在登录时运行（这通常可以通过您的窗口管理器的启动功能完成）。
+
+/usr/local/sbin/create-virtual-sink.sh
+
+```
+#!/bin/bash
+
+# Create a new sink called Simultaneous Output
+pw-cli create-node adapter '{ factory.name=support.null-audio-sink node.name="Simultaneous Output" node.description="Simultaneous Output" media.class=Audio/Sink object.linger=true audio.position=[FL FR] }'
+
+# Connect the normal permanent sound card output to the new sink
+pw-link "Simultaneous Output:monitor_FL" alsa_output.pci-0000_05_04.0.analog-stereo:playback_FL
+pw-link "Simultaneous Output:monitor_FR" alsa_output.pci-0000_05_04.0.analog-stereo:playback_FR
+
+# Switch the default output to the new virtual sink
+wpctl set-default `wpctl status | grep "\. Simultaneous Output" | egrep '^ │( )*[0-9]*' -o | cut -c6-55 | egrep -o '[0-9]*'
+```
+
+在上述示例中，最初唯一的输出设备是我们普通的内部声卡（alsa_output.pci-0000_05_04.0.analog-stereo）。你可以通过运行 `wpctl status` 和 `wpctl inspect` 来找到你的卡的标识符。
+
+当您的 USB 耳机插入时，运行以下脚本以将它们链接到虚拟接收器：
+
+link-virtual-sink-headphones.sh
+
+```
+#!/bin/bash
+# link the virtual sync to your headphones should run when detected by UDEV
+
+# wait a second for the drivers to load
+sleep 1s
+
+# link the headphones to your virtual sink
+sudo -u user1 env XDG_RUNTIME_DIR=/run/user/1000 pw-link "Simultaneous Output:monitor_FL" alsa_output.usb-Kingston_HyperX_Cloud_Flight_S_000000000001-00.analog-stereo:playback_FL
+sudo -u user1 env XDG_RUNTIME_DIR=/run/user/1000 pw-link "Simultaneous Output:monitor_FR" alsa_output.usb-Kingston_HyperX_Cloud_Flight_S_000000000001-00.analog-stereo:playback_FR
+
+# finish and return the code for success
+exit 0
+```
+
+理想情况下，您会在插入耳机时自动运行此脚本。
+
+Udev 页面上的说明描述了如何为此创建自定义规则。
+
+（请注意，您不能直接运行此脚本 - 因为 UDEV 将在指定的脚本运行后才加载驱动程序。因此，您需要有一个中间脚本，使用一些 nohup 技巧或其他类似方法。）
+
+您还需要修改上述脚本，使 XDG_RUNTIME_DIR 与您的用户 ID 号匹配，并将 user1 替换为您的用户名。
+
+# 一些技巧
+
+如果 WirePlumber 的设置被破坏，可以删除所有用户设置：
+
+```
+$ systemctl --user stop wireplumber.service
+$ rm -r ~/.local/state/wireplumber # deletes settings
+$ systemctl --user start wireplumber.service
+```
+
+
+
+提高音量，上限为 150%：
+
+```
+$ wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+
+```
+
+降低音量：
+
+```
+$ wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+```
+
+静音/取消静音音量：
+
+```
+$ wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+```
+
+获取默认音轨的音量级别和静音状态：
+
+```
+$ wpctl get-volume @DEFAULT_AUDIO_SINK@
+```
+
+
+
+如果不希望 Pipewire/Wireplumber 接管您的音频设备，
+
+因为您选择了不同的音频解决方案（例如 Pulseaudio/JACK/ALSA），
+
+但仍然希望它用于屏幕共享/视频目的，
+
+您可以使用 `wireplumber@.service` 模板单元来启用不同的默认配置文件集。
+
+Wireplumber 随附的配置文件允许仅启用视频部分，
+
+并通过启用 `video-only` 模板用户单元来禁用音频集成（包括蓝牙音频）。
 
 
 

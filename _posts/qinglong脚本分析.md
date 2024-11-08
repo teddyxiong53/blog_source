@@ -23,3 +23,10 @@ $ yarn start
 
 但是更新订阅的逻辑要理清楚。
 
+# 通知方式研究
+
+
+
+# 脚本收集
+
+https://github.com/shufflewzc/faker2

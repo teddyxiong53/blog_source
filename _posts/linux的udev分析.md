@@ -226,7 +226,107 @@ KERNEL=="ttyS0", PROGRAM="/bin/sh -c '\
 
 
 
+# E表示什么
 
+在 `udevadm info` 命令的输出中，前缀 **`E:`** 表示 **"Environment Variable"**（环境变量）。这些环境变量提供了与设备相关的属性信息，反映了系统如何识别和管理该设备。以下是一些常见的 **`E:`** 前缀的变量及其含义：
+
+### 常见 `E:` 环境变量
+
+1. **`E: DEVNAME`**：
+   - 设备在 `/dev` 目录中的名称，比如 `/dev/sda1`。
+
+2. **`E: DEVPATH`**：
+   - 设备在系统中的路径，通常指向 `/sys` 文件系统中的位置。
+
+3. **`E: DEVTYPE`**：
+   - 设备类型，例如 `partition`、`disk`、`usb_device` 等。
+
+4. **`E: ID_BUS`**：
+   - 表示连接设备的总线类型，例如 `usb`、`pci` 等。
+
+5. **`E: ID_VENDOR`** 和 **`E: ID_MODEL`**：
+   - 设备制造商和型号信息。
+
+6. **`E: ID_SERIAL`**：
+   - 设备的序列号，用于唯一标识特定设备。
+
+7. **`E: ID_FS_TYPE`**、**`E: ID_FS_UUID`**：
+   - 文件系统类型和 UUID，提供关于设备内容的信息。
+
+8. **`E: ID_PART_ENTRY_*`**：
+   - 提供有关分区的信息，如分区类型、大小和偏移量等。
+
+9. **`E: TAGS`**：
+   - 与设备相关的标签，例如与 `systemd` 的集成信息。
+
+# 如何使用这些环境变量来编写脚本？
+
+使用 `udev` 环境变量编写脚本可以帮助您自动化设备管理、配置和监控。以下是一些常见的用法和示例，展示如何在脚本中利用这些环境变量。
+
+### 示例场景
+
+假设您想在 USB 音频设备连接时自动运行一个脚本来配置音频设置。
+
+### 1. 创建 `udev` 规则
+
+首先，您需要创建一个 `udev` 规则文件，例如 `/etc/udev/rules.d/99-usb-audio.rules`，内容如下：
+
+```plaintext
+ACTION=="add", SUBSYSTEM=="sound", ATTRS{idVendor}=="0951", ATTRS{idProduct}=="1643", RUN+="/usr/local/bin/setup-audio.sh"
+```
+
+这条规则会在符合条件的 USB 音频设备插入时运行 `setup-audio.sh` 脚本。
+
+### 2. 编写脚本
+
+接下来，编写 `/usr/local/bin/setup-audio.sh` 脚本，并确保它具有可执行权限：
+
+```bash
+#!/bin/bash
+
+# 获取设备信息
+DEVICE_NAME="$DEVNAME"
+VENDOR_ID="$ID_VENDOR_ID"
+MODEL_ID="$ID_MODEL_ID"
+UUID="$ID_FS_UUID"
+
+# 输出设备信息到日志
+echo "Device connected: $DEVICE_NAME"
+echo "Vendor ID: $VENDOR_ID"
+echo "Model ID: $MODEL_ID"
+echo "File system UUID: $UUID" >> /var/log/usb-audio.log
+
+# 进行音频配置，例如调用 pulseaudio 的相关命令
+# pulseaudio --load-module module-alsa-sink device="$DEVICE_NAME"
+
+# 其他自定义操作
+```
+
+### 3. 设置脚本权限
+
+确保脚本可执行：
+
+```bash
+sudo chmod +x /usr/local/bin/setup-audio.sh
+```
+
+### 4. 使用环境变量
+
+在脚本中，您可以直接使用 `udev` 提供的环境变量。例如，上述脚本中使用了 `$DEVNAME`、`$ID_VENDOR_ID` 和 `$ID_MODEL_ID` 来获取设备名称和标识信息。
+
+### 5. 测试
+
+连接符合条件的 USB 音频设备，并检查 `/var/log/usb-audio.log` 文件，确认脚本是否按预期执行。
+
+### 注意事项
+
+- **权限**：确保脚本有足够的权限进行所需的操作，可能需要以 root 用户权限运行。
+- **路径**：使用绝对路径来引用任何命令或文件，因为 `udev` 在不同的上下文中运行，可能没有用户的环境变量配置。
+- **调试**：可以在脚本中添加调试信息，如输出到日志文件，帮助排查问题。
+
+### 总结
+
+通过结合 `udev` 规则和脚本，您可以自动化设备管理任务，利用环境变量获取设备相关信息并执行相应操作。这种方式在系统管理和设备配置中非常有用。如果您有更多问题或需要进一步帮助，请告诉我！
 
 # buildroot里udev
 
@@ -243,6 +343,8 @@ KERNEL=="ttyS0", PROGRAM="/bin/sh -c '\
  udevadm settle --timeout=30 || echo "udevadm settle failed"   
  echo "done"                                                   
 ```
+
+ udevadm settle --timeout=30 这个是等待前面的操作完成，最多等30s。过期不候。
 
 对应的配置文件是在/etc/udev目录下。
 
@@ -351,15 +453,111 @@ E: SUBSYSTEM=misc
 
 # 使用udev实现USB，SD卡设备的重命名、自动挂载、自动卸载。
 
+使用 `udev` 实现 USB 和 SD 卡设备的重命名、自动挂载和自动卸载，可以通过创建相应的 `udev` 规则和脚本来完成。以下是一个完整的步骤指南。
 
+### 步骤 1: 创建 `udev` 规则
 
-自动创建设备节点，靠class机制就可以做到了。
+首先，您需要创建 `udev` 规则文件，以便在设备插入时触发相应的操作。创建文件 `/etc/udev/rules.d/99-usb-sd.rules`。
 
-我们在刚开始写[Linux](http://lib.csdn.net/base/linux)设备驱动程序的时候，很多时候都是利用mknod命令手动创建设备节点，实际上Linux内核为我们提供了一组函数，可以用来在模块加载的时候自动在/dev目录下创建相应设备节点，并在卸载模块时删除该节点，当然前提条件是用户空间移植了udev。
+```bash
+sudo nano /etc/udev/rules.d/99-usb-sd.rules
+```
 
+在文件中添加以下规则：
 
+```plaintext
+# 规则以 USB 设备为例，您可以根据需要更改 idVendor 和 idProduct
+ACTION=="add", SUBSYSTEM=="block", ENV{ID_BUS}=="usb", RUN+="/usr/local/bin/mount-usb.sh %k"
+ACTION=="remove", SUBSYSTEM=="block", ENV{ID_BUS}=="usb", RUN+="/usr/local/bin/unmount-usb.sh %k"
 
-内核中定义了struct class结构体，顾名思义，一个struct class结构体类型变量对应一个类，内核同时提供了class_create(…)函数，可以用它来创建一个类，这个类存放于sysfs下面，一旦创建好了这个类，再调用device_create(…)函数来在/dev目录下创建相应的设备节点。**这样，加载模块的时候，用户空间中的udev会自动响应device_create(…)函数，去/sysfs下寻找对应的类从而创建设备节点。**
+# 规则以 SD 卡为例
+ACTION=="add", SUBSYSTEM=="block", ENV{ID_BUS}=="mmc", RUN+="/usr/local/bin/mount-sd.sh %k"
+ACTION=="remove", SUBSYSTEM=="block", ENV{ID_BUS}=="mmc", RUN+="/usr/local/bin/unmount-sd.sh %k"
+```
+
+### 步骤 2: 编写挂载和卸载脚本
+
+接下来，您需要创建挂载和卸载脚本。以下是示例脚本。
+
+#### 2.1 创建挂载脚本
+
+创建挂载脚本 `/usr/local/bin/mount-usb.sh`：
+
+```bash
+sudo nano /usr/local/bin/mount-usb.sh
+```
+
+添加以下内容：
+
+```bash
+#!/bin/bash
+
+DEVICE=$1
+MOUNT_POINT="/media/usb/$DEVICE"
+
+# 创建挂载点
+mkdir -p "$MOUNT_POINT"
+
+# 挂载设备
+mount "/dev/$DEVICE" "$MOUNT_POINT"
+
+# 输出信息
+echo "Mounted $DEVICE at $MOUNT_POINT"
+```
+
+#### 2.2 创建卸载脚本
+
+创建卸载脚本 `/usr/local/bin/unmount-usb.sh`：
+
+```bash
+sudo nano /usr/local/bin/unmount-usb.sh
+```
+
+添加以下内容：
+
+```bash
+#!/bin/bash
+
+DEVICE=$1
+MOUNT_POINT="/media/usb/$DEVICE"
+
+# 卸载设备
+umount "$MOUNT_POINT"
+
+# 删除挂载点
+rmdir "$MOUNT_POINT"
+
+# 输出信息
+echo "Unmounted $DEVICE from $MOUNT_POINT"
+```
+
+#### 2.3 创建 SD 卡 脚本
+
+您可以为 SD 卡创建类似的挂载和卸载脚本 `/usr/local/bin/mount-sd.sh` 和 `/usr/local/bin/unmount-sd.sh`，逻辑类似。
+
+### 步骤 3: 设置脚本权限
+
+确保所有脚本可执行：
+
+```bash
+sudo chmod +x /usr/local/bin/mount-usb.sh
+sudo chmod +x /usr/local/bin/unmount-usb.sh
+sudo chmod +x /usr/local/bin/mount-sd.sh
+sudo chmod +x /usr/local/bin/unmount-sd.sh
+```
+
+### 步骤 4: 测试
+
+1. 插入 USB 或 SD 卡设备。
+2. 检查 `/media/usb/` 目录，确认设备是否已自动挂载。
+3. 卸载设备后，检查挂载点是否已被删除。
+
+### 注意事项
+
+- **挂载点**：确保挂载点目录存在并具有适当的权限。
+- **文件系统类型**：根据需要，您可以在挂载时指定文件系统类型，例如 `mount -t vfat`。
+- **日志记录**：可以在脚本中添加日志记录，以便于故障排除。
+- **环境变量**：`udev` 规则中的 `%k` 将被替换为设备名称，例如 `sda1`。
 
 
 
@@ -541,6 +739,107 @@ udev_timeout=180
 ```
 
 
+
+| 文件名                             | 说明                                               |
+| ---------------------------------- | -------------------------------------------------- |
+| `50-udev-default.rules`            | 默认的 udev 规则，处理基本的设备管理。             |
+| `60-sensor.rules`                  | 针对传感器设备的规则，管理传感器相关设备。         |
+| `60-block.rules`                   | 处理块设备（如硬盘、USB存储设备）的规则。          |
+| `60-serial.rules`                  | 管理串口设备的规则。                               |
+| `60-cdrom_id.rules`                | 处理光盘驱动器的 ID 规则。                         |
+| `64-btrfs.rules`                   | 针对 Btrfs 文件系统设备的规则。                    |
+| `60-drm.rules`                     | 处理 DRM (Direct Rendering Manager) 设备的规则。   |
+| `70-joystick.rules`                | 管理游戏手柄设备的规则。                           |
+| `60-evdev.rules`                   | 处理 evdev 设备（输入设备）的规则。                |
+| `70-mouse.rules`                   | 管理鼠标设备的规则。                               |
+| `60-input-id.rules`                | 识别输入设备的规则，提供设备 ID 信息。             |
+| `70-touchpad.rules`                | 针对触摸板设备的规则。                             |
+| `60-persistent-alsa.rules`         | 管理 ALSA 音频设备的持久规则。                     |
+| `75-net-description.rules`         | 为网络设备生成描述信息的规则。                     |
+| `60-persistent-input.rules`        | 处理持久化输入设备的规则。                         |
+| `75-probe_mtd.rules`               | 管理 MTD (Memory Technology Device) 的规则。       |
+| `60-persistent-storage-tape.rules` | 针对磁带存储设备的持久规则。                       |
+| `78-sound-card.rules`              | 管理声卡设备的规则。                               |
+| `60-persistent-storage.rules`      | 针对持久化存储设备的规则。                         |
+| `80-drivers.rules`                 | 管理驱动程序的规则，处理设备与驱动的关联。         |
+| `60-persistent-v4l.rules`          | 针对视频设备（Video4Linux）的持久规则。            |
+| `80-net-name-slot.rules`           | 管理网络接口名称的规则，确保网络设备的名称一致性。 |
+
+
+
+# hwdb文件说明
+
+`hwdb`（Hardware Database）是 Linux 系统中 `udev` 使用的一种硬件数据库，用于存储和查询硬件设备的特性和属性信息。它帮助系统识别硬件并为其应用适当的配置或规则。
+
+### `hwdb` 的主要功能
+
+1. **设备识别**：
+   - `hwdb` 存储设备的各种属性，如制造商、产品 ID、序列号、类型等，允许系统根据这些信息进行识别和分类。
+
+2. **动态配置**：
+   - 系统可以根据硬件特性动态生成 `udev` 规则，自动识别和配置设备。
+
+3. **信息查询**：
+   - 通过 `hwdb`，用户和系统管理员可以查询硬件设备的详细信息，方便进行故障排除和设备管理。
+
+### 文件位置
+
+`hwdb` 数据库通常位于 `/lib/udev/hwdb.bin`，并且可以通过 `/etc/udev/hwdb.d/` 目录中的配置文件进行扩展和覆盖。用户可以在 `/etc/udev/hwdb.d/` 中创建自定义的 `hwdb` 条目。
+
+### `hwdb` 文件格式
+
+`hwdb` 文件使用简单的文本格式，每行包含一个或多个键值对。以下是常见的格式示例：
+
+```plaintext
+# 注释行以 # 开头
+idVendor=1234
+idProduct=5678
+NAME="My USB Device"
+```
+
+### 关键字段
+
+- **`idVendor`**：设备制造商的 ID。
+- **`idProduct`**：设备的产品 ID。
+- **`NAME`**：设备的可读名称。
+- **其他属性**：可以包含其他特定于设备的信息，如类型、版本等。
+
+### 使用示例
+
+1. **查询 `hwdb` 信息**：
+   通过 `udevadm` 命令查询某个设备的信息，可以使用以下命令：
+
+   ```bash
+   udevadm info --query=all --name=/dev/sda1
+   ```
+
+   然后结合 `hwdb` 数据库的信息。
+
+2. **更新 `hwdb`**：
+   在修改或添加 `hwdb` 文件后，需要运行以下命令来更新数据库：
+
+   ```bash
+   sudo udevadm hwdb --update
+   ```
+
+### 总结
+
+`hwdb` 是一个重要的工具，用于增强 `udev` 的能力，通过提供详细的硬件信息来支持设备识别和动态配置。通过适当的配置，用户可以改进设备管理和系统性能。如果您有更多问题或需要进一步的说明，请告诉我！
+
+# mdev没有hwdb机制，为什么也可以工作？
+
+`mdev` 没有 `hwdb` 机制，但仍然可以正常工作，主要原因如下：
+
+1. **简单设备管理**：`mdev` 是一个轻量级的设备管理器，设计上用于嵌入式系统或资源受限的环境。它通过简单的规则和脚本来处理设备的添加、移除和配置，而不依赖于复杂的数据库。
+
+2. **基于规则的配置**：`mdev` 使用配置文件（如 `/etc/mdev.conf`）来定义设备的处理规则。这些规则可以基于设备的属性（如设备类型、ID 等）来执行相应的操作，例如加载驱动程序、设置权限或执行初始化脚本。
+
+3. **内核事件监听**：`mdev` 通过监听内核发出的设备事件（如 `udev`），能够实时响应设备的添加和移除。这种机制使得它能够动态管理设备，即使没有 `hwdb` 数据库。
+
+4. **轻量级实现**：由于 `mdev` 的设计目标是简化和减小系统开销，因此它省略了一些复杂的功能（如 `hwdb`），而选择通过直接的规则和脚本来处理设备。
+
+### 总结
+尽管 `mdev` 没有 `hwdb` 机制，但它通过简单的规则和内核事件管理设备，依然能够有效地进行设备管理。这种设计使得 `mdev` 特别适合于嵌入式和轻量级的系统环境。
 
 # 参考资料
 

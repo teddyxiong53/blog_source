@@ -199,6 +199,82 @@ SUBSYSTEM=="block", KERNEL=="sd*", ENV{ID_TYPE}=="disk", MODE="0666"
 
 在这个示例中，我们首先定义了一个标签 `usb_rules`，然后在第三条规则中使用 `GOTO="usb_rules"` 来跳转到这个标签位置。当设备名称为 `ttyUSB0` 时，会跳转到定义的标签位置，继续执行标签位置之后的规则。
 
+# rules文件里的关键字区分大小写吗
+
+在 `udev` 规则文件中，关键字是 **区分大小写** 的。具体包括以下几个方面：
+
+### 关键字区分大小写
+
+1. **关键字**：
+   - `ACTION`、`SUBSYSTEM`、`KERNEL`、`ATTR`、`ENV`、`RUN` 等关键字都是区分大小写的。例如，`action` 和 `ACTION` 是不同的。
+
+2. **属性名**：
+   - 属性名（如 `name`、`type` 等）在使用时也区分大小写。因此，`ATTR{name}` 和 `attr{name}` 被视为不同的条目。
+
+3. **值的比较**：
+   - 在条件比较中，值（如设备名称、属性值等）同样是区分大小写的。例如，`KERNEL=="vport"` 和 `KERNEL=="VPORT"` 被认为是不同的匹配。
+
+### 示例
+
+以下是一个示例，演示了关键字区分大小写的效果：
+
+```plaintext
+# 正确的规则
+SUBSYSTEM=="net", ACTION=="add", RUN+="/usr/local/bin/setup_network.sh"
+
+# 错误的规则（因关键字小写）
+subsystem=="net", action=="add", run+="/usr/local/bin/setup_network.sh"  # 不会生效
+```
+
+### 总结
+
+在编写 `udev` 规则时，确保遵循正确的大小写，以确保规则的正确解析和执行。如果您有其他问题或需要更多信息，请随时询问！
+
+# hctosys的hc是什么
+
+`hctosys` 中的 `hc` 代表 **"Hardware Clock"**（硬件时钟）。
+
+因此，`hctosys` 表示将硬件时钟的时间设置到系统时间的过程这意味着在系统启动时，
+
+如果 `hctosys` 属性被设置为 `1`，
+
+则系统将使用 RTC 设备中的时间来初始化操作系统的时间。
+
+这在确保系统时间的准确性和一致性方面是非常重要的。
+
+# ENV{DEVTYPE}=="usb_device" 这个信息从哪里来的
+
+`ENV{DEVTYPE}=="usb_device"` 中的 `DEVTYPE` 环境变量是在设备管理过程中由 `udev` 自动设置的，具体来源如下：
+
+### 来源
+
+1. **内核设备模型**：
+   - 当 USB 设备连接到系统时，Linux 内核会生成相应的设备事件。这些事件包含有关设备的详细信息，包括设备的类型。内核为每个设备分配一个类型，`DEVTYPE` 是其中之一。
+
+2. **`udev` 的设备事件处理**：
+   - 在 `udev` 处理设备事件时，它从内核接收到设备的属性和事件，并根据这些信息创建相应的环境变量。`DEVTYPE` 是一个标准的环境变量，用于指示设备的类型。
+
+3. **设备类型分类**：
+   - 对于 USB 设备，`DEVTYPE` 的值通常会被设置为 `usb_device`，表示这是一个 USB 设备。其他可能的值还包括 `usb_interface`（USB 接口）、`usb_hub`（USB 集线器）等。
+
+### 使用示例
+
+您可以通过访问 `/sys` 文件系统来查看 `DEVTYPE` 变量的值。例如：
+
+```bash
+cat /sys/bus/usb/devices/usbX/DEVTYPE
+```
+
+其中 `usbX` 是 USB 设备的编号，您可以通过 `lsusb` 命令获取当前连接的 USB 设备列表。
+
+### 总结
+
+`ENV{DEVTYPE}=="usb_device"` 中的 `DEVTYPE` 环境变量是由内核在设备连接时自动生成的，表示 USB 设备的类型。这个信息在 `udev` 规则中用于条件匹配，以便对特定类型的设备执行相应的操作。如果您有更多问题或需要进一步的信息，请告诉我！
+
+
+
+
+
 # 参考资料
 
 1、udev规则

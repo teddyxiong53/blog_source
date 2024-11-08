@@ -130,7 +130,11 @@ https://github.com/Datlyfe/jira_clone
 
 使用的数据库是postgresql。
 
+# 个人免费账户
 
+https://teddyxiong.atlassian.net/
+
+弄一个这样的免费账户方便研究。
 
 
 

@@ -609,7 +609,7 @@ Linux的声音系统或许是最无序的子系统部分！
 
 作为Server来说，声音无足轻重，无人问津，
 
-而作为桌面来说太多的实现方案，各有各的长出和不足，
+而作为桌面来说太多的实现方案，各有各的长处和不足，
 
 ALSA经过多年的发展，基本统一了Linux声卡硬件驱动层的借口，
 
@@ -935,6 +935,569 @@ src\modules\bluetooth
 这里是对应的代码。
 
 
+
+# default.pa文件内容说明
+
+`default.pa` 文件是 PulseAudio 的默认配置文件之一，主要用于设置音频服务器的行为和加载模块。以下是一些常见配置项的说明：
+
+### 1. 文件路径
+通常位于 `/etc/pulse/default.pa` 或 `~/.config/pulse/default.pa`。
+
+### 2. 文件内容说明
+
+- **加载模块**
+  
+  ```shell
+  load-module module-device-restore
+  load-module module-stream-restore
+  load-module module-card-restore
+  load-module module-restore
+  ```
+  这些指令用于加载不同的模块，负责恢复设备、流和卡的状态。
+  
+- **设置默认音频设备**
+  ```shell
+  set-default-sink <sink_name>
+  set-default-source <source_name>
+  ```
+  指定默认的输出（sink）和输入（source）设备。
+
+- **网络支持**
+  ```shell
+  load-module module-native-protocol-tcp
+  ```
+  允许通过 TCP 进行网络音频传输。
+
+- **音量控制**
+  ```shell
+  load-module module-volume-restore
+  ```
+  自动恢复音量设置。
+
+- **自动加载**
+  ```shell
+  .ifexists module-stream-restore.so
+  load-module module-stream-restore
+  .endif
+  ```
+  条件加载模块，如果模块存在则加载。
+
+### 3. 注释和文档
+文件中可以包含注释，使用 `#` 开头。例如：
+```shell
+# 这是一个注释
+```
+注释可以帮助记录配置的目的或功能。
+
+### 4. 自定义配置
+用户可以根据自己的需求修改或添加配置。例如，设置特定的音频效果或添加新的音频源。
+
+### 5. 重新加载配置
+修改 `default.pa` 后，可以使用以下命令重新加载配置：
+```shell
+pulseaudio --kill
+pulseaudio --start
+```
+
+### 结论
+`default.pa` 是 PulseAudio 的重要配置文件，灵活的配置选项使其能够适应多种音频需求。根据个人的使用场景，可以对其进行定制。若有具体配置方面的问题或需求，欢迎随时询问！
+
+# dfeault.pa里的.fail 命令
+
+在 `default.pa` 文件中，`.fail` 是一种用于条件控制的指令。它的作用是在加载模块时，如果某个条件不满足，则可以让 PulseAudio 处理失败。这通常用于确保系统在模块未能加载时不会继续执行后续的配置。
+
+### 用法
+
+```shell
+.fail
+```
+
+### 常见用法示例
+
+- **条件加载模块**
+  
+  ```shell
+  .ifexists module-name.so
+  load-module module-name
+  .else
+  .fail
+  .endif
+  ```
+
+在这个示例中，如果 `module-name.so` 模块存在，则加载它；如果不存在，则执行 `.fail`，这会导致 PulseAudio 在启动时报告错误。
+
+### 目的
+使用 `.fail` 可以帮助管理配置的健壮性，使得系统在关键模块缺失时不会错误地继续运行，避免潜在的音频问题。
+
+如果你有其他具体问题或需要更多信息，请告诉我！
+
+# pci-0000_00_1f  pci设备为什么是这样的命名
+
+在 PulseAudio 中，PCI 设备的命名遵循特定的规则，以便准确描述设备的地址和类型。`pci-0000_00_1f` 这样的命名格式有其特定的含义。以下是对这一命名的详细解释：
+
+### 1. **命名结构**
+
+- **`pci`**：前缀，表示这是一个通过 PCI 接口连接的设备。
+  
+- **`0000_00_1f`**：这是设备的地址，具体结构如下：
+  - **`0000`**：表示设备的总线号（bus number）。在大多数系统中，PCI 总线号为四位十六进制数。
+  - **`00`**：表示设备的槽号（slot number）。这是连接到总线上的一个物理插槽，通常为两位十六进制数。
+  - **`1f`**：表示设备的功能号（function number）。PCI 设备可以有多个功能，每个功能都有一个编号，通常也是两位十六进制数。
+
+### 2. **示例解释**
+- **`pci-0000_00_1f`** 可以分解为：
+  - **`pci`**：设备通过 PCI 接口连接。
+  - **`0000`**：设备所在的 PCI 总线编号。
+  - **`00`**：设备在该总线上的插槽编号。
+  - **`1f`**：在该插槽中，设备的功能编号。
+
+### 3. **为何使用这种格式**
+- **唯一性**：这种格式确保每个 PCI 设备在系统中都是唯一的，避免了设备名称的冲突。
+- **可识别性**：通过总线、插槽和功能的组合，系统和用户可以方便地识别和管理特定设备，尤其是在多设备的情况下。
+
+### 4. **获取设备信息**
+- 你可以使用 `lspci` 命令行工具查看系统中的 PCI 设备及其详细信息。例如：
+  ```bash
+  lspci -nn
+  ```
+  这将列出所有 PCI 设备及其地址、类型和驱动程序信息。
+
+### 总结
+`pci-0000_00_1f` 这样的命名规则使得用户和系统能够准确识别和管理 PCI 设备。它提供了设备在总线结构中的确切位置，从而有助于系统的配置和调试。
+
+如果你有更多问题或需要更深入的信息，请随时问我！
+
+# 定制修改配置的方法
+
+~/.config/pulse/client.conf
+
+包含标准文件，然后进行覆盖。
+
+```
+.include /etc/pulse/client.conf
+# User's directives go here.
+```
+
+这种语法适用于 `default.pa` 、 `daemon.conf` 和 `system.pa` ，即使后者在用户配置文件中没有意义。
+
+要设置全局默认值，请在 `default.pa` 文件中添加源名称：
+
+```
+set-default-source alsa_output.pci-0000_04_01.0.analog-stereo.monitor
+```
+
+临时修改，则这样：
+
+```
+ pacmd "set-default-source alsa_output.pci-0000_04_01.0.analog-stereo.monitor"
+```
+
+默认源可以作为 `@DEFAULT_SOURCE@` 在命令中引用，例如： `$ pactl set-source-mute @DEFAULT_SOURCE@ toggle` 。
+
+
+
+完成之后，您可以进行登出/登录或手动重启 PulseAudio，以便这些更改生效。
+
+设备的编号并不是固定的。
+
+在文件里使用的时候，使用名字而不是编号。
+
+不过，如果你是临时快速命令的方式修改一下，那可以使用编号，这样简单点。
+
+```
+$ pactl set-sink-volume 0 +3%
+$ pactl set-sink-volume 0 -3%
+$ pactl set-sink-mute 0 toggle
+```
+
+默认接收器可以在命令中引用为 `@DEFAULT_SINK@` ，例如： `$ pactl set-sink-volume @DEFAULT_SINK@ +5%` 。
+
+声卡可能同时具有模拟和数字（iec958）输出。Pulseaudio 默认不生成组合配置文件，你可以选择模拟或数字配置文件。
+
+在默认配置文件的末尾添加一个组合配置文件，这是使两个输出都可用的最简单方法：
+
+
+
+虽然这可以工作，pulseaudio 有一个不好的习惯，会自动回退到自动生成的配置文件，所以你可能最终需要将你的卡恢复到组合配置文件。克服这个问题的最佳方法是编写一个自定义配置，其中禁用了 `auto-profiles` 。将 `default.conf` 复制到 `custom-profile.conf` ，然后根据你的需求进行编辑（这个示例是针对立体声输出/输入）：
+
+/usr/share/pulseaudio/alsa-mixer/profile-sets/custom-profile.conf
+
+```
+[General]
+auto-profiles = no # disable  profile auto-generation
+```
+
+创建udev rules文件。/usr/lib/udev/rules.d/91-pulseaudio-custom.rules
+
+```
+
+SUBSYSTEM!="sound", GOTO="pulseaudio_end"
+ACTION!="change", GOTO="pulseaudio_end"
+KERNEL!="card*", GOTO="pulseaudio_end"
+
+SUBSYSTEMS=="pci", ATTRS{vendor}=="0x8086", ATTRS{device}=="0x1c20", ENV{PULSE_PROFILE_SET}="custom-profile.conf"
+
+LABEL="pulseaudio_end"
+```
+
+
+
+PulseAudio 允许同时向多个输出源输出音频。在本示例中，一些应用程序配置为使用 HDMI，而其他应用程序配置为使用模拟音频。多个应用程序能够同时接收音频。
+
+
+
+将模拟设备设置为次要源，请在加载任何其他模块之前，在 `/etc/pulse/default.pa` 配置的开头添加以下内容：
+
+```
+### Load analog device
+load-module module-alsa-sink device=hw:0,0
+load-module module-combine-sink sink_name=combined
+set-default-sink combined
+```
+
+
+
+在这种情况下，使用 module-combine-sink 时，HDMI 音频比模拟音频滞后 65ms。
+
+/etc/pulse/default.pa
+
+```
+[...]
+load-module module-alsa-sink device=hw:0,0 sink_name=analog sink_properties=device.description=analog
+load-module module-alsa-sink device=hw:0,1 sink_name=digital sink_properties=device.description=digital
+load-module module-alsa-sink device=hw:0,3 sink_name=hdmi sink_properties=device.description=hdmi
+load-module module-loopback sink=analog latency_msec=65
+[...]
+set-default-sink hdmi
+```
+
+
+
+创建一个脚本，如果插入了 HDMI 线，则切换到所需的音频配置文件：
+
+/usr/local/bin/hdmi_sound_toggle.sh
+
+```shell
+#!/bin/bash
+
+export PATH=/usr/bin
+
+USER_NAME=$(who | awk -v vt=tty$(fgconsole) '$0 ~ vt {print $1}')
+USER_ID=$(id -u "$USER_NAME")
+CARD_PATH="/sys/class/drm/card0/"
+AUDIO_OUTPUT="analog-surround-40"
+PULSE_SERVER="unix:/run/user/"$USER_ID"/pulse/native"
+
+for OUTPUT in $(cd "$CARD_PATH" && echo card*); do
+  OUT_STATUS=$(<"$CARD_PATH"/"$OUTPUT"/status)
+  if [[ $OUT_STATUS == connected ]]
+  then
+    echo $OUTPUT connected
+    case "$OUTPUT" in
+      "card0-HDMI-A-1")
+        AUDIO_OUTPUT="hdmi-stereo" # Digital Stereo (HDMI 1)
+     ;;
+      "card0-HDMI-A-2")
+        AUDIO_OUTPUT="hdmi-stereo-extra1" # Digital Stereo (HDMI 2)
+     ;;
+    esac
+  fi
+done
+echo selecting output $AUDIO_OUTPUT
+sudo -u "$USER_NAME" pactl --server "$PULSE_SERVER" set-card-profile 0 output:$AUDIO_OUTPUT+input:analog-stereo
+```
+
+创建一个 udev 规则，在 HDMI 状态改变时运行此脚本：
+
+/etc/udev/rules.d/99-hdmi_sound.rules
+
+```
+KERNEL=="card0", SUBSYSTEM=="drm", ACTION=="change", RUN+="/usr/local/bin/hdmi_sound_toggle.sh"
+```
+
+重新加载udev。
+
+```
+udevadm control --reload-rules
+```
+
+
+
+很多人有环绕声卡，但只有两个声道的扬声器，
+
+因此 PulseAudio 无法真正默认设置为环绕声。
+
+要启用所有声道，请编辑 `/etc/pulse/daemon.conf` ：
+
+取消注释 default-sample-channels 行（即删除行首的分号）并设置值为 6。
+
+对于 5.1 设置，或 7.1 设置等，设置值为 8 等。
+
+```
+# Default
+default-sample-channels=2
+# For 5.1
+default-sample-channels=6
+# For 7.1
+default-sample-channels=8
+```
+
+
+
+实际上发生的情况是，您已安装了 alsa-ucm-conf，
+
+因此 PulseAudio 忽略了它自己的配置文件，
+
+转而尝试使用 ALSA 用例管理器的配置文件。
+
+不幸的是，如果 ALSA UCM 没有适合您卡的有用配置文件，
+
+您将被默认的 2 声道“HiFi”所困。
+
+幸运的是，通过切换回 PulseAudio 配置文件，您可以解决问题，
+
+这些配置文件默认为环绕声配置，适用于具有环绕声功能的声卡/ HDMI 输出。
+
+要最简单地完成这个操作，可以按照以下方式编辑 `/etc/pulse/default.pa` ：
+
+```
+load-module module-udev-detect use_ucm=0
+```
+
+您的 PulseAudio 安装将忽略 UCM 并使用 PulseAudio 配置文件，如果按照上述说明更改了默认采样通道，则将包含一个环绕声配置文件，您可以使用该配置文件输出环绕声。
+
+您可以通过检查 pavucontrol 的配置选项卡来验证，在那里您应该不再看到“HiFi”。
+
+
+
+### 将 7.1 分为 5.1+2.0
+
+
+类似于上面的例子，你也可以将 7.1 配置拆分为 5.1 环绕和立体声输出设备。
+
+将你的卡设置为 7.1 模式，
+
+然后在 `/etc/pulse/default.pa` 中添加以下行
+
+```
+ load-module module-remap-sink sink_name=Surround sink_properties="device.description='Surround'" remix=no master=alsa_output.pci-0000_00_14.2.analog-surround-71 channels=6 master_channel_map=front-left,front-right,rear-left,rear-right,front-center,lfe channel_map=front-left,front-right,rear-left,rear-right,front-center,lfe
+ load-module module-remap-sink sink_name=Stereo sink_properties="device.description='Stereo'" remix=no master=alsa_output.pci-0000_00_14.2.analog-surround-71 channels=2 master_channel_map=side-left,side-right channel_map=front-left,front-right
+```
+
+https://wiki.archlinux.org/title/PulseAudio/Examples
+
+
+
+# /usr/share/pulseaudio/alsa-mixer/profile-sets
+
+这个目录下有一些配置文件。
+
+
+
+# iec958是指什么
+
+`IEC958` 是一种数字音频接口标准，通常用于在数字音频设备之间传输音频信号。它也被称为 **S/PDIF**（Sony/Philips Digital Interface Format），是广泛用于专业和消费音频设备的标准。
+
+### 主要特点
+
+1. **数字音频传输**：
+   - IEC958/S/PDIF 允许将数字音频信号从一个设备传输到另一个设备，避免了信号在模拟转换过程中可能出现的质量损失。
+
+2. **支持多种音频格式**：
+   - 它可以传输未压缩的 PCM（脉冲编码调制）音频以及压缩格式（如 Dolby Digital 和 DTS）。
+
+3. **连接方式**：
+   - 常见的连接接口包括同轴电缆（使用 RCA 接头）和光纤电缆（使用 TOSLINK 接头）。
+
+4. **设备兼容性**：
+   - 许多音频设备（如 CD 播放器、DVD 播放器、声卡、音响系统等）都支持 IEC958/S/PDIF 标准，使其成为连接不同设备的通用方案。
+
+5. **音频质量**：
+   - 由于其数字传输的特性，能够在高保真音频系统中提供优质的音频体验。
+
+### 使用场景
+- **家庭影院系统**：连接 DVD 播放器和接收器。
+- **专业音频设备**：在录音室中连接数字混音台和音频接口。
+- **计算机音频**：将计算机的声卡与外部数字音频设备连接。
+
+### 总结
+IEC958 是一种关键的数字音频传输标准，广泛应用于各种音频设备之间，确保高质量的音频信号传输。如果你有更多关于 IEC958/S/PDIF 或相关技术的问题，请随时询问！
+
+# bluez5.50+pulseaudio实现蓝牙音响音频播放
+
+修改 pulseaudio 的部分默认配置，
+【/etc/pulse/default.pa】
+【/etc/pulse/system.pa】
+注释掉其中的以下模块：
+
+load-module module-suspend-on-idle
+load-module module-bluetooth-policy
+
+蓝牙设备已经存在后，执行以下启动脚本：
+
+```shell
+#!/bin/sh
+btmgmt -i hci0 name "wwtest"
+btmgmt -i hci0 connectable on
+btmgmt -i hci0 le on
+btmgmt -i hci0 advertising on
+btmgmt -i hci0 power on
+sdptool add --channel=1 GATT SP A2SNK A2DP
+btgatt-server &
+/usr/libexec/bluetooth/bluetoothd -d -C -n &
+pulseaudio -D  --exit-idle-time=-1 --start --log-target=file:/tmp/pulse.log
+```
+
+这里 /usr/libexec/bluetooth/bluetoothd 使用 -d 参数打开了 debug 选项，如果后续一切正常，可以去掉这个参数，就不会显示很多信息了。
+
+从 终端最后的消息可以看到蓝牙音响设备成功连接了，这里也可以使用 hcitool -i hci0 con 来查看：
+
+```bash
+# hcitool -i hci0 con
+```
+
+但是通过 pulseaudio 的工具 pactl 可以查找到有蓝牙声卡设备，这时候除了 aplay 播放工具之外，paplayer 和 mpg123 等音频播放工具都可以正常播放音频文件
+
+# alaw是什么格式
+
+在PulseAudio中，`PA_SAMPLE_ALAW` 和 `PA_SAMPLE_ULAW` 是两种常见的音频采样格式，主要用于语音编码。以下是它们的详细说明：
+
+### PA_SAMPLE_ALAW
+- **描述**: 8位 a-Law 编码。
+- **用途**: 主要用于欧洲和国际电话网络（ITU-T G.711标准），a-Law编码能够有效地压缩音频数据。
+- **特点**:
+  - 通过非线性量化减少了信号的动态范围。
+  - 适合电话语音传输，能够在低比特率下保持相对较高的音质。
+
+### PA_SAMPLE_ULAW
+- **描述**: 8位 mu-Law 编码。
+- **用途**: 主要用于北美和日本的电话网络（也符合ITU-T G.711标准），mu-Law编码同样用于音频压缩。
+- **特点**:
+  - 采用非线性量化技术，与a-Law类似，但在不同的范围内进行编码。
+  - 通常在传输过程中能够更好地处理动态范围，适合高噪声环境的语音通信。
+
+### 总结
+这两种格式都是为了在有限的带宽下提供良好的语音质量，尽管它们的具体实现和适用地区有所不同。在选择使用哪种格式时，通常取决于具体的应用场景和地区标准。
+
+# pa_frame_size 和pa_sample_size 计算方法
+
+在 PulseAudio 中，`pa_frame_size` 和 `pa_sample_size` 是与音频格式和数据处理相关的重要概念。以下是它们的定义和计算方法：
+
+### 1. `pa_sample_size`
+`pa_sample_size` 表示单个样本的大小（以字节为单位）。计算方法如下：
+
+```c
+size_t pa_sample_size(pa_sample_spec *spec) {
+    return spec->format == PA_SAMPLE_S16LE ? 2 :
+           spec->format == PA_SAMPLE_FLOAT32LE ? 4 :
+           spec->format == PA_SAMPLE_U8 ? 1 :
+           spec->format == PA_SAMPLE_S32LE ? 4 :
+           // 其他格式...
+           0; // 不支持的格式
+}
+```
+
+### 2. `pa_frame_size`
+`pa_frame_size` 表示一个音频帧的大小，通常由样本大小和通道数决定。计算方法为：
+
+```c
+size_t pa_frame_size(pa_sample_spec *spec) {
+    return pa_sample_size(spec) * spec->channels;
+}
+```
+
+### 计算示例
+假设您有以下音频格式：
+- `format`: `PA_SAMPLE_S16LE`（16位 PCM，线性编码）
+- `channels`: 2（立体声）
+
+那么：
+- `pa_sample_size` = 2 字节（因为16位 = 2字节）
+- `pa_frame_size` = 2 字节 * 2 通道 = 4 字节
+
+### 总结
+- **`pa_sample_size`**: 计算单个样本的字节大小。
+- **`pa_frame_size`**: 计算一帧的字节大小，等于样本大小乘以通道数。
+
+这两个大小在音频处理、缓冲区分配和数据传输中非常重要。
+
+# 主要结构体
+
+下面是一个 Markdown 表格，详细说明了每个结构体所代表的对象及其作用：
+
+| 结构体名称                | 说明                                                         |
+| ------------------------- | ------------------------------------------------------------ |
+| `pa_card`                 | 表示音频卡的结构体，包含有关音频设备的信息，如设备名称、状态和可用配置。 |
+| `pa_card_profile`         | 表示音频卡的配置文件，包含设备支持的各种配置和功能（如输入/输出通道、采样率等）。 |
+| `pa_client`               | 表示一个音频客户端，包含与 PulseAudio 服务器通信的相关信息，如客户端 ID 和权限。 |
+| `pa_core`                 | 表示 PulseAudio 的核心结构体，管理音频流、设备和模块，负责调度和资源管理。 |
+| `pa_device_port`          | 表示设备的端口，定义输入/输出端口的特征和功能，例如扬声器、耳机或麦克风。 |
+| `pa_sink`                 | 表示音频输出设备（sink），负责接收并播放音频流，包含音量、状态等信息。 |
+| `pa_sink_volume_change`   | 表示音量变化的结构体，用于处理音频输出设备的音量调整请求。   |
+| `pa_sink_input`           | 表示音频输入流（sink input），与具体的音频源关联，允许多个客户端共享同一输出设备。 |
+| `pa_source`               | 表示音频输入设备（source），用于捕获音频流，例如麦克风，包含状态和配置等信息。 |
+| `pa_source_volume_change` | 表示音量变化的结构体，用于处理音频输入设备的音量调整请求。   |
+| `pa_source_output`        | 表示音频输出流（source output），与具体的音频接收器关联，允许多个客户端共享同一输入设备。 |
+
+### 总结
+这些结构体在 PulseAudio 中扮演着关键角色，帮助管理音频设备、客户端和流。通过这些结构体，PulseAudio 能够实现灵活的音频处理和高效的资源管理。
+
+# struct pa_operation
+
+`struct pa_operation` 是 PulseAudio 中用于表示一个异步操作的结构体。它通常用于跟踪由 PulseAudio 执行的操作的状态和结果。这种结构体在处理音频流、设备管理或其他需要与服务器通信的操作时非常重要。
+
+### 结构体说明
+
+以下是 `struct pa_operation` 的一般用途和特点：
+
+- **异步执行**: `pa_operation` 允许客户端在与 PulseAudio 服务器交互时执行异步操作，以避免阻塞主线程。
+- **状态跟踪**: 该结构体用于跟踪操作的状态，例如操作是否完成、是否发生错误等。
+- **结果获取**: 客户端可以使用该结构体来获取执行操作的结果，确保能够处理成功或失败的情况。
+
+### 主要字段（一般情况下）
+
+虽然具体的字段可能依赖于 PulseAudio 的实现，但通常包括以下内容：
+
+- **引用计数**: 用于管理结构体的生命周期，确保在适当的时候释放资源。
+- **操作状态**: 表示当前操作的状态（如进行中、完成、失败等）。
+- **回调函数**: 在操作完成时调用的回调函数，以便通知客户端结果。
+- **用户数据**: 可用于传递额外的上下文信息给回调函数。
+
+### 用法示例
+
+在实际应用中，当您启动一个音频操作（例如，播放音频、调整音量等）时，您可能会获得一个 `pa_operation` 实例。您可以在后台执行操作并在操作完成时处理结果。
+
+### 总结
+
+`struct pa_operation` 是 PulseAudio 中重要的结构体，专门用于管理异步操作和状态跟踪。通过该结构体，开发者可以实现非阻塞的音频处理，提高应用程序的响应性和性能。
+
+# IEC61937
+
+IEC 61937 是一个国际标准，主要用于音频信号的数字传输，特别是在多声道音频格式中。它定义了如何在数字音频传输中封装和处理多种音频编码格式，以确保不同设备之间的互操作性。
+
+### 主要内容
+
+1. **标准背景**:
+   - IEC 61937 是由国际电工委员会（IEC）制定的，旨在提供一种方法来传输压缩音频数据（例如 Dolby Digital、DTS 等）通过数字接口（如 S/PDIF、HDMI）。
+
+2. **封装格式**:
+   - 标准定义了如何将音频流封装到数据包中，包括关键的同步信息和错误检测。
+
+3. **多声道音频支持**:
+   - IEC 61937 支持多声道音频格式，这使得它在家庭影院系统和专业音频设备中非常重要。
+
+4. **兼容性**:
+   - 它确保不同音频设备（如蓝光播放器、AV 接收器和电视）能够正确识别和解码音频流，增强了设备之间的兼容性。
+
+### 应用领域
+
+- **家庭影院系统**: 在高保真音响和家庭影院系统中，使用 IEC 61937 来传输多声道音频格式。
+- **广播和流媒体**: 广播和流媒体服务使用该标准以确保音频信号的质量和一致性。
+- **专业音频设备**: 在录音和播放设备中，IEC 61937 提供了一种可靠的音频传输方法。
+
+### 总结
+
+IEC 61937 是一个关键的标准，确保了各种数字音频设备之间的互操作性，特别是在处理多声道音频时。它在家庭娱乐、广播和专业音频领域中发挥着重要作用。
 
 # 参考资料
 
