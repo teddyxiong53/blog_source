@@ -1281,7 +1281,9 @@ Options:
 (w->pcm_fd = bluealsa_open_transport(w->ba_fd, &w->transport)) 
 ```
 
+# 做A2DP source
 
+https://introt.github.io/docs/raspberrypi/bluealsa.html
 
 # 参考资料
 

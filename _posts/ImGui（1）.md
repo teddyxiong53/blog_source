@@ -61,3 +61,19 @@ Dear ImGui作为一个开源项目，不断根据社区的需求和反馈进行�
 # 代码
 
 https://github.com/ocornut/imgui
+
+# 文档
+
+https://github.com/ocornut/imgui/wiki/Getting-Started
+
+# 关联项目
+
+https://github.com/cimgui/cimgui
+
+最初，cimgui 由 Stephan Dilly 以手写代码开发，
+
+但后来由 sonoro1234 转变为自动生成版本，
+
+以便更容易与 imgui 保持同步（允许用户选择所需的分支和提交）
+
+只有来自 imgui.h（以及可选的 imgui_internal.h）的函数、结构体和枚举被包装。

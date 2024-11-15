@@ -138,6 +138,12 @@ https://teddyxiong.atlassian.net/
 
 
 
+# python sdk用法
+
+https://jira.readthedocs.io/installation.html
+
+
+
 # 参考资料
 
 1、JIRA的使用介绍（一）- 概念篇
