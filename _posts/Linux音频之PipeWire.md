@@ -38,6 +38,16 @@ https://gitlab.freedesktop.org/pipewire/pipewire/-/wikis/Config-PipeWire
 
 https://github.com/mikeroyal/PipeWire-Guide
 
+这篇文章非常务实。很好。
+
+https://denilson.sa.nom.br/blog/2023-12-26/pipewire-conf-examples
+
+https://denilson.sa.nom.br/blog/2023-11-10/pipewire-multiple-ports
+
+这篇文章，高屋建瓴。
+
+https://venam.net/blog/unix/2021/06/23/pipewire-under-the-hood.html
+
 # 我的疑问
 
 pipewire不能开箱即用吗？
@@ -2232,6 +2242,2324 @@ alsa-hw01对应node.name生成的名字。
 通过重新放回队列中，缓冲区可以被框架继续使用，避免了不必要的内存分配和释放操作，从而提高了系统的性能和效率。
 
 ==而且， PipeWire 流媒体框架有一个机制来避免缓冲区在队列中停留太久，当缓冲区在队列中停留太久时，框架会自动将其释放掉，以避免队列中的缓冲区数量过多，从而导致系统资源浪费。==
+
+
+
+# spa-acp-tool
+
+```
+>>>list
+card 0: profiles:5 devices:11 ports:2
+    profile 0: name:"off" prio:0 (available: yes)
+    profile 1: name:"output:stereo-fallback+input:stereo-fallback" prio:5151 (available: unknown)
+    profile 2: name:"output:stereo-fallback" prio:5100 (available: unknown)
+    profile 3: name:"input:stereo-fallback" prio:51 (available: unknown)
+  * profile 4: name:"pro-audio" prio:1 (available: yes)
+    port 0: name:"analog-input" direction:capture prio:10000 (available: unknown)
+    port 1: name:"analog-output" direction:playback prio:9900 (available: unknown)
+  * device 0: direction:playback name:"pro-output-0" prio:0 flags:00000001 devices: "hw:0,0" 
+  * device 1: direction:playback name:"pro-output-1" prio:0 flags:00000001 devices: "hw:0,1" 
+  * device 2: direction:playback name:"pro-output-3" prio:0 flags:00000001 devices: "hw:0,3" 
+  * device 3: direction:playback name:"pro-output-5" prio:0 flags:00000001 devices: "hw:0,5" 
+  * device 4: direction:capture name:"pro-input-0" prio:0 flags:00000001 devices: "hw:0,0" 
+  * device 5: direction:capture name:"pro-input-2" prio:0 flags:00000001 devices: "hw:0,2" 
+  * device 6: direction:capture name:"pro-input-3" prio:0 flags:00000001 devices: "hw:0,3" 
+  * device 7: direction:capture name:"pro-input-4" prio:0 flags:00000001 devices: "hw:0,4" 
+  * device 8: direction:capture name:"pro-input-5" prio:0 flags:00000001 devices: "hw:0,5" 
+    device 9: direction:capture name:"stereo-fallback" prio:51 flags:00000000 devices: "hw:%f" 
+    device 10: direction:playback name:"stereo-fallback" prio:51 flags:00000000 devices: "hw:%f" 
+```
+
+
+
+# pw-metadata
+
+```
+# pw-metadata -l
+Found "my-metadata" metadata 31
+Found "settings" metadata 32
+```
+
+进一步查看：
+
+```
+# pw-metadata -n settings  
+Found "settings" metadata 32
+update: id:0 key:'log.level' value:'0' type:''
+update: id:0 key:'clock.rate' value:'48000' type:''
+update: id:0 key:'clock.allowed-rates' value:'[ 48000 ]' type:''
+update: id:0 key:'clock.quantum' value:'1024' type:''
+update: id:0 key:'clock.min-quantum' value:'32' type:''
+update: id:0 key:'clock.max-quantum' value:'2048' type:''
+update: id:0 key:'clock.force-quantum' value:'0' type:''
+update: id:0 key:'clock.force-rate' value:'0' type:''
+# pw-metadata -n my-metadata
+Found "my-metadata" metadata 31
+update: id:0 key:'default.audio.sink' value:'{ name = "hw:0,1" }' type:'(null)'
+```
+
+my-metadata 这是我增加的（虽然效果没有出来）
+
+
+
+
+
+原生协议和对象模型类似于 Wayland，但消息的序列化/反序列化是自定义的。这是因为在消息中的数据结构更为复杂，不便于在 XML 中表达。详情请参阅原生协议。
+
+
+
+PipeWire 媒体会话使用 SPA_NAME_API_ALSA_ENUM_UDEV 插件来枚举 ALSA 设备。
+
+对于每个设备，它会执行以下操作：
+
+会话管理器还将为它创建的设备和节点生成合适的名称和描述，并分配会话和驱动程序的优先级。
+
+
+
+它被称为“专业”音频，因为它旨在供“专业”音频用户使用（即使用复杂 JACK 管道并希望以类似方式公开设备的用户）。
+
+Pro Audio 公开原始 ALSA 设备，而不应用任何逻辑。
+
+通常，ALSA 会公开反映硬件特性的设备和控件，但它们并不总是反映硬件的使用方式。
+
+在许多情况下，您无法同时使用某些设备，或者同一设备用于访问不同的输入或输出，而选择是通过触发 ALSA 控件来完成的。
+
+此外，音量控件的工作方式很奇怪，因为有多个控件会影响同一个输出。
+
+为了简化这一过程，我们提供了 ACP 和 UCM，
+
+这两种不同的机制试图为这些设备提供用户友好的配置文件，
+
+方法是自动显示/隐藏特定设备并在需要时应用控件，
+
+以提供愉快的用户体验。
+
+Pro Audio 绕过配置文件机制，
+
+并像在 ALSA 中一样公开设备。
+
+Pro Audio 不会隐藏任何内容，
+
+也不会应用控件，
+
+也不会管理硬件音量控制，
+
+因此您可以自由使用 alsamixer 并以您喜欢的任何方式控制硬件。
+
+
+
+对于已在使用 pulseaudio*客户*端库的应用程序，我们建议您继续使用它。某些应用程序（firefox）也可以使用不同的后端进行编译，但不建议这样做，因为：
+
+- PulseAudio 后端通常是维护得最好的（唯一？）后端。
+- 与 ALSA 相比，PulseAudio API 具有更多功能：
+  - 流音量管理。ALSA 应用程序必须自行实现此功能，而无需集成到系统中。
+  - 缓冲管理。延迟变化和要求会根据流路由动态调整。ALSA 不提供用于反馈此内容的 API。
+  - 时间和同步。ALSA 没有为此提供良好的 API（无系统延迟）。
+  - 格式重新协商。ALSA 没有为此提供 API。
+  - 元数据信息。ALSA 没有为此提供 API。
+  - ALSA PipeWire 插件不支持直通。而且大多数应用程序仅使用 PulseAudio API 实现直通。
+- 与 JACK 相比，PulseAudio API 具有更多功能：
+  - 流音量管理。JACK 应用程序必须自行执行此操作，无需集成到系统的其余部分。
+  - 缓冲管理。JACK 应用程序将阻止 PipeWire 图发生动态延迟变化。
+  - 格式重新协商。JACK 仅为应用程序提供一种示例格式。
+  - 元数据信息。JACK 没有为此提供可用的元数据 API。
+  - JACK API 不会导致会话管理器自动链接到默认接收器。您必须运行额外的软件才能建立动态专业音频连接。
+  - JACK API 不会动态地调整通道和布局以适应所连接的接收器。
+  - JACK API 无法处理直通格式。
+- 可以集成到系统中，ALSA 和 JACK 提供很少的 API 来报告流移动、错误情况、暂停、（虚拟）设备检测、直通格式枚举等。
+
+
+
+# PipeWire 缓冲说明
+
+PipeWire 有两个“缓冲区”：
+
+1. 它通过在接收器中保留一个周期（量子）的数据来保留硬件设备中的一个。如果数据量小于量子，它会运行图表以要求所有节点提供一个新的数据量。据推测，这可能在接收器完成播放剩余数据之前发生（如果没有：xrun）。批处理设备（将自己报告为批处理的 alsa 设备）以量子/2（称为 ALSA 周期大小，默认情况下为 1024/2）启用 IRQ，并在设备中保留额外的量子/2 数据作为余量。因此，普通设备的延迟为`quantum`，批处理设备的运行延迟为`quantum + quantum/2`。
+2. 应用程序中的缓冲区。这可以是任何您想要的。jack 客户端使用 0 缓冲并立即对图形唤醒做出反应。基于流的客户端可以做同样的事情，但通常会进行某种额外的缓冲。
+
+这不包括重采样器中的额外缓冲（约50 个样本）。每个流和接收器/源中都有一个重采样器。当不使用重采样器时，重采样器延迟为 0。
+
+这还不包括 USB 子系统或其他硬件延迟引起的延迟。当 IRQ 周期大小设置为批处理设备足够低的值时，这些延迟通常与 JACK 和 PulseAudio 相同。
+
+服务器上的量子由客户端的 node.latency 属性控制。它始终设置为最低请求延迟。如果您使用 PIPEWIRE_LATENCY=128/48000 启动 PipeWire 应用程序，它将（最多）使用 2.6ms 量子，客户端唤醒和接收器读取指针之间的延迟将（最多）为 2.6ms。
+
+您`default.clock.max-quantum`应该能够配置 128 个样本，以实现 2.6ms 的服务器延迟。如果您使用，`pw-top`您可以看到应用程序/设备之间选定的延迟。我建议在调整最大量子后看看那里说了什么。
+
+对于 PulseAudio 客户端，服务器会`pipewire-pulse`在每个时间段被唤醒，并且根据客户端协商的内容拥有内部缓冲区。客户端通常会根据应用程序中的配置选项设置缓冲要求，或者您可以使用`PULSE_LATENCY_MSEC`环境变量来配置内容。除此之外，它的工作方式应该与 PulseAudio 大致相同。
+
+请注意，这`PIPEWIRE_LATENCY=`对 PulseAudio 客户端没有任何作用。您必须使用 pulseaudio 客户端环境变量来控制延迟，例如`PULSE_LATENCY_MSEC`。
+
+因此，首先使用 max-quantum 来限制服务器延迟，配置[WirePlumber](https://pipewire.pages.freedesktop.org/wireplumber/configuration/alsa.html)设置批处理周期大小（对于批处理设备），然后使用客户端配置或环境变量来设置客户端延迟。
+
+[另]()请参阅。
+
+还要注意，无论请求的缓冲区大小如何，同一驱动程序的所有 PipeWire 客户端都将使用*相同的缓冲区大小。PipeWire 绝不会尝试运行具有不同缓冲区大小的客户端。这意味着，如果一个客户端要求 1024 个样本的缓冲区大小，而另一个客户端要求 64 个样本，则**两个*客户端都将以 64 个样本运行。如果客户端需要进行额外的缓冲，则需要考虑到这一点：另请参阅[此处](https://gitlab.freedesktop.org/pipewire/pipewire/-/issues/2845)。
+
+
+
+# pipewire的client-rt.conf.d 和client.conf.d 配置目录区别
+
+在 PipeWire 中，`client-rt.conf.d` 和 `client.conf.d` 是用于管理不同客户端行为和配置的目录。它们的作用和区别主要体现在配置的侧重点和适用场景上。
+
+---
+
+### **`client.conf.d`**
+
+#### **用途**  
+- 用于定义常规客户端行为和参数。  
+- 配置内容适用于所有通过 PipeWire 连接的客户端。  
+- 包含如连接属性、日志级别、默认参数等全局性配置。
+
+#### **典型用途和示例**  
+- **定义默认音频设备**：
+  ```ini
+  default.audio.sink = "alsa_output.pci-0000_00_1f.3.analog-stereo"
+  default.audio.source = "alsa_input.pci-0000_00_1f.3.analog-stereo"
+  ```
+- **调整日志级别**：
+  ```ini
+  log.level = 2
+  ```
+- **设置客户端连接限制**：
+  ```ini
+  allowed.clients = "pulse, alsa, jack"
+  ```
+
+#### **配置影响范围**  
+- 适用于 PipeWire 管理的所有客户端（PulseAudio、ALSA、JACK 等）。  
+- 配置偏向于功能性和行为控制。
+
+---
+
+### **`client-rt.conf.d`**
+
+#### **用途**  
+- 用于设置客户端的实时（real-time）相关参数。  
+- 这些参数通常用于优化延迟、优先级、调度等性能相关的设置。
+
+#### **典型用途和示例**  
+- **设置实时优先级**：
+  ```ini
+  default.clock.rate = 48000
+  default.clock.allowed-rates = [ 44100, 48000, 96000 ]
+  default.clock.quantum = 256
+  realtime.priority = 20
+  ```
+- **启用实时线程**：
+  ```ini
+  realtime.enabled = true
+  ```
+- **调整缓冲区设置**：
+  ```ini
+  default.latency = 256/48000
+  ```
+  
+#### **配置影响范围**  
+- 专注于性能优化，适用于需要低延迟或高实时性支持的应用（例如音频工作站、实时媒体处理）。  
+- 配置偏向于底层硬件交互的优化。
+
+---
+
+### **主要区别**
+
+| 特性         | `client.conf.d`                  | `client-rt.conf.d`                  |
+| ------------ | -------------------------------- | ----------------------------------- |
+| **目标用途** | 管理通用客户端行为               | 优化实时性能相关的行为              |
+| **配置内容** | 默认设备、日志级别、客户端限制等 | 实时线程优先级、延迟、缓冲区等      |
+| **适用范围** | 所有 PipeWire 客户端             | 需要实时优先级或优化的应用          |
+| **主要用户** | 日常音频/视频用户                | 专业音频处理用户（如 DAW 软件用户） |
+
+---
+
+### **如何选择配置目录？**
+
+- **如果要调整全局的默认设置**（如默认音频设备、日志、连接限制），使用 `client.conf.d`。
+- **如果要优化性能**（如实时优先级、缓冲区大小、延迟），使用 `client-rt.conf.d`。
+- 需要时可以同时在两个目录下配置，不冲突。
+
+---
+
+### **查看当前配置的方式**
+
+1. 检查 `client.conf.d` 的设置：
+   ```bash
+   cat /usr/share/pipewire/client.conf.d/*.conf
+   ```
+2. 检查 `client-rt.conf.d` 的设置：
+   ```bash
+   cat /usr/share/pipewire/client-rt.conf.d/*.conf
+   ```
+
+通过上述目录和文件，可以灵活调整系统的音频行为和性能表现。
+
+
+
+# 为什么不将所有 PipeWire 配置文件放到 /etc/pipewire？
+
+一个常见的惯例是，分销商/软件包提供的配置放在 /usr/share 中，然后系统管理员（即您）可以通过将其复制到 /etc/pipewire 中来根据需要进行调整。
+
+Pipewire 不需要 /etc 中的配置文件。这只是一个可选步骤。没有它们，它也能正常工作。
+
+如果配置文件可能经常使用而无需任何调整，
+
+那么将其打包到 /etc 中是合理的。
+
+但如果分发的只是一个模板或示例，
+
+那么将其放在 /etc 中可能会有问题，
+
+而 /usr/share/ 则更好。
+
+此外，/usr/share 中的模板可以移动到系统范围的 /etc 位置或用户特定的配置目录（例如，在 XFG_CONFIG_HOME 或 ~/.config/ 下）。
+
+
+
+WirePlumber 默认启用了配置文件自动切换功能。
+
+它可以在检测到输入流时自动在 HSP/HFP 和 A2DP 配置文件之间切换。您可以使用以下命令禁用它：
+
+```
+wpctl settings --save bluetooth.autoswitch-to-headset-profile false
+```
+
+
+
+首先，通过禁用 `monitor.alsa` 功能，停止 WirePlumber 监控和添加硬件 ALSA 设备：
+
+```
+wireplumber.profiles = {
+  main = {
+    monitor.alsa = disabled
+  }
+}
+```
+
+
+
+PipeWire 的 `alsa-monitor` 模块默认使用 alsa-card-profiles 来检测设备。
+
+如果这对你不起作用，尝试关闭 `api.alsa.use-acp` ，
+
+或者可选地在 wireplumber 中打开 `api.alsa.use-ucm` ：
+
+/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf 
+
+```
+monitor.alsa.properties = {
+  # Use ALSA-Card-Profile devices. They use UCM or the profile
+  # configuration to configure the device and mixer settings.
+  # alsa.use-acp = true
+  # Use UCM instead of profile when available. Can be disabled
+  # to skip trying to use the UCM profile.
+  alsa.use-ucm = true
+}
+```
+
+然后，重启 WirePlumber 并检查可用设备：
+
+如果麦克风与 `arecord` 正常工作，但 PipeWire 未检测到它，尝试添加配置文件以手动添加此设备
+
+/etc/pipewire/pipewire.conf.d/microphone.conf
+
+```
+context.objects = [
+    { factory = adapter
+        args = {
+            factory.name           = api.alsa.pcm.source
+            node.name              = "microphone"
+            node.description       = "Undetected Microphone"
+            media.class            = "Audio/Source"
+            api.alsa.path          = "hw:card_number,device_number"
+        }
+    }
+]
+```
+
+然后重启 PipeWire 以重新加载配置。
+
+# \usr\share\pipewire\minimal.conf
+
+这个文件值得分析。
+
+为那些想要在没有会话管理器（ALSA 设备、节点和链接的静态配置）的情况下运行 PipeWire 的人提供的示例。
+
+
+
+# pw-cli create-node的实际用途是什么？什么时候需要使用？
+
+`pw-cli create-node` 的主要用途是动态创建一个音频或视频节点（Node）以供 PipeWire 管理，
+
+这些节点可以模拟设备、创建新的音频流，
+
+或作为处理链的一部分。
+
+它的应用场景主要集中在调试、测试和特定功能扩展中。
+
+pw-cli create-node support.null-audio-sink
+
+该节点会被视为一个音频输出设备，您可以连接音频流到该节点。
+
+pw-cli create-node support.loopback
+
+在实际音频播放中，插入一个`loopback`节点，用于观察或分析音频信号
+
+pw-cli create-node support.null-audio-source
+
+当系统中没有硬件音频设备，但需要虚拟设备处理音频流，比如在虚拟机环境或容器内的调试
+
+
+
+https://forums.fedoraforum.org/showthread.php?325943-Pipewire-with-alsa-loopback-create-nodes-for-both-DEV-0-and-1
+
+```
+pw-cli create-node adapter factory.name=api.alsa.pcm.sink \
+api.alsa.pcm.stream=playback \
+node.name=loopback-dev-1 \
+object.linger=1 \
+audio.channels=2 \
+audio.position=FL,FR \
+api.alsa.path=hw:2,1
+```
+
+pw-cli  create-node的作用就是在你临时做测试，不想把相关配置写入到配置文件的时候使用。
+
+
+
+# support.loopback测试
+
+先创建节点
+
+```
+pw-cli create-node support.loopback
+```
+
+# pw-loopback用法
+
+https://linuxcommandlibrary.com/man/pw-loopback
+
+创建一个loopback device，自动连接到喇叭。-m是指定map。`--capture-props`指向了sink，则表示进行喇叭输出。
+
+```
+pw-loopback -m '[[FL FR]]' --capture-props='[media.class=Audio/Sink]'
+```
+
+创建一个loopback device，自动连接到mic。
+
+```
+pw-loopback -m '[[FL FR]]' --playback-props='[media.class=Audio/Source]'
+```
+
+创建一个dummy loopback 设备，不自动连接任何设备。
+
+```
+pw-loopback -m '[[FL FR]]' --capture-props='[media.class=Audio/Sink]' \
+	--playback-props='[media.class=Audio/Source]'
+```
+
+创建一个dummy loopback设备，自动连接到喇叭，并且把左右声道交换。
+
+```
+pw-loopback --capture-props='[media.class=Audio/Sink audio.position=[FL FR]]' \
+	--playback-props='[audio.position=[FR FL]]'
+```
+
+
+
+```
+# pw-dump | grep -F '"node.name"'
+        "node.name": "Dummy-Driver",
+        "node.name": "Freewheel-Driver",
+        "node.name": "my-default-sink",
+        "node.name": "microphone",
+        "node.name": "bluez_midi.server",
+```
+
+下面2条命令跟上面命令输出差不多。
+
+```
+pw-cli list-objects | grep -F 'node.name'
+pw-cli info all | grep -F 'node.name'
+```
+
+
+
+# 双显示器作为立体声扬声器
+
+https://denilson.sa.nom.br/blog/2023-12-26/pipewire-conf-examples
+
+如果您的计算机连接了两个外接显示器，
+
+并且这些显示器恰好有内置扬声器，
+
+则可以将两个输出组合成一个立体声音频接收器。
+
+电视和显示器的内置扬声器通常质量很差。
+
+将两个扬声器组合在一起并不能让它们的声音更好：
+
+它们的声音仍然很差，但现在是立体声。
+
+你应该认真考虑购买更高质量的扬声器。
+
+哎呀，即使是中等质量的扬声器也可能比内置显示器扬声器更好。
+
+不过，这个技巧对某些人来说还是有用的。
+
+10-dual-hdmi-stereo.conf
+
+```
+context.modules = [
+{
+    name = libpipewire-module-combine-stream
+    args = {
+        combine.mode = sink
+        node.name = "dual_hdmi_stereo"
+        node.description = "Dual HDMI as Stereo output"
+
+        # Set to true to make the latencies match
+        # (by adding delays to the lower latencies).
+        combine.latency-compensate = true
+
+        combine.props = {
+            audio.position = [ FL FR ]
+        }
+        stream.props = {
+        }
+        stream.rules = [
+            {
+                matches = [
+                    {
+                        # Pick one of the following ways to select a device:
+                        # alsa.id = "HDMI 0"
+                        # api.alsa.path = "hdmi:0"
+                        # device.profile.name = "hdmi-stereo"
+                        # node.name = "alsa_output.pci-0000_00_1f.3.hdmi-stereo"
+                        # object.path = "alsa:pcm:0:hdmi:0:playback"
+
+                        media.class = "Audio/Sink"
+                        object.path = "alsa:pcm:0:hdmi:0:playback"
+                    }
+                ]
+                actions = {
+                    create-stream = {
+                        combine.audio.position = [ FL FL ]
+                        audio.position = [ FL FR ]
+                    }
+                }
+            }
+            {
+                matches = [
+                    {
+                        # Pick one of the following ways to select a device:
+                        # alsa.id = "HDMI 1"
+                        # api.alsa.path = "hdmi:0,1"
+                        # device.profile.name = "hdmi-stereo-extra1"
+                        # node.name = "alsa_output.pci-0000_00_1f.3.hdmi-stereo-extra1"
+                        # object.path = "alsa:pcm:0:hdmi:0,1:playback"
+
+                        media.class = "Audio/Sink"
+                        object.path = "alsa:pcm:0:hdmi:0,1:playback"
+                    }
+                ]
+                actions = {
+                    create-stream = {
+                        combine.audio.position = [ FR FR ]
+                        audio.position = [ FL FR ]
+                    }
+                }
+            }
+        ]
+    }
+}
+]
+```
+
+
+
+
+
+# null device
+
+PipeWire 中最通用的虚拟设备是 Null 设备。
+
+它在图中显示为节点，
+
+但未映射到任何实际设备。
+
+用户可以自行决定将音频路由到它或从它路由音频。
+
+> 例如，我曾经尝试启动一个需要系统麦克风的应用程序。
+>
+> 即使应用程序中麦克风的使用是可选的，
+>
+> 但如果没有麦克风，它仍然会拒绝启动。
+>
+> 因此，通过使用虚拟 Null 设备作为音频源，应用程序可以正常启动。
+
+
+
+或者，您可能希望将音乐播放器以外的所有播放音频都静音。
+
+您可以将虚拟 Null 设备用作默认音频接收器，
+
+这样所有应用程序（甚至是那些简短的通知声音）都将无声播放。
+
+然后，在您开始播放音乐后，只需将音乐播放器重新路由到耳机即可。
+
+
+
+或者，也许您的应用程序不允许在初始设置后更改所选的音频设备。
+
+也许它是一个 VoIP 或视频会议工具。
+
+您可以尝试使用[qpwgraph](https://gitlab.freedesktop.org/rncbc/qpwgraph)即时重新连接音频，
+
+但应用程序可能不喜欢这样，并崩溃或出现错误。
+
+相反，您可以有一个源 Null 设备和一个接收器 Null 设备，并让应用程序使用它。
+
+然后，您可以动态地将 Null 设备连接到所需的源和接收器。
+
+
+
+您甚至可以仅使用 Null 设备重新创建本文中提到的所有其他示例。（我不知道这两种方法的优缺点是什么。）
+
+有太多的可能性了！
+
+10-null-devices.conf
+
+```
+context.objects = [
+{
+    factory = adapter
+    args = {
+        factory.name     = support.null-audio-sink
+        node.name        = "null-stereo-output"
+        node.description = "Null Stereo Output"
+        media.class      = Audio/Sink
+        object.linger    = true
+        audio.position   = [ FL FR ]
+        monitor.channel-volumes = true
+    }
+}
+{
+    factory = adapter
+    args = {
+        factory.name     = support.null-audio-sink
+        node.name        = "null-mono-input"
+        node.description = "Null Mono Input"
+        media.class      = Audio/Source/Virtual
+        object.linger    = true
+        audio.position   = [ MONO ]
+        monitor.channel-volumes = true
+    }
+}
+]
+```
+
+## 对应的create-node命令
+
+```
+pw-cli create-node adapter '{
+    factory.name=support.null-audio-sink
+    node.name=null-stereo-output
+    media.class=Audio/Sink
+    object.linger=true
+    audio.position=[FL FR]
+    monitor.channel-volumes=true
+}'
+pw-cli create-node adapter '{
+    factory.name=support.null-audio-sink
+    node.name=null-mono-input
+    media.class=Audio/Source/Virtual
+    object.linger=true
+    audio.position=[MONO]
+    monitor.channel-volumes=true
+}'
+```
+
+
+
+销毁他们：
+
+```
+pw-cli destroy null-stereo-output
+pw-cli destroy null-mono-input
+```
+
+# 一些图形工具的示例
+
+这篇文章里有些截图不错。
+
+https://denilson.sa.nom.br/blog/2023-11-06/pipewire-is-awesome
+
+# 指定设备的ch和map
+
+默认都是16ch，我在配置文件里加上
+
+```
+context.objects = [
+    # Okay, now we add our dmix PCMs
+    { factory = adapter
+        args = {
+            factory.name           = api.alsa.pcm.sink # sink for dmix
+            node.name              = "my-default-sink" # name of pulse device (mpv)
+            node.description       = "my-default-sink" # name of pulse device (pavucontrol)
+            media.class            = "Audio/Sink" # Sink for dmix
+            api.alsa.path          = "hw:0,1"
+audio.channels         = 2                # 加上这2行就可以指定了。
+audio.position         = [ FL FR ]
+        }
+    }
+]
+```
+
+mic的也一样的方法进行指定。
+
+现在看到就是没有双声道的了。
+
+```
+# pw-link -iol
+my-default-sink:monitor_FL
+my-default-sink:monitor_FR
+my-default-sink:playback_FL
+my-default-sink:playback_FR
+microphone:capture_FL
+microphone:capture_FR
+bluez_midi.server:out
+bluez_midi.server:in
+```
+
+但是pdm被枚举的时候，还是会有kernel backtrace打印。
+
+
+
+# 蓝牙音频质量低
+
+查看是否有类似以下错误：
+
+```
+Feb 17 18:23:01 HOST pipewire[249297]: (bluez_input.18:54:CF:04:00:56.a2dp-sink-60) client too slow! rate:512/48000 pos:370688 status:triggered
+```
+
+如果出现，请使用 `pactl list sinks` 检查当前选中的编解码器，
+
+并尝试通过将 `bluez5.codecs` 设置为 `sbc aac ldac aptx aptx_hd` 中的一个来更改它。
+
+您还可以尝试 mSBC 支持（修复了 Sony 1000XM3 的麦克风，即 Headphones WH-1000XM3 和 Earbuds WF-1000XM3），以及 SBC-XQ 编解码器。
+
+/etc/wireplumber/wireplumber.conf.d/51-bluez-config.conf 
+
+```
+monitor.bluez.properties = {
+  bluez5.enable-sbc-xq = true
+  bluez5.enable-msbc = true
+  bluez5.codecs = [ sbc sbc_xq ]
+}
+```
+
+# 可听见的音频延迟或播放开始时可听见的咔哒声
+
+这是由于节点在不活动时被挂起导致的。
+
+/etc/wireplumber/wireplumber.conf.d/51-disable-suspension.conf 
+
+```
+monitor.alsa.rules = [
+  {
+    matches = [
+      {
+        # Matches all sources
+        node.name = "~alsa_input.*"
+      },
+      {
+        # Matches all sinks
+        node.name = "~alsa_output.*"
+      }
+    ]
+    actions = {
+      update-props = {
+        session.suspend-timeout-seconds = 0
+      }
+    }
+  }
+]
+# bluetooth devices
+monitor.bluez.rules = [
+  {
+    matches = [
+      {
+        # Matches all sources
+        node.name = "~bluez_input.*"
+      },
+      {
+        # Matches all sinks
+        node.name = "~bluez_output.*"
+      }
+    ]
+    actions = {
+      update-props = {
+        session.suspend-timeout-seconds = 0
+      }
+    }
+  }
+]
+```
+
+一些设备实现了自己的静默和暂停检测。
+
+对于这些设备，仅禁用节点暂停可能不起作用。
+
+可以通过添加少量噪音来绕过它们，使得输出永远不会完全静默：
+
+```
+session.suspend-timeout-seconds = 0,  # 0 disables suspend
+    dither.method = "wannamaker3", # add dither of desired shape
+    dither.noise = 2, # add additional bits of noise
+```
+
+# USB DAC 直到 30% 音量才发出声音
+
+一些 USB DAC 在音量达到一定水平之前可能不会输出声音[7]。
+
+通常在 25% - 30%左右，
+
+这会导致初始音量过大且无法保持低音量。
+
+解决方案是通过将 `api.alsa.soft-mixer` 设置为 `true` 来忽略硬件混音器的音量控制。
+
+/etc/wireplumber/wireplumber.conf.d/alsa-soft-mixer.conf
+
+```
+monitor.alsa.rules = [
+  {
+    matches = [
+      {
+        device.name = "~alsa_card.*"
+      }
+    ]
+    actions = {
+      update-props = {
+        # Do not use the hardware mixer for volume control. It
+        # will only use software volume. The mixer is still used
+        # to mute unused paths based on the selected port.
+        api.alsa.soft-mixer = true
+      }
+    }
+  }
+]
+```
+
+# 同一声卡上的多个输出端口同时输出
+
+创建一个副本 `/usr/share/alsa-card-profile/mixer/profile-sets/default.conf` ，
+
+以便更改在更新中持续存在。
+
+在这里，我们定义一个配置文件，将模拟和 HDMI 的两个默认映射连接起来。
+
+新建/usr/share/alsa-card-profile/mixer/profile-sets/multiple.conf
+
+```
+[General]
+auto-profiles = no
+
+[Mapping analog-stereo]
+device-strings = front:%f
+channel-map = left,right
+paths-output = analog-output analog-output-lineout analog-output-speaker analog-output-headphones analog-output-headphones-2
+paths-input = analog-input-front-mic analog-input-rear-mic analog-input-internal-mic analog-input-dock-mic analog-input analog-input-mic analog-input-linein analog-input-aux analog-input-video analog-input-tvtuner analog-input-fm analog-input-mic-line analog-input-headphone-mic analog-input-headset-mic
+priority = 15
+
+[Mapping hdmi-stereo]
+description = Digital Stereo (HDMI)
+device-strings = hdmi:%f
+paths-output = hdmi-output-0
+channel-map = left,right
+priority = 9
+direction = output
+
+[Profile multiple]
+description = Analog Stereo Duplex + Digital Stereo (HDMI) Output
+output-mappings = analog-stereo hdmi-stereo
+input-mappings = analog-stereo
+```
+
+然后配置您的会话管理器以使用新的卡配置文件来匹配设备。
+
+识别信息可以通过使用 `pw-dump` 或 wpctl 来查找。
+
+/etc/wireplumber/wireplumber.conf.d/51-alsa-custom.conf
+
+```
+monitor.alsa.rules = [
+  {
+    matches = [
+      {
+        device.nick = "HDA Intel PCH"
+      }
+    ]
+    actions = {
+      update-props = {
+        api.alsa.use-acp = true
+        api.acp.auto-profile = false
+        api.acp.auto-port = false
+        device.profile-set = "multiple.conf"
+        device.profile = "multiple"
+      }
+    }
+  }
+]
+```
+
+# /usr/share/alsa-card-profile/这个目录的作用
+
+`/usr/share/alsa-card-profile/` 是 **ALSA** 和 **PulseAudio** 系统中音频设备配置的重要目录，通常由 **PulseAudio** 或 **PipeWire** 使用。
+
+其主要作用是存放音频卡的配置文件，以定义音频设备的支持特性和工作模式。
+
+### 目录内容及作用
+
+| 文件/子目录 | 作用                                                         |
+| ----------- | ------------------------------------------------------------ |
+| `*.conf`    | 定义音频设备的卡片（Card）配置，描述设备支持的输入、输出功能。 |
+| `profiles/` | 定义音频设备的工作模式（Profile），如“立体声输出”、“麦克风输入”等。 |
+| `mappings/` | 定义设备端口（Port）与具体硬件资源的映射，如HDMI、耳机或扬声器等。 |
+
+### 工作原理
+
+1. **配置加载**  
+   - 当 **PulseAudio** 或 **PipeWire** 检测到音频设备时，会从该目录加载对应的配置文件，确保设备的功能特性与可用模式被正确识别。
+   
+2. **Profile 与 Mode 切换**  
+   - 用户或系统可以通过该配置启用不同的音频模式（例如从耳机切换到扬声器），配置文件中定义了这些模式的具体参数。
+
+3. **自定义与扩展**  
+   - 用户可以通过编辑或新增文件，为新设备添加支持，或者调整默认行为。  
+
+### 示例场景
+
+- 如果某设备无法在系统中正确识别，可以查看此目录下是否有对应的配置文件。
+- 设备功能（如麦克风无法使用）可能是此处配置缺失或错误导致。
+
+需要注意，在现代系统中，**PipeWire** 逐渐取代了 **PulseAudio**，但仍然兼容并使用这些配置文件。
+
+
+
+PulseAudio的ALSA后端的默认配置文件定义。
+
+这用作所有没有特殊映射的卡的后备分配（并且应该足以满足绝大多数卡片）。
+
+如果您想分配与此不同的配置文件集对于设备，
+
+设置udev属性ACP_PROFILE_SET卡片，
+
+或在加载时使用"profile_set"模块参数module-alsa-card
+
+
+
+# 一个测试代码仓库
+
+https://github.com/venam/SPA-And-PipeWire-Tests
+
+# pw_loop分类
+
+有3中：
+
+* pw_main_loop
+* pw_thread_loop
+* pw_data_loop
+
+```
+struct pw_main_loop {
+        struct pw_loop *loop;
+
+	struct spa_hook_list listener_list;
+
+	unsigned int created:1;
+	unsigned int running:1;
+};
+
+struct pw_data_loop {
+	struct pw_loop *loop;
+
+	char *affinity;
+	char *class;
+	char **classes;
+	int rt_prio;
+	struct spa_hook_list listener_list;
+
+	struct spa_thread_utils *thread_utils;
+
+	pthread_t thread;
+	unsigned int cancel:1;
+	unsigned int created:1;
+	unsigned int running:1;
+};
+
+```
+
+
+
+# pipewire module跟spa plugin的关系是什么？
+
+在 PipeWire 中，**模块（module）**和**SPA 插件（SPA plugin）** 是两个关键的组件，它们协同工作来实现系统的多媒体功能，但各自的职责和作用有所不同。
+
+---
+
+### **SPA 插件 (Simple Plugin API)**
+
+#### **定义**
+SPA 插件是 PipeWire 的底层实现部分，负责直接与硬件或系统资源交互。  
+SPA（Simple Plugin API）提供了一个轻量级、高效的插件框架，用于实现具体的功能组件，如音频设备驱动、数据处理单元等。
+
+#### **作用**
+- 抽象硬件和系统资源：通过标准化接口访问声卡、视频设备等。
+- 提供通用的功能模块：如 ALSA、蓝牙、JACK 等。
+- 实现高性能的数据流：优化低延迟处理和资源使用。
+
+#### **典型 SPA 插件**
+- **`alsa`**：与 ALSA 驱动交互，用于音频输入/输出。
+- **`v4l2`**：用于视频捕获设备。
+- **`bluez5`**：支持蓝牙音频协议栈。
+- **`support`**：提供核心功能，如日志记录、调度器。
+
+---
+
+### **模块 (Module)**
+
+#### **定义**
+==模块是 PipeWire 的运行时加载单元，定义了系统的行为和功能逻辑。==模块通常会使用多个 SPA 插件来完成任务。
+
+#### **作用**
+- 提供系统级功能和逻辑：
+  - 设备管理（如 `module-alsa-card`）
+  - 数据流路由（如 `module-rt`）
+  - 蓝牙支持（如 `module-bluez5-discover`）
+- 将 SPA 插件功能与 PipeWire 核心连接。
+- 定义更高层次的行为：如设备发现、会话管理等。
+
+#### **典型模块**
+- **`module-alsa-card`**：通过 SPA `alsa` 插件管理 ALSA 声卡。
+- **`module-bluez5-discover`**：发现蓝牙设备，使用 SPA `bluez5` 插件管理连接。
+- **`module-rt`**：启用实时线程优化。
+- **`module-protocol-pulse`**：支持 PulseAudio 客户端。
+
+---
+
+### **关系与区别**
+
+| **特性**     | **SPA 插件**                       | **模块**                             |
+| ------------ | ---------------------------------- | ------------------------------------ |
+| **职责**     | 底层功能实现，与硬件或系统资源交互 | 系统级功能定义，管理数据流和设备行为 |
+| **功能粒度** | 具体的功能单元（如 ALSA、蓝牙）    | 高级功能组合（如 ALSA 声卡管理）     |
+| **运行方式** | 通过 PipeWire 核心加载和调用       | 动态加载到 PipeWire 系统中           |
+| **依赖关系** | SPA 插件独立存在                   | 模块依赖 SPA 插件提供功能支持        |
+| **开发难度** | 面向底层硬件和 API 的复杂实现      | 面向逻辑的高级行为实现               |
+
+---
+
+### **工作流程示例：管理 ALSA 声卡**
+
+1. **SPA 插件（`alsa`）**  
+   - 直接与 ALSA 驱动交互，获取硬件信息（如设备名、端口）。
+   - 提供音频数据的输入和输出能力。
+2. **模块（`module-alsa-card`）**  
+   - 调用 `alsa` SPA 插件，发现声卡和音频设备。
+   - 将设备注册为 PipeWire 节点，供客户端使用。
+   - 设置逻辑行为（如优先级、默认设备选择）。
+
+---
+
+### **总结**
+
+- **SPA 插件** 是 PipeWire 的底层实现，负责硬件交互和功能封装。
+- **模块** 是 PipeWire 的高层逻辑，结合 SPA 插件实现系统级行为。
+- 两者协作：模块调用 SPA 插件完成实际功能，SPA 插件提供模块所需的硬件支持。
+
+通过这种设计，PipeWire 实现了灵活的架构，既可支持硬件级优化，又能满足高级逻辑需求。
+
+# pipewire配置文件里的context.modules和context.objects关系
+
+在 PipeWire 配置文件中，`context.modules` 和 `context.objects` 是用于定义系统加载和行为的两个关键配置项。它们的作用和相互关系如下：
+
+---
+
+### **1. `context.modules`**
+
+#### **作用**
+- 定义需要加载的 **模块（module）** 列表。
+- 模块是 PipeWire 的功能单元，通常用于实现特定的系统功能，如设备管理、协议支持、实时优化等。
+- ==这些模块在 PipeWire 初始化时加载，并在运行时提供功能支持。==
+
+#### **典型配置格式**
+```ini
+context.modules = [
+    {   name = libpipewire-module-rt
+        args = { }
+        flags = []
+    },
+    {   name = libpipewire-module-alsa-card
+        args = { }
+        flags = []
+    },
+    {   name = libpipewire-module-bluez5-discover
+        args = { }
+        flags = []
+    }
+]
+```
+
+#### **字段说明**
+- `name`：模块的名称，通常是共享库的文件名。
+- `args`：模块的参数，用于控制模块的行为。
+- `flags`：加载选项，如 `no-fail` 表示加载失败时继续执行。
+
+---
+
+### **2. `context.objects`**
+
+#### **作用**
+- 定义需要在运行时创建的 **对象（object）**。
+- 对象是 PipeWire 内部的逻辑单元，用于提供具体的功能和服务，如元数据管理、设备路由、节点管理等。
+- 对象可以由模块创建，也可以单独定义。
+
+#### **典型配置格式**
+```ini
+context.objects = [
+    {   factory = spa-acp
+        args = {
+            card.name = alsa_card.pci-0000_00_1f.3
+        }
+    },
+    {   factory = metadata
+        args = {
+            metadata.name = default
+        }
+    }
+]
+```
+
+#### **字段说明**
+- `factory`：对象工厂名称，用于创建特定类型的对象（例如 `metadata`、`spa-acp`）。
+- `args`：传递给工厂的参数，用于配置对象的行为。
+- 可以动态调整，比如创建特定声卡的元数据管理对象。
+
+---
+
+### **关系**
+
+| 特性         | `context.modules`                            | `context.objects`                              |
+| ------------ | -------------------------------------------- | ---------------------------------------------- |
+| **定义**     | 加载模块（功能单元），模块提供基础能力和接口 | 定义运行时的逻辑对象，使用模块能力完成具体功能 |
+| **加载时间** | 初始化时加载模块                             | 初始化时或运行时动态创建对象                   |
+| **功能粒度** | 系统功能级别（如协议支持、设备发现）         | 逻辑功能级别（如元数据管理、设备定义）         |
+| **依赖关系** | 模块可以独立存在                             | 对象通常依赖于模块提供的功能                   |
+| **典型用途** | 启用 ALSA、蓝牙、PulseAudio 协议支持         | 创建设备、元数据、节点路由等逻辑单元           |
+
+---
+
+### **工作原理示例**
+
+#### **模块与对象协作：ALSA 声卡支持**
+1. 在 `context.modules` 中加载 `libpipewire-module-alsa-card`：
+   - 该模块负责发现 ALSA 声卡，并初始化它们为可用设备。
+2. 在 `context.objects` 中定义一个 ALSA 声卡对象：
+   - 使用 `spa-acp` 工厂创建对象，具体定义声卡的行为参数（如卡名、端口）。
+
+#### **模块与对象的区别和依赖**
+- 模块负责提供底层支持（如设备发现、协议实现）。
+- 对象在模块提供的功能基础上，定义具体的行为和用途。
+
+---
+
+### **总结**
+
+- **`context.modules`**：定义系统的核心功能单元，加载模块实现具体能力。
+- **`context.objects`**：在模块能力的基础上创建具体对象，定义细粒度的逻辑功能。
+- **关系**：模块是功能提供者，对象是功能消费者。对象的定义通常依赖于某些模块的加载和初始化。
+
+
+
+# spa_pod 在pipewire里的作用和原理
+
+在 PipeWire 中，**SPA Pod** 是一种用于数据描述和传输的核心数据结构，设计用于高性能的实时多媒体处理环境。它提供了一个通用框架，用于描述音频、视频、元数据等各种类型的数据，并在模块、插件和客户端之间进行高效的交换。
+
+---
+
+### **SPA Pod 的作用**
+
+1. **通用数据描述**
+   - SPA Pod 提供了一种统一的数据结构，用于描述各种类型的数据（如音频帧、视频帧、属性元数据等）。
+   - 通过定义固定的格式，使不同模块和插件能够互操作。
+
+2. **数据序列化与传输**
+   - SPA Pod 可以将复杂的数据结构序列化为紧凑的二进制形式，方便高效传输。
+   - 通过这种序列化方式，可以在不同线程或进程之间共享数据。
+
+3. **实时性能优化**
+   - 由于设计紧凑和高效，==SPA Pod 适用于实时场景，减少内存分配和拷贝开销。==
+
+4. **数据类型安全**
+   - SPA Pod 定义了严格的类型系统，确保模块和插件在处理数据时避免类型错误。
+
+---
+
+### **SPA Pod 的组成和结构**
+
+SPA Pod 由以下几部分组成：
+
+| **组成部分** | **说明**                                                     |
+| ------------ | ------------------------------------------------------------ |
+| **Header**   | 包含数据的类型、大小等元信息，用于标识 Pod 的结构和内容。    |
+| **Type**     | 定义数据的类型，例如整数、浮点数、数组、对象等。             |
+| **Body**     | 实际的数据内容，根据 Type 的定义决定具体的存储格式。         |
+| **Children** | 某些 Pod 类型（如对象）可以包含嵌套的子 Pod，用于描述复杂数据结构。 |
+
+#### **典型数据类型**
+- **基本类型**
+  - `Int`: 整数
+  - `Float`: 浮点数
+  - `Bool`: 布尔值
+- **复合类型**
+  - `Array`: 数组
+  - `Struct`: 结构体
+  - `Object`: 对象（键值对）
+- **特殊类型**
+  - `Choice`: 多选类型，用于描述选项范围
+  - `Range`: 用于描述数值范围（如采样率、音量等）
+
+---
+
+### **SPA Pod 的使用场景**
+
+1. **描述音频/视频数据**
+   - 例如，使用一个 SPA Pod 描述音频流的参数（采样率、通道数、格式等）。
+
+   ```c
+   struct spa_pod *audio_format = spa_pod_builder_add_object(
+       builder,
+       SPA_TYPE_OBJECT_Format, SPA_PARAM_Format,
+       SPA_FORMAT_mediaType,    SPA_POD_Id(SPA_MEDIA_TYPE_audio),
+       SPA_FORMAT_mediaSubtype, SPA_POD_Id(SPA_MEDIA_SUBTYPE_raw),
+       SPA_FORMAT_AUDIO_rate,   SPA_POD_Int(44100),
+       SPA_FORMAT_AUDIO_channels, SPA_POD_Int(2)
+   );
+   ```
+
+2. **传输元数据**
+   - 可以通过 SPA Pod 传输设备信息、路由规则或自定义的用户数据。
+
+3. **模块与插件通信**
+   - 模块和插件通过 SPA Pod 共享配置和状态，确保数据传输的一致性和高效性。
+
+---
+
+### **SPA Pod 的原理**
+
+1. **内存布局**
+   - SPA Pod 采用紧凑的二进制格式存储，避免了传统结构体的对齐开销，适合直接在共享内存中传输。
+
+2. **序列化和反序列化**
+   - SPA Pod 提供工具将复杂的数据结构序列化为二进制流，以及从二进制流反序列化为可用数据。
+   - 示例：`spa_pod_builder` 用于创建 Pod，`spa_pod_parser` 用于解析 Pod。
+
+3. **类型安全与动态性**
+   - 使用严格的类型定义，同时支持动态数据结构（如数组、对象）。
+   - 例如，解析时可以检查数据的类型是否符合预期。
+
+4. **高效传输**
+   - Pod 数据可以直接通过共享内存传递，无需复制数据，减少实时多媒体处理中的延迟。
+
+---
+
+### **SPA Pod 的优点**
+
+1. **统一性**
+   - 为不同数据类型和模块提供统一的接口，简化了模块和插件的开发。
+
+2. **性能优化**
+   - 设计紧凑，适合实时场景，降低了 CPU 和内存的使用。
+
+3. **灵活性**
+   - 支持复杂的数据结构，可用于描述多种数据类型和参数。
+
+4. **跨组件互操作性**
+   - 在 PipeWire 的 SPA 插件、模块和客户端之间实现无缝的数据交互。
+
+---
+
+### **总结**
+
+**SPA Pod** 是 PipeWire 中实现数据交互的核心，它通过统一的格式和高效的设计，简化了模块之间的数据传输和互操作。无论是描述设备参数还是传输音视频流，SPA Pod 都提供了强大的支持，同时保持了实时性能和类型安全。
+
+# spa pod的序列化和反序列化示例代码
+
+以下是 **SPA Pod** 序列化和反序列化的简单示例代码，用于演示如何构造一个 SPA Pod 并解析其内容。
+
+---
+
+### **示例说明**
+
+我们将构造一个包含音频参数的 SPA Pod，描述如下内容：
+- **媒体类型**：音频
+- **采样率**：44100 Hz
+- **通道数**：2
+- **格式**：PCM（未压缩音频）
+
+之后，我们解析这个 SPA Pod，读取并打印其内容。
+
+---
+
+### **序列化：构造 SPA Pod**
+
+```c
+#include <spa/pod/builder.h>
+#include <spa/pod/parser.h>
+#include <spa/param/audio/format-utils.h>
+#include <stdio.h>
+
+int main() {
+    // 创建缓冲区和构造器
+    uint8_t buffer[1024];
+    struct spa_pod_builder builder = SPA_POD_BUILDER_INIT(buffer, sizeof(buffer));
+
+    // 构造一个音频格式的 SPA Pod
+    struct spa_pod *audio_pod = spa_pod_builder_add_object(
+        &builder,
+        SPA_TYPE_OBJECT_Format, SPA_PARAM_Format, // 类型：格式对象
+        SPA_FORMAT_mediaType,    SPA_POD_Id(SPA_MEDIA_TYPE_audio),   // 媒体类型：音频
+        SPA_FORMAT_mediaSubtype, SPA_POD_Id(SPA_MEDIA_SUBTYPE_raw), // 媒体子类型：未压缩
+        SPA_FORMAT_AUDIO_format, SPA_POD_Id(SPA_AUDIO_FORMAT_S16),  // 音频格式：PCM 16-bit
+        SPA_FORMAT_AUDIO_rate,   SPA_POD_Int(44100),                // 采样率：44100 Hz
+        SPA_FORMAT_AUDIO_channels, SPA_POD_Int(2)                  // 通道数：2
+    );
+
+    printf("Serialized SPA Pod successfully!\n");
+    return 0;
+}
+```
+
+---
+
+### **反序列化：解析 SPA Pod**
+
+在反序列化过程中，我们会解析上述构造的 `audio_pod` 并读取它的内容。
+
+```c
+#include <spa/pod/builder.h>
+#include <spa/pod/parser.h>
+#include <spa/param/audio/format-utils.h>
+#include <stdio.h>
+
+int main() {
+    uint8_t buffer[1024];
+    struct spa_pod_builder builder = SPA_POD_BUILDER_INIT(buffer, sizeof(buffer));
+
+    // 构造一个 SPA Pod
+    struct spa_pod *audio_pod = spa_pod_builder_add_object(
+        &builder,
+        SPA_TYPE_OBJECT_Format, SPA_PARAM_Format,
+        SPA_FORMAT_mediaType,    SPA_POD_Id(SPA_MEDIA_TYPE_audio),
+        SPA_FORMAT_mediaSubtype, SPA_POD_Id(SPA_MEDIA_SUBTYPE_raw),
+        SPA_FORMAT_AUDIO_format, SPA_POD_Id(SPA_AUDIO_FORMAT_S16),
+        SPA_FORMAT_AUDIO_rate,   SPA_POD_Int(44100),
+        SPA_FORMAT_AUDIO_channels, SPA_POD_Int(2)
+    );
+
+    // 解析构造的 SPA Pod
+    uint32_t media_type, media_subtype, audio_format;
+    int32_t rate, channels;
+
+    struct spa_pod_parser parser;
+    spa_pod_parser_pod(&parser, audio_pod); // 初始化解析器
+
+    // 解析字段
+    spa_pod_parser_get_object(
+        &parser,
+        SPA_TYPE_OBJECT_Format, NULL,                    // 确认对象类型
+        SPA_FORMAT_mediaType,    SPA_POD_Id(&media_type),
+        SPA_FORMAT_mediaSubtype, SPA_POD_Id(&media_subtype),
+        SPA_FORMAT_AUDIO_format, SPA_POD_Id(&audio_format),
+        SPA_FORMAT_AUDIO_rate,   SPA_POD_Int(&rate),
+        SPA_FORMAT_AUDIO_channels, SPA_POD_Int(&channels)
+    );
+
+    // 打印解析结果
+    printf("Parsed SPA Pod:\n");
+    printf("  Media Type: %u\n", media_type);
+    printf("  Media Subtype: %u\n", media_subtype);
+    printf("  Audio Format: %u\n", audio_format);
+    printf("  Sample Rate: %d\n", rate);
+    printf("  Channels: %d\n", channels);
+
+    return 0;
+}
+```
+
+---
+
+### **运行结果**
+
+假设你构造和解析的 Pod 正确，程序将打印如下内容：
+
+```plaintext
+Serialized SPA Pod successfully!
+Parsed SPA Pod:
+  Media Type: 1               // 表示音频类型
+  Media Subtype: 1            // 表示未压缩音频
+  Audio Format: 3             // 表示 PCM S16 格式
+  Sample Rate: 44100          // 采样率
+  Channels: 2                 // 通道数
+```
+
+---
+
+### **代码详解**
+
+1. **序列化：构造 Pod**
+   - 使用 `spa_pod_builder_add_object` 方法构造一个对象。
+   - 通过键值对形式定义对象的属性（如采样率、通道数）。
+
+2. **反序列化：解析 Pod**
+   - 使用 `spa_pod_parser` 初始化解析器。
+   - 使用 `spa_pod_parser_get_object` 提取具体的字段值。
+
+3. **效率**
+   - SPA Pod 设计为内存紧凑型，适合实时场景，序列化与反序列化都非常高效。
+
+---
+
+以上代码提供了一个完整的序列化与反序列化示例，可以根据需求扩展以处理更复杂的 Pod 结构。
+
+
+
+# pipewire的配置文件和wireplumber里的配置文件的配置项之间的关系
+
+**PipeWire** 和 **WirePlumber** 是独立的组件，分别处理多媒体流的底层和会话管理，因此它们的配置文件存在一定关系但相互独立。两者的配置项负责不同层面的功能：
+
+---
+
+### **PipeWire 的配置文件**
+
+- **作用**：定义 PipeWire 核心的底层行为，包括：
+  - 管理模块加载（`context.modules`）
+  - 定义音频、视频处理节点的行为
+  - 设置音频、视频流参数（缓冲区大小、优先级等）
+
+- **常见配置文件**：
+  - `pipewire.conf`：主配置文件，用于初始化 PipeWire。
+  - `client.conf` / `client-rt.conf`：配置客户端行为（如应用程序连接的默认设置）。
+  - `*.conf.d/`：扩展配置目录，允许模块化覆盖或添加设置。
+
+- **配置项示例**：
+  - `context.modules`：指定加载的模块，例如 `module-alsa-card`。
+  - `default.clock.rate`：默认音频采样率。
+  - `default.video.width` / `default.video.height`：默认视频分辨率。
+
+---
+
+### **WirePlumber 的配置文件**
+
+- **作用**：会话管理和策略控制，包括：
+  - 设备自动检测和路由
+  - 声卡、麦克风的优先级和默认设备设置
+  - 数据流连接的规则和条件匹配
+
+- **常见配置文件**：
+  - `wireplumber.conf`：主配置文件，控制 WirePlumber 的加载和初始化。
+  - `*.conf.d/`：配置目录，定义规则和策略。
+
+- **配置项示例**：
+  - `context.objects`：定义 WirePlumber 中的对象，例如设备、路由策略。
+  - `node.properties`：定义设备或流的属性，用于匹配路由规则。
+  - `metadata`：用于指定默认输入/输出设备（例如 `default.audio.sink`）。
+
+---
+
+### **两者的关系**
+
+1. **层级划分**
+   - **PipeWire** 负责底层的模块加载和流处理。
+   - **WirePlumber** 负责上层的设备管理和策略。
+
+2. **配置项的交互**
+   - **PipeWire 配置的模块加载** 会影响 **WirePlumber 的对象管理**：
+     - 例如，`pipewire.conf` 中的 `module-alsa-card` 加载后，WirePlumber 会通过会话管理器发现 ALSA 声卡，并为其创建对应的路由规则。
+   - **WirePlumber 的设备管理** 需要 PipeWire 提供底层数据：
+     - 例如，PipeWire 提供的 `alsa_card.hw:0` 设备会被 WirePlumber 自动发现并配置。
+
+3. **设备的默认设置**
+   - PipeWire 提供了设备和节点信息，但默认设备的设置（如 `default.audio.sink`）通常通过 WirePlumber 的 **metadata** 配置完成。
+
+4. **数据流规则的实现**
+   - PipeWire 只处理具体流的传输和格式协商，而路由规则由 WirePlumber 决定。
+   - 例如：
+     - PipeWire 管理设备：`hw:0,0`、`hw:0,1`
+     - WirePlumber 决定优先将音频输出到 `hw:0,1`。
+
+---
+
+### **配置项的联系示例**
+
+#### 示例 1：设置默认播放设备
+
+- **PipeWire 层**
+  ```ini
+  # 在 pipewire.conf 或 client.conf 中设置默认设备名称
+  default.audio.sink = alsa_output.hw_0_1
+  ```
+
+- **WirePlumber 层**
+  
+  ```lua
+  -- wireplumber.conf 或 alsa.lua.d 文件
+  context.objects = {
+      {
+          factory = "metadata",
+          args = {
+              metadata.name = "default",
+              metadata.values = [
+                  { key = "default.audio.sink", value = { name = "alsa_output.hw_0_1" } }
+              ]
+          }
+      }
+  }
+  ```
+
+#### 示例 2：配置设备的属性
+
+- **PipeWire 层**
+  
+  ```ini
+  context.modules = [
+      { name = libpipewire-module-alsa-card args = { device.id = "hw:0" } }
+  ]
+  ```
+  
+- **WirePlumber 层**
+  ```lua
+  -- ALSA 声卡属性匹配
+  properties = {
+      ["device.name"] = "~alsa_card.hw:0",
+      ["device.description"] = "Primary Sound Card"
+  }
+  ```
+
+---
+
+### **总结**
+
+| **特性**       | **PipeWire 配置文件**                         | **WirePlumber 配置文件**               |
+| -------------- | --------------------------------------------- | -------------------------------------- |
+| **层次作用**   | 底层模块加载，提供设备/流接口                 | 上层策略控制，管理设备和路由规则       |
+| **配置影响**   | 设置模块、音频参数、设备属性                  | 设置默认设备、路由规则和优先级         |
+| **联系点**     | 提供模块和设备信息，供 WirePlumber 发现和配置 | 使用 PipeWire 提供的设备和节点进行管理 |
+| **主要配置项** | `context.modules`, `default.audio.sink`       | `context.objects`, `metadata`          |
+
+两者通过 **PipeWire 提供的模块信息** 和 **WirePlumber 的规则配置** 实现无缝协作。
+
+# 感觉pipewire和wireplumber的配置文件都很复杂，我应该怎么找到规律呢？
+
+PipeWire 和 WirePlumber 的配置确实复杂，因为它们设计高度灵活，支持多种设备、场景和应用。为了更高效地理解和使用，可以按以下步骤逐步找到规律：
+
+---
+
+### **1. 理解两者的职责和作用**
+- **PipeWire**：负责底层音频/视频数据流的传输和设备抽象。
+  - 配置重点是 **模块加载** 和 **基础参数**（如采样率、缓冲区大小）。
+- **WirePlumber**：负责会话管理和设备策略。
+  - 配置重点是 **设备优先级**、**路由规则** 和 **默认设备**。
+
+---
+
+### **2. 学习配置文件的通用结构**
+
+- **PipeWire 配置文件**
+  - 主配置文件：`pipewire.conf`（初始化模块、核心参数）。
+  - 客户端配置：`client.conf` / `client-rt.conf`。
+  - 动态扩展配置：`*.conf.d/`。
+  
+- **WirePlumber 配置文件**
+  
+  - 主配置文件：`wireplumber.conf`（加载插件、对象初始化）。
+  - 策略规则：`*.conf.d/`（如设备匹配规则 `alsa.lua.d`）。
+  
+  **特点**：`*.conf.d` 文件目录结构明确，通常按功能分开。
+
+---
+
+### **3. 从简单到复杂，优先解决关键问题**
+
+#### **常见需求和解决方向**
+| **需求**               | **相关配置文件**                  | **重点配置项**                                 |
+| ---------------------- | --------------------------------- | ---------------------------------------------- |
+| 设置默认音频设备       | WirePlumber 配置 (`metadata`)     | `default.audio.sink` 或 `default.audio.source` |
+| 修改采样率或缓冲区大小 | PipeWire 配置 (`pipewire.conf`)   | `default.clock.rate`、`default.clock.quantum`  |
+| 限制某些模块的加载     | PipeWire 配置 (`context.modules`) | 删减不需要的模块，例如 `module-alsa-card`      |
+| 优化某个声卡的路由策略 | WirePlumber (`alsa.lua.d`)        | `context.objects`，属性匹配规则                |
+
+#### **建议步骤**：
+1. **先修改 WirePlumber 的配置**：
+   - 优化设备选择、设置默认播放设备。
+2. **再修改 PipeWire 的配置**：
+   - 优化底层参数或减少无用模块。
+
+---
+
+### **4. 学会调试和验证**
+
+#### **工具推荐**
+| **工具**              | **作用**                             |
+| --------------------- | ------------------------------------ |
+| `pw-cli`              | 查看 PipeWire 的对象和连接状态。     |
+| `spa-acp-tool`        | 检查 ALSA 设备配置和详细参数。       |
+| `pw-top`              | 实时查看 PipeWire 的音频流处理状态。 |
+| `WIREPLUMBER_DEBUG=1` | 启用 WirePlumber 的调试输出日志。    |
+
+#### **调试方法**
+- 逐步修改配置，每次修改后通过上述工具查看是否达到预期效果。
+- 记录修改的参数及影响，找到合适的规律。
+
+---
+
+### **5. 聚焦常见配置模式**
+
+#### **常见设备匹配规则**
+WirePlumber 的 `alsa.lua.d` 中，`context.objects` 提供匹配设备的规则：
+```lua
+context.objects = {
+    {
+        factory = "api.alsa.acp.device",
+        args = {
+            card.name = "alsa_card.hw:0",
+            profile.name = "output:stereo-fallback"
+        }
+    }
+}
+```
+- **规律**：
+  - `card.name` 表示声卡 ID，通常为 `alsa_card.hw:<X>`。
+  - `profile.name` 表示音频配置文件。
+
+#### **设置默认设备**
+通过 `metadata` 设置默认设备：
+```lua
+context.objects = {
+    {
+        factory = "metadata",
+        args = {
+            metadata.name = "default",
+            metadata.values = [
+                { key = "default.audio.sink", value = { name = "alsa_output.hw:0,1" } }
+            ]
+        }
+    }
+}
+```
+- **规律**：
+  - `default.audio.sink` 设置默认播放设备。
+  - `default.audio.source` 设置默认录音设备。
+
+---
+
+### **6. 阅读和参考文档**
+
+#### **文档资源**
+| **资源**                 | **地址**                                                     |
+| ------------------------ | ------------------------------------------------------------ |
+| **PipeWire 官方文档**    | [PipeWire Documentation](https://pipewire.org/docs/)         |
+| **WirePlumber 官方文档** | [WirePlumber GitLab Wiki](https://gitlab.freedesktop.org/pipewire/wireplumber) |
+| **PipeWire GitHub 项目** | [PipeWire GitHub](https://github.com/PipeWire/pipewire)      |
+| **配置文件示例**         | `/usr/share/pipewire` 和 `/usr/share/wireplumber`            |
+
+---
+
+### **7. 使用经验总结**
+
+- **模块化配置**：
+  每次只修改一个配置文件中的一个部分，避免相互干扰。
+  
+- **从功能出发**：
+  优先明确需求，逐步找到影响该功能的关键配置项。
+
+- **记录调试过程**：
+  记录每次修改和对应结果，积累经验。
+
+通过这些方法，能帮助你快速找到配置规律，逐步掌握 PipeWire 和 WirePlumber 的使用技巧。
+
+# struct spa_type_info作用
+
+`struct spa_type_info` 是 PipeWire 中定义的一种数据结构，用于描述和管理 **类型信息**。它的主要作用是为 **类型系统** 提供元信息支持，便于系统和插件在运行时对类型进行识别、转换和操作。
+
+---
+
+### **关键字段与作用**
+
+| **字段** | **类型**                       | **作用**                                                   |
+| -------- | ------------------------------ | ---------------------------------------------------------- |
+| `name`   | `const char *`                 | 类型的名称，用于标识该类型，例如 `"Spa:Enum:Direction"`。  |
+| `parent` | `uint32_t`                     | 父类型的 ID，用于建立类型层级关系。                        |
+| `value`  | `uint32_t`                     | 当前类型的值或标识符，例如枚举值、ID 值等。                |
+| `values` | `const struct spa_type_info *` | 一个嵌套的子类型数组，用于定义当前类型下的子类型或枚举值。 |
+
+---
+
+### **主要用途**
+
+1. **类型定义与扩展**  
+   - 使用 `spa_type_info` 来描述和扩展 SPA 类型（如音频设备、流方向等），支持类型的动态扩展和识别。
+
+2. **类型层次化管理**  
+   - 通过 `parent` 字段描述类型的继承关系，例如从通用类型派生出特定类型。
+
+3. **类型值的动态查询**  
+   - 借助 `values` 字段定义子类型（或枚举），实现类型树的递归访问。
+
+4. **插件和模块的兼容性**  
+   - 模块通过 `spa_type_info` 确保与核心框架共享统一的类型信息。
+
+---
+
+### **示例：描述音频流方向的类型**
+
+```c
+static const struct spa_type_info spa_type_direction[] = {
+    { SPA_DIRECTION_INPUT,  SPA_ID_INVALID, "Spa:Enum:Direction:Input",  NULL },
+    { SPA_DIRECTION_OUTPUT, SPA_ID_INVALID, "Spa:Enum:Direction:Output", NULL },
+    { 0,                    0,             NULL,                        NULL }
+};
+```
+
+#### **字段含义**：
+- **`SPA_DIRECTION_INPUT`**: 定义了一个输入方向类型。
+- **`SPA_DIRECTION_OUTPUT`**: 定义了一个输出方向类型。
+- **`parent` 为 `SPA_ID_INVALID`**: 表明这是顶级类型，没有父类型。
+- **`NULL`**: 没有嵌套子类型。
+
+---
+
+### **配合使用的 API**
+
+1. **查询类型信息**：
+   - 使用 `spa_debug_type_find()` 在类型数组中查找类型。
+2. **获取类型值**：
+   - 使用 `spa_type_info` 中的 `value` 字段获取类型标识符。
+3. **动态解析类型层次**：
+   - 遍历 `values` 字段，递归构建类型树。
+
+---
+
+### **总结**
+
+`struct spa_type_info` 是 PipeWire 的核心类型系统的基础，提供了**类型描述**、**层级关系管理** 和 **扩展能力**。通过这种数据结构，可以让 PipeWire 框架中的模块和插件动态加载和识别统一的类型定义，从而实现高扩展性和兼容性。
+
+# pipewire的module-protocol介绍
+
+`module-protocol` 是 PipeWire 中的一个核心模块，用于支持 **通信协议**。它定义了客户端与 PipeWire 服务器之间的数据交互方式，是 PipeWire 运行时系统的关键组成部分。
+
+---
+
+### **功能概述**
+1. **定义通信协议**：
+   - 管理客户端与服务器之间的消息传递（如控制命令、数据流管理）。
+   
+2. **支持多种协议**：
+   - `module-protocol-native`：PipeWire 默认的高效本地通信协议。
+   - 其他自定义或第三方协议（如 HTTP/WebSocket）可通过插件扩展实现。
+
+3. **动态加载**：
+   - PipeWire 在初始化时通过 `context.modules` 加载该模块，配置和使用的协议取决于具体需求。
+
+---
+
+### **核心模块类型**
+
+| **模块名称**             | **功能描述**                                                 |
+| ------------------------ | ------------------------------------------------------------ |
+| `module-protocol-native` | 默认的本地通信协议，基于 UNIX 套接字和共享内存，提供高效的 IPC（进程间通信）。 |
+| `module-protocol-tcp`    | 支持通过 TCP 网络通信，主要用于远程访问（实验性）。          |
+
+---
+
+### **`module-protocol-native` 的工作机制**
+1. **初始化**：
+   - 在 `pipewire.conf` 或动态加载的 `*.conf.d` 文件中配置。
+   - 负责创建 UNIX 套接字，用于客户端连接。
+
+2. **通信模型**：
+   - 基于事件驱动的机制，客户端通过套接字发送命令或接收事件。
+   - 数据流部分通过共享内存传输（减少数据拷贝开销）。
+
+3. **功能支持**：
+   - 客户端注册。
+   - 资源管理（如创建节点、链路）。
+   - 事件广播（如设备变化通知）。
+
+---
+
+### **配置方法**
+
+#### **PipeWire 配置文件（pipewire.conf）**
+默认加载 `module-protocol-native`：
+```ini
+context.modules = [
+    { name = libpipewire-module-protocol-native }
+]
+```
+
+#### **动态配置文件（client.conf.d 或 server.conf.d）**
+指定通信参数（如监听地址、共享内存路径）：
+```ini
+context.properties = {
+    "pipewire.protocol-native.address" = "unix:/tmp/pipewire-socket"
+    "pipewire.protocol-native.sharedmem-size" = 8388608
+}
+```
+
+---
+
+### **常见参数说明**
+
+| **参数名称**                              | **描述**                                            | **默认值**           |
+| ----------------------------------------- | --------------------------------------------------- | -------------------- |
+| `pipewire.protocol-native.address`        | 定义通信的套接字地址，支持 `unix:` 或 `tcp:` 格式。 | `unix:/run/pipewire` |
+| `pipewire.protocol-native.sharedmem-size` | 指定共享内存的大小，用于传输数据块。                | `8388608`（8MB）     |
+| `pipewire.protocol-native.max-clients`    | 最大客户端数量限制。                                | 无限制               |
+| `pipewire.protocol-native.keepalive`      | 启用或禁用客户端保活功能（防止空闲连接被关闭）。    | `true`               |
+
+---
+
+### **调试与验证**
+
+#### **查看模块加载状态**
+使用 `pw-cli`：
+```bash
+pw-cli info
+```
+查找 `module-protocol-native` 是否成功加载。
+
+#### **启用调试日志**
+在 `pipewire.conf` 中增加：
+```ini
+context.log.level = 4
+```
+观察日志输出，确认通信协议的工作情况。
+
+---
+
+### **扩展与开发**
+
+如果需要支持其他通信协议（如 WebSocket 或自定义协议）：
+1. **开发自定义模块**：
+   - 使用 PipeWire 插件框架，扩展 `module-protocol`。
+   - 示例：基于 TCP 的远程访问模块 `module-protocol-tcp`。
+
+2. **动态加载模块**：
+   - 将自定义模块配置到 `context.modules` 中。
+
+---
+
+### **总结**
+`module-protocol` 是 PipeWire 用于客户端与服务器通信的核心模块，默认使用 `module-protocol-native` 提供高效的本地 IPC 能力。通过灵活配置，可以调整其通信参数以适应不同的性能和功能需求，同时支持扩展开发自定义协议模块，实现更复杂的音频/视频处理场景。
+
+# 在pipewire.conf和wireplumber.conf里都有context.modules，那具体会怎样？
+
+在 PipeWire 和 WirePlumber 的配置中同时存在 `context.modules` 时，会按照以下规则运行和加载模块：
+
+---
+
+### **1. 加载顺序**
+
+- **PipeWire 的 `context.modules`**：  
+  首先由 PipeWire 守护进程加载，这是 PipeWire 核心框架初始化的一部分。它主要负责与 SPA 插件、协议模块以及基础资源的交互。
+
+- **WirePlumber 的 `context.modules`**：  
+  WirePlumber 是 PipeWire 的会话管理器，它在 PipeWire 核心完成加载后启动，并加载自己的 `context.modules`。这些模块通常用于扩展或管理会话层面的功能。
+
+---
+
+### **2. 加载的模块功能区分**
+
+| **来源**               | **主要用途**                                                 |
+| ---------------------- | ------------------------------------------------------------ |
+| **PipeWire 的模块**    | 核心功能模块，如协议支持、设备管理、数据流路由和处理。       |
+| **WirePlumber 的模块** | 高层会话管理模块，如设备的策略设置、用户会话行为管理（优先级、自动切换）。 |
+
+---
+
+### **3. 配置冲突处理**
+
+如果两者的 `context.modules` 中指定了相同的模块，会按以下逻辑处理：
+1. **模块名称唯一性**：模块加载时以名称为唯一标识，重复加载同名模块会被忽略。
+2. **优先级**：PipeWire 的模块会先加载，其设置和资源初始化会优先生效；WirePlumber 的模块可以补充未加载的功能模块。
+
+---
+
+### **4. 典型模块的区别**
+
+| **模块名称**                         | **PipeWire 配置**                                 | **WirePlumber 配置**                                        |
+| ------------------------------------ | ------------------------------------------------- | ----------------------------------------------------------- |
+| `libpipewire-module-protocol-native` | PipeWire 核心协议模块，用于客户端与服务端通信。   | 不需要（由 PipeWire 提供，WirePlumber 不重复加载）。        |
+| `libwireplumber-module-logind`       | 不存在 PipeWire 中。                              | WirePlumber 用于处理用户会话管理（如登录/注销时管理设备）。 |
+| `libpipewire-module-rt`              | PipeWire 中启用实时调度，用于音频流的低延迟处理。 | 不需要（WirePlumber 依赖 PipeWire 已加载此模块）。          |
+
+---
+
+### **5. 配置示例**
+
+#### **PipeWire 的 `pipewire.conf`**
+```ini
+context.modules = [
+    { name = libpipewire-module-protocol-native args = {} }
+    { name = libpipewire-module-rt args = { nice.level = -11 } }
+    { name = libpipewire-module-alsa-sink args = { device = "hw:0,0" } }
+]
+```
+
+#### **WirePlumber 的 `wireplumber.conf`**
+```ini
+context.modules = [
+    { name = libwireplumber-module-logind args = {} }
+    { name = libwireplumber-module-reserve-device args = {} }
+]
+```
+
+---
+
+### **6. 配合运行的效果**
+
+- PipeWire 的模块负责核心功能和协议支持，例如与 ALSA 的交互、数据流的基础处理。
+- WirePlumber 的模块提供策略和管理层支持，例如设置默认设备、管理多设备的切换规则。
+
+最终，两者的模块加载协同作用，PipeWire 提供基础，WirePlumber 完善用户行为和策略层面功能。
+
+---
+
+### **7. 调试和验证**
+1. **检查加载的模块**：
+   使用 `pw-cli info` 查看已加载的模块列表，分别属于 PipeWire 和 WirePlumber。
+
+2. **启用日志**：
+   配置 `log.level`，分别观察 PipeWire 和 WirePlumber 的日志输出。
+
+3. **修改模块配置**：
+   如果某模块需要调整参数，优先在 `pipewire.conf` 或 `wireplumber.conf` 中修改对应模块的参数，避免重复定义。
+
+# struct pw_proxy
+
+在 PipeWire 中，`struct pw_proxy` 是一个关键的数据结构，代表了客户端与远程对象（如节点、设备、设备端口等）之间的抽象连接。它允许客户端与 PipeWire 服务器上的对象交互，管理对象的状态，以及监听事件。
+
+---
+
+### **作用**
+1. **通信代理**：
+   - 负责在客户端和服务器之间进行通信。  
+   - 将客户端发出的命令转发给服务器对象，并处理服务器的响应或事件。
+
+2. **资源抽象**：
+   - 每个 `pw_proxy` 对应一个远程的 PipeWire 对象（如设备、节点、链接）。
+   - 提供接口来操作这些对象，如设置属性、发送方法调用。
+
+3. **事件监听**：
+   - `pw_proxy` 可以监听与其绑定对象的事件，如属性变化、状态更新等。
+
+4. **生命周期管理**：
+   - 通过引用计数机制，确保代理的创建、使用和销毁的安全性。
+
+---
+
+### **关键字段**
+`struct pw_proxy` 的主要字段及其功能：
+
+| **字段名**   | **作用**                                             |
+| ------------ | ---------------------------------------------------- |
+| `id`         | 代理的唯一标识符，与服务器端的对象对应。             |
+| `type`       | 表示代理对象的类型（如节点、设备）。                 |
+| `properties` | 代理对象的属性，用于存储对象的配置信息或元数据。     |
+| `events`     | 用于监听代理对象的事件，例如状态变化、数据到达等。   |
+| `client`     | 指向客户端的上下文，用于与服务器通信。               |
+| `user_data`  | 用户自定义数据，可用于存储与此代理相关的应用层信息。 |
+
+---
+
+### **工作原理**
+1. **代理创建**：
+   - 当客户端需要与服务器交互时，会通过 API 创建一个 `pw_proxy` 对象，例如 `pw_core_proxy_create_object`。
+   - 代理会自动绑定到服务器上的某个对象，并为该对象生成唯一的 `id`。
+
+2. **方法调用**：
+   - 使用代理调用远程对象的方法，例如设置属性、启用节点。
+   - 这些方法最终会被序列化为消息，通过协议发送到服务器。
+
+3. **事件处理**：
+   - 服务器上的对象状态变化时，事件会通过代理返回给客户端。
+   - 客户端可以注册回调函数来处理这些事件。
+
+4. **销毁代理**：
+   - 当客户端不再需要某对象时，可以销毁对应的 `pw_proxy`，释放资源。
+
+---
+
+### **示例代码**
+
+#### **创建并使用 `pw_proxy`**
+```c
+#include <pipewire/pipewire.h>
+
+// 事件回调函数
+static void on_proxy_event(void *data, const struct pw_proxy_events *events) {
+    printf("Proxy event triggered\n");
+}
+
+int main() {
+    struct pw_context *context;
+    struct pw_core *core;
+    struct pw_proxy *proxy;
+
+    // 初始化 PipeWire
+    pw_init(NULL, NULL);
+    context = pw_context_new(NULL, NULL, 0);
+    core = pw_core_new(context, NULL, 0);
+
+    // 创建代理
+    proxy = pw_core_proxy_create_object(core,
+                                        "PipeWire:Interface:Node",  // 远程对象类型
+                                        PW_VERSION_NODE,            // 版本
+                                        NULL,                       // 属性
+                                        0                           // 权限标志
+    );
+
+    // 设置事件监听
+    pw_proxy_add_listener(proxy, &on_proxy_event, NULL);
+
+    // 销毁资源
+    pw_proxy_destroy(proxy);
+    pw_core_destroy(core);
+    pw_context_destroy(context);
+
+    return 0;
+}
+```
+
+---
+
+### **常见用途**
+1. **与设备交互**：
+   - 通过 `pw_proxy` 操作音频设备（如设置参数、调整音量）。
+
+2. **管理节点**：
+   - 用于创建、启动、停止数据处理节点。
+
+3. **动态路由**：
+   - 监听事件，动态调整音频/视频流的路径。
+
+4. **扩展功能**：
+   - 开发自定义客户端，通过 `pw_proxy` 与 PipeWire 核心进行深度交互。
+
+---
+
+### **总结**
+`struct pw_proxy` 是 PipeWire 客户端与服务器之间通信的核心桥梁，抽象了远程对象的访问逻辑，简化了客户端的开发。它提供了一个灵活的机制，用于调用远程方法、监听事件，并管理对象的生命周期，是 PipeWire 客户端开发中不可或缺的基础组件。
+
+# pipewire的event工作机制
+
+在 PipeWire 中，事件机制用于处理和管理系统中的异步事件。这些事件通常与流媒体的状态变化、设备状态变化、客户端请求等相关。PipeWire 的事件机制是基于其内建的事件循环和消息传递机制来工作的。下面是 PipeWire 事件机制的工作原理和关键组成部分：
+
+### **1. PipeWire 事件循环（Event Loop）**
+
+PipeWire 使用事件循环机制来管理所有的异步事件。事件循环是一个反复执行的过程，它会检查是否有事件发生，并且在有事件时处理它们。它主要通过 **`pw_main_loop`** 这一接口来执行。
+
+### **2. 事件和信号**
+
+在 PipeWire 中，事件通常以信号的形式来传递。通过信号，可以实现不同模块或组件之间的通信。当某些条件满足时，系统会生成一个事件，并将其传递给相应的监听者。
+
+- **事件类型**：例如，设备的添加、移除，流的状态变化等。
+- **事件的生成**：当某个动作（如音频流的打开或关闭）发生时，相应的模块会生成一个事件，并将其插入事件队列。
+
+### **3. 事件监听（Event Listener）**
+
+在 PipeWire 中，客户端或模块可以注册事件监听器，来接收感兴趣的事件。这些监听器会根据不同的事件类型执行回调函数。事件监听的注册通常是通过 `spa_hook` 或类似的机制实现的。
+
+#### **示例代码**：
+```c
+#include <pipewire/pipewire.h>
+
+static void on_event(void *data, struct pw_context *context, struct pw_proxy *proxy, uint32_t id) {
+    printf("Received event %d on proxy %p\n", id, proxy);
+}
+
+void register_event_listener(struct pw_context *context) {
+    struct pw_proxy *proxy = ...; // 获取 PipeWire proxy
+    struct spa_hook hook;
+
+    // 注册事件监听器
+    pw_proxy_add_listener(proxy, &hook, on_event, NULL);
+}
+```
+
+### **4. 事件的传递和处理**
+
+- **生成事件**：例如，当音频流的状态变化时（如 `stream started`, `stream paused`），PipeWire 会生成一个事件。
+- **事件队列**：事件会被放入事件队列中，等待处理。事件的优先级、处理的时机等会根据具体的实现细节而有所不同。
+- **事件分发**：事件队列中的事件会被分发给已经注册了监听器的模块或客户端。事件监听器会在收到事件时触发相应的回调函数。
+
+### **5. 事件的处理顺序**
+
+PipeWire 的事件系统通常是基于优先级来处理的，事件的处理顺序和事件的优先级有关。处理顺序的设计可以保证某些重要事件（如设备连接、断开等）会优先处理。
+
+### **6. 事件与线程**
+
+在 PipeWire 中，事件通常是异步处理的，因此需要与主线程或专门的工作线程配合使用。事件的处理往往会在主事件循环中执行，而不会阻塞当前的线程。这种方式可以提高系统的响应性和效率。
+
+### **7. PipeWire 的事件与 SPA（Simple Plugin API）**
+
+PipeWire 的事件机制也与 SPA (Simple Plugin API) 紧密相关。SPA 允许不同的插件模块通过标准化的接口进行通信，包括事件的发送和接收。具体来说，事件通常是通过 `spa_hook` 或其他 SPA 相关的回调机制传递的。
+
+- 例如，`spa_hook` 被用来监听和处理来自 SPA 插件或代理的事件。
+  
+#### **SPA 事件机制**：
+```c
+struct spa_hook hook;
+spa_hook_init(&hook, object, &callbacks, NULL);
+```
+
+### **8. 事件的类型**
+
+PipeWire 支持多种类型的事件，这些事件通常是由不同的模块或对象产生的。常见的事件类型包括：
+
+- **设备相关事件**：如设备添加、移除、设备状态变化等。
+- **流媒体事件**：如流的开始、停止、状态变化（例如播放、暂停、恢复等）。
+- **时钟事件**：涉及同步的时间事件，通常用于音视频同步。
+- **客户端事件**：涉及与客户端的交互，如音频播放、录制等。
+
+### **总结**
+
+PipeWire 的事件机制通过事件循环和事件监听来处理异步事件。这些事件涵盖了设备状态变化、流媒体控制、时钟同步等内容。通过事件监听器，模块或客户端可以在发生特定事件时得到通知并执行相应的处理。事件处理机制保证了 PipeWire 系统的高效性、响应性以及灵活性。
+
+# pw_registry
+
+在 PipeWire 中，`pw_registry` 是一个非常重要的组件，
+
+它负责管理和维护 PipeWire 系统中的==对象注册表。==
+
+通过 `pw_registry`，客户端可以查询和访问 PipeWire 中的各种资源、设备、流、端口、协议等。`pw_registry` 的作用可以从以下几个方面进行理解：
+
+### **1. 管理对象注册**
+
+PipeWire 中的所有对象（例如：音频设备、视频设备、流、端口等）都需要通过 `pw_registry` 来进行注册。每当一个新的对象被创建时，它都会向 `pw_registry` 注册，这样其他客户端可以通过 `pw_registry` 来访问这些对象。
+
+### **2. 对象的发现与监听**
+
+客户端可以通过 `pw_registry` 来发现 PipeWire 系统中的所有对象，包括动态地加入的设备和流。`pw_registry` 提供了 API 来查询当前注册的对象，并且允许客户端监听某些对象的注册或注销事件。
+
+例如，客户端可以监听某个特定类型的设备（如音频输出设备）的注册事件，以便在设备加入或移除时做出响应。
+
+### **3. 访问 PipeWire 对象**
+
+通过 `pw_registry`，客户端能够访问 PipeWire 中的各种对象（如 `pw_stream`、`pw_device`、`pw_port` 等）。这些对象可以用来进行媒体流的处理、设备的配置、资源的管理等操作。
+
+### **4. 管理客户端与对象的连接**
+
+客户端可以通过 `pw_registry` 来获取与它关联的对象（如其创建的流或设备）并对其进行操作。`pw_registry` 通过对象的 ID（即对象的唯一标识符）来管理这些对象，并确保客户端能正确地引用和操作这些对象。
+
+### **5. 注册事件回调**
+
+`pw_registry` 支持事件回调机制，允许客户端监听对象的注册、注销以及状态变化等事件。通过回调函数，客户端可以在 PipeWire 中的对象发生变化时得到通知，从而做出相应的处理。
+
+例如，当新的音频设备被注册时，客户端可以通过 `pw_registry` 监听到这个事件，并通过回调函数获取该设备的信息。
+
+### **6. `pw_registry` 典型使用场景**
+
+- **设备发现**：客户端通过 `pw_registry` 发现当前系统中可用的音频设备。
+- **流管理**：客户端通过 `pw_registry` 注册音频流并管理流的创建、销毁等。
+- **端口操作**：端口（例如音频输入/输出端口）通过 `pw_registry` 来暴露给客户端进行连接和管理。
+- **服务通信**：客户端可以通过 `pw_registry` 和 PipeWire 服务通信，获取或发布信息。
+
+### **示例代码**
+
+以下是一个简单的 `pw_registry` 使用示例：
+
+```c
+#include <pipewire/pipewire.h>
+
+static void on_object_added(void *data, struct pw_registry *registry, uint32_t id, uint32_t type, uint32_t version) {
+    printf("Object added: id=%u, type=%u\n", id, type);
+}
+
+static void on_object_removed(void *data, struct pw_registry *registry, uint32_t id) {
+    printf("Object removed: id=%u\n", id);
+}
+
+int main() {
+    struct pw_context *context;
+    struct pw_registry *registry;
+    struct spa_hook registry_hook;
+
+    // 创建 PipeWire 上下文
+    context = pw_context_new(NULL, NULL, 0);
+
+    // 获取 registry 对象
+    registry = pw_context_get_registry(context);
+
+    // 注册事件回调
+    pw_registry_add_listener(registry, &registry_hook, 
+                              &(struct pw_registry_events){
+                                  PW_VERSION_REGISTRY_EVENTS,
+                                  .object_added = on_object_added,
+                                  .object_removed = on_object_removed
+                              }, NULL);
+
+    // 启动 PipeWire 事件循环
+    pw_context_run(context);
+
+    return 0;
+}
+```
+
+### **总结**
+
+- `pw_registry` 主要用于管理和查询 PipeWire 系统中的对象。
+- 它提供了对象的注册、查询、监听和回调机制，帮助客户端与 PipeWire 系统进行交互。
+- 通过 `pw_registry`，客户端可以发现设备、流、端口等资源，并对其进行操作。
+
+# pw_registry_events 这个结构体只有一个global和一个global_remove的函数指针
+
+您说得对，`pw_registry_events` 结构体主要是用于定义 `pw_registry` 的事件回调函数，它确实只有两个关键的回调函数指针：`global` 和 `global_remove`。这两个回调分别用于处理对象的注册（添加）和注销（移除）事件。通过这两个回调，客户端能够响应 PipeWire 系统中对象的动态变化。
+
+### **`pw_registry_events` 结构体**
+
+`pw_registry_events` 是一个包含事件回调函数指针的结构体，定义了以下两个主要的回调：
+
+- **`global`**：当新的全局对象（如设备、流等）注册到 PipeWire 时，会调用这个回调。
+- **`global_remove`**：当某个全局对象被移除时，会调用这个回调。
+
+```c
+struct pw_registry_events {
+    uint32_t version;  // 事件接口的版本
+    void (*global)(void *data, struct pw_registry *registry, uint32_t id, uint32_t permissions, const char *type, const char *name);
+    void (*global_remove)(void *data, struct pw_registry *registry, uint32_t id);
+};
+```
+
+### **解释这两个回调**
+
+1. **`global` 回调**：
+   - **目的**：当 PipeWire 中的某个全局对象被注册时，`global` 回调会被触发。这个回调使得客户端能够知道哪些对象已经加入 PipeWire 系统。
+   - **参数**：
+     - `data`：传递给 `pw_registry_add_listener` 时的附加数据。
+     - `registry`：调用回调的 `pw_registry` 对象。
+     - `id`：注册对象的 ID，用于唯一标识该对象。
+     - `permissions`：对象的权限，可能会影响客户端是否可以访问该对象。
+     - `type`：对象的类型，如 "device" 或 "stream" 等。
+     - `name`：对象的名称。
+
+2. **`global_remove` 回调**：
+   - **目的**：当 PipeWire 中的某个全局对象被注销时，`global_remove` 回调会被触发。这个回调使得客户端能够在对象被移除时做出反应。
+   - **参数**：
+     - `data`：传递给 `pw_registry_add_listener` 时的附加数据。
+     - `registry`：调用回调的 `pw_registry` 对象。
+     - `id`：被移除对象的 ID。
+
+### **如何使用这些回调**
+
+客户端可以注册一个事件监听器，通过 `pw_registry_add_listener` 来指定这些回调，并且当 PipeWire 中的对象被添加或移除时，事件回调将会被触发。例如：
+
+```c
+#include <pipewire/pipewire.h>
+
+static void on_global_added(void *data, struct pw_registry *registry, uint32_t id, uint32_t permissions, const char *type, const char *name) {
+    printf("Global object added: id=%u, type=%s, name=%s\n", id, type, name);
+}
+
+static void on_global_removed(void *data, struct pw_registry *registry, uint32_t id) {
+    printf("Global object removed: id=%u\n", id);
+}
+
+int main() {
+    struct pw_context *context;
+    struct pw_registry *registry;
+    struct spa_hook registry_hook;
+
+    // 创建 PipeWire 上下文
+    context = pw_context_new(NULL, NULL, 0);
+
+    // 获取 registry 对象
+    registry = pw_context_get_registry(context);
+
+    // 注册事件回调
+    pw_registry_add_listener(registry, &registry_hook, 
+                              &(struct pw_registry_events){
+                                  PW_VERSION_REGISTRY_EVENTS,
+                                  .global = on_global_added,
+                                  .global_remove = on_global_removed
+                              }, NULL);
+
+    // 启动 PipeWire 事件循环
+    pw_context_run(context);
+
+    return 0;
+}
+```
+
+### **总结**
+
+`pw_registry_events` 结构体主要用于定义与 PipeWire 注册的全局对象相关的事件回调。它的两个回调：
+
+1. **`global`**：处理对象的注册事件。
+2. **`global_remove`**：处理对象的移除事件。
+
+这使得客户端可以监听 PipeWire 中的对象动态变化，及时响应设备、流等的添加和删除。通过这些回调，客户端可以获得 PipeWire 系统的实时更新，进而进行相应的操作。
+
+# pw_core_sync 作用
+
+
+
+# pipewire在没有udev的时候，可以正常工作吗？蓝牙连接断开的时候，怎么处理？
+
+### **PipeWire 在没有 udev 的情况下是否可以正常工作？**
+
+PipeWire 在没有 `udev` 的情况下 **仍然可以工作**，但会失去一些依赖于 `udev` 的功能。具体来说，`udev` 主要用于以下功能：
+
+1. **自动检测硬件设备**：
+   `udev` 用于自动检测和管理系统中的硬件设备，包括音频设备、蓝牙设备、USB 设备等。当 PipeWire 启动时，它依赖 `udev` 来监测设备变化（如音频设备的插拔、蓝牙设备的连接等），并自动创建相应的设备节点。
+
+2. **设备节点的管理**：
+   `udev` 负责管理设备节点（如 `/dev/snd/` 下的设备节点），并根据硬件事件动态更新这些节点。如果没有 `udev`，PipeWire 可能无法动态发现和管理设备，也就不能及时响应硬件的插拔或连接事件。
+
+3. **蓝牙设备的自动发现**：
+   对于蓝牙音频设备，`udev` 通常与蓝牙子系统（如 `bluez`）协同工作，自动为已连接的蓝牙设备创建必要的设备节点。如果没有 `udev`，PipeWire 可能需要通过其他机制手动配置或处理设备节点，缺少动态发现功能。
+
+### **没有 udev 的情况下的工作方式**
+
+- **静态配置**：没有 `udev` 时，你需要手动配置设备文件，或者依赖于其他方式来告诉 PipeWire 哪些设备是可用的。你需要确保设备节点已经正确创建并配置好，PipeWire 可以通过配置文件或其他手段获取设备信息。
+  
+- **硬件热插拔**：没有 `udev`，PipeWire 就无法自动感知硬件插拔事件，因此对于设备插入、移除等事件的响应会受到限制。
+
+- **蓝牙连接处理**：如果蓝牙设备通过蓝牙堆栈（如 `bluez`）连接，PipeWire 仍然可以通过 `bluez` 提供的接口来管理蓝牙音频设备。即使没有 `udev`，蓝牙设备仍然可以通过其他方式连接和管理，只是缺少了自动化的硬件事件处理。
+
+### **蓝牙连接端口的处理**
+
+在 PipeWire 中，蓝牙设备（例如使用 A2DP 或 HFP 协议的设备）通常通过以下几个步骤进行处理：
+
+1. **`bluez` 与 PipeWire 的协作**：
+   PipeWire 在处理蓝牙设备时，通常依赖 `bluez`（蓝牙协议栈）。`bluez` 提供了与蓝牙设备的通信接口，并负责管理设备的连接。即使没有 `udev`，`bluez` 仍然可以通过其他方式（例如直接通过 DBus）与 PipeWire 协同工作，允许 PipeWire 访问已连接的蓝牙设备。
+
+2. **蓝牙音频配置**：
+   - `bluez` 会通过 DBus 提供蓝牙音频设备的信息，PipeWire 可以根据这些信息创建相应的音频流和端口。
+   - 蓝牙音频设备通常通过 A2DP 配置文件来定义音频流的源和接收端，PipeWire 会在此基础上管理音频流。
+
+3. **端口和设备连接**：
+   在没有 `udev` 的情况下，蓝牙设备的端口连接（例如蓝牙音频输入和输出端口）仍然可以通过 `bluez` 和 PipeWire 的结合来完成。端口的连接和断开（如将蓝牙耳机设置为音频输出设备）通过 PipeWire 的端口管理和 `bluez` 提供的接口来处理。
+
+4. **手动配置**：
+   如果没有 `udev` 自动管理设备，可以通过手动配置 PipeWire 和 `bluez` 来确保蓝牙设备的正确使用。你可能需要手动指定蓝牙设备的设备文件，或者通过脚本配置 PipeWire 如何与蓝牙设备交互。
+
+### **总结**
+
+- **PipeWire 在没有 `udev` 的情况下仍能工作**，但会缺少自动检测硬件和设备动态变化的功能，特别是在设备插拔、硬件管理、蓝牙设备连接等方面。
+- **蓝牙设备的连接和管理**依赖于 `bluez` 和 PipeWire 的集成。在没有 `udev` 的情况下，蓝牙设备仍然可以通过 DBus 等机制进行管理，但需要手动配置和管理设备节点以及音频流。
+- **缺少 `udev` 的自动管理**，你需要依赖于其他工具或手动配置，确保硬件设备的正确管理和 PipeWire 能够正常与之交互。
 
 # 参考资料
 

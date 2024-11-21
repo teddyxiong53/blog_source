@@ -71,7 +71,7 @@ PipeWire看起来很有前景，值得关注一下。
 
 
 
-**对于大部分应用，最佳的选择依然是用ALSA的API。**
+## **对于大部分应用，最佳的选择依然是用ALSA的API。**
 
 
 
@@ -137,11 +137,15 @@ ALSA pulse插件会生成名为`pulse`的PCM设备，且这pulse会被设为默�
 
 
 
-交叉模式，interleaved。就是左右声道数据交叉存储，而不是先全部放左声道，然后全部放右声道的方式。
+# 交叉模式
+
+interleaved。就是左右声道数据交叉存储，而不是先全部放左声道，然后全部放右声道的方式。
 
 snd_pcm_readi，这个i就是表示interleaved模式。
 
 
+
+# xrun
 
 xrun包括两种情况：
 
@@ -153,9 +157,51 @@ underrun：就是播放的时候出现。应用层写得快，硬件层来不及
 
 EPIPE错误表示overrun错误。
 
+## overrun和underrun怎么理解记忆
+
+在 ALSA 或音频开发中，**overrun** 和 **underrun** 是常见的术语，指的是音频缓冲区在数据流处理中出现的问题。以下是它们的含义和简单记忆方法：
+
+---
+
+| 术语         | 描述                                                         | 记忆技巧                                            |
+| ------------ | ------------------------------------------------------------ | --------------------------------------------------- |
+| **Overrun**  | **缓冲区满了**：应用程序没来得及从缓冲区读取数据，导致新数据无法写入，旧数据被覆盖或丢失。 | **"Over" 意为过多**，想象“数据堆积如山，溢出来了”。 |
+| **Underrun** | **缓冲区空了**：应用程序没来得及往缓冲区写入数据，导致音频设备没数据播放，可能出现“卡顿”或静音。 | **"Under" 意为不足**，想象“数据用光了，无法维持”。  |
+
+---
+
+### 图解帮助记忆
+
+1. **Overrun**
+   - 缓冲区太满 → 应用程序动作太慢，数据堵塞。
+   - 类比：水桶快满了，但水龙头还在流，水溢出。
+
+2. **Underrun**
+   - 缓冲区没数据 → 应用程序动作太慢，数据不足。
+   - 类比：水桶快见底了，但没有及时加水，空了。
+
+---
+
+### 实际场景
+1. **Overrun**：当应用程序处理音频数据的速度跟不上录音设备生成数据的速度时。
+2. **Underrun**：当应用程序提供数据的速度跟不上播放设备消耗数据的速度时。
+
+### 避免办法
+- **优化缓冲区大小**：增加缓冲区的深度。
+- **实时优化**：提高应用的优先级，减少延迟。
+- **流量控制**：对音频数据流速进行控制，确保均衡。
+
 # alsa的plughw工作原理
 
-ALSA 中的 `plughw` 插件（也称为 "Pulse Code Modulation (PCM) plugin"）是一种用于音频格式转换和采样率转换的插件。它允许应用程序使用不同的音频格式和采样率进行播放或录制，而不需要显式地修改应用程序的代码。`plughw` 插件在 ALSA 的 PCM 接口中扮演着重要角色，用于处理音频数据的格式和采样率问题。
+ALSA 中的 `plughw` 插件（也称为 "Pulse Code Modulation (PCM) plugin"）
+
+是==一种==用于音频格式==转换==和采样率转换的==插件==。
+
+它允许应用程序使用不同的音频格式和采样率进行播放或录制，
+
+而不需要显式地修改应用程序的代码。
+
+`plughw` 插件在 ALSA 的 PCM 接口中扮演着重要角色，用于处理音频数据的格式和采样率问题。
 
 以下是 `plughw` 插件的一般工作原理：
 
@@ -167,9 +213,36 @@ ALSA 中的 `plughw` 插件（也称为 "Pulse Code Modulation (PCM) plugin"）�
 
 4. **数据传输：** 一旦音频数据被转换为适合硬件设备的格式和采样率，`plughw` 插件将这些数据发送到硬件设备进行播放或录制。
 
-总之，`plughw` 插件的工作原理是在应用程序和硬件设备之间执行音频格式和采样率的转换，以确保应用程序可以使用不同的音频格式和采样率与硬件设备进行交互。这对于使应用程序适应不同的硬件设备或音频要求非常有用，而无需修改应用程序的源代码。
+# alsalisp.c
 
-需要注意的是，`plughw` 插件的配置和使用可能会因 ALSA 版本和配置而有所不同。如果想详细了解特定版本的 `plughw` 插件的原理和配置，请查阅相应版本的 ALSA 文档或资料。
+`alsalisp.c` 是 ALSA (Advanced Linux Sound Architecture) 项目中一个工具文件，用于提供交互式的音频调试和控制功能。它是一个基于Lisp语法的命令行工具，旨在测试和操作 ALSA 的各种功能。
+
+它的主要作用包括：
+
+| 功能               | 描述                                                         |
+| ------------------ | ------------------------------------------------------------ |
+| **音频设备测试**   | 可以直接通过Lisp语法测试音频设备的不同功能，比如播放、录制、调整音量等。 |
+| **调用ALSA API**   | 提供一个可以直接调用 ALSA 函数的接口，用于检查接口行为和结果。 |
+| **快速原型开发**   | 利用脚本化语法快速验证音频逻辑，比如配置 PCM（音频设备）参数、操作 Mixer 控件。 |
+| **调试和问题排查** | 开发者可以快速使用 Lisp 风格命令与底层 ALSA 接口交互，方便调试驱动或应用程序的音频问题。 |
+
+这个工具的用法大致是编译后运行，然后在其交互式环境中输入类似 Lisp 的命令。例如：
+
+```lisp
+(pcm.open "hw:0,0")
+(pcm.set_params ...)
+(pcm.write ...)
+```
+
+如果你在开发或调试 ALSA 音频相关功能，`alsalisp.c` 非常适合快速验证想法和检查问题。
+
+### 编译与运行方法
+通常在 ALSA 源码目录下，通过以下命令编译：
+```bash
+gcc -o alsalisp alsalisp.c -lasound
+```
+
+运行后，进入一个交互式命令行环境，可以输入相关命令操作音频设备。如果需要更详细的功能分析，可以阅读 `alsalisp.c` 源码。
 
 # plugin
 
@@ -200,7 +273,7 @@ pcm.SOMENAME {
 
 上面的语句，创建了一个名字叫SOMENAME的插件。类型是PLUGINTYPE。**一个插件相当于一个pipe，它的后端就是slave里的东西。**
 
-插件的名字，有些是已经被预定义了的，例如default，dmix 。
+==插件的名字，有些是已经被预定义了的，例如default，dmix 。==
 
 **slave，可以是另一个插件，也可以是硬件设备。例如可以是hw:0,0**
 
@@ -248,7 +321,7 @@ pcm.myplugdev {
 
 ## hw
 
-这个类型主要是给声卡设备起别名用的。
+==这个类型主要是给声卡设备起别名用的。==
 
 With the 'PCM hw type' you are able to define aliases for your devices.
 
@@ -270,7 +343,7 @@ type plug的对type rate等几种类型的综合。
 
 dmix就是提供一个底层的混音方案。
 
-实际上，还没有多少应用使用了这个特性。
+==实际上，还没有多少应用使用了这个特性。==
 
 dmix插件不是基于client/server架构。
 
@@ -482,18 +555,6 @@ ALSA 中的 `dmix` 插件（也称为 "Direct Mixing" 插件）是一种用于�
 
 
 
-https://www.alsa-project.org/wiki/ALSA_Library_API
-
-
-
-
-
-对于上面的架构，在某一时刻只能有一个程序打开声卡并占有它，此时其它程序打开的话，会返回busy.如要支持同时可 以多个应用程序打开声卡，需要支持混音功能，有些声卡支持硬件混音，但大部分声卡不支持硬件混音，需要软件混音。
-
-alsa自带了一个很简单的混音器dmix
-
-
-
 # snd_interval理解
 
 ```
@@ -563,6 +624,46 @@ snd_pcm_hw_refine函数里面有个很重要的参数：constrs = &substream->ru
 hw_constraints即硬件约束条件，这里是在哪里赋值的呢？
 其实是在snd_pcm_hw_constraints_complete函数里面：
 ```
+
+在 ALSA 中，`snd_pcm_hw_refine()` 是一个用于优化或调整 PCM 硬件参数的函数，其中 `refine` 表示“细化”或“优化配置”。
+
+### 作用
+`snd_pcm_hw_refine()` 的主要功能是根据硬件的能力和用户提供的约束条件，对 PCM 参数集（如采样率、通道数、帧大小等）进行优化，使得最终的参数符合硬件支持的范围。
+
+- **输入**：一个包含当前参数约束的结构（`snd_pcm_hw_params_t`）。
+- **输出**：在输入基础上细化后的参数范围（更新约束条件）。
+
+### 工作原理
+1. 用户初始化一个参数对象，通常会设置一些初始约束（例如采样率范围）。
+2. 调用 `snd_pcm_hw_refine()`，这个函数会根据硬件的实际能力调整这些约束，使其更加精确（即在硬件支持范围内）。
+3. 返回的结果可以用于进一步配置硬件参数。
+
+### 示例流程
+
+```c
+snd_pcm_hw_params_t *params;
+// 初始化参数对象
+snd_pcm_hw_params_alloca(&params);
+snd_pcm_hw_params_any(handle, params); // 获取所有支持的参数范围
+
+// 添加自定义约束，例如限制采样率
+snd_pcm_hw_params_set_rate_min(handle, params, 44100);
+
+// 调用 refine 优化参数
+int err = snd_pcm_hw_refine(handle, params);
+if (err < 0) {
+    printf("Refine error: %s\n", snd_strerror(err));
+} else {
+    // 可以进一步获取细化后的参数范围
+}
+```
+
+### 细化示例
+- 如果硬件支持的采样率范围是 44100 ~ 192000，用户约束设置为 44100 ~ 48000，则 `snd_pcm_hw_refine()` 会将参数精确细化为硬件实际支持的 44100 ~ 48000 范围。
+- 若用户设置的约束完全不符合硬件支持，函数会返回错误。
+
+### 总结
+`snd_pcm_hw_refine()` 是一个“动态适配器”，它会根据用户需求和硬件支持细化参数范围，确保最终设置能够成功应用于硬件设备。
 
 
 
@@ -714,6 +815,74 @@ aplay -D surround51:CARD=Loopback,DEV=0 your_audio_file.wav
 - `surround51:CARD=Loopback,DEV=0` 是一个环绕声设备，适用于 5.1 声道环绕音频系统。它会在前置、中央、后置和低音炮的不同位置播放声音，提供更加沉浸式的音频体验。
 
 根据你的音频需求和设备配置，选择合适的设备来播放音频会影响到你感知到的声音效果。
+
+
+
+# aplay -L 和aplay -l看到的设备的区别
+
+`aplay` 是 ALSA 提供的一个音频播放工具，它可以用来列出和测试音频设备。`aplay -L` 和 `aplay -l` 的输出内容有显著的区别，具体如下：
+
+---
+
+| 命令           | 描述                                                         | 输出内容                                                     |
+| -------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **`aplay -L`** | **列出所有音频设备的可用逻辑设备（逻辑名）**，包括硬件设备（hw）、软混音设备（dmix）、插件设备等。 | 列出设备名称及其描述，显示的是音频设备的逻辑配置，例如 `default`、`dmix`、`hw:x,y`、`plughw:x,y` 等。 |
+| **`aplay -l`** | **列出所有实际存在的硬件设备（物理设备）**，包括声卡及其支持的 PCM 子设备（硬件层次的信息）。 | 显示具体的声卡信息，如 `card x` 和 `device y`，它们对应 ALSA 中的硬件编号，通常以 `hw:x,y` 标识。 |
+
+---
+
+### **具体区别**
+
+1. **输出范围**
+   - `aplay -L` 列出逻辑设备，包含用户空间定义的各种音频路径，能显示软件插件（如 `dmix`、`dsnoop`）。
+   - `aplay -l` 列出物理设备，只关心实际存在的声卡和 PCM 子设备。
+
+2. **适用场景**
+   - **`aplay -L`**：用于查看完整的 ALSA 配置，测试使用哪个逻辑设备（例如 `dmix` 用于混音）。
+   - **`aplay -l`**：用于查看硬件层的设备，了解系统有哪些声卡、设备号，用于开发或硬件调试。
+
+---
+
+### **示例**
+
+#### **`aplay -L` 输出**
+```plaintext
+default
+    Default ALSA Output (Card 0)
+sysdefault:CARD=PCH
+    HDA Intel PCH, ALC887 Analog
+dmix:CARD=PCH,DEV=0
+    HDA Intel PCH, ALC887 Analog
+hw:CARD=PCH,DEV=0
+    HDA Intel PCH, ALC887 Analog
+```
+
+- `default` 是默认设备，可能通过软件层处理。
+- `dmix` 提供混音功能，允许多个应用同时使用。
+- `hw` 表示硬件设备。
+
+#### **`aplay -l` 输出**
+```plaintext
+**** List of PLAYBACK Hardware Devices ****
+card 0: PCH [HDA Intel PCH], device 0: ALC887 Analog [ALC887 Analog]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 0: PCH [HDA Intel PCH], device 1: ALC887 Digital [ALC887 Digital]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+```
+
+- 显示的是具体的声卡（`card 0`）及其子设备（`device 0`，`device 1`）。
+- 对应的设备名可以用 `hw:0,0` 和 `hw:0,1` 访问。
+
+---
+
+### **总结**
+
+| 命令           | 适用场景                             |
+| -------------- | ------------------------------------ |
+| **`aplay -L`** | 配置音频输出逻辑或测试软件音频路径。 |
+| **`aplay -l`** | 查看硬件设备，用于开发或硬件调试。   |
 
 # arecord和aplay使用mmap方式，应该怎么设置参数
 
@@ -1011,6 +1180,160 @@ for device in devices:
 更详细的信息和功能可以参考 [pyalsaaudio 的 GitHub 页面](https://github.com/mzsanford/pyalsaaudio)。
 
 使用 `pyalsaaudio` 可以轻松地在 Python 中处理音频，适用于各种音频应用程序。
+
+# ucm说明
+
+以下是几个实际使用UCM（Use Case Manager）的场景示例：
+
+### 1. 播放高质量音乐
+**场景**：用户希望使用耳机播放高质量音乐。
+
+**配置**：
+- **使用案例**：`HiFi`
+- **启用序列**：将耳机音量设置为50%，并确保耳机播放开关处于开启状态。
+- **文件示例**：
+  
+  ```plaintext
+  SectionUseCase."HiFi" {
+      File "HiFi"
+      Comment "Play high quality music"
+  }
+  ```
+
+### 2. 电话通话
+**场景**：用户在进行语音通话时，需要切换到麦克风和扬声器。
+
+**配置**：
+- **使用案例**：`Voice Call`
+- **启用序列**：启用麦克风并设置扬声器为通话模式。
+- **文件示例**：
+  ```plaintext
+  SectionUseCase."Voice Call" {
+      File "VoiceCall"
+      Comment "Use for voice calls"
+  }
+  ```
+
+### 3. 低功耗播放
+**场景**：用户想在移动设备上播放音频，同时节省电池。
+
+**配置**：
+- **使用案例**：`HiFi Low Power`
+- **启用序列**：设置低功耗模式并调整音量。
+- **文件示例**：
+  
+  ```plaintext
+  SectionUseCase."HiFi Low Power" {
+      File "HiFiLowPower"
+      Comment "Play audio in low power mode"
+  }
+  ```
+
+### 4. FM收音机
+**场景**：用户希望使用设备收听FM电台。
+
+**配置**：
+- **使用案例**：`FM Analog Radio`
+- **启用序列**：切换到FM接收模式并设置相关音量。
+- **文件示例**：
+  ```plaintext
+  SectionUseCase."FM Analog Radio" {
+      File "FMAnalogRadio"
+      Comment "Use for FM radio"
+  }
+  ```
+
+### 5. 监控耳机插拔
+**场景**：用户插入耳机时自动切换音频输出。
+
+**配置**：
+- **使用案例**：`JackControl`
+- **启用序列**：检测耳机插入并切换到耳机输出。
+- **文件示例**：
+  
+  ```plaintext
+  SectionDevice."Headphone" {
+      EnableSequence [
+          cset "name='Headphone Playback Switch' on"
+      ]
+      DisableSequence [
+          cset "name='Headphone Playback Switch' off"
+      ]
+  }
+  ```
+
+### 总结
+UCM通过定义不同的使用案例，能够根据用户的需求灵活调整音频配置，实现各种音频场景的优化管理。每个场景的配置可以根据具体设备和需求进行定制。
+
+# ucm为什么没有被大量使用？
+
+UCM（Use Case Manager）在实际应用中未被广泛使用的原因主要包括以下几点：
+
+### 1. **复杂性**
+- **配置难度**：UCM的配置文件需要用户具备一定的音频知识，特别是对ALSA的理解。对于普通用户来说，编写和调试这些配置可能较为复杂。
+
+### 2. **工具支持不足**
+- **软件生态**：虽然UCM为ALSA提供了灵活性，但与PulseAudio等更高级的音频管理工具相比，其工具和社区支持相对较少，导致用户更倾向于使用更成熟的解决方案。
+
+### 3. **兼容性问题**
+- **硬件差异**：不同设备可能需要不同的配置，UCM的通用性受到限制，导致用户在设备间切换时需要重新配置，增加了使用成本。
+
+### 4. **替代方案**
+- **PulseAudio和PipeWire**：这些更高级的音频系统提供了更丰富的功能和更好的用户体验，包括更简单的配置界面和多种音频处理功能，使得UCM显得不够必要。
+
+### 5. **文档和教育资源不足**
+- **学习曲线**：缺乏足够的文档和示例使得新用户难以快速上手，尤其是在学习如何创建和调试UCM配置上。
+
+### 结论
+虽然UCM在某些特定场景下提供了灵活的解决方案，但其复杂性和替代方案的优势使得其没有被广泛采用。随着音频管理工具的发展，用户更倾向于使用更易于配置和使用的系统。
+
+# latency测试
+
+# master音量
+
+我看电脑，还是某些板子上，都有一个Master Volume来控制音量。
+
+但是我调的板子都没有。
+
+今天才弄清楚，因为我的板子都是多个codec芯片。
+
+例如2片tas5707 ，在设备树里，就需要配置prefix，不然会初始化失败。
+
+如果只有一片tas5707，则不需要prefixname。这样就可以看到Master Volume。
+
+
+
+# hw和plughw
+
+hw：直接使用硬件。
+
+plughw：会自己根据需要自行使用rate等插件。
+
+而且plughw不会增加latency。不同于dmix。
+
+看/usr/share/alsa/alsa.conf里的hint内容：
+
+```
+plughw的是这样：
+Hardware device with all software conversions
+
+hw的是这样：
+Direct hardware device without any conversions
+```
+
+
+
+参考资料
+
+1、
+
+https://raspberrypi.stackexchange.com/questions/69058/difference-between-hwplug-and-hw
+
+2、
+
+https://stackoverflow.com/questions/49970117/low-latency-and-plughw-vs-hw-devices
+
+
 
 # 参考资料
 

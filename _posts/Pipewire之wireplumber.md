@@ -2119,6 +2119,576 @@ Wireplumber 随附的配置文件允许仅启用视频部分，
 
 并通过启用 `video-only` 模板用户单元来禁用音频集成（包括蓝牙音频）。
 
+# libwireplumber-module-reserve-device 作用
+
+`libwireplumber-module-reserve-device` 是 WirePlumber 中的一个模块，
+
+主要用于管理音频设备的**设备预留（device reservation）**功能。
+
+它通过与 **D-Bus** 的 `org.freedesktop.ReserveDevice1` 接口交互，
+
+确保音频设备的独占使用，避免资源冲突。
+
+---
+
+### **主要作用**
+
+| 功能               | 描述                                                         |
+| ------------------ | ------------------------------------------------------------ |
+| **设备冲突管理**   | 确保当前音频设备不会被其他音频服务器（如 PulseAudio 或其他 PipeWire 实例）占用。如果设备已被占用，则会进行适当的冲突处理。 |
+| **独占访问**       | 如果设备已经被 WirePlumber 预留，其他音频服务尝试访问该设备时会收到资源占用错误，从而保证唯一性和设备稳定性。 |
+| **D-Bus 接口支持** | 使用 `org.freedesktop.ReserveDevice1` 协议，通过 D-Bus 与其他音频服务协同工作，支持多音频服务同时运行时的资源管理。 |
+| **释放与回收机制** | 当音频设备被释放（如停止使用或服务退出）时，自动解除预留状态，让其他服务可以重新使用该设备。 |
+
+---
+
+### **工作原理**
+
+1. **注册设备到 D-Bus**
+   - 当 WirePlumber 启动并加载该模块时，它会将音频设备通过 `org.freedesktop.ReserveDevice1` 接口注册到 D-Bus。
+
+2. **检查设备占用状态**
+   - 在分配音频资源前，模块会通过 D-Bus 检查目标设备是否已被占用。如果已被其他服务预留，它可以选择等待、竞争或放弃访问。
+
+3. **协调设备使用**
+   - 如果设备由 WirePlumber 成功预留，其它服务（如 PulseAudio）将无法直接访问设备，除非设备被释放或服务退出。
+
+---
+
+### **典型使用场景**
+
+1. **PipeWire 与 PulseAudio 共存**
+   - 在同时运行 PipeWire 和 PulseAudio 的系统上，避免这两个服务争抢同一个音频设备。
+
+2. **独占硬件资源**
+   - 保证某些音频应用（如实时音频处理程序）对特定硬件的独占访问权限。
+
+3. **多实例 PipeWire**
+   - 当运行多个 PipeWire 实例时，防止不同实例冲突访问同一设备。
+
+---
+
+### **配置与使用**
+
+该模块通常在 WirePlumber 的默认配置中启用。如果需要手动加载，可以在 WirePlumber 的配置目录中编辑相关文件：
+
+#### **加载模块**
+在 `/etc/wireplumber/main.lua.d/` 添加或修改文件（如 `50-reserve.lua`）：
+
+```lua
+reserve_device = require("reserve-device")
+reserve_device:activate({
+    -- 配置选项（可选）
+})
+```
+
+#### **模块选项**
+可以通过配置文件或动态脚本调整模块行为，例如设置等待策略、设备优先级等。
+
+---
+
+### **调试与验证**
+
+1. **检查模块是否加载**
+   ```bash
+   wireplumber -v
+   ```
+   查看 `libwireplumber-module-reserve-device` 是否在输出中列出。
+
+2. **检查设备预留状态**
+   使用 `dbus-monitor` 观察 `org.freedesktop.ReserveDevice1` 接口的调用和状态。
+
+3. **测试冲突处理**
+   启动 PulseAudio 和 PipeWire，同时尝试访问同一个设备，观察是否有冲突提示。
+
+---
+
+### **总结**
+
+`libwireplumber-module-reserve-device` 主要用于解决多音频服务之间的资源竞争问题，通过 D-Bus 接口实现设备预留与冲突管理，适用于需要独占音频设备的场景。
+
+# wireplumber是怎么跟驱动协商alsa参数的？
+
+WirePlumber 通过与 PipeWire 的协作，利用 ALSA（Advanced Linux Sound Architecture）接口来与驱动进行参数协商。整个流程分为几个主要步骤，包括节点的创建、设备的发现、参数的设置和验证。
+
+以下是详细的协商流程：
+
+---
+
+### **1. 设备发现与初始化**
+
+#### **1.1 ALSA 设备的枚举**
+PipeWire 使用 `libalsa` 枚举系统上的音频设备，并为每个设备创建一个 PipeWire 节点。这些节点表示硬件接口，如 `hw:0,0` 或 `hw:1,0`。
+
+- **设备枚举过程：**
+  - ALSA PCM 设备通过 `snd_pcm_open()` 打开。
+  - 检测设备支持的方向（如播放、录音）。
+  - 创建 PipeWire 节点，标识音频设备。
+
+WirePlumber 通过 `alsa-monitor` 脚本配置监听这些节点，并添加必要的规则和属性。
+
+---
+
+### **2. WirePlumber 与 PipeWire 的节点协商**
+
+#### **2.1 配置规则应用**
+WirePlumber 的配置文件定义了哪些设备和节点符合规则，并对这些节点应用特定属性。例如：
+
+```lua
+alsa_monitor.rules = {
+    {
+        matches = {
+            { "device.name", "matches", "alsa_card.*" },
+        },
+        apply_properties = {
+            ["api.alsa.period-size"] = 256,
+            ["api.alsa.format"] = "S16_LE",
+            ["api.alsa.rate"] = 48000,
+            ["api.alsa.channels"] = 2,
+        },
+    },
+}
+```
+
+- **常见属性：**
+  - `period-size`：表示每次硬件中断的帧数。
+  - `format`：音频数据格式（如 `S16_LE` 表示 16-bit little-endian）。
+  - `rate`：采样率。
+  - `channels`：通道数量。
+
+WirePlumber 将这些属性通过 PipeWire 传递到 ALSA。
+
+#### **2.2 节点创建与连接**
+PipeWire 为每个音频流创建一个客户端节点。WirePlumber 使用 `node` 监听这些节点，动态调整它们的属性。
+
+---
+
+### **3. 参数协商过程**
+
+#### **3.1 参数协商的触发**
+当一个音频流需要与硬件交互时（例如播放或录音），PipeWire 向驱动发送 `hw_params` 请求。
+
+- PipeWire 向 ALSA 驱动发送 `snd_pcm_hw_params()`，传递硬件参数。
+- ALSA 驱动尝试设置这些参数，如果失败则返回错误。
+
+#### **3.2 参数优化的过程**
+PipeWire 可能会根据驱动反馈调整参数，比如减少通道数或降低采样率，直到找到设备支持的配置。
+
+- **典型参数：**
+  - **通道数**：通常是单声道（1）、立体声（2），或更多。
+  - **采样率**：常见值如 44100Hz、48000Hz 等。
+  - **数据格式**：如 `S16_LE`（16-bit）或 `S24_LE`（24-bit）。
+  - **缓冲区大小**：如 `1024` 帧。
+
+#### **3.3 参数设置成功**
+当驱动接受参数后，PipeWire 完成流的初始化，开始音频数据传输。
+
+---
+
+### **4. 驱动中的协商逻辑**
+
+#### **4.1 驱动如何处理参数**
+ALSA 驱动中的 `hw_params` 实现了参数检查和设置：
+- **通道数检查**：如 `params_channels(hw_params)`。
+- **采样率检查**：如 `params_rate(hw_params)`。
+- **格式检查**：如 `params_format(hw_params)`。
+
+如果某个参数不支持，驱动返回 `-EINVAL`，并向日志报告错误。
+
+#### **4.2 特殊硬件支持**
+某些驱动可能支持动态参数调整或固定参数。WirePlumber 可以通过配置适配这些驱动。
+
+---
+
+### **5. 调试与问题排查**
+
+#### **5.1 查看PipeWire节点**
+使用 `pw-cli` 查看PipeWire节点属性：
+```bash
+pw-cli dump Node
+```
+
+#### **5.2 检查 ALSA 参数**
+使用 `pw-dump` 查看配置的 ALSA 参数：
+```bash
+pw-dump | grep -A10 "alsa"
+```
+
+#### **5.3 查看驱动日志**
+使用 `dmesg` 检查驱动日志，了解 `hw_params` 错误原因。
+
+---
+
+### **总结**
+
+WirePlumber 通过 PipeWire 与 ALSA 驱动协商参数，依靠配置规则和驱动反馈动态调整硬件参数。驱动在 `hw_params` 阶段对参数进行验证，并可能返回错误。通过调试工具（如 `pw-cli` 和 `dmesg`），可以排查配置问题并优化参数设置。
+
+# src\config\wireplumber.conf.d.examples\alsa.conf
+
+这个值得分析一下。
+
+
+
+# device.name = "~alsa_card.*" 这个匹配规则说明
+
+
+
+# src\config\wireplumber.conf.d.examples\device.conf 这个文件的作用
+
+`src/config/wireplumber.conf.d.examples/device.conf` 是 WirePlumber 的一个配置文件，用于管理音频设备的通用规则和行为。它的主要作用是定义如何处理设备节点，包括设备的枚举、管理策略以及设备属性的配置。
+
+以下是文件的作用和常见配置的详细说明：
+
+---
+
+### **1. 文件的主要作用**
+
+| 功能                 | 描述                                                         |
+| -------------------- | ------------------------------------------------------------ |
+| **设备枚举**         | 定义如何匹配和识别设备，例如 ALSA 声卡、蓝牙音频设备等。     |
+| **设备属性设置**     | 为设备节点应用属性（如优先级、显示名称、行为策略等）。       |
+| **音频路由和优先级** | 设置设备之间的路由策略和优先级，例如扬声器优先于耳机。       |
+| **设备管理规则**     | 定义如何启用、禁用或为设备分配资源，例如在特定场景下切换设备。 |
+
+---
+
+### **2. 常见配置结构**
+
+以下是一个典型的 `device.conf` 配置文件结构示例：
+
+```lua
+device = {
+    -- 定义如何管理设备
+    default_profiles = {
+        "output:*",      -- 默认输出设备
+        "input:*",       -- 默认输入设备
+    },
+    -- 匹配规则
+    rules = {
+        -- 规则 1：匹配 ALSA 声卡设备
+        {
+            matches = {
+                { "device.name", "matches", "alsa_card.*" },
+            },
+            apply_properties = {
+                ["priority.session"] = 100,         -- 会话优先级
+                ["device.description"] = "ALSA Audio Device",  -- 设备描述
+            },
+        },
+        -- 规则 2：匹配蓝牙音频设备
+        {
+            matches = {
+                { "device.name", "matches", "bluez_card.*" },
+            },
+            apply_properties = {
+                ["priority.session"] = 50,          -- 蓝牙设备优先级较低
+                ["device.description"] = "Bluetooth Audio Device",
+            },
+        },
+    },
+}
+```
+
+---
+
+### **3. 配置的关键部分解析**
+
+#### **3.1 匹配规则 (`matches`)**
+匹配 `device.name` 或其他设备属性，用于识别和分类设备。
+- **常见匹配字段**：
+  - `device.name`：设备名称（如 `alsa_card.pci-0000_00_1f.3`）。
+  - `device.bus`：设备总线类型（如 `pci`、`usb`、`bluetooth`）。
+  - `device.subsystem`：子系统（如 `sound`）。
+  
+#### **3.2 属性设置 (`apply_properties`)**
+为匹配的设备应用属性，用于调整设备的行为或描述。
+- **常见属性**：
+  | 属性名称                 | 描述                                     |
+  | ------------------------ | ---------------------------------------- |
+  | `priority.session`       | 设备优先级，数值越大优先级越高。         |
+  | `device.description`     | 设备描述，用于显示在应用程序中。         |
+  | `device.disabled`        | 是否禁用设备（`true` 或 `false`）。      |
+  | `api.alsa.disable-batch` | 是否禁用批处理模式，仅适用于 ALSA 设备。 |
+
+---
+
+### **4. 配置示例**
+
+#### **4.1 指定某个 ALSA 声卡为默认设备**
+```lua
+device = {
+    rules = {
+        {
+            matches = {
+                { "device.name", "equals", "alsa_card.pci-0000_00_1f.3" }
+            },
+            apply_properties = {
+                ["priority.session"] = 200,  -- 提高优先级，使其成为默认设备
+                ["device.description"] = "Preferred Sound Card",
+            },
+        },
+    },
+}
+```
+
+#### **4.2 禁用特定设备**
+```lua
+device = {
+    rules = {
+        {
+            matches = {
+                { "device.name", "equals", "alsa_card.pci-0000_00_1b.0" },
+            },
+            apply_properties = {
+                ["device.disabled"] = true,  -- 禁用此设备
+            },
+        },
+    },
+}
+```
+
+#### **4.3 蓝牙设备低优先级**
+```lua
+device = {
+    rules = {
+        {
+            matches = {
+                { "device.name", "matches", "bluez_card.*" }
+            },
+            apply_properties = {
+                ["priority.session"] = 50,   -- 蓝牙设备优先级低于其他设备
+            },
+        },
+    },
+}
+```
+
+---
+
+### **5. 验证与调试**
+
+1. **重启 WirePlumber 服务**
+   ```bash
+   systemctl restart wireplumber
+   ```
+
+2. **检查设备属性**
+   使用 `pw-cli` 或 `pw-dump` 查看设备属性是否正确应用：
+   ```bash
+   pw-dump | grep -A10 "alsa_card"
+   ```
+
+3. **查看日志**
+   使用 `journalctl` 查看 WirePlumber 日志：
+   ```bash
+   journalctl -u wireplumber -f
+   ```
+
+---
+
+### **总结**
+
+`device.conf` 是 WirePlumber 配置设备行为的关键文件。它通过匹配规则定义设备的属性、优先级和管理策略。修改该文件后，可以实现自定义设备的优先级调整、特定设备禁用或参数优化等功能。在调试过程中，可以通过日志和 `pw-cli` 工具验证配置是否正确应用。
+
+# 反转左右声道的配置
+
+~/.config/wireplumber/wireplumber.conf.d/51-flip-stereo.conf
+
+```
+monitor.alsa.rules = [
+  {
+      matches = [
+          # Matches all sources.
+          { "node.name" = "~alsa_input.*" },
+          ## Matches all sinks.
+          { "node.name" = "~alsa_output.*" },
+      ],
+      actions = {
+        update-props = {
+          audio.channels = 2,
+          audio.position = ["FR", "FL"]
+        }
+      }
+  }
+]
+```
+
+老的lua方式是这样：~/.config/wireplumber/main.lua.d/51-reverse-channels.lua
+
+```
+reverse = {
+    matches = {
+        {
+        -- Matches all sources.
+        { "node.name", "matches", "alsa_input.*" },
+        },
+        {
+        -- Matches all sinks.
+        { "node.name", "matches", "alsa_output.*" },
+        },
+    },
+    apply_properties = {
+        ["audio.channels"]         = 2,
+        ["audio.position"]         = "FR,FL",
+    },
+}
+
+table.insert(alsa_monitor.rules, reverse)
+```
+
+https://forum.endeavouros.com/t/where-are-pipewire-config/44753/5
+
+
+
+# wpctl set-default
+
+```
+#!/bin/bash
+# Sets the default sound device
+# Set space as the delimiter
+IFS=' '
+
+# Read the split words into an array based on space delimiter
+read -a strarr < <( wpctl status | grep HDMI )
+# We will have to check whether our device is already the default; 
+# in that case, the ID entry starts with an asterisk.
+# As it is complicated in bash to check if a string contains an asterisk (because it is a wildcard character), 
+# checking is only done if the first element of the array is alphanumeric or not 
+# Hopefully, wireplumber's IDs will always remain two-digit numbers :)
+if [[ ${strarr[1]:0:2} = *[^[:alnum:]]* ]]; then
+   foundID="${strarr[2]:0:2}"
+   else
+   foundID="${strarr[1]:0:2}"
+fi
+wpctl set-default "${foundID}"
+```
+
+https://forum.manjaro.org/t/how-do-i-permanently-set-the-default-audio-device-in-manjaro-xfce-with-pipewire/117967/2
+
+现在linux的桌面环境就是这么混乱。
+
+只能这么去设置default 播放设备。
+
+因为id总是会变化。
+
+
+
+`wireplumber`忽略我在 中配置的默认音频接收器和源`pipewire`，
+
+而是选择其自己的默认值。
+
+因此，每次重启后，我都必须运行`wpctl status`以找到所需的音频接收器和源的 ID，
+
+然后运行`wpctl set-default`两次以设置正确的接收器和源。
+
+在 中`/usr/local/etc/pipewire/pipewire.conf`，
+
+我有以下配置，
+
+这是我几个月前从 PulseAudio 切换到 PipeWire 时经过一些谷歌搜索后创建的：
+
+```
+context.properties = {
+[...]
+    # default sink & source
+    default.audio.sink = "alsa_output.pci-0000_00_1b.0.analog-stereo"
+    default.audio.source = "alsa_input.pci-0000_00_1b.0.analog-stereo"
+    default.configured.audio.sink = "alsa_output.pci-0000_00_1b.0.analog-stereo"
+    default.configured.audio.source = "alsa_input.pci-0000_00_1b.0.analog-stereo"
+}
+[...]
+context.objects = [
+[...]
+    # Use the metadata factory to create metadata and some default values.
+    { factory = metadata
+        args = {
+            metadata.name = default-metadata
+            metadata.values = [
+                { key = default.audio.sink   value = { name = "alsa_output.pci-0000_00_1b.0.analog-stereo" } }
+                { key = default.audio.source value = { name = "alsa_input.pci-0000_00_1b.0.analog-stereo" } }
+                { key = default.configured.audio.sink   value = { name = "alsa_output.pci-0000_00_1b.0.analog-stereo" } }
+                { key = default.configured.audio.source value = { name = "alsa_input.pci-0000_00_1b.0.analog-stereo" } }
+            ]
+        }
+    }
+]
+
+```
+
+所以我最大的问题是，我该如何告诉`wireplumber`尊重`pipewire`的配置，或者我如何以及在哪里可以配置`wireplumber`选择为“设置 => 默认配置的设备”的内容？
+
+使用 PulseAudio，这就像两行一样简单...
+
+```plaintext
+default-sink = alsa_output.pci-0000_00_1b.0.analog-stereo
+default-source = alsa_input.pci-0000_00_1b.0.analog-stereo
+```
+
+我不知道你在哪里看到这个例子，但它根本就不应该这样工作。没有组件尊重这些设置。
+
+要配置默认接收器和源，您需要编写一些 alsa 监控规则来提高要选择的设备的优先级。
+
+也许是这样的：
+
+```plaintext
+monitor.alsa.rules = [
+  {
+    matches = [
+      {
+        node.name = "alsa_output.pci-0000_00_1b.0.analog-stereo"
+      }
+    ]
+    actions = {
+      update-props = {
+        priority.session        = 1500
+      }
+    }
+  }
+  {
+    matches = [
+      {
+        node.name = "alsa_input.pci-0000_00_1b.0.analog-stereo"
+      }
+    ]
+    actions = {
+      update-props = {
+        priority.session        = 2500
+      }
+    }
+  }
+]
+```
+
+WirePlumber 确实有一个状态，
+
+并且会记住您在运行时使用 wpctl、pactl、pavucontrol、gnome-settings 或类似工具选择默认设备的时间...
+
+为了忘记这个状态，您需要运行`wpctl clear-default`，
+
+然后它会尊重优先级（直到您使用其中一个工具再次手动选择默认设备）
+
+
+
+https://gitlab.freedesktop.org/pipewire/wireplumber/-/issues/644
+
+# 1
+
+PipeWire 包提供了一组初始配置文件在 `/usr/share/pipewire` 。
+
+您不应该直接编辑这些文件，因为包更新会覆盖您的更改。
+
+要配置 PipeWire，您可以从 `/usr/share/pipewire` 复制文件到替代的系统级位置 `/etc/pipewire` ，
+
+或到用户位置 `~/.config/pipewire` 。
+
+在优先级更高的目录中具有同样名称的文件会使相应的文件被忽略。
+
+WirePlumber 是推荐的会话管理器。它基于模块化设计，使用 Lua 插件实现实际的管理功能。
+
+WirePlumber 在版本 0.5 中将配置格式从 `.lua` 更改为 `.conf` 。请参阅 以获取迁移指南。
+
+pipewire-media-session 已被废弃，不再推荐使用。它主要被用于测试和作为构建新会话管理器的示例。
+
 
 
 # 参考资料

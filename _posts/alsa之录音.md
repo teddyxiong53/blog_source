@@ -63,7 +63,7 @@ buffer = (char *) malloc(size);
 
 
 
-```
+```c
 #include <alsa/asoundlib.h>
 
 int main() {
