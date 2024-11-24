@@ -1442,7 +1442,7 @@ HTML5 中的 `<meta>` 元素用于提供关于 HTML 文档的元数据信息，�
    ```html
    <meta http-equiv="refresh" content="5;url=https://example.com">
    ```
-这个示例中，页面会在加载后 5 秒钟自动跳转到指定的 URL。
+   这个示例中，页面会在加载后 5 秒钟自动跳转到指定的 URL。
    
 2. **`http-equiv="cache-control"`：** 控制浏览器的缓存行为。
    ```html
@@ -1473,3 +1473,107 @@ HTML5 中的 `<meta>` 元素用于提供关于 HTML 文档的元数据信息，�
 ### equiv 是什么意思
 
 "equiv" 是 "equivalent" 的缩写，意思是 "等同于" 或者 "等效于"。在 HTML `<meta>` 元素中，`http-equiv` 属性用于模拟 HTTP 头部（HTTP headers），即使得 `<meta>` 元素可以提供与特定 HTTP 头部相同的效果。
+
+# aria属性
+
+当然可以！ARIA（Accessible Rich Internet Applications）属性是为了提高Web应用程序的可访问性而设计的，尤其是对于使用辅助技术（如屏幕阅读器）的用户。以下是一些关键点：
+
+### 1. 什么是ARIA？
+
+ARIA是一组属性，可以添加到HTML元素中，以增强无障碍性。它通过提供额外的信息，帮助辅助技术理解页面的结构和功能。
+
+### 2. ARIA属性类型
+
+- **角色（role）**：定义元素的功能或目的。例如：
+  - `role="button"`：指示该元素是一个按钮。
+  - `role="navigation"`：指示该元素是一个导航区域。
+
+- **状态和属性**：提供有关元素状态的信息。例如：
+  - `aria-checked`：指示复选框或切换的选中状态。
+  - `aria-expanded`：指示可折叠元素的展开或收起状态。
+
+- **标签和描述**：
+  - `aria-label`：为元素提供一个可读的标签，通常用于没有可见文本的元素。
+  - `aria-describedby`：提供额外的描述信息，通常与另一个元素相关联。
+
+### 3. 使用示例
+
+```html
+<button aria-label="关闭" onclick="closeWindow()">X</button>
+<div role="alert" aria-live="assertive">操作成功！</div>
+```
+
+### 4. 注意事项
+
+- **合理使用**：不应滥用ARIA属性。尽量使用原生HTML元素，它们本身就具有良好的可访问性。
+- **兼容性**：确保ARIA属性在所有主要浏览器和辅助技术中得到支持。
+- **测试**：使用辅助技术进行测试，确保ARIA的使用符合预期并提高了可访问性。
+
+### 5. 学习资源
+
+- [W3C ARIA规范](https://www.w3.org/TR/wai-aria/)
+- [MDN Web Docs关于ARIA](https://developer.mozilla.org/zh-CN/docs/Web/Accessibility/ARIA)
+
+通过合理使用ARIA属性，可以显著改善Web应用的可访问性，让更多用户能够顺畅地使用你的产品。
+
+
+
+# `data-*`属性的用途和最佳实践
+
+当然可以！`data-*` 属性是 HTML5 中引入的自定义数据属性，允许开发者在 HTML 元素中嵌入非标准化的数据。以下是关于 `data-*` 属性的详细解释及最佳实践。
+
+### `data-*` 属性的用途
+
+1. **存储自定义数据**：
+   - 使用 `data-*` 属性可以在元素上存储自定义的信息，而无需使用额外的 JavaScript 变量或全局存储。
+   - 例如，可以存储与元素相关的标识符、状态或其他信息。
+
+2. **与 JavaScript 交互**：
+   - `data-*` 属性可以很方便地与 JavaScript 结合使用，允许开发者通过 DOM 操作访问这些数据。
+   - 例如，可以使用 `element.dataset` 来获取或设置这些数据。
+
+3. **增强可读性**：
+   - 在 HTML 中直接使用 `data-*` 属性可以使代码更清晰，尤其是在需要传递与特定元素相关的上下文信息时。
+
+### 使用示例
+
+```html
+<div class="product" data-id="12345" data-category="electronics" data-price="299.99">
+  <h2>产品名称</h2>
+  <p>产品描述...</p>
+</div>
+```
+
+在这个示例中，`data-id`、`data-category` 和 `data-price` 属性分别存储了产品的 ID、类别和价格。
+
+### 访问数据
+
+使用 JavaScript 访问 `data-*` 属性非常简单：
+
+```javascript
+const productDiv = document.querySelector('.product');
+const productId = productDiv.dataset.id; // "12345"
+const productCategory = productDiv.dataset.category; // "electronics"
+const productPrice = productDiv.dataset.price; // "299.99"
+```
+
+### 最佳实践
+
+1. **使用小写字母和连字符**：
+   - 在定义 `data-*` 属性时，使用小写字母和连字符（如 `data-user-id`），浏览器会自动转换为驼峰式命名（如 `dataset.userId`）。
+
+2. **避免过度使用**：
+   - 虽然 `data-*` 属性很方便，但应避免在不必要的情况下使用。确保使用它们存储的是真正需要与元素相关的数据。
+
+3. **命名规范**：
+   - 使用清晰且描述性的名称，便于其他开发者理解数据的用途。例如，使用 `data-user-role` 而不是 `data-x`。
+
+4. **数据类型**：
+   - 注意 `data-*` 属性的值总是以字符串形式存储。如果需要其他数据类型（如数字或布尔值），在使用时需要进行转换。
+
+5. **不存储敏感信息**：
+   - 不要在 `data-*` 属性中存储敏感信息，因为这些数据可以被用户访问和查看。
+
+### 总结
+
+`data-*` 属性是一个强大的工具，可以帮助开发者在 HTML 中存储和管理自定义数据。通过遵循最佳实践，您可以确保代码的可读性和可维护性，同时增强与 JavaScript 的交互性。
