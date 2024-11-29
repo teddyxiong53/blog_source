@@ -13,6 +13,10 @@ tags:
 这个alsalib的文档，比官方的可读性要好。
 https://vovkos.github.io/doxyrest/samples/alsa/group_PCM_Dump.html
 
+arch wiki一向很好
+
+https://wiki.archlinux.org/title/Advanced_Linux_Sound_Architecture
+
 # 框架
 
 ![img](../images/random_name/v2-323ca01cf89d720b04b7df3d1f3026e3_720w.jpg)
@@ -1332,6 +1336,837 @@ https://raspberrypi.stackexchange.com/questions/69058/difference-between-hwplug-
 2、
 
 https://stackoverflow.com/questions/49970117/low-latency-and-plughw-vs-hw-devices
+
+# arch wiki
+
+注意：将用户添加到 `audio` 组允许直接访问设备。
+
+请记住，这允许应用程序独占保留输出设备。
+
+这可能破坏多用户系统上的软件混音或快速用户切换。
+
+因此，除非您特别需要，否则不建议默认将用户添加到 `audio` 组。
+
+
+
+安装 alsa-utils 包。
+
+这包含（其他实用工具之一）的 alsamixer(1)和 amixer(1)实用工具。
+
+amixer 是一个用于更改音频设置的 shell 命令，
+
+而 alsamixer 提供了一个基于 ncurses 的更直观的音频设备配置界面。
+
+
+
+如果需要高质量的重采样，请安装 alsa-plugins 包以启用upmix/downmix和其他高级功能。
+
+ALSA 具有一些能力，
+
+可以拦截 OSS 调用并将其重定向到 ALSA。
+
+这个模拟层对于例如尝试直接将声音数据写入 `/dev/dsp` 的遗留应用程序非常有用。
+
+如果没有 OSS 或模拟库， `/dev/dsp` 将缺失，应用程序将不会产生任何声音。
+
+
+
+`alsa-restore.service` 在启动时读取 `/var/lib/alsa/asound.state` ，
+
+并在关闭时写入更新的值，
+
+前提是 `/etc/alsa/state-daemon.conf` 不存在。
+
+由于 `/etc/alsa/state-daemon.conf` 没有用户有意识的操作不会创建，这是默认方法。
+
+
+
+`alsa-state.service` 重启 alsactl 以守护进程模式运行，持续监控并持久化音量变化，前提是在用户有意识地创建了 `/etc/alsa/state-daemon.conf` 的情况下。
+
+
+
+对于一些笔记本型号（主要从 2019 年开始），需要 sof-firmware，
+
+因为它们使用 Sound Open Firmware 项目提供的固件来实现其驱动程序。
+
+检查日志将提供关于缺失固件的消息（参见 BBS#275577）。
+
+alsa-firmware 包含的固件可能是某些声卡（例如 Creative SB0400 Audigy2）所需。
+
+默认情况下，ALSA 所有声道都被静音。这些需要手动解除静音。
+
+解静音声卡的主音量可以通过使用 amixer 来完成：
+
+```
+$ amixer sset Master unmute
+$ amixer sset Speaker unmute
+$ amixer sset Headphone unmute
+```
+
+要获得完整的 5.1 或 7.1 环绕声，
+
+您可能需要解静音其他声道，如 `Front` 、 `Surround` 、 `Center` 、 `LFE` （低音炮）和 `Side` 。
+
+（这些是 Intel HD 音频中的声道名称；不同硬件可能会有所不同）
+
+接下来，测试声音是否正常工作：
+
+```
+$ speaker-test -c 2
+```
+
+更改 `-c` 以适应您的扬声器设置。例如，对于 7.1，使用 `-c 8` ：
+
+```
+$ speaker-test -c 8
+```
+
+如果正在输出的音频设备错误，尝试使用参数 `-D` 手动指定设备。
+
+```
+$ speaker-test -D default:PCH -c 8
+```
+
+`-D` 接受 PCM 通道名称作为值，可以通过以下操作获取：
+
+```
+$ aplay -L | grep :CARD
+default:CARD=PCH  # 'default:PCH' is the PCM channel name for -D
+sysdefault:CARD=PCH
+front:CARD=PCH,DEV=0
+surround21:CARD=PCH,DEV=0
+surround40:CARD=PCH,DEV=0
+surround41:CARD=PCH,DEV=0
+surround50:CARD=PCH,DEV=0
+surround51:CARD=PCH,DEV=0
+surround71:CARD=PCH,DEV=0
+```
+
+系统配置文件是 `/etc/asound.conf` ，用户配置文件是 `~/.asoundrc` 。
+
+ALSA 配置文件遵循简单的语法，由分层的值到参数（键）的分配组成。该语法也显示在[2]中。
+
+
+
+假设在 `/usr/share/alsa/alsa.conf` 中设置了 "defaults" 节点，
+
+其中 "defaults.pcm.card" 及其 "ctl" 对应项的赋值为 "0"（类型为整数），
+
+用户希望将默认 PCM 和控制设备设置为（第三）声卡 "2" 或 "SB"，用于 Azalia 声卡。
+
+```
+defaults.ctl.card 2; # Sets default device and control to third card (counting begins with 0).
+defaults.pcm.card 2; # This does not change the data type.
+```
+
+包括配置文件
+
+```
+</path/to/configuration-file> # Include a configuration file
+<confdir:/path/to/configuration-file> # Reference to a global configuration directory
+```
+
+如果您的声卡订单在启动时发生变化，
+
+可以在以 `.conf` 结尾的任何 `/etc/modprobe.d` 文件中指定其顺序（建议使用 `/etc/modprobe.d/alsa-base.conf` ）。
+
+例如，如果您希望您的 mia 声卡成为#0：
+
+```
+/etc/modprobe.d/alsa-base.conf
+options snd_mia index=0
+options snd_hda_intel index=1
+```
+
+使用 `$ cat /proc/asound/modules` 获取加载的音效模块及其顺序。
+
+此列表通常足以确定加载顺序。
+
+使用 `$ lsmod | grep snd` 获取设备和模块列表。
+
+此配置假设您使用 `snd_mia` 有一个 mia 声卡，以及一个（例如，内置）声卡使用 `snd_hda_intel` 。
+
+
+
+仅将 `type hw` 设置为默认卡等同于直接访问硬件，
+
+这会使设备对其他应用程序不可用。
+
+此方法仅推荐在更复杂设置的一部分 `~/.asoundrc` 
+
+或如果用户故意想要直接访问声卡
+
+（例如通过 `eic958` 进行数字输出或专用音乐服务器）的情况下使用。
+
+例如，此列表的最后一条记录具有卡 ID 2 和设备 ID 0。要将此卡设置为默认值，您可以使用系统范围内的文件 `/etc/asound.conf` 或用户特定的文件 `~/.asoundrc` 。如果文件不存在，您可能需要创建它。然后插入以下选项与相应的卡相对应。
+
+```
+pcm.!default {
+   type hw
+   card 2
+}
+
+ctl.!default {
+   type hw
+   card 2
+}
+```
+
+在大多数情况下，建议使用声卡名称而不是数字引用。名称更容易理解，也解决了启动顺序问题。因此，对于上述示例，以下内容是正确的。
+
+```
+pcm.!default {
+   type hw
+   card Audio
+}
+
+ctl.!default {
+   type hw
+   card Audio
+}
+```
+
+pcm 选项影响用于音频播放的卡和设备，而 ctl 选项影响控制工具如 alsamixer 使用的卡。
+
+S/PDIF 是一种数字音频接口，常用于将计算机连接到数字放大器（如具有 5.1/7.1 环绕声的家庭影院）。
+
+
+
+安装 alsaequal AUR 包。
+
+```
+/etc/asound.conf
+ctl.equal {
+    type equal;
+}
+
+pcm.plugequal {
+    type equal;
+    # Normally, the equalizer feeds into dmix so that audio
+    # from multiple applications can be played simultaneously:
+    slave.pcm "plug:dmix";
+    # If you want to feed directly into a device, specify it instead of dmix:
+    #slave.pcm "plughw:0,0";
+}
+
+# Configuring pcm.!default will make the equalizer your default sink
+pcm.!default {
+# If you do not want the equalizer to be your default,
+# give it a different name, like pcm.equal commented below
+# Then you can choose it as the output device by addressing
+# it in individual apps, for example mpg123 -a equal 06.Back_In_Black.mp3
+# pcm.equal {
+    type plug;
+    slave.pcm plugequal;
+}
+```
+
+要更改您的均衡器设置，请运行
+
+```
+$ alsamixer -D equal
+```
+
+
+
+
+
+
+
+# 一段复杂配置解读
+
+如果希望仅对特定的输出设备
+
+（例如连接到 S/PDIF 输出的扬声器，但不包括连接到耳机插孔的耳机）应用均衡器，
+
+同时仍希望从多个应用程序输出，
+
+并同时向两个输出设备提供输出，
+
+您需要创建两个 `dmix` 设备，
+
+它们直接连接到各自的设备（ `slave.pcm` ）。
+
+以下适用于立体声输出，并保持常规的立体声输入，仅对 S/PDIF 输出应用均衡器。
+
+```
+#
+#  (capture.pcm)  <-- dnsoop
+#        |
+# !default                               --> dmixa
+#        |                               |
+#  (playback.pcm) --> stereo2quad ==> quad
+#                                        |
+#                                        --> softvol --> plugequal --> dmixd 
+#
+
+# dmix for analog output
+pcm.dmixa {
+  type dmix
+  ipc_key 1024
+  ipc_perm 0666
+  slave.pcm "hw:PCH,0"
+  slave {
+    period_time 0
+    period_size 1024
+    buffer_size 4096
+    channels 2
+  }
+  bindings {
+    0 0
+    1 1
+  }
+}
+
+# dmix for digital output
+pcm.dmixd {
+  type dmix
+  ipc_key 2048
+  ipc_perm 0666
+  slave.pcm "hw:PCH,1"
+  slave {
+    period_time 0
+    period_size 1024
+    buffer_size 4096
+    channels 2
+  }
+  bindings {
+    0 0
+    1 1
+  }
+}
+
+# equalizer with controls
+pcm.plugequal {
+  type equal
+  slave {
+    pcm "plug:dmixd"
+  }
+}
+ctl.equal {
+ type equal
+}
+
+# Volume control for S/PDIF
+pcm.softvol {
+    type softvol
+    slave.pcm "plug:plugequal"
+    control {
+        name "S/PDIF"
+    }
+}
+
+# multi:
+# "a" (analog)  -> dmix,
+# "d" (digital) -> softvol -> plugequal -> dmix
+pcm.quad {
+    type multi
+    slaves {
+      a.pcm "dmixa"
+      a.channels 2
+      d.pcm "plug:softvol" # detour via softvol and equalizer
+      d.channels 2
+    }
+    bindings {
+      0 { slave a; channel 0; }
+      1 { slave a; channel 1; }
+      2 { slave d; channel 0; }
+      3 { slave d; channel 1; }
+    }
+}
+
+# stereo to quad
+pcm.stereo2quad {
+  type route
+  slave.pcm "quad"
+  ttable [
+    [ 1 0 1 0 ]
+    [ 0 1 0 1 ]
+  ]
+}
+
+# playback to stereo to quad, capture as usual
+pcm.!default {
+  type asym
+  playback.pcm "plug:stereo2quad"
+  capture.pcm "plug:dnsoop"
+}
+```
+
+
+
+这个配置文件定义了一个较为复杂的ALSA虚拟音频路由和混音器设置，支持模拟和数字音频的混合，提供了音量控制、均衡器等功能。以下是分段分析和解读：
+
+------
+
+**1. `dmixa` 和 `dmixd`**
+
+- 定义了模拟（`dmixa`）和数字（`dmixd`）音频的 `dmix` 虚拟设备。
+
+- 特点
+
+  ：
+
+  - **类型**：`dmix` 允许多个应用共享设备。
+
+  - 硬件绑定
+
+    ：
+
+    - `dmixa` 绑定到模拟设备 `hw:PCH,0`。
+    - `dmixd` 绑定到数字设备 `hw:PCH,1`。
+
+  - **Buffer 和 Period**：均为 1024 的 period 大小和 4096 的 buffer 大小。
+
+  - **通道数**：双声道（2 channels）。
+
+------
+
+**2. 均衡器 `plugequal`**
+
+- 定义了一个带有控制接口的均衡器：
+  - **输入**：连接到数字混音设备 `dmixd`。
+  - **控制接口**：`ctl.equal` 提供了一个对均衡器参数的控制接口。
+
+------
+
+**3. 软件音量控制 `softvol`**
+
+- 定义了一个虚拟音量控制设备：
+  - **输入**：`plugequal`，均衡器处理后的输出。
+  - **控制名称**：`S/PDIF`，可通过Mixer控制软件调节音量。
+
+------
+
+**4. 混合设备 `quad`**
+
+- 类型
+
+  ：
+
+  ```
+  multi
+  ```
+
+  ，将两个设备（模拟 
+
+  ```
+  dmixa
+  ```
+
+   和数字 
+
+  ```
+  softvol
+  ```
+
+  ）组合成四通道设备。
+
+  - 模拟设备占用前两个通道，数字设备占用后两个通道。
+  - **用例**：将模拟和数字设备的音频信号混合成四通道输出。
+
+------
+
+**5. 路由设备 `stereo2quad`**
+
+- 类型
+
+  ：
+
+  ```
+  route
+  ```
+
+  ，将立体声信号（2通道）映射到四通道设备（
+
+  ```
+  quad
+  ```
+
+  ）。
+
+  - 映射表
+
+    ：
+
+    - 前两个通道复制到后两个通道，形成四通道输出。
+
+------
+
+**6. 默认设备 `!default`**
+
+- 定义默认的播放和录音设备：
+  - **播放**：`stereo2quad`，将播放信号路由到 `quad`。
+  - **录音**：使用 `dnsoop`（未提供详细配置）进行录音。
+
+------
+
+**功能总结：**
+
+- **模拟输出**：`dmixa` 处理模拟音频。
+- **数字输出**：`softvol` -> `plugequal` -> `dmixd` 处理数字音频，带均衡器和音量控制。
+- **四声道支持**：通过 `quad` 设备混合模拟和数字音频。
+- **默认配置**：播放音频路由到立体声转四声道，录音按默认捕获配置。
+
+------
+
+**优化建议：**
+
+1. 确保硬件支持 `hw:PCH,0` 和 `hw:PCH,1` 的并行使用。
+2. 检查 `dnsoop` 的实际功能定义，补全录音部分配置。
+3. 测试均衡器和音量控制功能，确认其对数字信号的处理效果是否符合预期。
+
+
+
+# aplay -L 查看的设备名
+
+在大多数情况下，`aplay -D` 使用的设备名与 `aplay -L` 查看到的设备名是 **统一** 的，但需要注意一些细节：
+
+------
+
+### **1. `aplay -L` 列出的设备名**
+
+- `aplay -L` 显示的是 **可用的PCM设备列表**，包括：
+
+  - 硬件设备：如 `hw:0,0` 或 `plughw:1,0`。
+  - 软件插件设备：如 `default`、`dmix` 或用户定义的 `pcm.xxx`。
+  - 用户自定义的虚拟设备（在 `.asoundrc` 或 `/etc/asound.conf` 中定义）。
+
+- 输出格式：
+
+  ```plaintext
+  default
+      Playback/recording through the PulseAudio sound server
+  dmix
+      Direct sample mixing device
+  hw:0,0
+      Direct hardware device without any conversions
+  plughw:1,0
+      Hardware device with conversions
+  ...
+  ```
+
+------
+
+### **2. `aplay -D` 的设备名**
+
+- `aplay -D` 用于指定播放设备，设备名可以是以下几种类型：
+
+  1. **硬件设备名**：如 `hw:0,0` 或 `plughw:1,0`。
+  2. **虚拟设备名**：如 `dmix`、`default`，或 `.asoundrc` 中自定义的设备名。
+  3. **完全路径名**：如 `/dev/snd/pcmC0D0p`（不常用）。
+
+- 使用示例：
+
+  ```bash
+  aplay -D default test.wav
+  aplay -D plughw:1,0 test.wav
+  ```
+
+------
+
+### **3. 注意点**
+
+1. **定义优先级**：
+
+   - 如果 `.asoundrc` 或 `/etc/asound.conf` 中定义了自定义设备名（如 `pcm.my_device`），`aplay -L` 会列出这些设备，而 `aplay -D` 也可以使用它们。
+   - 没有定义时，默认设备（如 `default`）直接指向系统的全局配置。
+
+2. **硬件设备 vs 插件设备**：
+
+   - 硬件设备（如 `hw:X,Y`）直接与硬件交互，但不支持采样率或格式转换。
+   - 插件设备（如 `plughw:X,Y`）会自动处理采样率、格式等问题。
+
+3. **设备是否工作正常**：
+
+   - 如果设备名在 
+
+     ```
+     aplay -L
+     ```
+
+      中存在，但用 
+
+     ```
+     aplay -D
+     ```
+
+      测试时报错，可能原因有：
+
+     - 硬件设备被占用（比如被其他应用锁定）。
+     - 配置文件中的自定义设备名配置错误。
+     - 插件设备依赖的硬件或路径不可用。
+
+------
+
+### **4. 示例验证**
+
+1. **列出所有可用设备：**
+
+   ```bash
+   aplay -L
+   ```
+
+   示例输出：
+
+   ```plaintext
+   default
+   sysdefault:CARD=Device
+   dmix:CARD=Device,DEV=0
+   hw:CARD=Device,DEV=0
+   plughw:CARD=Device,DEV=0
+   ```
+
+2. **测试某个设备：**
+
+   ```bash
+   aplay -D dmix:CARD=Device,DEV=0 test.wav
+   ```
+
+3. **匹配自定义设备：**
+
+   - 假设 
+
+     ```
+     .asoundrc
+     ```
+
+      中定义了：
+
+     ```plaintext
+     pcm.my_device {
+         type plug
+         slave.pcm "hw:0,0"
+     }
+     ```
+
+   - `aplay -L` 将显示 `my_device`，可以通过 `aplay -D my_device` 测试。
+
+------
+
+### **总结**
+
+- **统一性**：`aplay -D` 的设备名基本与 `aplay -L` 一致，后者列出的设备名都可以用作 `aplay -D` 的参数。
+- **例外情况**：如果使用未列出的硬件路径（如 `/dev/snd/pcmC0D0p`），或者设备被占用，则可能导致设备不可用或报错。
+
+# `ladspa` 插件实现了一个可调均衡器（EQ）
+
+这段 ALSA 配置文件通过 `ladspa` 插件实现了一个可调均衡器（EQ）。以下是对配置的逐步解读：
+
+------
+
+### **核心部分：EQ 配置**
+
+#### **1. 定义均衡器设备（`pcm.eq`）**
+
+```plaintext
+pcm.eq {
+    type ladspa
+    slave.pcm "plug:dmix"
+    plugins [
+        {
+            label mbeq
+            id 1197
+            input {
+                controls [ -5 -5 -5 -5 -5 -10 -20 -15 -10 -10 -10 -10 -10 -3 -2 ]
+            }
+        }
+    ]
+}
+```
+
+##### 作用：
+
+- **`type ladspa`**：表示该设备使用 LADSPA 插件（Linux Audio Developer's Simple Plugin API）。
+
+- `slave.pcm "plug:dmix"`
+
+  ：
+
+  - 均衡器处理完成后的音频信号发送到 `plug:dmix`，实现混音。
+  - 如果注释掉并改为 `plughw:0,0`，则直接输出到硬件设备。
+
+- `plugins`
+
+  ：定义 LADSPA 插件的具体配置：
+
+  - **`label mbeq`**：指定使用 `mbeq` 插件，它是一个多频段均衡器。
+
+  - **`id 1197`**：插件的唯一标识符。
+
+  - `controls`
+
+    ：均衡器频段的增益设置（单位为分贝，
+
+    ```
+    dB
+    ```
+
+    ），每个值对应一个频段。示例值表示：
+
+    - 对低频（如 50Hz）减弱 -5dB。
+    - 对中高频（如 5000Hz 和以上）减弱较少或略增强。
+
+  - 具体频段的含义由 `mbeq` 插件定义，通常涵盖从低频到高频的多个范围。
+
+##### 可选项：
+
+- `path`
+
+  ：
+
+  - 配置 LADSPA 插件路径（如 `/usr/lib/ladspa`），默认不需要。
+  - 如果插件找不到时，可以启用并指定路径。
+
+------
+
+### **修改默认输出设备**
+
+#### **2. 将默认设备重定向到均衡器（`pcm.!default`）**
+
+```plaintext
+pcm.!default {
+    type plug
+    slave.pcm "eq"
+}
+```
+
+##### 作用：
+
+- 将 ALSA 的默认设备 (`pcm.!default`) 重定向到 `pcm.eq`。
+- 所有使用默认设备播放的音频都会经过均衡器处理。
+
+------
+
+### **支持 OSS 模拟音频**
+
+#### **3. 修改 OSS (`pcm.dsp0`) 的输出**
+
+```plaintext
+pcm.dsp0 {
+    type plug
+    slave.pcm "eq"
+}
+```
+
+##### 作用：
+
+- 为 OSS（Open Sound System）应用提供均衡器支持。
+- 当程序通过 OSS 的模拟设备（如 `/dev/dsp`）输出音频时，信号会先经过 `pcm.eq` 均衡器处理。
+
+------
+
+### **适用场景**
+
+1. 均衡音质
+
+   ：
+
+   - 适用于音频频率需要精细调整的场景，比如低音增强或高音补偿。
+
+2. 全局应用
+
+   ：
+
+   - 将均衡器设置为默认设备后，所有音频程序（如 VLC、浏览器等）的输出都能经过处理。
+
+3. 混音支持
+
+   ：
+
+   - 使用 `dmix` 作为后端设备，支持多个应用同时播放音频。
+
+------
+
+### **测试与验证**
+
+1. **测试 LADSPA 插件是否正常**：
+
+   ```bash
+   aplay -D eq test.wav
+   ```
+
+   验证均衡器设备能否正常处理音频。
+
+2. **测试默认设备输出**：
+
+   - 播放任何音频文件，观察是否经过均衡器。
+
+   ```bash
+   aplay test.wav
+   ```
+
+3. **调整均衡器参数**：
+
+   - 修改 `controls` 中的值，调整每个频段的增益。
+
+   - 比如增强低音（50Hz 和 100Hz）：
+
+     ```plaintext
+     controls [ 5 5 -5 -5 -5 -10 -20 -15 -10 -10 -10 -10 -10 -3 -2 ]
+     ```
+
+------
+
+### **可能的问题**
+
+1. **LADSPA 插件未找到**：
+   - 报错信息类似 `unable to find plugin mbeq`。
+   - 解决方法：检查 LADSPA 插件路径，尝试指定 `path` 参数。
+2. **音频延迟**：
+   - LADSPA 插件处理音频时可能引入微小延迟，特别是在实时场景中。
+   - 可以尝试调整后端设备（如 `dmix`）的缓冲区大小。
+3. **音质问题**：
+   - 如果频段调整过于极端，可能导致音质失真，建议逐步调试每个频段的增益。
+
+------
+
+### **总结**
+
+- **功能**：配置了一个基于 LADSPA 的全局均衡器设备，支持所有音频流经过频段调整。
+- **优点**：灵活、可调整，对所有 ALSA 和 OSS 程序透明。
+- **建议**：根据实际需求调整 `controls` 的频段增益，并测试音质效果。
+
+# 重采样
+
+要更改默认转换器，请将以下内容放在您的 `~/.asoundrc` 或 `/etc/asound.conf` 中：
+
+```
+/etc/asound.conf
+defaults.pcm.rate_converter "speexrate_medium"
+```
+
+当软件混合启用时，
+
+ALSA 被迫将所有内容调整到相同的频率（默认为 48 kHz，当受支持时）。
+
+默认情况下，它会尝试使用 speexrate 转换器进行调整，
+
+并在不可用时退回到低质量的线性插值 [7]。
+
+因此，如果你因为糟糕的采样导致音质差，
+
+问题可以通过简单地安装 alsa-plugins 包来解决。
+
+为了获得更高的质量重采样，
+
+您可以更改默认的采样率转换器为 `speexrate_medium` 或 `speexrate_best` 。
+
+两者都表现得足够好，
+
+实际上选择哪一个并不重要，
+
+因此通常使用最佳转换器并不值得付出额外的 CPU 周期。
+
+也可以使用 libsamplerate 转换器，它们的速度只有 speexrate 转换器的一半左右，但无法达到更高的质量。
+
+一些应用程序（如 MPlayer 及其衍生版本）默认会自行进行采样率转换，
+
+因为当采样率转换启用时，
+
+一些 ALSA 驱动程序的延迟报告可能存在错误（因此导致音频同步问题），
+
+因此除非您配置它们使用 ALSA 采样率转换，否则更改此设置将不会产生任何影响。
 
 
 

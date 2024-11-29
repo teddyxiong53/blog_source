@@ -17,5 +17,38 @@ pipewire-media-session是之前pipewire的session管理工具。
 
 入口文件是src\media-session.c
 
+# 主要结构体
+
+```
+struct sm_media_session
+
+struct sm_object_events
+
+struct sm_object_methods
+
+struct sm_object
+
+struct sm_param 
+
+struct sm_client 
+
+struct sm_device 
+
+struct sm_node 
+struct sm_port
+struct sm_session
+
+struct sm_endpoint
+
+struct sm_endpoint_stream
+
+struct sm_endpoint_link
+
+struct sm_media_session_events 
+struct sm_media_session 
+```
+
+
+
 
 

@@ -1572,6 +1572,79 @@ G_DEFINE_BOXED_TYPE(WpProperties, wp_properties, wp_properties_ref, wp_propertie
 - **wp_properties_ref** 函数通常会调用 `g_ref_count_inc` 来增加引用计数，并返回增加引用计数后的实例。
 - **wp_properties_unref** 函数通常会调用 `g_ref_count_dec` 来减少引用计数，并在引用计数减少到零时释放实例。
 
+
+
+在 GLib 中，**boxed 类型**（Boxed Types）是指用户定义的复杂数据类型，它们通常不直接映射到 C 语言的基本数据类型。相较于简单的类型（如整数、字符等），boxed 类型允许开发者定义自己的数据结构，并在 GLib 的类型系统中注册和使用。
+
+### 特点
+
+1. **内存管理**: Boxed 类型通常由 GLib 提供的内存管理函数管理，这样可以确保在使用这些类型时避免内存泄漏或重复释放。
+
+2. **封装**: Boxed 类型的数据被封装在一个指针中，这种封装提供了一种抽象方式，使得可以在不同的上下文中使用这些数据。
+
+3. **自定义类型**: 开发者可以根据需要定义自己的数据结构，例如结构体，并通过 GLib 的机制将其注册为 boxed 类型。
+
+### 如何定义 Boxed 类型
+
+定义 boxed 类型一般包括以下几个步骤：
+
+1. **定义结构体**: 创建一个 C 语言结构体来表示你的数据。
+
+2. **实现复制和释放函数**: 实现用于复制和释放该数据类型的函数。
+
+3. **注册类型**: 使用 GLib 宏（如 `G_DEFINE_BOXED_TYPE`）注册这个类型。
+
+### 示例
+
+以下是一个简单的 boxed 类型定义示例：
+
+```c
+#include <glib.h>
+
+typedef struct {
+    int x;
+    int y;
+} MyBoxedType;
+
+G_DEFINE_BOXED_TYPE(MyBoxedType, my_boxed_type,
+                     my_boxed_type_copy, my_boxed_type_free)
+
+void my_boxed_type_copy(MyBoxedType *src, MyBoxedType *dest) {
+    dest->x = src->x;
+    dest->y = src->y;
+}
+
+void my_boxed_type_free(MyBoxedType *data) {
+    g_free(data);
+}
+```
+
+### 使用 Boxed 类型
+
+在 `GValue` 中使用 boxed 类型，您可以像使用其他基本类型一样，以安全的方式存储和访问数据：
+
+```c
+GValue value = G_VALUE_INIT;
+g_value_init(&value, MY_TYPE_BOXED);
+
+MyBoxedType *data = g_new(MyBoxedType, 1);
+data->x = 10;
+data->y = 20;
+
+g_value_set_boxed(&value, data);
+MyBoxedType *retrieved_data = g_value_get_boxed(&value);
+
+g_print("x: %d, y: %d\n", retrieved_data->x, retrieved_data->y);
+
+// 记得释放内存
+g_free(data);
+g_value_unset(&value);
+```
+
+### 总结
+
+Boxed 类型在 GLib 中允许开发者创建和管理复杂数据类型，提供了灵活性和安全性，尤其是在需要存储和处理自定义结构时。如果您还有其他问题，欢迎继续提问！
+
 # gthread是不是不再推荐使用了？
 
 是的，`gthread`在GLib中并不是推荐的线程处理方式。GLib提供了`GThread`用于基本的线程支持，但随着Glib和GTK的发展，推荐使用更高级的线程和并发机制。
