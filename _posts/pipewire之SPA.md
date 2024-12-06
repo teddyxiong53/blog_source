@@ -67,3 +67,74 @@ SPA（Simple Plugin API）是 PipeWire 的核心组件之一，
 
 spa\plugins\volume\volume.c
 
+# spa interface
+
+看这个文件的注释。
+
+spa\include\spa\utils\hook.h
+
+一个spa interface，是一个通用的struct。跟一些macro一起，提供一个调用object上的方法的通用方式。
+
+而不需要知道实现的细节。
+
+跟interface打交道的主要方式是：
+
+通过宏展开为对实际方法的调用。
+
+要实现一个interface，我们需要2个struct和1个macro来实现对method的调用。
+
+```
+struct foo_methods {
+	u32 version;
+	void (*bar)(void *object, const char *msg);
+};
+struct foo {
+	struct spa_interface iface;
+	int aa;
+};
+```
+
+如果struct foo是private的，那么我们需要把它转成一个通用的spa_interface对象。
+
+```
+#define foo_bar (object, ...) ({
+	struct foo *f = obj;
+	spa_interface_call((struct spa_interface*)f, 
+		struct foo_methods,
+		bar,
+		0,//hardcoded version
+		__VA_ARGS__
+	);
+})
+```
+
+struct foo_methods 和调用用foo_bar必须是可以被caller看到的。（也就是要在头文件里）
+
+struct foo可以是私有的（也就是可以在自己的C文件里）
+
+调用：
+
+```
+void main() {
+	struct foo *myfoo = get_foo_from_somewhere();
+	foo_bar(myfoo, "11111");
+}
+```
+
+foo_bar 允许struct foo对调用者来说是黑盒。
+
+*get_foo_from_somewhere* 可以有很大的自由度。
+
+例如可以对foo结构体的内容进行调整。
+
+```
+struct foo * get_foo_from_somewhere() {
+	struct foo *f = calloc(sizeof (struct foo));
+	f->iface->cb = (struct foo_methods *) {.bar = bar1};
+	if (today_is_monday) {
+		f->iface->cb = (struct foo_methods *){.bar = bar2};
+	}
+	return f;
+}
+```
+

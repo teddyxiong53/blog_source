@@ -50,5 +50,59 @@ struct sm_media_session
 
 
 
+```
+sm_object
+^
+|
+sm_session
+^
+|
+sm_media_session
+	
+```
+
+sm_object的主要属性
+
+```
+u32 id
+char * type
+	这2个好理解。
+spa_list link
+	所有的对象串起来。
+sm_media_session *session
+	指向全局对象。
+pw_properties *props
+	属性列表。
+u64	serial
+	对象的uuid？
+pw_proxy *proxy
+	跟pw通信的代理对象
+spa_hook proxy_listener
+	proxy状态变化监听器。
+spa_hook object_listener
+	对象变化监听器。
+pw_destroy_t destroy
+	销毁函数。
+pw_proxy *handle
+	这个也是一个pw_proxy指针，主要用途是什么？
+spa_callbacks methods
+	方法列表。
+	
+```
+
+
+
+# src\media-session.c
+
+
+
+# media-session怎么跟pw关联起来的
+
+sm_device持有pw_device_info指针。
+
+所有这种结构体都是类似这样做的。
+
+sm_xx持有pw_xx_info指针。
+
 
 
