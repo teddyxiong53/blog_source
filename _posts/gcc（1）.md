@@ -879,6 +879,114 @@ gcc -Wl,-elf2flt -o output_file source_file.c
 
 这告诉 GCC 将 `-elf2flt` 选项传递给链接器，影响生成的可执行文件的格式。请注意，具体的效果可能依赖于所使用的交叉编译工具链和目标系统。
 
+# `__attribute__((__cleanup__))`
+
+结合 `__attribute__((__cleanup__))` 和 D-Bus 消息处理，可以用来自动释放 D-Bus 消息和连接资源，避免资源泄漏。以下是一个实际的例子，展示如何结合这个特性高效管理资源。
+
+### 示例代码
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <dbus/dbus.h>
+
+// 清理函数，用于释放 D-Bus 消息
+void cleanup_dbus_message(DBusMessage **msg) {
+    if (msg && *msg) {
+        printf("Cleaning up D-Bus message: %p\n", *msg);
+        dbus_message_unref(*msg); // 释放 D-Bus 消息
+        *msg = NULL;
+    }
+}
+
+// 清理函数，用于释放 D-Bus 连接
+void cleanup_dbus_connection(DBusConnection **conn) {
+    if (conn && *conn) {
+        printf("Cleaning up D-Bus connection: %p\n", *conn);
+        dbus_connection_unref(*conn); // 释放 D-Bus 连接
+        *conn = NULL;
+    }
+}
+
+int main() {
+    DBusError error;
+    dbus_error_init(&error);
+
+    // 连接到系统总线
+    __attribute__((__cleanup__(cleanup_dbus_connection))) DBusConnection *conn = 
+        dbus_bus_get(DBUS_BUS_SYSTEM, &error);
+
+    if (dbus_error_is_set(&error)) {
+        fprintf(stderr, "D-Bus connection error: %s\n", error.message);
+        dbus_error_free(&error);
+        return 1;
+    }
+
+    if (!conn) {
+        fprintf(stderr, "Failed to connect to D-Bus system bus\n");
+        return 1;
+    }
+
+    // 创建 D-Bus 方法调用消息
+    __attribute__((__cleanup__(cleanup_dbus_message))) DBusMessage *msg = 
+        dbus_message_new_method_call(
+            "org.freedesktop.DBus",       // 目标服务名
+            "/org/freedesktop/DBus",      // 目标对象路径
+            "org.freedesktop.DBus.Peer",  // 接口名
+            "Ping"                        // 方法名
+        );
+
+    if (!msg) {
+        fprintf(stderr, "Failed to create D-Bus message\n");
+        return 1;
+    }
+
+    // 发送消息并等待回复
+    __attribute__((__cleanup__(cleanup_dbus_message))) DBusMessage *reply = 
+        dbus_connection_send_with_reply_and_block(conn, msg, -1, &error);
+
+    if (dbus_error_is_set(&error)) {
+        fprintf(stderr, "D-Bus error: %s\n", error.message);
+        dbus_error_free(&error);
+        return 1;
+    }
+
+    if (reply) {
+        printf("D-Bus reply received successfully.\n");
+    }
+
+    // 资源清理在作用域结束时自动完成
+    return 0;
+}
+```
+
+### 代码说明
+
+| 资源类型       | 清理方式                                  |
+| -------------- | ----------------------------------------- |
+| **D-Bus 连接** | 使用 `dbus_connection_unref()` 自动释放。 |
+| **D-Bus 消息** | 使用 `dbus_message_unref()` 自动释放。    |
+| **错误处理**   | 检查并释放 `DBusError` 中的错误信息。     |
+
+### 特点与优势
+
+1. **简化资源管理**
+    使用 `__cleanup__` 属性自动管理 `DBusConnection` 和 `DBusMessage` 的生命周期，无需显式调用清理函数。
+2. **减少泄漏风险**
+    即使在函数中多次 `return`，资源仍会在作用域结束时自动释放。
+3. **清晰易读**
+    代码结构更简洁，减少显式释放代码，使主逻辑更易理解。
+
+### 编译与运行
+
+使用 GCC 编译时需要链接 `libdbus-1`：
+
+```bash
+gcc -o dbus_cleanup_example dbus_cleanup_example.c $(pkg-config --cflags --libs dbus-1)
+```
+
+运行程序后，资源会在作用域结束时自动释放，避免手动管理的复杂性。
+
 # 参考资料
 
 1、编译GNU/Linux共享库, 为什么要用PIC编译?( 转)

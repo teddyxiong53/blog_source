@@ -2562,6 +2562,91 @@ int main(int argc, char const *argv[])
 2. **单线程环境**：如果你的程序是单线程的，通常不需要调用这个函数。在单线程应用中，D-Bus 的内部机制已足够处理调用。
 3. **不确定性**：如果你不确定你的应用程序会在将来是否会变成多线程，或者如果你正在使用第三方库，这些库可能会在不同的线程中调用 D-Bus，那么最好调用它以确保安全。
 
+# dbus_pending_call_set_notify 
+
+`dbus_pending_call_set_notify` 是 D-Bus C API 中的一个函数，用于在异步调用完成时，注册一个回调函数来处理结果。这对于处理非阻塞 D-Bus 方法调用非常有用。
+
+### 函数原型
+
+```c
+dbus_bool_t dbus_pending_call_set_notify(
+    DBusPendingCall *pending,
+    DBusPendingCallNotifyFunction function,
+    void *user_data,
+    DBusFreeFunction free_user_data
+);
+```
+
+### 参数说明
+
+| 参数             | 类型                            | 描述                                                         |
+| ---------------- | ------------------------------- | ------------------------------------------------------------ |
+| `pending`        | `DBusPendingCall *`             | 表示正在等待响应的异步调用对象。                             |
+| `function`       | `DBusPendingCallNotifyFunction` | 当异步调用完成时执行的回调函数。                             |
+| `user_data`      | `void *`                        | 用户自定义的数据指针，将作为参数传递给回调函数。             |
+| `free_user_data` | `DBusFreeFunction`              | 可选的回调函数，用于释放 `user_data`，当不需要时可以设置为 `NULL`。 |
+
+### 返回值
+
+- 返回 `TRUE` 表示回调函数成功注册。
+- 返回 `FALSE` 表示注册失败（如 `pending` 是 NULL）。
+
+### 回调函数原型
+
+`DBusPendingCallNotifyFunction` 的定义如下：
+
+```c
+typedef void (*DBusPendingCallNotifyFunction)(
+    DBusPendingCall *pending,
+    void *user_data
+);
+```
+
+### 使用示例
+
+以下是一个注册异步回调的示例：
+
+1. **定义回调函数：**
+
+   ```c
+   void on_method_reply(DBusPendingCall *pending, void *user_data) {
+       DBusMessage *reply;
+   
+       // 检查响应是否有效
+       if (dbus_pending_call_get_completed(pending)) {
+           reply = dbus_pending_call_steal_reply(pending);
+           if (reply) {
+               // 处理响应
+               dbus_message_unref(reply);
+           }
+       }
+   
+       // 清理
+       dbus_pending_call_unref(pending);
+   }
+   ```
+
+2. **设置回调函数：**
+
+   ```c
+   DBusPendingCall *pending;
+   
+   if (dbus_connection_send_with_reply(connection, message, &pending, -1)) {
+       dbus_pending_call_set_notify(pending, on_method_reply, user_data, NULL);
+   }
+   ```
+
+3. **清理资源：**
+
+   - 回调完成后自动释放 `pending`。
+   - 如果 `user_data` 需要释放，可以通过 `free_user_data` 参数指定。
+
+### 注意事项
+
+- 回调函数在 D-Bus 连接的主循环中执行，因此需要确保主循环正在运行（如 `dbus_connection_read_write_dispatch`）。
+- `free_user_data` 可用于避免内存泄漏，如果 `user_data` 不需要释放，可以设置为 `NULL`。
+- 调用完成后，记得调用 `dbus_pending_call_unref` 来释放资源。
+
 # 参考资料
 
 1、DBus 入门与应用 －－ DBus 的 C 编程接口

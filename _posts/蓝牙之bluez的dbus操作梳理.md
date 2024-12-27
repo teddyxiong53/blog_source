@@ -326,6 +326,134 @@ Device found: /org/bluez/hci0/dev_78_66_9D_39_C2_B9
   ServicesResolved: false
 ```
 
+# dbus命令操作Adapter
+
+`org.bluez.Adapter1` 是 BlueZ 中用于表示蓝牙适配器的 D-Bus 接口。它提供了管理蓝牙适配器的能力，包括启动扫描、设置适配器属性等。
+
+以下是与 `org.bluez.Adapter1` 通信的常见操作及实际示例：
+
+------
+
+### **1. 获取适配器对象路径**
+
+适配器对象路径通常是 `/org/bluez/hciX`，其中 `X` 是适配器编号（如 `hci0`）。
+
+命令示例：
+
+```bash
+dbus-send --system --print-reply --dest=org.bluez \
+/org/bluez/hci0 org.freedesktop.DBus.Properties.Get \
+string:org.bluez.Adapter1 string:Address
+```
+
+返回结果：
+
+```text
+   variant       string "00:1A:7D:DA:71:13"
+```
+
+表示适配器的地址为 `00:1A:7D:DA:71:13`。
+
+------
+
+### **2. 设置适配器属性**
+
+**示例 1：更改适配器名称**
+
+```bash
+dbus-send --system --print-reply --dest=org.bluez \
+/org/bluez/hci0 org.freedesktop.DBus.Properties.Set \
+string:org.bluez.Adapter1 string:Alias variant:string:"MyBluetoothAdapter"
+```
+
+**示例 2：启用适配器的发现功能**
+
+```bash
+dbus-send --system --print-reply --dest=org.bluez \
+/org/bluez/hci0 org.freedesktop.DBus.Properties.Set \
+string:org.bluez.Adapter1 string:Discoverable variant:boolean:true
+```
+
+------
+
+### **3. 开始扫描设备**
+
+```bash
+dbus-send --system --print-reply --dest=org.bluez \
+/org/bluez/hci0 org.bluez.Adapter1.StartDiscovery
+```
+
+扫描开始后，你可以通过 `org.freedesktop.DBus.ObjectManager` 接口获取发现的设备。
+
+------
+
+### **4. 停止扫描设备**
+
+```bash
+dbus-send --system --print-reply --dest=org.bluez \
+/org/bluez/hci0 org.bluez.Adapter1.StopDiscovery
+```
+
+------
+
+### **5. 示例：启动扫描并获取发现的设备**
+
+1. **启动扫描**：
+
+   ```bash
+   dbus-send --system --print-reply --dest=org.bluez \
+   /org/bluez/hci0 org.bluez.Adapter1.StartDiscovery
+   ```
+
+2. **获取设备列表**： 使用以下命令列出 BlueZ 管理的所有设备：
+
+   ```bash
+   dbus-send --system --print-reply --dest=org.bluez \
+   / org.freedesktop.DBus.ObjectManager.GetManagedObjects
+   ```
+
+   返回结果中类似于 `/org/bluez/hci0/dev_XX_XX_XX_XX_XX_XX` 的对象路径为发现的设备。
+
+------
+
+### **6. 停用适配器**
+
+如果需要禁用适配器，可以设置 `Powered` 属性为 `false`：
+
+```bash
+dbus-send --system --print-reply --dest=org.bluez \
+/org/bluez/hci0 org.freedesktop.DBus.Properties.Set \
+string:org.bluez.Adapter1 string:Powered variant:boolean:false
+```
+
+------
+
+### **常用 D-Bus 方法汇总**
+
+| **方法**               | **功能**       | **示例命令**                                                 |
+| ---------------------- | -------------- | ------------------------------------------------------------ |
+| `StartDiscovery`       | 开始扫描设备   | `org.bluez.Adapter1.StartDiscovery`                          |
+| `StopDiscovery`        | 停止扫描设备   | `org.bluez.Adapter1.StopDiscovery`                           |
+| `RemoveDevice`         | 移除配对的设备 | `org.bluez.Adapter1.RemoveDevice` `/org/bluez/hci0/dev_XX_XX_XX_XX_XX_XX` |
+| `Set` (Properties.Set) | 设置属性值     | 设置发现功能：`Discoverable = true`                          |
+| `Get` (Properties.Get) | 获取属性值     | 获取设备地址：`Address`                                      |
+
+------
+
+### **蓝牙适配器主要属性**
+
+| **属性**       | **类型**  | **描述**                                   |
+| -------------- | --------- | ------------------------------------------ |
+| `Address`      | `string`  | 适配器的蓝牙地址，例如 `00:1A:7D:DA:71:13` |
+| `Name`         | `string`  | 蓝牙设备名称                               |
+| `Alias`        | `string`  | 用户设置的设备别名                         |
+| `Class`        | `uint32`  | 设备类别代码                               |
+| `Powered`      | `boolean` | 是否启用适配器                             |
+| `Discoverable` | `boolean` | 设备是否可被发现                           |
+| `Pairable`     | `boolean` | 是否允许配对                               |
+
+这些命令和方法适用于大部分 BlueZ 环境，用于控制和调试蓝牙适配器及其功能。
+
 # 实现A2DP sink功能
 
 实现 A2DP Sink 功能，即使蓝牙设备充当音频接收器，可以通过 BlueZ 的 D-Bus 接口进行配置。以下是如何通过 BlueZ 的 D-Bus 接口实现 A2DP Sink 功能的基本步骤：
@@ -662,7 +790,150 @@ sudo ./agent
 
 通过实现 `org.bluez.Agent1` 接口，你可以自定义和处理蓝牙配对过程中的用户交互。
 
+# dbus命令操作Agent
 
+`org.bluez.Agent` 是 BlueZ 用于处理设备配对过程的 D-Bus 接口。Agent（代理）在蓝牙配对时负责用户交互，例如 PIN 码输入、确认配对请求等。
+
+以下是与 `org.bluez.Agent` 接口相关的 D-Bus 操作及实际示例：
+
+------
+
+### **1. 注册代理 (Agent)**
+
+通过 `org.bluez.AgentManager1.RegisterAgent` 方法注册一个代理。代理对象通常由用户程序实现，负责处理配对过程。
+
+**命令示例：**
+
+```bash
+dbus-send --system --print-reply --dest=org.bluez \
+/org/bluez org.bluez.AgentManager1.RegisterAgent \
+object:/my/agent string:NoInputNoOutput
+```
+
+| **参数**                 | **说明**                                              |
+| ------------------------ | ----------------------------------------------------- |
+| `object:/my/agent`       | 代理对象路径，由程序实现。                            |
+| `string:NoInputNoOutput` | 代理功能类型（Capability），定义交互能力：            |
+|                          | - `DisplayOnly`: 仅显示 PIN 码；                      |
+|                          | - `DisplayYesNo`: 显示确认提示；                      |
+|                          | - `KeyboardOnly`: 用户输入 PIN 码；                   |
+|                          | - `NoInputNoOutput`: 无交互功能（常用于嵌入式设备）； |
+|                          | - `KeyboardDisplay`: 允许输入 PIN 和显示 PIN。        |
+
+**结果：** 代理注册后，蓝牙堆栈将通过此代理处理配对过程。
+
+------
+
+### **2. 设置默认代理**
+
+通过 `org.bluez.AgentManager1.RequestDefaultAgent` 方法，将代理设置为默认代理。
+
+**命令示例：**
+
+```bash
+dbus-send --system --print-reply --dest=org.bluez \
+/org/bluez org.bluez.AgentManager1.RequestDefaultAgent \
+object:/my/agent
+```
+
+**说明：** 一旦设置为默认代理，所有蓝牙配对请求将默认由此代理处理。
+
+------
+
+### **3. 实现代理方法**
+
+代理需要实现以下关键方法：
+
+| **方法**              | **功能**                                          |
+| --------------------- | ------------------------------------------------- |
+| `Release`             | 在代理被注销时调用，执行清理操作。                |
+| `RequestPinCode`      | 请求用户输入 PIN 码。                             |
+| `DisplayPinCode`      | 显示 PIN 码给用户。                               |
+| `RequestPasskey`      | 请求用户输入 Passkey（数值）。                    |
+| `DisplayPasskey`      | 显示 Passkey 并同步显示当前按键状态（键盘输入）。 |
+| `RequestConfirmation` | 请求用户确认配对是否继续（通常是 Yes/No）。       |
+| `AuthorizeService`    | 请求用户授权设备访问特定服务。                    |
+| `Cancel`              | 当配对被取消时调用。                              |
+
+------
+
+### **4. 示例：处理配对事件**
+
+假设代理路径为 `/my/agent`，以下是常见交互的模拟命令：
+
+#### **用户输入 PIN 码**
+
+```bash
+dbus-send --system --print-reply --dest=org.bluez \
+/my/agent org.bluez.Agent1.RequestPinCode \
+object:/org/bluez/hci0/dev_XX_XX_XX_XX_XX_XX
+```
+
+返回示例：
+
+```text
+   string "1234"
+```
+
+#### **确认配对**
+
+```bash
+dbus-send --system --print-reply --dest=org.bluez \
+/my/agent org.bluez.Agent1.RequestConfirmation \
+object:/org/bluez/hci0/dev_XX_XX_XX_XX_XX_XX uint32:123456
+```
+
+用户可以根据显示的 Passkey `123456` 进行确认。
+
+返回示例：
+
+- 确认：正常退出；
+- 拒绝：返回错误。
+
+#### **取消配对**
+
+当配对取消时，代理会收到 `Cancel` 方法调用：
+
+```bash
+dbus-send --system --print-reply --dest=org.bluez \
+/my/agent org.bluez.Agent1.Cancel
+```
+
+------
+
+### **5. 注销代理**
+
+通过 `org.bluez.AgentManager1.UnregisterAgent` 方法注销代理。
+
+**命令示例：**
+
+```bash
+dbus-send --system --print-reply --dest=org.bluez \
+/org/bluez org.bluez.AgentManager1.UnregisterAgent \
+object:/my/agent
+```
+
+------
+
+### **6. 完整的配对流程**
+
+1. **启动代理服务**：注册代理并设置为默认代理。
+2. **用户接受配对请求**：通过代理实现 `RequestPinCode` 或 `RequestConfirmation`。
+3. **完成配对**：代理方法完成后，设备完成配对并授权服务。
+
+------
+
+### **配对场景能力示例**
+
+| **能力**          | **描述**                       | **适用设备**                 |
+| ----------------- | ------------------------------ | ---------------------------- |
+| `DisplayOnly`     | 显示 PIN，用户输入到对方设备   | 仅显示设备（如数字显示屏）。 |
+| `DisplayYesNo`    | 显示 Passkey，用户选择确认     | 交互式设备（如手机）。       |
+| `KeyboardOnly`    | 用户输入 PIN 到设备            | 支持键盘的设备（如电脑）。   |
+| `NoInputNoOutput` | 无用户交互，配对自动完成       | 嵌入式设备、IoT 设备。       |
+| `KeyboardDisplay` | 同时支持输入和显示 PIN/Passkey | 高级交互设备（如智能手表）。 |
+
+使用 `org.bluez.Agent`，可以灵活处理配对过程，适配各种使用场景。
 
 # org.bluez.Profile1
 
@@ -766,3 +1037,255 @@ mainloop.run()
 ### 总结
 
 在音频格式变化时，`SetConfiguration` 方法通常会被调用，以便更新端点的配置并适应新的音频需求。
+
+
+
+# org.bluez.DeviceSet1用途
+
+`org.bluez.DeviceSet1` 是 BlueZ 提供的一个 D-Bus 接口，主要用于管理设备集合（Device Set）。设备集合通常用来表示多个设备的逻辑分组，便于应用程序对其进行批量管理或标识特定的上下文场景。
+
+------
+
+### **主要用途**
+
+| **功能**                 | **说明**                                                     |
+| ------------------------ | ------------------------------------------------------------ |
+| 逻辑分组设备             | 将多个蓝牙设备组织成一个集合，表示它们属于同一个场景或应用需求。 |
+| 批量操作                 | 可以针对设备集合执行批量操作（如连接、断开或配对）。         |
+| 描述设备集合的属性和状态 | 通过 D-Bus 属性查询和描述集合内的设备及其状态。              |
+
+------
+
+### **关键属性**
+
+以下是 `org.bluez.DeviceSet1` 的常用属性：
+
+| **属性**  | **类型**        | **说明**                                             |
+| --------- | --------------- | ---------------------------------------------------- |
+| `Devices` | `array[object]` | 集合内的设备对象路径列表。                           |
+| `Name`    | `string`        | 设备集合的名称，用于标识集合。                       |
+| `Type`    | `string`        | 集合类型，例如 `audio`, `input` 等，表示集合的用途。 |
+
+------
+
+### **常见方法**
+
+| **方法**       | **说明**                 |
+| -------------- | ------------------------ |
+| `AddDevice`    | 将指定设备添加到集合中。 |
+| `RemoveDevice` | 将指定设备从集合中移除。 |
+
+------
+
+### **D-Bus 示例操作**
+
+#### **1. 查询设备集合的属性**
+
+查询某个设备集合的所有属性。
+
+```bash
+dbus-send --system --print-reply --dest=org.bluez \
+/org/bluez/DeviceSet1 org.freedesktop.DBus.Properties.GetAll \
+string:org.bluez.DeviceSet1
+```
+
+**返回示例：**
+
+```text
+array [
+    dict entry(
+        string "Devices"
+        variant array [
+            object "/org/bluez/hci0/dev_XX_XX_XX_XX_XX_XX"
+            object "/org/bluez/hci0/dev_YY_YY_YY_YY_YY_YY"
+        ]
+    )
+    dict entry(
+        string "Name"
+        variant string "AudioGroup1"
+    )
+    dict entry(
+        string "Type"
+        variant string "audio"
+    )
+]
+```
+
+------
+
+#### **2. 添加设备到集合**
+
+将设备 `/org/bluez/hci0/dev_XX_XX_XX_XX_XX_XX` 添加到设备集合。
+
+```bash
+dbus-send --system --print-reply --dest=org.bluez \
+/org/bluez/DeviceSet1 org.bluez.DeviceSet1.AddDevice \
+object:/org/bluez/hci0/dev_XX_XX_XX_XX_XX_XX
+```
+
+------
+
+#### **3. 从集合中移除设备**
+
+从设备集合中移除设备 `/org/bluez/hci0/dev_XX_XX_XX_XX_XX_XX`。
+
+```bash
+dbus-send --system --print-reply --dest=org.bluez \
+/org/bluez/DeviceSet1 org.bluez.DeviceSet1.RemoveDevice \
+object:/org/bluez/hci0/dev_XX_XX_XX_XX_XX_XX
+```
+
+------
+
+### **场景示例**
+
+#### **1. 音频组管理**
+
+对于支持 LE Audio 或其他多设备音频场景，可以创建一个 `audio` 类型的设备集合，将所有相关设备（如耳机、麦克风等）加入集合中。通过集合，可以统一管理这些设备的连接、断开等操作。
+
+#### **2. 多输入设备管理**
+
+如果一个应用需要同时使用多个输入设备（如鼠标和键盘），可以将它们归入一个 `input` 类型的集合。
+
+------
+
+`org.bluez.DeviceSet1` 提供了一种管理多个设备的高级抽象接口，对于复杂场景（如 LE Audio 群组管理）尤其有用，便于开发者通过逻辑分组简化设备操作。
+
+
+
+# org.bluez.MediaEndpoint1用途
+
+
+
+`org.bluez.MediaEndpoint1` 是 BlueZ 中用于蓝牙音频传输的 D-Bus 接口，主要用于描述和管理音频流的终端（Media Endpoint）。它涉及到蓝牙音频流的建立、管理和控制，特别是在支持音频协议（如 A2DP 或 HFP）的设备之间传输音频数据。
+
+### **主要用途**
+
+1. **音频流管理**： `org.bluez.MediaEndpoint1` 允许应用程序通过 D-Bus 接口管理音频流的终端，例如设置音频终端的配置、打开和关闭音频流等。
+2. **音频协议支持**： 该接口用于支持 A2DP（高级音频分发协议）和 HFP（免提协议）等音频协议的数据传输。
+3. **终端连接与控制**： 可以用来连接到音频设备的媒体终端，并通过该接口控制音频流的打开、暂停或关闭等操作。
+4. **配置音频特性**： 通过该接口，蓝牙音频终端的音频特性（如音频编码方式、音量控制、媒体类型等）可以进行配置。
+
+------
+
+### **关键属性**
+
+| **属性**    | **类型** | **说明**                                                     |
+| ----------- | -------- | ------------------------------------------------------------ |
+| `UUID`      | `string` | 媒体终端的唯一标识符（通常为音频服务的 UUID）。              |
+| `Transport` | `object` | 关联的传输对象路径，通常为传输音频流的 `AudioTransport` 对象。 |
+| `Codec`     | `string` | 媒体终端使用的音频编解码器，例如 SBC、AAC 等。               |
+| `State`     | `string` | 媒体终端的状态（如 `idle`、`active`）。                      |
+| `Role`      | `string` | 音频流的角色（如 `source` 或 `sink`），用于标识终端是音频源还是音频接收端。 |
+
+------
+
+### **常见方法**
+
+| **方法**              | **说明**                                                 |
+| --------------------- | -------------------------------------------------------- |
+| `SetConfiguration`    | 设置音频终端的配置，例如编码、传输方式等。               |
+| `Release`             | 释放音频终端，停止音频流并解除连接。                     |
+| `Open`                | 打开音频终端，开始音频数据流的传输。                     |
+| `Close`               | 关闭音频终端，停止音频数据流的传输。                     |
+| `SelectConfiguration` | 选择某个配置（例如选择合适的编码格式和传输方式）并应用。 |
+
+------
+
+### **D-Bus 示例操作**
+
+#### **1. 查询媒体终端的属性**
+
+查询 `org.bluez.MediaEndpoint1` 对象的所有属性。
+
+```bash
+dbus-send --system --print-reply --dest=org.bluez \
+/org/bluez/hci0/dev_XX_XX_XX_XX_XX_XX/endpoint_1 \
+org.freedesktop.DBus.Properties.GetAll \
+string:org.bluez.MediaEndpoint1
+```
+
+**返回示例：**
+
+```text
+array [
+    dict entry(
+        string "UUID"
+        variant string "0000110A-0000-1000-8000-00805F9B34FB"
+    )
+    dict entry(
+        string "State"
+        variant string "active"
+    )
+    dict entry(
+        string "Codec"
+        variant string "SBC"
+    )
+    dict entry(
+        string "Role"
+        variant string "sink"
+    )
+]
+```
+
+------
+
+#### **2. 设置媒体终端配置**
+
+通过 `SetConfiguration` 方法设置媒体终端的音频编码和传输配置。
+
+```bash
+dbus-send --system --print-reply --dest=org.bluez \
+/org/bluez/hci0/dev_XX_XX_XX_XX_XX_XX/endpoint_1 \
+org.bluez.MediaEndpoint1.SetConfiguration \
+dict:string:variant \
+    string:"Codec" variant:string:"SBC" \
+    string:"Transport" variant:object:"/org/bluez/hci0/transport_1"
+```
+
+**说明**：
+
+- 设置媒体终端的音频编码为 SBC。
+- 设置传输方式为某个指定的音频传输对象。
+
+------
+
+#### **3. 打开音频终端**
+
+通过 `Open` 方法打开音频终端，开始音频数据流传输。
+
+```bash
+dbus-send --system --print-reply --dest=org.bluez \
+/org/bluez/hci0/dev_XX_XX_XX_XX_XX_XX/endpoint_1 \
+org.bluez.MediaEndpoint1.Open
+```
+
+------
+
+#### **4. 关闭音频终端**
+
+通过 `Close` 方法关闭音频终端，停止音频数据流的传输。
+
+```bash
+dbus-send --system --print-reply --dest=org.bluez \
+/org/bluez/hci0/dev_XX_XX_XX_XX_XX_XX/endpoint_1 \
+org.bluez.MediaEndpoint1.Close
+```
+
+------
+
+### **场景示例**
+
+#### **1. A2DP 音频流（音频源）**
+
+如果您有一个设备（如手机或计算机）作为 A2DP 音频源（`source` 角色），您可以通过 `org.bluez.MediaEndpoint1` 接口设置合适的编码（如 SBC 或 AAC），并打开媒体终端，以便开始向蓝牙耳机或其他音频接收设备发送音频数据。
+
+#### **2. 音频接收设备（音频接收端）**
+
+如果设备作为音频接收端（`sink` 角色），则可以通过 `org.bluez.MediaEndpoint1` 接口配置并接收来自音频源的音频流，并控制音频流的开始和结束。
+
+------
+
+### **总结**
+
+`org.bluez.MediaEndpoint1` 接口是 BlueZ 蓝牙堆栈中用于管理音频流终端的关键组件。它提供了打开、关闭、配置和管理蓝牙音频流的功能，适用于 A2DP、HFP 等音频协议的设备间音频数据传输。通过该接口，应用程序能够控制音频终端的状态、配置以及传输过程。

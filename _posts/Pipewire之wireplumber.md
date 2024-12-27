@@ -2190,11 +2190,12 @@ reserve_device:activate({
 ### **调试与验证**
 
 1. **检查模块是否加载**
+   
    ```bash
    wireplumber -v
    ```
    查看 `libwireplumber-module-reserve-device` 是否在输出中列出。
-
+   
 2. **检查设备预留状态**
    使用 `dbus-monitor` 观察 `org.freedesktop.ReserveDevice1` 接口的调用和状态。
 
@@ -2474,10 +2475,11 @@ device = {
 
 2. **检查设备属性**
    使用 `pw-cli` 或 `pw-dump` 查看设备属性是否正确应用：
+   
    ```bash
    pw-dump | grep -A10 "alsa_card"
    ```
-
+   
 3. **查看日志**
    使用 `journalctl` 查看 WirePlumber 日志：
    ```bash
@@ -2671,25 +2673,424 @@ WirePlumber 确实有一个状态，
 
 https://gitlab.freedesktop.org/pipewire/wireplumber/-/issues/644
 
-# 1
-
-PipeWire 包提供了一组初始配置文件在 `/usr/share/pipewire` 。
-
-您不应该直接编辑这些文件，因为包更新会覆盖您的更改。
-
-要配置 PipeWire，您可以从 `/usr/share/pipewire` 复制文件到替代的系统级位置 `/etc/pipewire` ，
-
-或到用户位置 `~/.config/pipewire` 。
-
-在优先级更高的目录中具有同样名称的文件会使相应的文件被忽略。
-
-WirePlumber 是推荐的会话管理器。它基于模块化设计，使用 Lua 插件实现实际的管理功能。
-
-WirePlumber 在版本 0.5 中将配置格式从 `.lua` 更改为 `.conf` 。请参阅 以获取迁移指南。
-
-pipewire-media-session 已被废弃，不再推荐使用。它主要被用于测试和作为构建新会话管理器的示例。
 
 
+# wireplumber典型场景举例
+
+在 **WirePlumber** 中，新的配置语法基于 **SPA JSON** 格式，而不是之前的 Lua 脚本。以下是使用新的 SPA JSON 语法来实现典型场景的配置示例，包括如何动态管理设备和音频路由。
+
+------
+
+### **场景 1：为蓝牙设备设置优先级**
+
+目标：当蓝牙耳机连接时，优先将音频输出路由到蓝牙耳机。
+
+#### 配置文件路径
+
+SPA JSON 配置通常位于以下路径：
+
+- 系统级：`/usr/share/wireplumber/`
+- 用户级：`~/.config/wireplumber/`
+
+#### 配置文件内容
+
+创建或修改文件 `bluez-policy.json`：
+
+```json
+{
+  "policy": {
+    "name": "bluez-priority-policy",
+    "description": "Set priority for Bluetooth devices",
+    "rules": [
+      {
+        "matches": [
+          { "node.name": "bluez_sink.*" }
+        ],
+        "actions": [
+          { "action": "set-priority", "priority": 100 }
+        ]
+      },
+      {
+        "matches": [
+          { "node.name": "alsa_output.*" }
+        ],
+        "actions": [
+          { "action": "set-priority", "priority": 50 }
+        ]
+      }
+    ]
+  }
+}
+```
+
+#### 行为说明
+
+- 蓝牙输出节点（`bluez_sink.*`）的优先级设置为 100。
+- ALSA 输出节点（`alsa_output.*`）的优先级设置为 50。
+- 当蓝牙耳机连接时，WirePlumber 将优先选择蓝牙设备作为音频输出。
+
+------
+
+### **场景 2：自动路由麦克风**
+
+目标：当 USB 麦克风连接时，自动将其设为默认输入设备。
+
+#### 配置文件内容
+
+创建或修改文件 `usb-mic-policy.json`：
+
+```json
+{
+  "policy": {
+    "name": "usb-mic-policy",
+    "description": "Automatically route USB microphone",
+    "rules": [
+      {
+        "matches": [
+          { "node.name": "alsa_input.usb-*" }
+        ],
+        "actions": [
+          { "action": "set-default", "role": "input" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+#### 行为说明
+
+- 匹配 USB 输入设备（`alsa_input.usb-*`）时，自动将其设为默认输入设备。
+
+------
+
+### **场景 3：阻止特定设备使用**
+
+目标：阻止某个特定的设备被创建或使用。
+
+#### 配置文件内容
+
+创建或修改文件 `block-device-policy.json`：
+
+```json
+{
+  "policy": {
+    "name": "block-device-policy",
+    "description": "Block a specific device",
+    "rules": [
+      {
+        "matches": [
+          { "node.name": "alsa_output.pci-0000_00_1f.3.*" }
+        ],
+        "actions": [
+          { "action": "block" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+#### 行为说明
+
+- 禁止 PCI 声卡（`alsa_output.pci-0000_00_1f.3.*`）的音频节点被创建。
+
+------
+
+### **场景 4：配置默认音频设备**
+
+目标：设置特定设备为默认输出设备。
+
+#### 配置文件内容
+
+创建或修改文件 `default-device-policy.json`：
+
+```json
+{
+  "policy": {
+    "name": "default-device-policy",
+    "description": "Set a default audio output device",
+    "rules": [
+      {
+        "matches": [
+          { "node.name": "alsa_output.pci-0000_00_1b.0.*" }
+        ],
+        "actions": [
+          { "action": "set-default", "role": "output" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+#### 行为说明
+
+- 将 PCI 声卡（`alsa_output.pci-0000_00_1b.0.*`）设置为默认输出设备。
+
+------
+
+### **场景 5：定义自定义规则集合**
+
+目标：创建一个完整的路由策略，包括输入、输出和设备优先级。
+
+#### 配置文件内容
+
+创建文件 `custom-policy.json`：
+
+```json
+{
+  "policy": {
+    "name": "custom-policy",
+    "description": "Custom audio routing policy",
+    "rules": [
+      {
+        "matches": [
+          { "node.name": "bluez_sink.*" }
+        ],
+        "actions": [
+          { "action": "set-priority", "priority": 90 },
+          { "action": "set-default", "role": "output" }
+        ]
+      },
+      {
+        "matches": [
+          { "node.name": "alsa_output.*" }
+        ],
+        "actions": [
+          { "action": "set-priority", "priority": 80 }
+        ]
+      },
+      {
+        "matches": [
+          { "node.name": "alsa_input.*" }
+        ],
+        "actions": [
+          { "action": "set-default", "role": "input" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+#### 行为说明
+
+- 设置蓝牙设备为默认输出，优先级为 90。
+- 设置 ALSA 设备为次优先输出，优先级为 80。
+- 设置 ALSA 输入设备为默认输入。
+
+------
+
+### **启用和验证配置**
+
+1. **放置配置文件**： 将 SPA JSON 文件保存到以下路径之一：
+
+   - 系统级：`/usr/share/wireplumber/`
+   - 用户级：`~/.config/wireplumber/`
+
+2. **重新加载 WirePlumber**：
+
+   ```bash
+   systemctl --user restart wireplumber
+   ```
+
+3. **验证规则是否生效**： 使用以下工具检查节点和路由：
+
+   ```bash
+   pw-cli dump
+   ```
+
+------
+
+### **总结**
+
+- WirePlumber 的 SPA JSON 语法简单直观，便于规则管理。
+- 通过定义匹配规则和动作，可以实现自动设备管理、优先级设置等。
+- 配置文件的修改无需重新编译，支持动态加载。
+
+# api.lua
+
+其他lua里用到的lua数据结构，都是在这里可以找到定义的。
+
+所以这个需要重点看一下。
+
+然后还有api.c。实现在这个里面。
+
+
+
+# wpexec的实际用途举例
+
+`wpexec` 是 WirePlumber 提供的一个命令行工具，主要用于执行与 PipeWire 相关的操作，通常用于调试、测试和管理 WirePlumber 的各种功能。它允许用户在命令行界面中执行与 WirePlumber 配置和操作相关的任务。
+
+### **常见用途和示例**
+
+1. **调试和测试脚本** `wpexec` 允许用户执行 Lua 脚本或其他配置，来测试 WirePlumber 中的各种规则和配置。这个功能对于开发人员在调试自定义的 WirePlumber 配置时非常有用。
+
+   **示例**：运行一个 Lua 脚本来改变音频设备的行为。
+
+   ```bash
+   wpexec "some-lua-script.lua"
+   ```
+
+2. **配置和应用自定义规则** 通过 `wpexec`，用户可以在不重新启动 WirePlumber 的情况下动态加载和应用自定义的规则（例如音频设备的优先级或特性设置）。
+
+   **示例**：应用一个自定义规则来调整音频设备的优先级。
+
+   ```bash
+   wpexec "Rule{
+     matches = { {\"node.name\", \"matches\", \"alsa_output.*\"} },
+     apply_properties = { [\"node.priority\"] = 1 }
+   }"
+   ```
+
+3. **查看和操作 WirePlumber 内部对象** `wpexec` 可以用于查看和操作 WirePlumber 中的对象，如设备、节点、链接等。它可以帮助开发人员和管理员在运行时检查和调整对象状态。
+
+   **示例**：列出所有的设备节点。
+
+   ```bash
+   wpexec "for node in context:enumerate_nodes() do print(node.name) end"
+   ```
+
+4. **动态加载或卸载模块** `wpexec` 还可以用来动态加载或卸载 WirePlumber 中的模块。在调试和测试过程中，这对于验证模块行为或模块之间的交互非常有帮助。
+
+   **示例**：加载一个模块
+
+   ```bash
+   wpexec "context:load_module('module-name')"
+   ```
+
+5. **交互式操作** `wpexec` 还可以启动一个交互式的 shell，允许用户通过命令行直接与 WirePlumber 进行交互，实时控制和调试系统。
+
+   **示例**：启动交互式 shell
+
+   ```bash
+   wpexec --interactive
+   ```
+
+------
+
+### **总结**
+
+`wpexec` 是一个非常灵活的工具，通常用于：
+
+- 调试和测试 WirePlumber 配置和规则。
+- 动态管理和调整音频设备行为。
+- 在没有重启 WirePlumber 的情况下应用更改。
+
+它特别适用于开发人员和高级用户，允许在不重启 WirePlumber 的情况下实时调整和管理系统配置。
+
+# wireplumber里的alsa.lua这些lua脚本，在什么时候被load到内存，在什么时候被触发执行里面的逻辑？
+
+在 WirePlumber 中，`alsa.lua` 这些 Lua 脚本主要用于配置和管理 ALSA 音频设备的相关操作。它们在 WirePlumber 启动时加载，并且在特定条件下执行脚本中的逻辑。
+
+### 加载时机
+
+1. **启动时加载**：`alsa.lua` 脚本会在 WirePlumber 启动时被加载。WirePlumber 会读取其配置目录中的所有 Lua 脚本（包括 `alsa.lua`），并将它们加载到内存中。这些脚本在 WirePlumber 的初始化过程中被解析。
+2. **动态加载**：除了启动时加载，WirePlumber 在运行时也会根据需要动态加载和执行其他 Lua 脚本，尤其是在设备管理、音频流控制等相关事件发生时。
+
+### 触发执行时机
+
+1. **设备事件**：当系统中的 ALSA 设备（如音频卡、PCM 设备等）发生变化时，WirePlumber 会触发与这些设备相关的逻辑。比如，当设备被插入或拔出时，脚本中的逻辑会被执行来更新设备状态、配置音频流等。
+2. **配置变更**：当 WirePlumber 的配置发生变化（如动态添加或修改音频源、目标设备等）时，`alsa.lua` 脚本中的相关逻辑也会被触发执行。
+3. **蓝牙设备相关事件**：对于蓝牙音频设备，脚本中的逻辑可能在蓝牙设备连接、断开时执行，用于更新与 ALSA 相关的配置。
+
+总结来说，`alsa.lua` 脚本在 WirePlumber 启动时加载，并会在 ALSA 设备事件、配置变化或相关的蓝牙设备事件发生时，触发并执行脚本中的逻辑。
+
+# 配置文件层级
+
+WirePlumber 的配置由全局的 PipeWire 风味 JSON 对象 `context` 和 `alsa_monitor` 组成，
+
+这些对象被修改以改变其行为。
+
+配置文件从 `~/.config/wireplumber/` （用户配置）、 `/etc/wireplumber/` （全局配置）和 `/usr/share/wireplumber/` （出厂配置）读取。
+
+
+
+WirePlumber 从读取主配置文件开始。
+
+这是一个类似于 JSON 的文件，
+
+用于设置 PipeWire 上下文、SPA 插件、模块和组件。
+
+这些组件中包括 Lua 脚本引擎，用于动态修改全局对象。
+
+
+
+wireplumber里的配置项，只有2个是用context开头的。
+
+其余都是wireplumber开头的。
+
+```
+wireplumber.profiles 
+wireplumber.components 
+	这些组件在连接到pipewire的时候创建。
+wireplumber.components.rules
+wireplumber.settings.schema
+```
+
+
+
+# 蓝牙配置
+
+# 注册的gobject类型
+
+就这7个。
+
+```
+  g_type_ensure (WP_TYPE_CLIENT);
+  g_type_ensure (WP_TYPE_DEVICE);
+  g_type_ensure (WP_TYPE_LINK);
+  g_type_ensure (WP_TYPE_METADATA);
+  g_type_ensure (WP_TYPE_NODE);
+  g_type_ensure (WP_TYPE_PORT);
+  g_type_ensure (WP_TYPE_FACTORY);
+```
+
+# wp_transition 
+
+`WpTransition` 是 WirePlumber 中的一个结构，
+
+主要用于表示异步操作中的过渡过程。
+
+它是一个状态机，每个过渡（transition）包含一系列的步骤，
+
+这些步骤按顺序执行，直到操作完成。
+
+### 主要概念
+
+1. **异步操作**：`WpTransition` 作为一个异步任务，涉及到一系列的“步骤”来完成一个操作。每个步骤可能会启动一个异步操作，并且在操作完成后会触发相应的回调。
+2. **步骤和状态机**：每个步骤的执行通过 `WpTransitionClass::get_next_step()` 方法决定下一个要执行的步骤。`WpTransitionClass::execute_step()` 方法则用于执行当前步骤所需的操作。当步骤完成后，`wp_transition_advance()` 被调用以推进到下一个步骤。
+3. **错误处理**：如果在任何步骤中发生错误，代码应调用 `wp_transition_return_error()`，以便立即结束过渡操作，并通过 `wp_transition_had_error()` 检查是否发生了错误。
+4. **完成状态**：过渡的完成由 `completed` 属性表示，当过渡的最后一步完成或发生错误时，`completed` 属性会被设置为 `TRUE`。这意味着过渡操作已经完成，无论是成功还是失败。此属性只会从 `FALSE` 变为 `TRUE` 一次。
+
+### 属性（`GProperties`）
+
+- completed
+
+   (
+
+  ```
+  gboolean
+  ```
+
+  )：
+
+  - 该属性表示过渡操作是否已完成。
+  - 当过渡操作的最后一步完成，或者调用 `wp_transition_return_error()` 时，`completed` 会被设置为 `TRUE`。
+  - 该属性的值从 `FALSE` 变为 `TRUE` 只会发生一次。
+  - `GObject` 的 `notify` 信号会在回调被调用后立即触发。
+
+### 工作流程
+
+1. `WpTransition` 会通过多个步骤逐步执行操作。
+2. 每个步骤通常会启动一个异步操作。异步操作完成后，步骤会调用 `wp_transition_advance()` 来继续下一个步骤。
+3. 如果出现错误，操作会通过 `wp_transition_return_error()` 终止。
+4. 通过监控 `completed` 属性的变化，可以知道操作是否已完成。
+
+### 总结
+
+`WpTransition` 是 WirePlumber 中用于管理复杂异步操作的机制，通过一系列步骤和状态机来控制异步任务的执行。这种设计使得 WirePlumber 可以顺序且可靠地执行操作，确保每个操作在步骤之间的过渡顺利进行，并且能够处理可能出现的错误。
 
 # 参考资料
 

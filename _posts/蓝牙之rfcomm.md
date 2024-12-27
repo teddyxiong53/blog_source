@@ -374,6 +374,46 @@ sudo hciconfig hci0 piscan
 
 通过这些步骤和命令，你可以成功地将板子设置为RFCOMM服务器，并让手机连接到它，从而实现数据通信。
 
+# 通道
+
+在蓝牙协议栈中，RFCOMM 是一个模拟串口通信的协议层，用于实现设备间的点对点通信。RFCOMM 通道（Channel）是蓝牙设备之间建立通信的重要资源，因为只有 1 到 31 的有限数量。为了避免设备间通信发生冲突，蓝牙标准和社区对这些通道进行了预分配，绑定了常见的蓝牙功能或服务（Profile）。
+
+### 关键解释：
+
+1. **有限性**：RFCOMM 通道范围为 1-31，每个通道都能承载一个服务。因此，为避免服务冲突，对常见服务预分配了固定通道号。
+2. **服务和通道对应关系**：服务（Profile）表示蓝牙设备提供的功能，例如传输数据、访问电话簿、文件传输等。分配的通道号保证这些功能在设备间能快速且一致地发现和使用。
+
+### 常见服务及通道分配：
+
+| **Profile**       | **Channel** | **描述**                                                     |
+| ----------------- | ----------- | ------------------------------------------------------------ |
+| **DUN**           | 1           | Dial-Up Networking，用于调制解调器拨号网络。                 |
+| **SPP**           | 3           | Serial Port Profile，用于仿真串口的无线数据通信。            |
+| **HSP HS**        | 6           | Headset Profile (Headset Side)，耳机侧的通道，用于音频通信。 |
+| **HFP HF**        | 7           | Hands-Free Profile (Hands-Free Side)，免提设备的通道。       |
+| **OPP**           | 9           | Object Push Profile，用于推送对象（如名片或图片）。          |
+| **FTP**           | 10          | File Transfer Profile，用于文件传输。                        |
+| **BIP**           | 11          | Basic Imaging Profile，用于图片传输。                        |
+| **HSP AG**        | 12          | Headset Profile (Audio Gateway Side)，音频网关侧的通道。     |
+| **HFP AG**        | 13          | Hands-Free Profile (Audio Gateway Side)，音频网关的通道。    |
+| **SYNCH (IrMC)**  | 14          | Synchronization Profile，用于同步（如联系人）。              |
+| **PBAP**          | 15          | Phone Book Access Profile，用于访问电话簿。                  |
+| **MAP MAS**       | 16          | Message Access Profile (Message Access Server)，消息访问服务端。 |
+| **MAP MNS**       | 17          | Message Access Profile (Message Notification Server)，消息通知端。 |
+| **SyncEvolution** | 19          | Linux SyncEvolution工具专用，用于同步。                      |
+| **PC/Ovi Suite**  | 24          | 用于PC套件或Nokia Ovi Suite。                                |
+| **SyncML Client** | 25          | SyncML协议客户端，用于数据同步。                             |
+| **SyncML Server** | 26          | SyncML协议服务端，用于数据同步。                             |
+
+### 使用场景：
+
+设备需要实现某种服务时，会在 SDP（服务发现协议）中注册对应通道号，客户端通过 SDP 查询服务时，能快速定位服务对应的 RFCOMM 通道号。
+
+### 注意事项：
+
+- 如果设备需要自定义服务，必须选择未被预分配的通道号。
+- 某些情况下，服务可能动态分配通道，但需避免与上述通道冲突。
+
 # 参考资料
 
 1、RFCOMM
