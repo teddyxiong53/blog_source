@@ -3092,6 +3092,1519 @@ wireplumber.settings.schema
 
 `WpTransition` 是 WirePlumber 中用于管理复杂异步操作的机制，通过一系列步骤和状态机来控制异步任务的执行。这种设计使得 WirePlumber 可以顺序且可靠地执行操作，确保每个操作在步骤之间的过渡顺利进行，并且能够处理可能出现的错误。
 
+#  lua脚本里的ObjectManager
+
+在 **WirePlumber** 的 Lua 脚本中，`ObjectManager` 是一个核心组件，
+
+负责管理与 PipeWire 节点和对象的交互。
+
+它的主要功能是跟踪和管理特定类型的 PipeWire 对象（如设备、节点、端口等），
+
+并为这些对象提供便捷的查询、监听和操作方法。
+
+### **基本功能**
+
+`ObjectManager` 的用途：
+
+- **发现对象：** 根据指定的规则发现 PipeWire 中的对象。
+- **监听对象变化：** 当对象被添加、删除或其属性发生变化时触发事件。
+- **过滤对象：** 通过设置规则只管理符合条件的对象。
+
+------
+
+### **创建和使用 `ObjectManager`**
+
+#### 1. **创建 `ObjectManager`**
+
+使用 `ObjectManager` 通常需要在 Lua 脚本中创建实例，并指定需要跟踪的对象类型和规则：
+
+```lua
+local ObjectManager = require("wireplumber").ObjectManager
+
+-- 创建 ObjectManager 实例
+local om = ObjectManager {
+  interest = {
+    type = "node",          -- 对象类型，例如 node, device, port 等
+    Constraint {           -- 属性约束
+      "media.class", "matches", "Audio/Sink"  -- 示例：只匹配音频输出设备
+    }
+  }
+}
+```
+
+------
+
+#### 2. **启动 `ObjectManager`**
+
+初始化 `ObjectManager` 并使其开始工作：
+
+```lua
+om:activate()  -- 激活管理器
+```
+
+------
+
+#### 3. **获取对象**
+
+通过 `ObjectManager` 的方法获取已发现的对象列表：
+
+```lua
+-- 获取所有符合条件的对象
+local objects = om:get_objects()
+for _, obj in ipairs(objects) do
+  print("Found object: " .. obj.properties["node.name"])
+end
+
+-- 获取单个对象
+local obj = om:lookup {
+  Constraint { "node.name", "matches", "my-audio-node" }
+}
+if obj then
+  print("Found specific object: " .. obj.properties["node.name"])
+end
+```
+
+------
+
+### **监听对象事件**
+
+通过监听对象事件来处理动态变化：
+
+```lua
+-- 监听对象添加事件
+om:connect("object-added", function (om, obj)
+  print("Object added: " .. obj.properties["node.name"])
+end)
+
+-- 监听对象删除事件
+om:connect("object-removed", function (om, obj)
+  print("Object removed: " .. obj.properties["node.name"])
+end)
+```
+
+------
+
+### **完整示例：跟踪音频输出设备**
+
+以下是一个简单脚本，跟踪所有音频输出设备的添加和移除：
+
+```lua
+local ObjectManager = require("wireplumber").ObjectManager
+
+local om = ObjectManager {
+  interest = {
+    type = "node",
+    Constraint { "media.class", "matches", "Audio/Sink" }
+  }
+}
+
+om:connect("object-added", function (om, obj)
+  print("Audio sink added: " .. obj.properties["node.name"])
+end)
+
+om:connect("object-removed", function (om, obj)
+  print("Audio sink removed: " .. obj.properties["node.name"])
+end)
+
+om:activate()
+```
+
+------
+
+### **常用方法**
+
+| 方法名                         | 功能                                 |
+| ------------------------------ | ------------------------------------ |
+| `om:activate()`                | 激活 `ObjectManager`，开始发现对象。 |
+| `om:get_objects()`             | 获取所有符合条件的对象。             |
+| `om:lookup(criteria)`          | 根据条件查找特定对象。               |
+| `om:connect(signal, callback)` | 监听对象的事件，如添加、移除等。     |
+
+------
+
+### **注意事项**
+
+1. **性能问题：** 如果管理大量对象，确保设置合理的过滤条件以降低开销。
+2. **调试输出：** 使用 `obj.properties` 查看对象的所有属性。
+3. **事件处理：** 避免在事件回调中执行耗时操作，以免阻塞 PipeWire 的主循环。
+
+如果有更具体的应用场景需求，可以告诉我进一步优化代码！
+
+# 搜索lua的顺序
+
+```
+T 00:04:20.905284       wp-base-dirs ../lib/wp/base-dirs.c:171:wp_base_dirs_find_file: test file: /.local/share/wireplumber/scripts/sm-objects.lua
+T 00:04:20.905369       wp-base-dirs ../lib/wp/base-dirs.c:171:wp_base_dirs_find_file: test file: /usr/local/share/wireplumber/scripts/sm-objects.lua
+T 00:04:20.905437       wp-base-dirs ../lib/wp/base-dirs.c:171:wp_base_dirs_find_file: test file: /usr/share/wireplumber/scripts/sm-objects.lua
+```
+
+/.local/share/wireplumber/scripts/sm-objects.lua
+
+注意这个路径。这个就是自定义的lua脚本推荐的位置。
+
+# wp_transition_advance 这个是做什么的？
+
+`wp_transition_advance` 是 WirePlumber 的 C API 中用于管理状态机（State Machine）中的状态转换的一个函数。在 WirePlumber 的模块化架构中，状态机用于表示和管理复杂任务的各个阶段，通过状态的切换来逐步完成任务。
+
+------
+
+### **功能和用途**
+
+- **推进状态：** `wp_transition_advance` 的主要作用是将状态机从当前状态推进到下一个状态。
+- **触发回调：** 每次状态变化时，都会触发相应的回调函数（如果设置了回调）。
+- **完成任务：** 当所有状态都完成后，状态机会自动完成并清理资源。
+
+------
+
+### **典型使用场景**
+
+状态机在 WirePlumber 中用于管理异步任务，比如设备初始化、资源分配或模块加载。
+
+------
+
+### **函数原型**
+
+```c
+void wp_transition_advance(WpTransition *transition);
+```
+
+| 参数         | 描述                                 |
+| ------------ | ------------------------------------ |
+| `transition` | 当前的状态机实例（`WpTransition`）。 |
+
+------
+
+### **工作原理**
+
+1. **创建状态机：** 状态机由 `wp_transition_new()` 创建，并与某个对象关联。
+2. **定义各个状态：** 在状态机的实现中，需要定义任务的各个阶段。
+3. **推进状态：** 调用 `wp_transition_advance()` 将状态推进到下一个阶段。
+4. **完成状态机：** 当所有状态完成时，状态机会自动标记为完成，或者调用 `wp_object_abort()` 以手动终止。
+
+------
+
+### **示例代码**
+
+以下是一个使用状态机完成简单任务的示例：
+
+```c
+#include <wireplumber/wireplumber.h>
+
+typedef struct {
+  WpTransition parent;
+  int step;
+} MyTransition;
+
+static void
+my_transition_execute_step (WpTransition * transition)
+{
+  MyTransition *self = (MyTransition *) transition;
+
+  if (self->step == 0) {
+    g_print ("Step 0: Initializing\n");
+    self->step++;
+    wp_transition_advance (transition); // 推进到下一步
+  }
+  else if (self->step == 1) {
+    g_print ("Step 1: Processing\n");
+    self->step++;
+    wp_transition_advance (transition); // 推进到下一步
+  }
+  else {
+    g_print ("Step 2: Finalizing\n");
+    wp_transition_return (transition, WP_TRANSITION_SUCCESS); // 完成状态机
+  }
+}
+
+static void
+start_my_transition (WpObject * obj)
+{
+  MyTransition *trans = g_object_new (MY_TYPE_TRANSITION, NULL);
+  wp_object_set_transition (obj, (WpTransition *) trans);
+  wp_transition_advance ((WpTransition *) trans); // 启动状态机
+}
+```
+
+------
+
+### **关键函数**
+
+| 函数名                       | 描述                                 |
+| ---------------------------- | ------------------------------------ |
+| `wp_transition_advance()`    | 推进状态机到下一个状态。             |
+| `wp_transition_return()`     | 设置状态机的完成状态（成功或失败）。 |
+| `wp_object_set_transition()` | 为对象关联一个状态机。               |
+| `wp_object_abort()`          | 手动中止状态机并标记为失败。         |
+
+------
+
+### **注意事项**
+
+1. **避免死循环：** 每次推进状态时，确保状态机逻辑最终能完成。
+2. **异步操作：** 如果某些状态涉及异步任务，确保任务完成后再调用 `wp_transition_advance()`。
+3. **调试：** 使用日志跟踪状态变化，方便调试复杂任务的执行流程。
+
+如果需要更详细的示例或应用场景解释，请告诉我！
+
+
+
+# wpctl执行时的日志
+
+```
+loaded config '/usr/share/pipewire/client.conf'
+```
+
+# 加载自定义lua
+
+```
+~/.config/wireplumber/wireplumber.conf.d/99-my-script.conf
+```
+
+内容：
+
+```
+wireplumber.components = [
+  {
+    name = my-script.lua, type = script/lua
+    provides = custom.my-script
+  }
+]
+
+wireplumber.profiles = {
+  main = {
+    custom.my-script = required
+  }
+}
+```
+
+创建/etc/wireplumber/scripts 这个目录。
+
+把my-script放进去。
+
+
+
+# wireplumber.profiles
+
+这个里面的feature name，其实就是下面的wireplumber.components里的那些provides。
+
+```
+  {
+    name = ensure-no-media-session, type = built-in
+    provides = check.no-media-session
+  }
+```
+
+
+
+# 原理
+
+PipeWire 会话管理器是一个承担很多任务的工具。
+
+很多人将“会话管理器”理解为一个负责管理节点间连接的工具，
+
+但这只是它众多任务之一。
+
+要理解它的全部运作方式，
+
+我们需要首先讨论 PipeWire 是如何工作的。
+
+
+
+当 PipeWire 启动时，它会加载其配置文件中定义的一组模块。
+
+这些模块为 PipeWire 提供功能，
+
+否则它只是一个空进程不做任何事情。
+
+在正常情况下，
+
+PipeWire 启动时加载的模块包含对象工厂，
+
+以及允许进程间通信的原生协议模块。
+
+除此之外，PipeWire 并不会加载或执行其他操作。
+
+这是会话管理开始的地方。
+
+
+
+会话管理基本上是设置 PipeWire 使其做一些有用的事情。
+
+这通过利用 PipeWire 暴露的对象工厂来创建一些有用的对象来实现，
+
+然后通过操作它们的方法来修改并稍后销毁它们。
+
+这样的对象包括设备、节点、端口、链接等。
+
+这是一个需要持续监控和采取行动的任务，
+
+需要对系统使用过程中发生的大量不同事件做出反应。
+
+## 会话管理逻辑划分
+
+WirePlumber 中的会话管理逻辑分为 6 个不同的操作区域：
+
+###  设备启用 
+
+启用设备是基本的操作领域。
+
+这通过使用device monitor来实现，
+
+这些对象通常作为 SPA 插件在 PipeWire 中实现，
+
+但由 WirePlumber 加载。
+
+它们的任务是发现可用的媒体设备并在 PipeWire 中创建对象，
+
+以提供与这些设备交互的方式。
+
+### 设备配置
+
+大多数设备从计算机的角度来看会暴露复杂的功能，
+
+为了提供简单流畅的用户体验，
+
+这些功能需要被管理。
+
+例如，音频设备被组织成不同的配置文件和路径，这样可以设置它们以满足特定的使用场景。
+
+这些配置和管理需要由会话管理器来完成。
+
+### client access control
+
+就是权限管理。
+
+### node config
+
+节点是媒体处理的基本元素。
+
+它们通常由设备监视器或客户端应用程序创建。
+
+创建后，节点处于无法链接的状态。
+
+链接它们需要一些配置，
+
+例如配置媒体格式，随后是应暴露的端口数量和类型。
+
+此外，根据用户偏好，可能还需要设置与节点相关的某些属性和元数据。
+
+所有这些都由会话管理器处理。
+
+### link 管理
+
+当节点最终可以使用时，
+
+会话管理器还需要决定它们应该如何连接，
+
+以便媒体能够流过。
+
+例如，音频播放流节点很可能需要连接到默认音频输出设备节点。
+
+然后，会话管理器还需要创建所有这些连接，
+
+并监控所有可能影响它们的条件，
+
+以便在某些事情发生变化时（例如，如果设备断开连接）可以进行动态重新连接。
+
+在某些情况下，由于创建或销毁连接，设备和节点的配置也可能需要更改。
+
+### metadata管理
+
+在运行时，PipeWire 和 WirePlumber 都会在这些对象之外的存储中存储一些==关于对象及其操作的额外属性==。
+
+这些属性被称为“元数据”，
+
+并存储在“元数据对象”中。
+
+这些元数据可以通过 pw-metadata 等工具外部更改，也可以通过其他工具更改。
+
+在某些情况下，这些元数据需要与会话管理器内的逻辑进行交互。
+
+==最明显的是，选择默认的音频和视频输入输出是通过设置元数据来完成的。==
+
+会话管理器随后需要验证这些信息、存储它们并在下次重启时恢复它们，
+
+同时还要确保在动态插入和拔出设备时，默认的输入输出仍然有效和合理。
+
+
+
+
+
+## libwireplumber
+
+WirePlumber 建立在 libwireplumber 库之上，
+
+该库提供了表达所有会话管理逻辑的基本构建块。
+
+libwireplumber 是用 C 语言编写的，
+
+并基于 GObject，
+
+它封装了 PipeWire API，
+
+并提供了一个更高层次且更方便的 API。
+
+虽然 WirePlumber 服务实现会话管理逻辑，
+
+但底层库也可以在 WirePlumber 服务之外被利用。
+
+这允许创建与 PipeWire 交互的外部工具和 GUI。
+
+
+
+PipeWire 通过 IPC 协议暴露了多个对象，
+
+如节点和端口，
+
+==但使用标准面向对象原则与之交互较为困难，==
+
+==因为它是异步的。==
+
+例如，当一个对象被创建时，它的存在会在协议中宣布，但其属性会在后续的次要消息中宣布。
+
+如果需要对这个对象创建事件做出反应，
+
+通常需要访问对象的属性，
+
+因此必须等待属性被发送。
+
+虽然这样做听起来很简单，而且确实如此，
+
+但在所有地方重复进行这种操作而不是专注于编写实际的事件处理逻辑，会变得繁琐。
+
+
+
+WirePlumber 的库通过
+
+为每个对象在其生命周期中缓存
+
+从 PipeWire 接收到的所有信息和更新来创建代理对象，
+
+然后通过 WpObjectManager API 使这些信息可用，
+
+该 API 能够在宣布这些信息（例如，属性）之前等待每个对象上的相关信息（例如，属性）已被缓存。
+
+
+
+还提供一套用于会话管理的工具。
+
+例如，它提供了 WpSessionItem 类，
+
+可以用于抽象图的一部分并附加一些逻辑。
+
+它还提供了事件与挂钩 API，这是一种以声明方式表达事件处理逻辑的方法。
+
+
+
+还提供一套杂项工具，
+
+用于桥接 PipeWire API 和 GObject API，
+
+例如 WpProperties、WpSpaPod、WpSpaJson 等。
+
+这些工具补充了对象模型，使得与 PipeWire 对象的交互更加容易。
+
+
+
+WirePlumber 守护进程是在库 API 的基础上实现的，
+
+它的任务是托管实现会话管理逻辑的组件。
+
+本身它除了加载和激活这些组件之外不做其他事情。
+
+实际的逻辑是它们内部实现的。
+
+模块化设计确保可以无需重新实现其余部分就替换特定功能的实现，
+
+从而在目标敏感部分，
+
+如策略管理以及使用非标准硬件方面提供灵活性。
+
+# events和hooks
+
+会话管理就是应对事件并采取必要行动。
+
+因此，WirePlumber 的逻辑全部建立在事件和挂钩之上。
+
+每个事件都有一个source、一个subject和一些property，这些属性包括事件类型。
+
+* `source` 是指创建此事件的 GObject。通常，这指的是 `WpStandardEventSource` 插件。
+
+* `subject` 是可选的目标引用，指本次事件的对象。例如，在一个 `node-added` 事件中， `subject` 将引用刚刚添加的 `WpNode` 对象。一些事件，尤其是仅用于触发动作的事件，没有subject
+* `properties` 是一个字典，包含事件信息，包括事件类型，如果存在的话，还包含所有 `subject` 的 PipeWire 属性。
+* `event.type` 属性描述事件的性质，例如 `node-added` 或 `metadata-changed` 是一些有效的事件类型。
+
+
+
+每个事件也有优先级。
+
+优先级较高的事件会在优先级较低的事件之前被处理。
+
+当两个或两个以上的事件具有相同的优先级时，
+
+它们将按照先进先出的方式处理。
+
+这种逻辑由事件分发器定义。
+
+
+
+钩子是代表需要在处理某个事件时执行的可运行动作的对象。
+
+因此，每个钩子都包含一个可以执行的同步或异步函数，
+
+并且每个钩子都有方法将其与特定事件关联起来。
+
+这通常通过声明对特定事件属性或它们的组合的兴趣来实现。
+
+有两大类钩子: `SimpleEventHook` 和 `AsyncEventHook` 。
+
+每个钩子也有一个名称，
+
+可以是任意字符组成的字符串。
+
+此外，它还有两个名字数组，用来声明这个钩子与其他钩子之间的依赖关系。
+
+一个数组称为 `before` ，
+
+另一个称为 `after` 。
+
+ `before` 数组中的钩子名称表示这个钩子必须在那些其他钩子之前执行。
+
+同样， `after` 数组中的钩子名称表示这个钩子必须在那些其他钩子之后执行。
+
+通过这种方式，可以定义在特定事件中钩子的执行顺序。
+
+
+
+钩子是长期存在的对象。
+
+它们一旦创建就会被注册到事件分发器中，
+
+附加在事件上并在执行后解除附加。
+
+**钩子不维护任何内部状态，因此钩子的动作完全依赖于事件本身。**
+
+
+
+# link policy
+
+WirePlumber 的链接策略负责将 PipeWire 流节点与 PipeWire 设备节点链接（大多数情况），或与其他 PipeWire 流节点链接（监控应用程序）。
+
+PipeWire 流节点始终具有以下之一的媒体类：
+
+* Stream/Output/Audio，例如pw-play
+* Stream/Input/Audio，例如pw-record
+* Stream/Input/Video:
+
+Pipewire 设备节点总是具有以下之一的媒体类：
+
+* Audio/Sink，例如喇叭。
+* Audio/Source，例如mic。
+* Video/Source，例如摄像头。
+
+默认情况下，因为我们通常希望将一个流节点与一个设备节点链接起来，
+
+所以在链接两个节点时的链接策略逻辑总是遵循以下分配：
+
+![image-20241231162306714](images/random_name2/image-20241231162306714.png)
+
+之后，一旦为某个流节点选择了一个设备节点的媒体类，
+
+并且有多个设备节点匹配此类媒体类，
+
+WirePlumber 将根据一组优先级选择其中一个：
+
+首先，它会检查是否为所选设备媒体类配置了默认设备节点。
+
+如果有，并且该节点存在，它将把流节点与这样配置的默认节点链接起来。
+
+用户可以使用 `pavucontrol` 或 `wpctl` 等工具为所有 3 种不同的设备媒体类轻松配置默认设备节点。
+
+逻辑实现于 `linking/find-default-target.lua` Lua 脚本中。
+
+如果没有配置默认节点，
+
+或者虽然配置了默认节点但该节点不存在，
+
+WirePlumber 将选择可用的最佳设备节点。
+
+最佳设备节点是具有最高会话优先级且能够到达物理设备的节点。
+
+逻辑实现于 `linking/find-best-target.lua` Lua 脚本中。
+
+如果找不到最优节点，因为系统中没有合适的节点，WirePlumber 将不会链接该流，并向客户端发送“没有可用的目标节点”错误。
+
+## stream node的属性
+
+```
+target.object
+	stream输出的目标。pw-play --target 设置的就是这个。
+node.dont-reconnect
+	就是当现在的target断开时，是否自动连接到下一个可用的node。
+node.dont-move
+node.dont-fallback
+node.linger
+
+```
+
+# filter
+
+作为示例，我们将描述如何在 PipeWire 的配置中创建 2 个回环过滤器，
+
+命名为 loopback-1 和 loopback-2，
+
+并将它们与默认音频设备链接，
+
+且使用 loopback-2 过滤器作为链中的最后一个过滤器。
+
+The PipeWire 配置文件对于 2 个过滤器应该像这样：
+
+pipewire.conf.d/loopback-1.conf:
+
+```
+context.modules = [
+    {   name = libpipewire-module-loopback
+        args = {
+            node.name = loopback-1-sink
+            node.description = "Loopback 1 Sink"
+            capture.props = {
+                audio.position = [ FL FR ]
+                media.class = Audio/Sink
+                filter.smart = true
+                filter.smart.name = loopback-1
+                filter.smart.before = [ loopback-2 ]
+            }
+            playback.props = {
+                audio.position = [ FL FR ]
+                node.passive = true
+                node.dont-remix = true
+            }
+        }
+    }
+]
+```
+
+pipewire.conf.d/loopback-2.conf:
+
+```
+context.modules = [
+    {   name = libpipewire-module-loopback
+        args = {
+            node.name = loopback-2-sink
+            node.description = "Loopback 2 Sink"
+            capture.props = {
+                audio.position = [ FL FR ]
+                media.class = Audio/Sink
+                filter.smart = true
+                filter.smart.name = loopback-2
+            }
+            playback.props = {
+                audio.position = [ FL FR ]
+                node.passive = true
+                node.dont-remix = true
+            }
+        }
+    }
+]
+```
+
+![image-20241231163745201](images/random_name2/image-20241231163745201.png)
+
+
+
+# lua
+
+所有的 GObject 都有属性。在 C 语言中我们通常使用 g_object_get 来获取它们，使用 g_object_set 来设置它们。
+
+在 WirePlumber 的 lua 引擎中，这些属性作为 Lua 对象的成员被暴露出来。
+
+GObjects 也有一个通用机制将事件传递给外部回调。这些事件称为信号。要连接到信号并处理它，您可以使用 connect 方法：
+
+# wireplumber的一些新特性
+
+https://www.collabora.com/news-and-blog/blog/2024/02/19/whats-the-latest-with-wireplumber/
+
+我关于 WirePlumber 保持沉默已经有一段时间了。这还要追溯到 2022 年，当时在其设计中发现了一系列问题，我决定重新构建其部分基础，以便让它能够成长。我在那时的这篇帖子中提到了这一点。而长话短说，现在已经是 2024 年了（时间过得真快，谁知道呢？！）。
+
+
+
+设计中的主要限制因素是 WirePlumber 最强大的功能：脚本系统。
+
+当我们设计脚本系统时，
+
+假设如果提供一个 API，
+
+允许脚本获取 PipeWire 对象的引用并独立订阅其事件，
+
+那么任何功能都可以轻松构建在其上。
+
+这完全错了，
+
+因为实际情况是，基于脚本构建的组件实际上相互依赖，
+
+有时确保事件处理程序（回调）执行顺序是至关重要的。
+
+此外，我们还意识到编写相对较小的脚本很困难。
+
+大量的逻辑很快就在单个脚本文件中积累起来，使它们很难使用。
+
+这也使得用户无法在不首先复制整个脚本的情况下稍微修改某些行为变得不可能。
+
+
+
+解决方案是用不同的方式重做脚本系统。
+
+不再让脚本随意行事，
+
+我们引入了一个中央组件来管理所有 PipeWire 对象的引用，
+
+即“标准事件源”。
+
+此外，我们还增加了一种机制，
+
+让脚本能够通过我们称之为“钩子”的其他对象订阅这些对象的事件。
+
+钩子之间可以有依赖关系，
+
+从而可以排序，并且它们之间可以传递数据，允许它们合作做出决策而不是彼此竞争。
+
+![scripting system old new](images/random_name2/scripting-system-old-new.png)
+
+
+
+这是革命性的修改。
+
+在使用这个系统一段时间，并将旧的脚本转换为使用 hooks 之后，一切都变得干净多了，也更容易操作。
+
+
+
+在这个过程中，我们还意识到可以引入不源自 PipeWire 对象的虚拟事件，以便运行挂钩链以做出决策。
+
+例如，选择哪个“sink”节点将成为系统的默认音频输出的过程
+
+是通过一个名为“select-default-node”的虚拟事件实现的。
+
+这个事件是在一个响应多个事件的挂钩中生成的，
+
+这些事件可以被解释为潜在的 sink 改变。
+
+当事件生成时，收集可用的 sink 节点及其属性列表，并将其作为事件数据传递给“select-default-node”挂钩。
+
+之后，每个挂钩都会遍历这个列表，并根据一些启发式规则尝试做出决策。
+
+如果挂钩做出了决策，它会将所选节点及其优先级存储在事件数据中。
+
+然后，链条中的下一个挂钩从这里开始，做出自己的决策，
+
+但如果优先级低于之前的优先级，则不会改变结果。
+
+![scripting system default](images/random_name2/scripting-system-default-nodes.png)
+
+
+
+正如你可以看出，
+
+这个系统使得用户能够用最少的努力覆盖默认逻辑。
+
+例如，在上面选择默认“sink”的钩子示例中，
+
+用户可以添加一个自定义脚本，
+
+该脚本还对“select-default-node”事件作出反应，
+
+并在现有的钩子链中的特定位置链接，
+
+使用钩子依赖关系。
+
+然后，该钩子可以引入选择默认“sink”的自定义逻辑，并以更高的优先级存储，以覆盖其他钩子做出的决定。
+
+有趣的是，它并不总是需要存储结果；
+
+完全可以在不采取任何行动的情况下返回，并让现有的上游钩子自己做出决定，从而使自定义钩子的逻辑尽可能简单。
+
+
+
+有了合适的基础设施，我相信 WirePlumber 现在比以往任何时候都更有条件成长。
+
+首先，即使过了这么长时间，仍然有一些很有意义的功能缺失。
+
+例如，其中一个功能就是能够遵循类似于 JACK 的规则将任意端口连接起来。
+
+迄今为止，WirePlumber 的连接策略是在节点上操作，并在节点之间进行连接操作，而不是端口。
+
+还有一个组件会自动发现这些节点的端口，并一一将它们连接起来。
+
+由于现有的策略是在节点上操作，因此这种功能很容易产生冲突，
+
+但有了新的钩子系统，我相信它们可以协同工作。
+
+另一个重要的缺失功能是适当的访问控制。
+
+我们的访问控制脚本甚至还没有移植到钩子系统中，
+
+所以这是首先要采取的行动。
+
+但更重要的是，依我看来，WirePlumber 需要有机制来维护对象组和客户端组，并确保每次注册表发生变化时，这些对象的权限位能够保持最新状态。
+
+分组将允许我们构建访问控制规则，类似于文件系统中用户组的工作方式。
+
+# xx-api.c
+
+```
+./modules/module-file-monitor-api.c
+./modules/module-default-nodes-api.c
+./modules/module-mixer-api.c
+```
+
+有这3个文件是以xx-api.c规律结尾的。
+
+API 插件是提供某些 API 扩展以在脚本中使用的插件。这些插件的名字必须总是以“-api”结尾，这里指定的名字不能包含“-api”扩展。
+
+```
+Core.require_api("mixer", function(mixer)
+```
+
+那这里取值就只能是mixer、default-nodes、file-monitor这3个了。
+
+# 一个lua脚本可以被多次加载
+
+```
+  ## Provide the "default" pw_metadata
+  {
+    name = metadata.lua, type = script/lua
+    arguments = { metadata.name = default }
+    provides = metadata.default
+  }
+
+  ## Provide the "filters" pw_metadata
+  {
+    name = metadata.lua, type = script/lua
+    arguments = { metadata.name = filters }
+    provides = metadata.filters
+  }
+```
+
+# 我通过WIREPLUMBER_DEBUG=5打开wireplumber的debug时，会导致pipewire的debug同时被打开，怎样只打开wireplumber的debug？
+
+```
+export WIREPLUMBER_DEBUG="E,pw.*:E,spa.*:E,mod.*:E,T"
+wireplumber
+```
+
+这样就可以。
+
+字符串的解读是：
+
+```
+第一个E，表示所有的默认都是E。
+逗号是分隔符。
+最后的T是剩下的。
+```
+
+
+
+查找conf文件是顺序。
+
+```
+test file: /var/wireplumber/wireplumber.conf
+test file: /etc/xdg/wireplumber/wireplumber.conf
+test file: /etc/wireplumber/wireplumber.conf
+lookup 'wireplumber.conf', return: 
+```
+
+```
+opening fragment file: /usr/share/wireplumber/wireplumber.conf.d/alsa-vm.conf
+opening fragment file: /etc/wireplumber/wireplumber.conf.d/10-alsa-disable-scan.conf
+```
+
+解析conf文件
+
+```
+section 'context.properties' is not defined
+section 'context.spa-libs' is used as-is from '/etc/wireplumber/wireplumber.conf'
+section 'context.modules' is used as-is from '/etc/wireplumber/wireplumber.conf'
+
+
+parsed 6 context.spa-libs items
+loaded module libpipewire-module-rt
+loaded module libpipewire-module-protocol-native
+loaded module libpipewire-module-metadata
+
+wp_feature_activation_transition_get_next_step
+
+wp_registry_attach
+这里注册了几十个这样的对象。
+registry_global: <WpCore:0x1738988> global:34 perm:0x1c8 type:PipeWire:Interface:Client/3 -> WpClient
+
+然后进入下一个大步骤：STEP_LOAD_COMPONENTS
+I 11:05:04.533256            wp-core ../lib/wp/core.c:544:wp_core_activate_execute_step: <WpCore:0x1738988> parsing & loading components for profile [main]...
+
+```
+
+
+
+以loading component进行搜索。一共有81处。
+
+```
+lib/wp/private/internal-comp-loader.c
+664:  { "settings-instance", load_settings_instance },
+
+built-in的就这3个。
+  { "ensure-no-media-session", ensure_no_media_session },
+  { "export-core", load_export_core },
+  { "settings-instance", load_settings_instance },
+};
+```
+
+ensure_no_media_session
+
+```
+这个函数检查系统中是否正在运行`pipewire-media-session`。
+它创建一个`WpObjectManager`对象，
+设置一个回调函数，当`pipewire-media-session`被安装时触发。
+如果`pipewire-media-session`正在运行，函数会返回一个错误。
+```
+
+这里指定了wireplumber在metadata里的设置的名字。就是sm-settings
+
+```
+{
+    name = settings-instance, type = built-in
+    arguments = { metadata.name = sm-settings }
+    provides = support.settings
+  }
+```
+
+lua虚拟机的初始化
+
+```
+modules\module-lua-scripting\module.c
+wp_lua_scripting_plugin_enable函数
+	self->L = wplua_new ();
+```
+
+这个函数`wplua_new`用于创建一个新的Lua状态机（`lua_State`）。
+
+它首先检查是否已经注册了资源，
+
+如果没有，则注册资源。
+
+然后，它初始化Lua状态机，打开标准库，初始化一些GObject和闭包相关的函数。
+
+最后，它创建一个哈希表并将其存储在Lua注册表中，并设置引用计数为1。
+
+函数返回创建的Lua状态机。
+
+io禁用就是没有加载io库。
+
+![image-20250102201011489](images/random_name2/image-20250102201011489.png)
+
+# execute_step在什么时候执行？
+
+lib/wp/transition.c里被调用。
+
+wp_transition_advance函数里。
+
+空闲时会通过这里调用。
+
+```
+wp_core_idle_add (core, &priv->idle_advnc_source,
+        G_SOURCE_FUNC (wp_object_advance_transitions), g_object_ref (self),
+        g_object_unref);
+```
+
+
+
+idle_advnc_source是每个WpObject都有的属性。
+
+```
+struct _WpObjectPrivate
+{
+  /* properties */
+  guint id;
+  GWeakRef core;
+
+  /* features state */
+  WpObjectFeatures ft_active;
+  GQueue *transitions; // element-type: WpFeatureActivationTransition*
+  GSource *idle_advnc_source;
+  GWeakRef ongoing_transition;
+};
+```
+
+wp_object_update_features 这个函数看起来是更新object的状态的。
+
+![image-20250102192224421](images/random_name2/image-20250102192224421.png)
+
+
+
+这个函数wp_object_update_features用于更新对象的活跃特性。
+
+它接受三个参数：self（对象本身）、activated（新激活的特性）和deactivated（刚刚被停用的特性）。
+
+函数首先检查对象的类型是否正确，
+
+然后更新对象的活跃特性。
+
+接着，如果活跃特性发生了变化，函数会发送一个通知。
+
+最后，如果有正在进行的转换或队列中有待处理的转换，函数会添加一个空闲回调函数来推进转换。
+
+
+
+step枚举有这些：
+
+```
+typedef enum {
+  /*! the initial and final step of the transition */
+  WP_TRANSITION_STEP_NONE = 0,
+  /*! returned by _WpTransitionClass::get_next_step() in case of an error */
+  WP_TRANSITION_STEP_ERROR,
+  /*! starting value for steps defined in subclasses */
+  WP_TRANSITION_STEP_CUSTOM_START = 0x10
+} WpTransitionStep;
+```
+
+每个object内部自己从WP_TRANSITION_STEP_CUSTOM_START开始去定义自己的。
+
+例如core.c的。
+
+```
+enum {
+  STEP_CONNECT = WP_TRANSITION_STEP_CUSTOM_START,
+  STEP_LOAD_COMPONENTS,
+};
+```
+
+core的它有2个状态。
+
+1、connect。
+
+2、load Component。
+
+
+
+# wp_metadata_set
+
+这个函数用于设置元数据（metadata）对象的属性值。
+
+它接受五个参数：
+
+元数据对象自身、
+
+主题ID、
+
+键、
+
+类型
+
+值。
+
+通过设置键和值，可以添加或更新元数据属性；
+
+设置键或值为NULL，可以删除对应的元数据属性；
+
+同时设置键和值为NULL，可以删除主题ID对应的所有元数据属性。
+
+# C代码里的ObjectManager
+
+```
+WpObjectManager *om = wp_object_manager_new ();
+
+添加感兴趣的事件
+  wp_object_manager_add_interest (om, WP_TYPE_CLIENT,
+      WP_CONSTRAINT_TYPE_PW_GLOBAL_PROPERTY,
+      "application.name", "=s", "pipewire-media-session", NULL);
+  g_signal_connect_object (om, "installed",
+      G_CALLBACK (ensure_no_media_session_om_installed), task, 0);
+  wp_core_install_object_manager (core, om);
+```
+
+
+
+# _wplua_init_gboxed
+
+这个函数 `_wplua_init_gboxed` 初始化了一个 Lua 元表（metatable）叫做 "GBoxed"。
+
+这个元表包含三个函数：
+
+`__gc`（垃圾回收）、`__eq`（相等比较）和 `__index`（索引访问）。
+
+这些函数分别对应 `_wplua_gvalue_userdata___gc`、 `_wplua_gvalue_userdata___eq` 和 `_wplua_gboxed___index` 函数。
+
+# _wplua_init_gobject
+
+这个代码片段是用于初始化Lua中的GObject元表（metatable）。它定义了GObject元表中的几个元方法（metamethod），包括：
+
+*   `__gc`：垃圾回收函数
+*   `__eq`：相等判断函数
+*   `__index`：索引函数，用于获取GObject的属性
+*   `__newindex`：新索引函数，用于设置GObject的属性
+*   `__tostring`：转换为字符串函数
+
+这些元方法将被注册到名为"GObject"的元表中，并将被用于处理GObject类型的Lua对象。
+
+# _wplua_init_closure
+
+这个函数 `_wplua_init_closure` 的作用是在 Lua 的全局注册表中创建一个名为 "wplua_closures" 的键值对。值是通过 `_wplua_closure_store_new` 函数创建的 `WpLuaClosureStore` 类型的实例，并使用 `wplua_pushboxed` 函数将其推入 Lua 栈中。
+
+# wp_lua_scripting_api_init
+
+这段代码是一个C函数，名为`wp_lua_scripting_api_init`，它接受一个`lua_State *`类型的参数`L`。
+
+该函数的主要功能是初始化Lua脚本的API。它创建了一个新的Lua状态`L`，并设置了一些全局变量，例如`GLib`、`I18n`、`WpLog`、`WpCore`、`WpPlugin`等。
+
+然后，它调用了一些其他的函数来注册不同类型的对象的方法，例如`G_TYPE_SOURCE`、`WP_TYPE_OBJECT`、`WP_TYPE_PROXY`等。
+
+最后，它加载了一个名为`URI_API`的Lua脚本，并执行它。如果加载或执行脚本时出现错误，它会打印一个错误消息。
+
+总的来说，这段代码的目的是为了初始化Lua脚本的API，使得Lua脚本可以访问和操作一些常用的对象和函数。
+
+# autoswitch-bluetooth-profile.lua
+
+这个 Lua 脚本用于自动切换蓝牙设备的配置文件。
+
+它监控蓝牙设备和音频流的状态，
+
+当音频流连接到==蓝牙设备的回环源节点==时，
+
+自动切换设备的配置文件到 HSP/HFP 模式；
+
+当音频流断开连接时，
+
+自动切换设备的配置文件回 A2DP 模式。
+
+脚本使用 WirePlumber 框架来管理蓝牙设备和音频流。
+
+# device.api
+
+只有bluez5这一种情况：
+
+Constraint { "device.api", "=", "bluez5" },
+
+
+
+# Constraint types
+
+| type      | value                                                        |
+| --------- | ------------------------------------------------------------ |
+| pw-global | [`WP_CONSTRAINT_TYPE_PW_GLOBAL_PROPERTY`](https://julian.pages.freedesktop.org/wireplumber/library/c_api/obj_interest_api.html#c.WpConstraintType.WP_CONSTRAINT_TYPE_PW_GLOBAL_PROPERTY) |
+| pw        | [`WP_CONSTRAINT_TYPE_PW_PROPERTY`](https://julian.pages.freedesktop.org/wireplumber/library/c_api/obj_interest_api.html#c.WpConstraintType.WP_CONSTRAINT_TYPE_PW_PROPERTY) |
+| gobject   | [`WP_CONSTRAINT_TYPE_G_PROPERTY`](https://julian.pages.freedesktop.org/wireplumber/library/c_api/obj_interest_api.html#c.WpConstraintType.WP_CONSTRAINT_TYPE_G_PROPERTY) |
+
+# apply-profile
+
+是在选择得到profile之后。
+
+```
+  after = { "device/find-stored-profile", "device/find-preferred-profile", "device/find-best-profile" },
+
+```
+
+选择是顺序是：
+
+* 先看文件里存储的。
+* 再看优先的。
+* 再选择最合适的。
+
+然后一步成功了，后面的就不执行。
+
+# session-item怎么理解
+
+在 WirePlumber 中，`session-item` 是一个重要的抽象概念，主要用来描述和管理系统中的某些“逻辑功能单元”，如音频设备、蓝牙设备、视频设备或应用流等。它是 WirePlumber 的模块化设计的一部分，帮助实现对 PipeWire 节点、设备和资源的高级管理。
+
+------
+
+### **1. 什么是 `session-item`？**
+
+- **定义**: `session-item` 是 WirePlumber 中的一个逻辑实体，用来抽象和管理特定的资源或功能单元。
+- **作用**: 它充当 PipeWire 资源（如节点或设备）和 WirePlumber 的管理逻辑之间的桥梁，允许开发者和用户通过 WirePlumber 脚本或配置文件来定义、调整和控制这些资源的行为。
+
+------
+
+### **2. `session-item` 的作用范围**
+
+| 作用范围           | 说明                                                         |
+| ------------------ | ------------------------------------------------------------ |
+| **音频设备管理**   | 描述一个物理音频设备（如扬声器或麦克风），管理其连接、优先级等。 |
+| **应用音频流管理** | 处理特定应用程序的音频流，定义路由规则或行为。               |
+| **蓝牙设备支持**   | 管理蓝牙音频设备的连接状态和属性，例如耳机或扬声器。         |
+| **视频设备管理**   | 管理摄像头或其他视频设备的行为。                             |
+| **动态逻辑功能**   | 可以扩展为自定义功能，例如动态路由规则或特定设备的特殊处理逻辑。 |
+
+------
+
+### **3. `session-item` 的生命周期**
+
+1. **创建**:
+   - 由 WirePlumber 自动或通过 Lua 脚本动态创建。
+   - 例如，当 PipeWire 检测到一个新设备时，WirePlumber 可能会为该设备创建一个 `session-item`。
+2. **属性设置**:
+   - 每个 `session-item` 都可以有自己的属性，例如设备名称、优先级、媒体类别等。
+3. **关联资源**:
+   - `session-item` 会绑定到一个或多个 PipeWire 资源（如节点或设备），并管理这些资源的行为。
+4. **销毁**:
+   - 当设备断开或资源不再需要时，相应的 `session-item` 会被销毁。
+
+------
+
+### **4. 配置 `session-item` 的示例**
+
+在 WirePlumber 的 Lua 脚本中，你可以定义和管理 `session-item`。以下是一个简单示例：
+
+**自定义音频设备的 `session-item`：**
+
+```lua
+local item = session:new_item("my-custom-audio-device")
+item:set_properties({
+    ["media.class"] = "Audio/Sink",
+    ["node.description"] = "My Custom Sink",
+    ["priority"] = 1000
+})
+
+item:connect("state-changed", function(self, new_state)
+    print("Session item state changed to", new_state)
+end)
+
+session:activate_item(item)
+```
+
+**解释：**
+
+- **`session:new_item`**: 创建一个新的 `session-item`。
+- **`set_properties`**: 设置 `session-item` 的属性。
+- **`connect`**: 监听 `session-item` 的状态变化。
+- **`activate_item`**: 激活 `session-item`，使其生效。
+
+------
+
+### **5. 如何查看和管理现有的 `session-item`？**
+
+1. **查看 `session-item` 的状态**: 使用 WirePlumber 的日志工具或调试模式，观察当前的 `session-item` 和其属性。
+
+   **命令示例**:
+
+   ```bash
+   wpctl status
+   ```
+
+2. **动态调整行为**: 通过 Lua 脚本或配置文件，调整 `session-item` 的属性或关联逻辑。
+
+------
+
+### **6. 总结**
+
+| 特性       | 描述                                                      |
+| ---------- | --------------------------------------------------------- |
+| **抽象**   | 用于管理设备、流或其他资源的高级逻辑单元。                |
+| **灵活性** | 支持动态创建、配置和销毁，满足复杂场景需求。              |
+| **扩展性** | 可通过 Lua 脚本定义自定义行为，适用于各种设备和功能需求。 |
+
+`session-item` 的设计让 WirePlumber 具备强大的扩展能力，可动态适配多种场景。如果你有具体的需求或遇到问题，可以提供细节，我会协助进一步解答！
+
+# 蓝牙连接时create device
+
+是靠bluez.lua里的逻辑来完成的。
+
+
+
+# linking-utils.lua
+
+总共300行代码。
+
+整个文件是形成一个table。lutils
+
+里面有一个子table。si_flags。
+
+
+
+```
+get_flags
+	参数是id。拿到id对应的flag。
+clear_flags
+	
+unwrap_select_target_event
+	解包event。
+canPassthrough
+	检查两个节点（si和si_target）是否可以进行直接传递（passthrough）
+checkFollowDefault
+	检查是否需要忽略节点属性中的默认目标设置。
+lookupLink
+	在对象管理器中查找两个会话项（si_id 和 si_target_id）之间的链接。
+isLinked
+	检查目标是否已链接，并返回链接状态和是否为独占链接。
+getNodePeerId
+canLink
+findDefaultLinkable
+checkPassthroughCompatibility
+haveAvailableRoutes
+sendClientError
+
+```
+
+checkFollowDefault这种驼峰的函数，区别是它的第一个参数不是self。
+
+所以是通过点号来调用，而不是冒号。
+
+
+
+本节中的钩子分为3个子类别。
+
+第一类
+
+包括由图中的更改触发的钩子。
+
+其中一些是任务 安排“重新扫描链接”事件，
+
+这是优先级最低的事件，
+
+并且 它的目的是扫描所有可链接的会话项目
+
+并将它们链接起来 到特定目标。
+
+“重新扫描链接”事件始终计划运行 一个循环中   所有的图形变化一次。
+
+这是通过标记事件来实现的 如module-standard-event-source中已经安排的那样；
+
+然后清除此标志 通过在此事件上运行的钩子。
+
+
+
+# 在监听到蓝牙device和node出现后，进行link的操作
+
+在 **WirePlumber** 中，监听蓝牙设备和节点的出现后，自动创建 `link` 的流程如下。以下代码演示了如何监听设备和节点事件，并在满足条件时进行 `link` 的操作。
+
+------
+
+### 核心思路
+
+1. **监听蓝牙设备与节点事件**：
+   - 利用 WirePlumber 的 Lua API 监听设备和节点的创建事件。
+2. **判断设备类型**：
+   - 检查是否是蓝牙设备（通过设备名称、媒体角色等属性判断）。
+3. **创建 `link`**：
+   - 确认合适的 `source` 和 `sink` 节点后，创建链接。
+
+------
+
+### 实现步骤
+
+以下代码示例监听到蓝牙设备的出现后，查找相应的 `Node`，并创建 `link`：
+
+#### 1. 脚本代码
+
+```lua
+-- Import core object
+local core = Core("core")
+
+-- Table to store found nodes
+local bluetooth_nodes = {}
+
+-- Function to create link between nodes
+local function create_link(source_id, sink_id)
+    local link = pw.Link {
+        ["link.output.node"] = source_id,
+        ["link.input.node"] = sink_id,
+    }
+
+    link:connect() -- Connect the link
+    print("Created link between source node " .. source_id .. " and sink node " .. sink_id)
+end
+
+-- Function to handle new nodes
+local function handle_new_node(node)
+    local props = node.properties
+    if props and props["device.api"] == "bluez5" then
+        print("Bluetooth Node Detected: " .. props["node.description"])
+        table.insert(bluetooth_nodes, node)
+
+        -- Check if source and sink nodes exist
+        if #bluetooth_nodes >= 2 then
+            local source = bluetooth_nodes[1].id
+            local sink = bluetooth_nodes[2].id
+            create_link(source, sink)
+        end
+    end
+end
+
+-- Monitor for new nodes
+core:connect()
+
+core:connect_signal("object-added", function(_, obj)
+    if obj.type == "pw.Node" then
+        handle_new_node(obj)
+    end
+end)
+
+print("Listening for Bluetooth nodes...")
+```
+
+------
+
+#### 2. 代码解析
+
+| 功能                  | 说明                                                         |
+| --------------------- | ------------------------------------------------------------ |
+| `core:connect_signal` | 监听 `object-added` 事件，当新对象（如 `Node`）被添加时触发。 |
+| `props["device.api"]` | 检查设备类型是否为蓝牙 (`bluez5`)。                          |
+| `create_link`         | 使用 `pw.Link` 对象创建音频流的链接。                        |
+| `table.insert`        | 将发现的蓝牙节点存储到 `bluetooth_nodes` 表中。              |
+
+------
+
+### 测试方法
+
+1. **脚本加载**：
+
+   - 将脚本保存为 `bluetooth_link.lua` 并放置到 WirePlumber 的 `scripts` 目录。
+
+2. **启用脚本**：
+
+   - 修改 
+
+     ```
+     main.lua
+     ```
+
+     ：
+
+     ```lua
+     script.load("bluetooth_link.lua")
+     ```
+
+3. **启动服务并观察日志**：
+
+   - 重启 WirePlumber：
+
+     ```bash
+     systemctl --user restart wireplumber
+     ```
+
+   - 查看日志：
+
+     ```bash
+     journalctl --user -u wireplumber -f
+     ```
+
+4. **连接蓝牙设备**：
+
+   - 连接蓝牙耳机或音频设备，观察是否创建 `link`。
+
+------
+
+### 注意事项
+
+1. **确保蓝牙支持**：
+   - PipeWire 已正确配置 `bluez5` 支持。
+2. **检查蓝牙节点属性**：
+   - 使用 `pw-cli` 确认节点的 `device.api` 和 `node.description`。
+3. **错误处理**：
+   - 添加异常处理，避免设备缺失或节点未完全初始化导致的错误。
+
+------
+
+如果需要进一步扩展，比如对特定设备做匹配或动态移除 `link`，可以继续调整代码逻辑！
+
 # 参考资料
 
 1、arch wiki

@@ -2687,6 +2687,261 @@ int main() {
 - `G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE` 允许你定义一个抽象类型，并在其内部管理私有数据。
 - 这种方式有助于封装实现细节，增强代码的可维护性和可扩展性，特别是在面向对象的编程中。
 
+# G_DEFINE_TYPE_XX 有哪些变种？
+
+`G_DEFINE_TYPE_XX` 宏在 GObject 中用于定义类型，主要有以下几种变种：
+
+1. **G_DEFINE_TYPE**:
+   - 用于定义一个基本的 GObject 类型。
+   - 语法示例：
+     ```c
+     G_DEFINE_TYPE(MyObject, my_object, G_TYPE_OBJECT)
+     ```
+
+2. **G_DEFINE_TYPE_WITH_CODE**:
+   - 在类型定义时可以添加额外的代码块。
+   - 语法示例：
+     ```c
+     G_DEFINE_TYPE_WITH_CODE(MyObject, my_object, G_TYPE_OBJECT,
+                             G_ADD_PRIVATE(MyObject));
+     ```
+
+3. **G_DEFINE_ABSTRACT_TYPE**:
+   - 用于定义一个抽象类型，不能直接实例化。
+   - 语法示例：
+     ```c
+     G_DEFINE_ABSTRACT_TYPE(MyAbstractObject, my_abstract_object, G_TYPE_OBJECT)
+     ```
+
+4. **G_DEFINE_DERIVABLE_TYPE**:
+   
+   - 用于定义一个可派生的类型，允许其它类型从此类型派生。
+   - 语法示例：
+     ```c
+     G_DEFINE_DERIVABLE_TYPE(WpObject, wp_object, WP, OBJECT)
+     ```
+   
+5. **G_DEFINE_DERIVABLE_TYPE_WITH_CODE**:
+   
+   - 和 `G_DEFINE_DERIVABLE_TYPE` 类似，但可以添加额外的代码。
+   - 语法示例：
+     ```c
+     G_DEFINE_DERIVABLE_TYPE_WITH_CODE(WpObject, wp_object, WP, OBJECT,
+                                        G_ADD_PRIVATE(WpObject));
+     ```
+
+### 总结
+
+这些变种使得在 GObject 中创建不同类型的对象变得灵活和高效，可以根据需要选择合适的宏来定义类型。
+
+# G_DEFINE_DERIVABLE_TYPE_WITH_CODE添加的额外代码的用途
+
+`G_DEFINE_DERIVABLE_TYPE_WITH_CODE` 宏允许在定义可派生类型时添加额外的代码块。这些额外代码可以用于多种用途，主要包括：
+
+### 1. 添加私有数据结构
+
+通过 `G_ADD_PRIVATE` 宏，可以为对象添加私有数据结构，确保数据的封装性。
+
+```c
+G_DEFINE_DERIVABLE_TYPE_WITH_CODE(WpObject, wp_object, WP, OBJECT,
+                                   G_ADD_PRIVATE(WpObject));
+```
+
+### 2. 初始化类的静态属性
+
+在类定义时，可以初始化静态属性或注册信号等。
+
+```c
+G_DEFINE_DERIVABLE_TYPE_WITH_CODE(WpObject, wp_object, WP, OBJECT,
+                                   G_DEFINE_TYPE_INIT(WpObject, wp_object_init));
+```
+
+### 3. 定义信号
+
+可以在代码块中定义信号，以便在对象中使用。
+
+```c
+G_DEFINE_DERIVABLE_TYPE_WITH_CODE(WpObject, wp_object, WP, OBJECT,
+                                   g_signal_new("my-signal",
+                                                G_TYPE_FROM_CLASS(class),
+                                                G_SIGNAL_RUN_LAST,
+                                                0, NULL, NULL,
+                                                g_cclosure_marshal_VOID,
+                                                G_TYPE_NONE, 0));
+```
+
+### 4. 注册类型
+
+在类型定义时，可以直接注册类型或者进行其他初始化操作，比如设置类方法：
+
+```c
+G_DEFINE_DERIVABLE_TYPE_WITH_CODE(WpObject, wp_object, WP, OBJECT,
+                                   my_init_function());
+```
+
+### 总结
+
+通过 `G_DEFINE_DERIVABLE_TYPE_WITH_CODE` 添加的额外代码，使得类型定义更加灵活，能够在定义时进行必要的初始化和设置，增强了对象的功能性和可维护性。
+
+# g_object_class_install_property
+
+`g_object_class_install_property` 是 GObject 库中的一个重要函数，用于在 GObject 类中安装属性。它允许开发者为对象定义可读写的属性，使得对象的状态可以通过属性系统进行管理。
+
+### 函数原型
+
+```c
+void g_object_class_install_property(
+    GObjectClass *object_class,
+    guint property_id,
+    GParamSpec *pspec
+);
+```
+
+### 参数
+
+- **`GObjectClass *object_class`**: 指向要安装属性的对象类的指针。
+- **`guint property_id`**: 属性的唯一标识符，通常是一个整数。这个 ID 用于在获取和设置属性时进行引用。
+- **`GParamSpec *pspec`**: 该属性的参数规范，描述了属性的类型、默认值、可读性、可写性等特性。
+
+### 使用场景
+
+1. **定义属性**: 在自定义 GObject 类中定义属性，以便外部代码可以通过属性接口访问和修改对象的状态。
+2. **属性管理**: 通过属性系统，可以实现属性的验证、默认值设置等功能，提升代码的灵活性和安全性。
+
+### 示例
+
+以下是一个使用 `g_object_class_install_property` 的示例：
+
+```c
+#include <glib-object.h>
+
+typedef struct _MyObject {
+    GObject parent_instance;
+    int value;
+} MyObject;
+
+typedef struct _MyObjectClass {
+    GObjectClass parent_class;
+} MyObjectClass;
+
+G_DEFINE_TYPE(MyObject, my_object, G_TYPE_OBJECT)
+
+enum {
+    PROP_0,
+    PROP_VALUE,
+};
+
+static void my_object_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec) {
+    MyObject *self = MY_OBJECT(object);
+    switch (prop_id) {
+        case PROP_VALUE:
+            self->value = g_value_get_int(value);
+            break;
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+            break;
+    }
+}
+
+static void my_object_get_property(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec) {
+    MyObject *self = MY_OBJECT(object);
+    switch (prop_id) {
+        case PROP_VALUE:
+            g_value_set_int(value, self->value);
+            break;
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+            break;
+    }
+}
+
+static void my_object_class_init(MyObjectClass *klass) {
+    g_object_class_install_property(
+        G_OBJECT_CLASS(klass),
+        PROP_VALUE,
+        g_param_spec_int("value", "Value", "An integer value", 0, 100, 0, G_PARAM_READWRITE)
+    );
+
+    klass->set_property = my_object_set_property;
+    klass->get_property = my_object_get_property;
+}
+
+static void my_object_init(MyObject *self) {
+    self->value = 0; // 默认值
+}
+```
+
+### 总结
+
+`g_object_class_install_property` 是 GObject 中用于安装属性的核心函数，它使得对象能够通过属性接口进行访问和修改。通过合理使用该函数，开发者可以提升对象的封装性和可用性，简化对象状态的管理。
+
+# g_signal_new` 和 `g_signal_new_class_handler
+
+`g_signal_new` 和 `g_signal_new_class_handler` 都是 GObject 中用于定义信号的函数，但它们之间有一些关键区别：
+
+### 1. **信号的作用域**
+
+- **`g_signal_new`**:
+  - 用于为特定对象类型定义信号。信号会在这个对象的实例上被发出。
+  - 适用于实例级信号。
+
+- **`g_signal_new_class_handler`**:
+  - 用于为类定义信号，信号处理程序是以类为基础，而不是具体实例。
+  - 适用于类级信号，通常会在类的上下文中处理。
+
+### 2. **信号处理器**
+
+- **`g_signal_new`**:
+  - 处理程序是与信号关联的，可以是实例方法或静态方法。
+  - 信号处理程序可以接收与实例相关的上下文。
+
+- **`g_signal_new_class_handler`**:
+  - 处理程序是类级别的，通常用于处理与该类相关的事件。
+  - 可以在类的上下文中运行，适合处理所有该类实例发出的信号。
+
+### 3. **使用场景**
+
+- **`g_signal_new`**:
+  - 适合用于需要对象实例级别的信号，比如一个按钮被点击时发出的信号。
+
+- **`g_signal_new_class_handler`**:
+  - 适合用于定义某个类的全局行为，比如当类的任何实例发生特定事件时都要处理的信号。
+
+### 示例对比
+
+#### `g_signal_new`
+
+```c
+g_signal_new(
+    "my-instance-signal",
+    G_TYPE_FROM_CLASS(klass),
+    G_SIGNAL_RUN_LAST,
+    G_STRUCT_OFFSET(MyObjectClass, my_signal_handler),
+    NULL, NULL,
+    g_cclosure_marshal_VOID, // 信号的调用约定
+    G_TYPE_NONE,
+    0);
+```
+
+#### `g_signal_new_class_handler`
+
+```c
+g_signal_new_class_handler(
+    "my-class-signal",
+    MY_OBJECT_TYPE,
+    G_SIGNAL_RUN_LAST,
+    G_CALLBACK(my_class_signal_handler),
+    "MyObject", // 额外数据
+    NULL, NULL,
+    G_TYPE_NONE,
+    0);
+```
+
+### 总结
+
+- **`g_signal_new`** 是用于实例级信号的定义，适合对象的具体行为。
+- **`g_signal_new_class_handler`** 是用于类级信号的定义，适合处理与类相关的事件。选择使用哪个函数取决于你希望信号在实例还是类级别上工作。
+
 # 参考资料
 
 1、浅析GLib
