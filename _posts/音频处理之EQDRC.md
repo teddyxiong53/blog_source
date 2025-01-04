@@ -84,3 +84,16 @@ EQ（均衡器）和DRC（动态范围压缩）在音频处理中的配合使用
 ### 5. **总结**
 
 EQ和DRC的配合使用能够在音频处理中实现更精细的控制，使声音更具表现力和专业性。合理的顺序和设置可以带来更好的音质效果。如果你有具体的应用实例或问题，欢迎进一步讨论！
+
+## autoeq
+
+这个python 包。
+
+https://pypi.org/project/autoeq/2.0.0/
+
+这里提到了很多的eq工具。
+
+```
+git clone https://github.com/jaakkopasanen/AutoEq.git
+```
+
