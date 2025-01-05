@@ -5029,6 +5029,10 @@ https://www.cnblogs.com/sevenyuan/p/4511808.html
 
 
 
+# 模拟常用数据结构
+
+https://www.itbook.team/book/lua/LUATuoZhanYueDu/LUAChangYongShuJuJieGou.html
+
 
 
 
