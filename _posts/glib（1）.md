@@ -121,7 +121,7 @@ glib和glibc是2个东西。glib主要是给gnome用的。
 struct  _GObject
 {
   GTypeInstance  g_type_instance;
-  
+
   /*< private >*/
   volatile guint ref_count;
   GData         *qdata;
@@ -215,7 +215,7 @@ glib用C语言实现，提供了动态数组、链表、哈希表、平衡二叉
 .PHONY: all clean
 INCLUDE := -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
 	-L/usr/lib/x86_64-linux-gnu -lgobject-2.0 -lgthread-2.0 -lglib-2.0
-	
+
 CFLAGS := -g -Wall -O3  $(INCLUDE)
 all:
 	gcc test.c $(CFLAGS)
@@ -227,7 +227,7 @@ all:
 int main()
 {
 	gint i = 0;
-	
+
 }
 ```
 
@@ -298,12 +298,12 @@ int main()
 	g_thread_create(run_1, arg, TRUE, NULL);
 	g_thread_create(run_2, arg, TRUE, NULL);
 	g_thread_create(run_3, arg, TRUE, NULL);
-	
+
 	g_main_loop_run(main_loop);
 	g_print("run_3 has exited\n");
 	g_mutex_free(mutex);
 	g_free(arg);
-	
+
 }
 ```
 
@@ -325,7 +325,7 @@ g_malloc
 	总是返回gpointer类型。
 	失败时会退出进程。
 	所以没有必要检查是否为NULL。
-	
+
 GString
 	字符串类型。跟c++的string比较像。
 ```
@@ -549,7 +549,7 @@ GSource
 
 它们之间的关系是这样的：
     GMainLoop -> GMainContext -> {GSource1, GSource2, GSource3......}
-    
+
 每个GmainLoop都包含一个GMainContext成员，而这个GMainContext成员可以装各种各样的GSource，GSource则是具体的各种Event处理逻辑了。在这里，可以把GMainContext理解为GSource的容器。（不过它的用处不只是装GSource）
 
 ```
@@ -841,7 +841,7 @@ int main()
 # once的用法
 
 ```
-g_once_init_enter 
+g_once_init_enter
 	这个是在临界区初始化的时候用的。
 	它的参数是一个static gsize inited=0;这样的一个初始化值为0的static变量。
 	在完成的时候，inited会被赋值为非0值。
@@ -906,7 +906,7 @@ Query
 	2、char * type_name。
 	3、class大小。
 	4、instance大小。
-	
+
 Info
 	这个结构体成员较多。是创建类型时的重要结构体。
 	1、u16的class_size。这就决定了类的尺寸不能超过64K了。
@@ -926,17 +926,17 @@ Info
 			不是空的。
 	可以通过搜索GTypeInfo来看系统里定义了哪些类型。
 	看看这些类型。
-	
+
 GTypeValueTable
 	这个的作用是什么？
 	提供GValue实现需要的函数。
 	这样GValue就可以存放类型的值了。
-	
+
 	有这些成员：
 	1、value的init、free、copy这3个函数。
 		init：
 			分配的时候，会把对应的空间清零。
-			
+
 gboxed类型
 一种机制，用来保证C结构体，这些结构体是通过类型系统注册到glib的。
 类型系统只需要知道怎样去copy和free这些结构体。
@@ -1202,7 +1202,7 @@ param_spec = g_param_spec_enum("my-enum-property",  // 参数名
 
 `g_signal_new` 是 GLib/GObject 库中的一个函数，
 
-用于创建新的 GObject 信号（Signal）。 
+用于创建新的 GObject 信号（Signal）。
 
 GObject 信号是一种机制，
 
@@ -1348,7 +1348,7 @@ https://zhuanlan.zhihu.com/p/567751966
   ```
 
 - **注意事项**：
-  
+
   - 清理函数的参数类型应该匹配被管理资源的类型。
   - 如果变量具有静态存储期（如全局变量），在程序结束时可能不会调用清理函数。
 
@@ -1356,41 +1356,27 @@ https://zhuanlan.zhihu.com/p/567751966
 
 # 函数的I、W、U后缀的含义
 
-在 GLib 中，常见的函数后缀及其含义包括：
+这段代码是关于静态函数的锁定处理的说明。它指出，当调用静态函数时，锁定问题的处理方式由大写字母后缀指示。所有的静态函数都必须具有以下后缀之一：
 
-### 1. **I**
-- **含义**：输入（Input）
-- **示例**：用于读取数据。
+- _I：[不关心锁定]
+函数不关心锁定。
 
-### 2. **W**
-- **含义**：写入（Write）
-- **示例**：用于写入或保存数据。
+- _U：[未锁定调用]
+调用期间不需要持有读写锁，但是在调用期间可以获取和释放锁。
 
-### 3. **U**
-- **含义**：更新（Update）
-- **示例**：用于更新现有数据。
+- _L：[已锁定调用]
+调用期间需要持有写锁或读锁数量大于0。
 
-### 4. **L**
-- **含义**：列表（List）
-- **示例**：用于处理或返回列表。
+- _W：[已锁定写调用]
+调用期间需要持有写锁。
 
-### 5. **S**
-- **含义**：字符串（String）
-- **示例**：用于处理字符串相关的操作。
+- _Wm：[可变的已锁定写调用]
+类似于_W，但在调用期间可以释放和重新获取写锁，需要注意指针。
 
-### 6. **D**
-- **含义**：删除（Delete）
-- **示例**：用于删除对象或元素。
+- _WmREC：[可变的已锁定写调用，递归]
+类似于_Wm，但还会获取递归互斥锁class_init_rec_mutex。
 
-### 7. **A**
-- **含义**：添加（Add）
-- **示例**：用于添加元素或属性。
-
-### 8. **F**
-- **含义**：查找（Find）
-- **示例**：用于查找特定对象或元素。
-
-这些后缀有助于理解函数的功能和用途，使代码更加易读和可维护。
+这些后缀用于指示静态函数在调用期间需要持有哪种类型的锁。
 
 
 
@@ -1524,7 +1510,7 @@ int main(int argc, char *argv[]) {
 - **作用**：用于声明一个类型的结构和类的定义。
 - **使用场景**：通常在头文件中使用，以便其他文件可以引用该类型。
 - **示例**：
-  
+
   ```c
   G_DECLARE_FINAL_TYPE(MyCustomType, my_custom_type, MY, CUSTOM_TYPE, GObject);
   ```
@@ -1763,7 +1749,7 @@ void example() {
     data = g_steal_pointer(&data);  // 转移所有权，原指针置为 NULL
 
     // 现在可以安全使用 data
-    
+
     g_free(data); // 释放内存
 }
 ```
@@ -1993,9 +1979,9 @@ int main(int argc, char *argv[]) {
 
     gtk_container_add(GTK_CONTAINER(window), button);
     gtk_widget_show_all(window);
-    
+
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-    
+
     gtk_main();
     return 0;
 }
@@ -2023,13 +2009,13 @@ GObject 是 GLib 的一部分，提供了一种面向对象的编程模型，用
 ### 1. 类和对象
 
 - **C++**：使用 `class` 关键字定义类，通过构造函数创建对象。
-  
+
   ```cpp
   class MyClass {
   public:
       MyClass() {} // 构造函数
   };
-  
+
   MyClass obj;
   ```
 
@@ -2478,10 +2464,10 @@ G_DEFINE_TYPE(MyObject, my_object, G_TYPE_OBJECT)
 static void my_object_class_init(MyObjectClass *klass) {
     g_object_class_install_property(G_OBJECT_CLASS(klass),
                                     1,
-                                    g_param_spec_boxed("position", 
-                                                       "Position", 
-                                                       "The position of the object", 
-                                                       MY_TYPE_BOXED_TYPE, 
+                                    g_param_spec_boxed("position",
+                                                       "Position",
+                                                       "The position of the object",
+                                                       MY_TYPE_BOXED_TYPE,
                                                        G_PARAM_READWRITE));
 }
 
@@ -2495,7 +2481,7 @@ int main() {
     g_type_init(); // 初始化 GType 系统
 
     MyObject *obj = g_object_new(MY_TYPE_OBJECT, NULL);
-    
+
     MyBoxedType *pos = g_new(MyBoxedType, 1);
     pos->x = 10;
     pos->y = 20;
@@ -2687,6 +2673,7 @@ int main() {
 - `G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE` 允许你定义一个抽象类型，并在其内部管理私有数据。
 - 这种方式有助于封装实现细节，增强代码的可维护性和可扩展性，特别是在面向对象的编程中。
 
+
 # G_DEFINE_TYPE_XX 有哪些变种？
 
 `G_DEFINE_TYPE_XX` 宏在 GObject 中用于定义类型，主要有以下几种变种：
@@ -2714,15 +2701,15 @@ int main() {
      ```
 
 4. **G_DEFINE_DERIVABLE_TYPE**:
-   
+
    - 用于定义一个可派生的类型，允许其它类型从此类型派生。
    - 语法示例：
      ```c
      G_DEFINE_DERIVABLE_TYPE(WpObject, wp_object, WP, OBJECT)
      ```
-   
+
 5. **G_DEFINE_DERIVABLE_TYPE_WITH_CODE**:
-   
+
    - 和 `G_DEFINE_DERIVABLE_TYPE` 类似，但可以添加额外的代码。
    - 语法示例：
      ```c
@@ -2868,11 +2855,152 @@ static void my_object_class_init(MyObjectClass *klass) {
 
 static void my_object_init(MyObject *self) {
     self->value = 0; // 默认值
+
+# GTask
+
+```c
+#include <glib.h>
+#include <gio/gio.h>
+typedef struct {
+    int number;
+    GTask *task;
+} TaskData;
+
+void compute_square(
+    GTask *task,
+    gpointer source_object,
+    gpointer task_data,
+    GCancellable *cancellable
+)
+{
+    TaskData *data = (TaskData *)task_data;
+    int result = data->number * data->number;
+    g_usleep(1000*1000);
+    g_task_return_int(task, result);
+}
+void on_task_completed(
+    GObject *source_object,
+    GAsyncResult *res,
+    gpointer userdata
+)
+{
+    GError *error = NULL;
+    int result = g_task_propagate_int(G_TASK(res), &error);
+    if (error) {
+        g_printerr("Error:%s\n", error->message);
+        g_error_free(error);
+    } else {
+        g_printf("The square is:%d\n", result);
+    }
+}
+int main() {
+    g_type_init();
+    GTask *task;
+    TaskData data = {
+        .number = 5,
+        .task = NULL
+    };
+    task = g_task_new(
+        NULL, NULL,
+        on_task_completed,
+        NULL
+    );
+    g_task_set_task_data(task, &data, NULL);
+    g_printf("before run \n");
+    g_task_run_in_thread(task, compute_square);
+    g_object_unref(task);
+    g_printf("after unref\n");
+    GMainLoop *loop = g_main_loop_new(NULL, FALSE);
+    g_main_loop_run(loop);
+    g_main_loop_unref(loop);
+    return 0;
+}
+
+
+```
+
+编译：
+
+```
+gcc -o async_task_example async_task_example.c `pkg-config --cflags --libs gio-2.0 glib-2.0`
+```
+
+
+
+这个代码片段定义了几个宏常量，用于控制任务池（task pool）的大小和等待时间。
+
+当任务池满了并阻塞时，程序会逐渐添加更多的线程到池中，直到任务开始完成。这些“溢出”线程只会运行一个任务，然后退出，因此池的大小最终会回到基础大小。
+
+这些宏常量的值如下：
+
+*   `G_TASK_POOL_SIZE`: 任务池的初始大小，设为 10。
+*   `G_TASK_WAIT_TIME_BASE`: 等待时间的基数，设为 100000（单位为微秒）。
+*   `G_TASK_WAIT_TIME_MULTIPLIER`: 等待时间的乘数，设为 1.03。
+*   `G_TASK_WAIT_TIME_MAX_POOL_SIZE`: 最大池大小，设为 330。
+
+这些值的组合可以实现以下效果：
+
+*   大约 1 秒钟后，池大小增加 10 个线程。
+*   大约 5 秒钟后，池大小增加 30 个线程。
+*   大约 1 分钟后，池大小增加 100 个线程。
+*   大约 20 分钟后，池大小增加 200 个线程。
+
+最大池大小为 330，可以让等待时间增加到大约 30 分钟。
+
+# g_main_context_get_thread_default和g_main_context_default区别
+
+`g_main_context_get_thread_default()` 和 `g_main_context_default()` 是 GLib 中用于处理主循环的两个不同函数，主要用于获取 `GMainContext` 的实例，但它们的用途和上下文有所不同。
+
+### 1. `g_main_context_default()`
+
+- **用途**：返回全局的默认 `GMainContext` 实例。
+- **线程安全**：该函数返回的 `GMainContext` 是与主线程相关的，通常用于 GUI 应用程序或需要处理主事件循环的场景。
+- **示例**：
+  ```c
+  GMainContext *context = g_main_context_default();
+  ```
+
+### 2. `g_main_context_get_thread_default()`
+
+- **用途**：返回当前线程的默认 `GMainContext` 实例。
+- **线程安全**：这个函数非常重要，因为在多线程程序中，每个线程可能有自己的主上下文。调用此函数可以获取与当前线程相关的上下文。
+- **示例**：
+  ```c
+  GMainContext *context = g_main_context_get_thread_default();
+  ```
+
+### 主要区别
+
+- **上下文**：
+  - `g_main_context_default()` 提供的是全局的默认上下文，适用于单线程或主线程处理。
+  - `g_main_context_get_thread_default()` 提供的是特定于调用线程的上下文，适合多线程环境。
+
+- **使用场景**：
+  - 如果你的应用程序是单线程的，通常使用 `g_main_context_default()`。
+  - 如果你的应用程序是多线程的，并且每个线程可能会处理事件，应该使用 `g_main_context_get_thread_default()` 来确保你获取到该线程的正确上下文。
+
+### 例子
+
+在多线程编程中，你可能会在不同的线程中使用 `g_main_context_get_thread_default()` 来确保事件处理是正确的：
+
+```c
+#include <glib.h>
+#include <glib/gprintf.h>
+
+void thread_function() {
+    GMainContext *context = g_main_context_get_thread_default();
+    // 使用这个上下文进行事件处理
+}
+
+int main() {
+    GThread *thread = g_thread_new("my_thread", (GThreadFunc)thread_function, NULL);
+    g_thread_join(thread);
+    return 0;
+
 }
 ```
 
 ### 总结
-
 `g_object_class_install_property` 是 GObject 中用于安装属性的核心函数，它使得对象能够通过属性接口进行访问和修改。通过合理使用该函数，开发者可以提升对象的封装性和可用性，简化对象状态的管理。
 
 # g_signal_new` 和 `g_signal_new_class_handler
@@ -2935,12 +3063,82 @@ g_signal_new_class_handler(
     NULL, NULL,
     G_TYPE_NONE,
     0);
+
+
+
+```
+
+- 使用 `g_main_context_default()` 获取全局的默认上下文，适合单线程。
+- 使用 `g_main_context_get_thread_default()` 获取当前线程的上下文，适合多线程应用程序。选择合适的函数可以帮助确保事件处理的正确性和有效性。
+
+# **GMainDispatch**
+
+`GMainDispatch` 是 GLib 中的一个概念，通常与 `GMainContext` 和 `GMainLoop` 一起使用，涉及事件的调度和处理。以下是对 `GMainDispatch` 的详细介绍。
+
+### GMainDispatch 的作用
+
+- **事件调度**：`GMainDispatch` 负责在事件循环中调度和执行回调函数，允许应用程序响应各种事件，例如 I/O 事件、定时器和信号。
+- **异步处理**：它使得异步操作能够在主循环中被处理，而不阻塞主线程，确保应用程序的响应性。
+
+### 主要组件
+
+1. **GMainContext**:
+   - 这是事件的上下文，负责管理事件源（如文件描述符、定时器等）及其相关的回调。
+   - `GMainDispatch` 在此上下文中运行，处理所有调度的事件。
+
+2. **GMainLoop**:
+   - 这是一个包含 `GMainContext` 的循环结构，通常用于运行主事件循环。
+   - 通过调用 `g_main_loop_run()` 启动事件循环，进入调度和处理状态。
+
+### 使用示例
+
+以下是一个简单的示例，展示如何在主事件循环中使用 `GMainDispatch` 来处理定时器事件。
+
+```c
+#include <glib.h>
+#include <glib/gprintf.h>
+
+gboolean timeout_callback(gpointer user_data) {
+    g_printf("Timeout occurred!\n");
+    return G_SOURCE_CONTINUE; // 返回 TRUE 以继续调用此回调
+}
+
+int main() {
+    GMainLoop *loop = g_main_loop_new(NULL, FALSE);
+
+    // 添加一个定时器事件，每秒调用一次
+    g_timeout_add_seconds(1, timeout_callback, NULL);
+
+    // 运行主循环
+    g_main_loop_run(loop);
+
+    // 释放主循环
+    g_main_loop_unref(loop);
+    return 0;
+}
+```
+
+### 编译命令
+
+确保链接 GLib 库，并使用以下命令编译：
+
+```bash
+gcc -o main_dispatch_example main_dispatch_example.c `pkg-config --cflags --libs glib-2.0`
 ```
 
 ### 总结
 
 - **`g_signal_new`** 是用于实例级信号的定义，适合对象的具体行为。
 - **`g_signal_new_class_handler`** 是用于类级信号的定义，适合处理与类相关的事件。选择使用哪个函数取决于你希望信号在实例还是类级别上工作。
+- **GMainDispatch** 是 GLib 中的一个重要概念，负责调度和处理事件。
+- 它与 `GMainContext` 和 `GMainLoop` 一起使用，确保异步操作能够在主事件循环中被有效处理。
+- 通过使用定时器、I/O 事件等，`GMainDispatch` 能够帮助开发者构建响应式的应用程序。
+
+# GLibPrivateVTable
+
+这是一个C语言结构体的定义，名为`GLibPrivateVTable`。这个结构体包含了许多函数指针，用于访问GLib库的私有函数。这些函数指针被分组到不同的类别中，如`gwakeup.c`、`gmain.c`、`glib-init.c`等，表明它们与相应的源文件相关。
+
+这个结构体的作用是提供一个统一的接口，允许其他部分的代码访问GLib库的私有函数，而不需要直接包含这些函数的源文件。通过这种方式，可以实现模块化和封装，提高代码的可维护性和可重用性。
 
 # 参考资料
 
