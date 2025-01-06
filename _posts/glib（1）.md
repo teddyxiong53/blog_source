@@ -121,7 +121,7 @@ glib和glibc是2个东西。glib主要是给gnome用的。
 struct  _GObject
 {
   GTypeInstance  g_type_instance;
-
+  
   /*< private >*/
   volatile guint ref_count;
   GData         *qdata;
@@ -215,7 +215,7 @@ glib用C语言实现，提供了动态数组、链表、哈希表、平衡二叉
 .PHONY: all clean
 INCLUDE := -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
 	-L/usr/lib/x86_64-linux-gnu -lgobject-2.0 -lgthread-2.0 -lglib-2.0
-
+	
 CFLAGS := -g -Wall -O3  $(INCLUDE)
 all:
 	gcc test.c $(CFLAGS)
@@ -227,7 +227,7 @@ all:
 int main()
 {
 	gint i = 0;
-
+	
 }
 ```
 
@@ -298,12 +298,12 @@ int main()
 	g_thread_create(run_1, arg, TRUE, NULL);
 	g_thread_create(run_2, arg, TRUE, NULL);
 	g_thread_create(run_3, arg, TRUE, NULL);
-
+	
 	g_main_loop_run(main_loop);
 	g_print("run_3 has exited\n");
 	g_mutex_free(mutex);
 	g_free(arg);
-
+	
 }
 ```
 
@@ -325,7 +325,7 @@ g_malloc
 	总是返回gpointer类型。
 	失败时会退出进程。
 	所以没有必要检查是否为NULL。
-
+	
 GString
 	字符串类型。跟c++的string比较像。
 ```
@@ -549,7 +549,7 @@ GSource
 
 它们之间的关系是这样的：
     GMainLoop -> GMainContext -> {GSource1, GSource2, GSource3......}
-
+    
 每个GmainLoop都包含一个GMainContext成员，而这个GMainContext成员可以装各种各样的GSource，GSource则是具体的各种Event处理逻辑了。在这里，可以把GMainContext理解为GSource的容器。（不过它的用处不只是装GSource）
 
 ```
@@ -841,7 +841,7 @@ int main()
 # once的用法
 
 ```
-g_once_init_enter
+g_once_init_enter 
 	这个是在临界区初始化的时候用的。
 	它的参数是一个static gsize inited=0;这样的一个初始化值为0的static变量。
 	在完成的时候，inited会被赋值为非0值。
@@ -906,7 +906,7 @@ Query
 	2、char * type_name。
 	3、class大小。
 	4、instance大小。
-
+	
 Info
 	这个结构体成员较多。是创建类型时的重要结构体。
 	1、u16的class_size。这就决定了类的尺寸不能超过64K了。
@@ -926,17 +926,17 @@ Info
 			不是空的。
 	可以通过搜索GTypeInfo来看系统里定义了哪些类型。
 	看看这些类型。
-
+	
 GTypeValueTable
 	这个的作用是什么？
 	提供GValue实现需要的函数。
 	这样GValue就可以存放类型的值了。
-
+	
 	有这些成员：
 	1、value的init、free、copy这3个函数。
 		init：
 			分配的时候，会把对应的空间清零。
-
+			
 gboxed类型
 一种机制，用来保证C结构体，这些结构体是通过类型系统注册到glib的。
 类型系统只需要知道怎样去copy和free这些结构体。
@@ -1202,7 +1202,7 @@ param_spec = g_param_spec_enum("my-enum-property",  // 参数名
 
 `g_signal_new` 是 GLib/GObject 库中的一个函数，
 
-用于创建新的 GObject 信号（Signal）。
+用于创建新的 GObject 信号（Signal）。 
 
 GObject 信号是一种机制，
 
@@ -1348,7 +1348,7 @@ https://zhuanlan.zhihu.com/p/567751966
   ```
 
 - **注意事项**：
-
+  
   - 清理函数的参数类型应该匹配被管理资源的类型。
   - 如果变量具有静态存储期（如全局变量），在程序结束时可能不会调用清理函数。
 
@@ -1510,7 +1510,7 @@ int main(int argc, char *argv[]) {
 - **作用**：用于声明一个类型的结构和类的定义。
 - **使用场景**：通常在头文件中使用，以便其他文件可以引用该类型。
 - **示例**：
-
+  
   ```c
   G_DECLARE_FINAL_TYPE(MyCustomType, my_custom_type, MY, CUSTOM_TYPE, GObject);
   ```
@@ -1749,7 +1749,7 @@ void example() {
     data = g_steal_pointer(&data);  // 转移所有权，原指针置为 NULL
 
     // 现在可以安全使用 data
-
+    
     g_free(data); // 释放内存
 }
 ```
@@ -1979,9 +1979,9 @@ int main(int argc, char *argv[]) {
 
     gtk_container_add(GTK_CONTAINER(window), button);
     gtk_widget_show_all(window);
-
+    
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-
+    
     gtk_main();
     return 0;
 }
@@ -2009,13 +2009,13 @@ GObject 是 GLib 的一部分，提供了一种面向对象的编程模型，用
 ### 1. 类和对象
 
 - **C++**：使用 `class` 关键字定义类，通过构造函数创建对象。
-
+  
   ```cpp
   class MyClass {
   public:
       MyClass() {} // 构造函数
   };
-
+  
   MyClass obj;
   ```
 
@@ -2464,10 +2464,10 @@ G_DEFINE_TYPE(MyObject, my_object, G_TYPE_OBJECT)
 static void my_object_class_init(MyObjectClass *klass) {
     g_object_class_install_property(G_OBJECT_CLASS(klass),
                                     1,
-                                    g_param_spec_boxed("position",
-                                                       "Position",
-                                                       "The position of the object",
-                                                       MY_TYPE_BOXED_TYPE,
+                                    g_param_spec_boxed("position", 
+                                                       "Position", 
+                                                       "The position of the object", 
+                                                       MY_TYPE_BOXED_TYPE, 
                                                        G_PARAM_READWRITE));
 }
 
@@ -2481,7 +2481,7 @@ int main() {
     g_type_init(); // 初始化 GType 系统
 
     MyObject *obj = g_object_new(MY_TYPE_OBJECT, NULL);
-
+    
     MyBoxedType *pos = g_new(MyBoxedType, 1);
     pos->x = 10;
     pos->y = 20;
@@ -2673,189 +2673,6 @@ int main() {
 - `G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE` 允许你定义一个抽象类型，并在其内部管理私有数据。
 - 这种方式有助于封装实现细节，增强代码的可维护性和可扩展性，特别是在面向对象的编程中。
 
-
-# G_DEFINE_TYPE_XX 有哪些变种？
-
-`G_DEFINE_TYPE_XX` 宏在 GObject 中用于定义类型，主要有以下几种变种：
-
-1. **G_DEFINE_TYPE**:
-   - 用于定义一个基本的 GObject 类型。
-   - 语法示例：
-     ```c
-     G_DEFINE_TYPE(MyObject, my_object, G_TYPE_OBJECT)
-     ```
-
-2. **G_DEFINE_TYPE_WITH_CODE**:
-   - 在类型定义时可以添加额外的代码块。
-   - 语法示例：
-     ```c
-     G_DEFINE_TYPE_WITH_CODE(MyObject, my_object, G_TYPE_OBJECT,
-                             G_ADD_PRIVATE(MyObject));
-     ```
-
-3. **G_DEFINE_ABSTRACT_TYPE**:
-   - 用于定义一个抽象类型，不能直接实例化。
-   - 语法示例：
-     ```c
-     G_DEFINE_ABSTRACT_TYPE(MyAbstractObject, my_abstract_object, G_TYPE_OBJECT)
-     ```
-
-4. **G_DEFINE_DERIVABLE_TYPE**:
-
-   - 用于定义一个可派生的类型，允许其它类型从此类型派生。
-   - 语法示例：
-     ```c
-     G_DEFINE_DERIVABLE_TYPE(WpObject, wp_object, WP, OBJECT)
-     ```
-
-5. **G_DEFINE_DERIVABLE_TYPE_WITH_CODE**:
-
-   - 和 `G_DEFINE_DERIVABLE_TYPE` 类似，但可以添加额外的代码。
-   - 语法示例：
-     ```c
-     G_DEFINE_DERIVABLE_TYPE_WITH_CODE(WpObject, wp_object, WP, OBJECT,
-                                        G_ADD_PRIVATE(WpObject));
-     ```
-
-### 总结
-
-这些变种使得在 GObject 中创建不同类型的对象变得灵活和高效，可以根据需要选择合适的宏来定义类型。
-
-# G_DEFINE_DERIVABLE_TYPE_WITH_CODE添加的额外代码的用途
-
-`G_DEFINE_DERIVABLE_TYPE_WITH_CODE` 宏允许在定义可派生类型时添加额外的代码块。这些额外代码可以用于多种用途，主要包括：
-
-### 1. 添加私有数据结构
-
-通过 `G_ADD_PRIVATE` 宏，可以为对象添加私有数据结构，确保数据的封装性。
-
-```c
-G_DEFINE_DERIVABLE_TYPE_WITH_CODE(WpObject, wp_object, WP, OBJECT,
-                                   G_ADD_PRIVATE(WpObject));
-```
-
-### 2. 初始化类的静态属性
-
-在类定义时，可以初始化静态属性或注册信号等。
-
-```c
-G_DEFINE_DERIVABLE_TYPE_WITH_CODE(WpObject, wp_object, WP, OBJECT,
-                                   G_DEFINE_TYPE_INIT(WpObject, wp_object_init));
-```
-
-### 3. 定义信号
-
-可以在代码块中定义信号，以便在对象中使用。
-
-```c
-G_DEFINE_DERIVABLE_TYPE_WITH_CODE(WpObject, wp_object, WP, OBJECT,
-                                   g_signal_new("my-signal",
-                                                G_TYPE_FROM_CLASS(class),
-                                                G_SIGNAL_RUN_LAST,
-                                                0, NULL, NULL,
-                                                g_cclosure_marshal_VOID,
-                                                G_TYPE_NONE, 0));
-```
-
-### 4. 注册类型
-
-在类型定义时，可以直接注册类型或者进行其他初始化操作，比如设置类方法：
-
-```c
-G_DEFINE_DERIVABLE_TYPE_WITH_CODE(WpObject, wp_object, WP, OBJECT,
-                                   my_init_function());
-```
-
-### 总结
-
-通过 `G_DEFINE_DERIVABLE_TYPE_WITH_CODE` 添加的额外代码，使得类型定义更加灵活，能够在定义时进行必要的初始化和设置，增强了对象的功能性和可维护性。
-
-# g_object_class_install_property
-
-`g_object_class_install_property` 是 GObject 库中的一个重要函数，用于在 GObject 类中安装属性。它允许开发者为对象定义可读写的属性，使得对象的状态可以通过属性系统进行管理。
-
-### 函数原型
-
-```c
-void g_object_class_install_property(
-    GObjectClass *object_class,
-    guint property_id,
-    GParamSpec *pspec
-);
-```
-
-### 参数
-
-- **`GObjectClass *object_class`**: 指向要安装属性的对象类的指针。
-- **`guint property_id`**: 属性的唯一标识符，通常是一个整数。这个 ID 用于在获取和设置属性时进行引用。
-- **`GParamSpec *pspec`**: 该属性的参数规范，描述了属性的类型、默认值、可读性、可写性等特性。
-
-### 使用场景
-
-1. **定义属性**: 在自定义 GObject 类中定义属性，以便外部代码可以通过属性接口访问和修改对象的状态。
-2. **属性管理**: 通过属性系统，可以实现属性的验证、默认值设置等功能，提升代码的灵活性和安全性。
-
-### 示例
-
-以下是一个使用 `g_object_class_install_property` 的示例：
-
-```c
-#include <glib-object.h>
-
-typedef struct _MyObject {
-    GObject parent_instance;
-    int value;
-} MyObject;
-
-typedef struct _MyObjectClass {
-    GObjectClass parent_class;
-} MyObjectClass;
-
-G_DEFINE_TYPE(MyObject, my_object, G_TYPE_OBJECT)
-
-enum {
-    PROP_0,
-    PROP_VALUE,
-};
-
-static void my_object_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec) {
-    MyObject *self = MY_OBJECT(object);
-    switch (prop_id) {
-        case PROP_VALUE:
-            self->value = g_value_get_int(value);
-            break;
-        default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-            break;
-    }
-}
-
-static void my_object_get_property(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec) {
-    MyObject *self = MY_OBJECT(object);
-    switch (prop_id) {
-        case PROP_VALUE:
-            g_value_set_int(value, self->value);
-            break;
-        default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-            break;
-    }
-}
-
-static void my_object_class_init(MyObjectClass *klass) {
-    g_object_class_install_property(
-        G_OBJECT_CLASS(klass),
-        PROP_VALUE,
-        g_param_spec_int("value", "Value", "An integer value", 0, 100, 0, G_PARAM_READWRITE)
-    );
-
-    klass->set_property = my_object_set_property;
-    klass->get_property = my_object_get_property;
-}
-
-static void my_object_init(MyObject *self) {
-    self->value = 0; // 默认值
-
 # GTask
 
 ```c
@@ -2996,80 +2813,15 @@ int main() {
     GThread *thread = g_thread_new("my_thread", (GThreadFunc)thread_function, NULL);
     g_thread_join(thread);
     return 0;
-
 }
 ```
 
 ### 总结
-`g_object_class_install_property` 是 GObject 中用于安装属性的核心函数，它使得对象能够通过属性接口进行访问和修改。通过合理使用该函数，开发者可以提升对象的封装性和可用性，简化对象状态的管理。
-
-# g_signal_new` 和 `g_signal_new_class_handler
-
-`g_signal_new` 和 `g_signal_new_class_handler` 都是 GObject 中用于定义信号的函数，但它们之间有一些关键区别：
-
-### 1. **信号的作用域**
-
-- **`g_signal_new`**:
-  - 用于为特定对象类型定义信号。信号会在这个对象的实例上被发出。
-  - 适用于实例级信号。
-
-- **`g_signal_new_class_handler`**:
-  - 用于为类定义信号，信号处理程序是以类为基础，而不是具体实例。
-  - 适用于类级信号，通常会在类的上下文中处理。
-
-### 2. **信号处理器**
-
-- **`g_signal_new`**:
-  - 处理程序是与信号关联的，可以是实例方法或静态方法。
-  - 信号处理程序可以接收与实例相关的上下文。
-
-- **`g_signal_new_class_handler`**:
-  - 处理程序是类级别的，通常用于处理与该类相关的事件。
-  - 可以在类的上下文中运行，适合处理所有该类实例发出的信号。
-
-### 3. **使用场景**
-
-- **`g_signal_new`**:
-  - 适合用于需要对象实例级别的信号，比如一个按钮被点击时发出的信号。
-
-- **`g_signal_new_class_handler`**:
-  - 适合用于定义某个类的全局行为，比如当类的任何实例发生特定事件时都要处理的信号。
-
-### 示例对比
-
-#### `g_signal_new`
-
-```c
-g_signal_new(
-    "my-instance-signal",
-    G_TYPE_FROM_CLASS(klass),
-    G_SIGNAL_RUN_LAST,
-    G_STRUCT_OFFSET(MyObjectClass, my_signal_handler),
-    NULL, NULL,
-    g_cclosure_marshal_VOID, // 信号的调用约定
-    G_TYPE_NONE,
-    0);
-```
-
-#### `g_signal_new_class_handler`
-
-```c
-g_signal_new_class_handler(
-    "my-class-signal",
-    MY_OBJECT_TYPE,
-    G_SIGNAL_RUN_LAST,
-    G_CALLBACK(my_class_signal_handler),
-    "MyObject", // 额外数据
-    NULL, NULL,
-    G_TYPE_NONE,
-    0);
-
-
-
-```
 
 - 使用 `g_main_context_default()` 获取全局的默认上下文，适合单线程。
 - 使用 `g_main_context_get_thread_default()` 获取当前线程的上下文，适合多线程应用程序。选择合适的函数可以帮助确保事件处理的正确性和有效性。
+
+
 
 # **GMainDispatch**
 
@@ -3128,8 +2880,6 @@ gcc -o main_dispatch_example main_dispatch_example.c `pkg-config --cflags --libs
 
 ### 总结
 
-- **`g_signal_new`** 是用于实例级信号的定义，适合对象的具体行为。
-- **`g_signal_new_class_handler`** 是用于类级信号的定义，适合处理与类相关的事件。选择使用哪个函数取决于你希望信号在实例还是类级别上工作。
 - **GMainDispatch** 是 GLib 中的一个重要概念，负责调度和处理事件。
 - 它与 `GMainContext` 和 `GMainLoop` 一起使用，确保异步操作能够在主事件循环中被有效处理。
 - 通过使用定时器、I/O 事件等，`GMainDispatch` 能够帮助开发者构建响应式的应用程序。
