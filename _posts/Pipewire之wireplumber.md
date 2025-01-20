@@ -4311,96 +4311,26 @@ Constraint { "device.api", "=", "bluez5" },
 
 # session-item怎么理解
 
-在 WirePlumber 中，`session-item` 是一个重要的抽象概念，主要用来描述和管理系统中的某些“逻辑功能单元”，如音频设备、蓝牙设备、视频设备或应用流等。它是 WirePlumber 的模块化设计的一部分，帮助实现对 PipeWire 节点、设备和资源的高级管理。
+session-item是 high level对象，用来包装下面的pipewire对象。
 
-------
+并且管理它们。
 
-### **1. 什么是 `session-item`？**
+例如，一个session-item可以管理一个node，
 
-- **定义**: `session-item` 是 WirePlumber 中的一个逻辑实体，用来抽象和管理特定的资源或功能单元。
-- **作用**: 它充当 PipeWire 资源（如节点或设备）和 WirePlumber 的管理逻辑之间的桥梁，允许开发者和用户通过 WirePlumber 脚本或配置文件来定义、调整和控制这些资源的行为。
+负责配置node的PortConfig和Format param。
 
-------
+也可以管理2个node之间的link。
 
-### **2. `session-item` 的作用范围**
+session_item_configure 对应lua的configure，只有这里调用了。
 
-| 作用范围           | 说明                                                         |
-| ------------------ | ------------------------------------------------------------ |
-| **音频设备管理**   | 描述一个物理音频设备（如扬声器或麦克风），管理其连接、优先级等。 |
-| **应用音频流管理** | 处理特定应用程序的音频流，定义路由规则或行为。               |
-| **蓝牙设备支持**   | 管理蓝牙音频设备的连接状态和属性，例如耳机或扬声器。         |
-| **视频设备管理**   | 管理摄像头或其他视频设备的行为。                             |
-| **动态逻辑功能**   | 可以扩展为自定义功能，例如动态路由规则或特定设备的特殊处理逻辑。 |
-
-------
-
-### **3. `session-item` 的生命周期**
-
-1. **创建**:
-   - 由 WirePlumber 自动或通过 Lua 脚本动态创建。
-   - 例如，当 PipeWire 检测到一个新设备时，WirePlumber 可能会为该设备创建一个 `session-item`。
-2. **属性设置**:
-   - 每个 `session-item` 都可以有自己的属性，例如设备名称、优先级、媒体类别等。
-3. **关联资源**:
-   - `session-item` 会绑定到一个或多个 PipeWire 资源（如节点或设备），并管理这些资源的行为。
-4. **销毁**:
-   - 当设备断开或资源不再需要时，相应的 `session-item` 会被销毁。
-
-------
-
-### **4. 配置 `session-item` 的示例**
-
-在 WirePlumber 的 Lua 脚本中，你可以定义和管理 `session-item`。以下是一个简单示例：
-
-**自定义音频设备的 `session-item`：**
-
-```lua
-local item = session:new_item("my-custom-audio-device")
-item:set_properties({
-    ["media.class"] = "Audio/Sink",
-    ["node.description"] = "My Custom Sink",
-    ["priority"] = 1000
-})
-
-item:connect("state-changed", function(self, new_state)
-    print("Session item state changed to", new_state)
-end)
-
-session:activate_item(item)
+```
+src/scripts/node/create-item.lua
+100:        -- configure item
+101:        if not item:configure (configProperties (node)) then
+102:          transition:return_error ("failed to configure item for node "
 ```
 
-**解释：**
 
-- **`session:new_item`**: 创建一个新的 `session-item`。
-- **`set_properties`**: 设置 `session-item` 的属性。
-- **`connect`**: 监听 `session-item` 的状态变化。
-- **`activate_item`**: 激活 `session-item`，使其生效。
-
-------
-
-### **5. 如何查看和管理现有的 `session-item`？**
-
-1. **查看 `session-item` 的状态**: 使用 WirePlumber 的日志工具或调试模式，观察当前的 `session-item` 和其属性。
-
-   **命令示例**:
-
-   ```bash
-   wpctl status
-   ```
-
-2. **动态调整行为**: 通过 Lua 脚本或配置文件，调整 `session-item` 的属性或关联逻辑。
-
-------
-
-### **6. 总结**
-
-| 特性       | 描述                                                      |
-| ---------- | --------------------------------------------------------- |
-| **抽象**   | 用于管理设备、流或其他资源的高级逻辑单元。                |
-| **灵活性** | 支持动态创建、配置和销毁，满足复杂场景需求。              |
-| **扩展性** | 可通过 Lua 脚本定义自定义行为，适用于各种设备和功能需求。 |
-
-`session-item` 的设计让 WirePlumber 具备强大的扩展能力，可动态适配多种场景。如果你有具体的需求或遇到问题，可以提供细节，我会协助进一步解答！
 
 # 蓝牙连接时create device
 
@@ -4604,6 +4534,692 @@ print("Listening for Bluetooth nodes...")
 ------
 
 如果需要进一步扩展，比如对特定设备做匹配或动态移除 `link`，可以继续调整代码逻辑！
+
+# script_finish_activation
+
+这个函数是 Lua 脚本中 `Script.finish_activation` 函数的实现。
+
+它的作用是通知 WirePlumber 插件脚本已经完成激活过程，并更新插件的状态。
+
+# lua里定时
+
+```
+tags = {}
+
+function checkpoint(x)
+  log:warning("xhl -- Loading my script "..x)
+  table.insert(tags, x)
+end
+
+Core.timeout_add(100, function()
+  checkpoint("timeout1")
+  return false
+end)
+
+Core.timeout_add(200, function()
+  checkpoint("timeout2")
+  return false
+end)
+
+Core.timeout_add(300, function()
+  checkpoint("timeout3")
+  assert(#tags == 3)
+  assert(tags[1] == "timeout1")
+  assert(tags[2] == "timeout2")
+  assert(tags[3] == "timeout3")
+  return false
+end)
+
+```
+
+# GObject Integration
+
+### GObject Integration (Lua API) 总结
+
+WirePlumber 的脚本引擎通过 Lua 提供了对 **GObject** 的直接集成。
+
+该页面详细描述了如何在 Lua 脚本中操作 GObject，
+
+包括属性、信号、方法调用以及类型转换。
+
+以下是该页面内容的总结：
+
+---
+
+### 1. **GObject 属性 (Properties)**
+
+GObject 的属性在 Lua 中被当作对象成员来访问和修改：
+
+- **读取属性**：  
+  使用类似表的语法读取属性值。
+  
+  ```lua
+  local proxy = function_that_returns_a_wp_proxy()
+  local proxy_id = proxy["bound-id"]
+  print("Bound ID: " .. proxy_id)
+  ```
+  
+- **设置属性**：  
+  直接通过赋值修改可写属性。
+  ```lua
+  local mixer = ...
+  mixer["scale"] = "cubic" -- 设置属性为枚举值 "cubic"
+  ```
+
+---
+
+### 2. **GObject 信号 (Signals)**
+
+GObject 使用**信号**机制向外部回调发送事件：
+
+- **连接信号**：  
+  使用 `connect` 方法连接信号到回调函数。
+  
+  ```lua
+  proxy:connect("bound", function(p, id)
+    print("Proxy " .. tostring(p) .. " bound to " .. tostring(id))
+  end)
+  ```
+  - `connect` 的参数：
+    - `signal_name`：信号名称，例如 `"signal-name::detail"`。
+    - `callback`：信号触发时调用的 Lua 函数。
+  
+- **调用动作信号 (Action Signals)**：  
+  使用 `call` 方法调用动作信号。
+  
+  ```lua
+  local id = default_nodes:call("get-default-node", "Audio/Sink")
+  local volume = mixer:call("get-volume", id)
+  Debug.dump_table(volume)
+  ```
+  - `call` 方法的返回值由信号提供。
+
+---
+
+### 3. **类型转换 (Type Conversions)**
+
+在 Lua 和 C/GObject 之间，脚本引擎自动完成数据类型的转换：
+
+#### C 到 Lua 的转换：
+| **C 类型**               | **Lua 类型**             |
+| ------------------------ | ------------------------ |
+| `gchar`, `gint`, `guint` | `integer`                |
+| `gfloat`, `gdouble`      | `number`                 |
+| `gboolean`               | `boolean`                |
+| `gchar*`                 | `string`                 |
+| `WpProperties*`          | `table` (键值对)         |
+| `GVariant*`              | Lua 原生类型（递归转换） |
+
+#### Lua 到 C 的转换：
+| **Lua 类型** | **C 类型**                           |
+| ------------ | ------------------------------------ |
+| `integer`    | `gint`, `guint`, `gint64`            |
+| `number`     | `gfloat`, `gdouble`                  |
+| `boolean`    | `gboolean`                           |
+| `string`     | `gchar*`                             |
+| `table`      | `WpProperties*`, `GVariant` 字典类型 |
+
+#### GVariant 转换：
+- **从 GVariant 到 Lua**：支持递归转换，包括字典和数组。
+- **从 Lua 到 GVariant**：Lua 表被转换为字典 (`a{sv}`)，整数键会被转为字符串。
+
+---
+
+### 4. **闭包 (Closures)**
+
+Lua 函数可以作为 GClosure 传递到 C 函数中，脚本引擎会自动包装。GClosure 被销毁时，Lua 的引用也会被释放。
+
+**注意**：  
+Lua 引擎停止时，所有由该引擎创建的 GClosure 都会被无效化。
+
+---
+
+### 5. **引用计数 (Reference Counting)**
+
+- Lua 中 GObject 的引用由底层的 GObject 引用计数机制管理。
+- Lua 引用计数管理的是绑定的 `userdata` 对象，而非底层的 GObject 本身。
+
+**示例：**
+
+```lua
+local obj = FooObject() -- 创建一个 GObject 实例
+obj = nil -- 释放 Lua 引用，GObject 最终被销毁
+```
+
+**注意事项**：
+- 当 Lua 的垃圾收集器未运行时，`nil` 并不会立即销毁对象。
+- **循环引用风险**：闭包引用 GObject 的局部变量可能导致内存泄漏。
+
+**示例 (危险用法)：**
+
+```lua
+local om = ObjectManager(...)
+om:connect("objects-changed", function(obj_mgr)
+  for obj in om:iterate() do
+    do_stuff(obj)
+  end
+end)
+om = nil -- ObjectManager 被闭包引用，无法释放
+```
+
+---
+
+### 主要用途
+
+GObject 集成允许开发者通过 Lua 脚本动态配置和管理 WirePlumber 的行为，支持以下功能：
+- 操作 GObject 属性和信号。
+- 与 C 插件和 API 交互。
+- 动态实现会话管理和音频路由逻辑。
+
+---
+
+### 总结
+
+该文档提供了深入的技术细节，帮助开发者利用 WirePlumber 的 Lua 脚本功能来高效管理音频会话。通过对 GObject 的集成，开发者能够以更直观的方式操作底层的 PipeWire 功能模块。
+
+# constraint
+
+这是一个枚举类型的定义，用于指定约束类型。它定义了四种约束类型：
+
+*   `WP_CONSTRAINT_TYPE_NONE`：无效的约束类型
+*   `WP_CONSTRAINT_TYPE_PW_GLOBAL_PROPERTY`：约束应用于对象的PipeWire全局属性
+*   `WP_CONSTRAINT_TYPE_PW_PROPERTY`：约束应用于对象的PipeWire属性
+*   `WP_CONSTRAINT_TYPE_G_PROPERTY`：约束应用于对象的GObject属性
+
+# core api
+
+该网页是 **WirePlumber 0.5.7 文档**中关于 **Lua Core API** 的部分，主要描述了 **Core API** 提供的功能，用于在 Lua 脚本中与 WirePlumber 核心进行交互。以下是内容的总结：
+
+---
+
+### **核心概述**
+- **`WpCore` API**：  
+  Core 对象本身并未直接暴露给 Lua 脚本，但通过一组静态函数可以访问核心功能。
+- 主要功能包括：获取核心属性和信息、事件调度、同步、加载 API 插件、测试功能等。
+
+---
+
+### **暴露的函数**
+
+1. **`Core.get_properties()`**  
+   - 获取核心的属性。  
+   - 返回一个表（Lua 表），包含 WirePlumber 的客户端对象在 PipeWire 全局注册表中的属性。  
+   - **返回值类型**：`table`。
+
+2. **`Core.get_info()`**  
+   - 获取核心的信息。  
+   - 返回一个表，包含以下字段：
+     - `cookie`：远程会话的标识符。
+     - `name`：远程核心的名称。
+     - `user_name`：远程用户的名称。
+     - `host_name`：远程主机的名称。
+     - `version`：远程 WirePlumber 的版本。
+     - `properties`：远程核心的属性。
+   - **返回值类型**：`table`。
+
+3. **`Core.idle_add(callback)`**  
+   - 在事件循环空闲时调用指定的 `callback` 函数。  
+   - **参数**：  
+     - `callback`：回调函数（返回值为 `true` 继续调用，`false` 停止调用）。  
+   - **返回值类型**：`GSource`（可通过 `GSource.destroy()` 停止回调）。
+
+4. **`Core.timeout_add(timeout_ms, callback)`**  
+   - 在指定的 `timeout_ms` 毫秒后调用 `callback` 函数。  
+   - **参数**：  
+     - `timeout_ms`：超时时间（毫秒）。  
+     - `callback`：回调函数（返回值为 `true` 继续调用，`false` 停止调用）。  
+   - **返回值类型**：`GSource`（可通过 `GSource.destroy()` 停止回调）。
+
+5. **`GSource.destroy(self)`**  
+   - 用于销毁由 `Core.idle_add()` 或 `Core.timeout_add()` 返回的 `GSource` 对象，停止回调执行。
+
+6. **`Core.sync(callback)`**  
+   - 与 PipeWire 同步事务状态后执行回调函数。  
+   - **参数**：  
+     - `callback`：同步完成后调用的函数，接收一个参数（错误消息字符串或 `nil`）用于指示同步是否出错。
+
+7. **`Core.quit()`**  
+   - 退出当前的 `wpexec` 进程。  
+   - **注意**：仅在脚本运行于 `wpexec` 环境中有效，在主 WirePlumber 守护进程中会仅打印警告且无效。
+
+8. **`Core.require_api(..., callback)`**  
+   - 加载指定的 API 插件并运行回调函数。  
+   - **参数**：  
+     - `...`：API 插件名称列表（不包含 `-api` 后缀）。  
+     - `callback`：插件加载完成后调用的函数，接收插件引用作为参数。  
+   - **注意**：仅在脚本运行于 `wpexec` 环境中有效。
+
+9. **`Core.test_feature(feature)`**  
+   - 测试当前 WirePlumber 配置是否提供指定功能。  
+   - **参数**：  
+     - `feature`：功能名称（字符串）。  
+   - **返回值类型**：`boolean`（`true` 表示功能存在，`false` 表示不存在）。
+
+---
+
+### **附加说明**
+- **事件调度相关**：  
+  - `Core.idle_add()` 和 `Core.timeout_add()` 返回的 `GSource` 对象可以通过 `GSource.destroy()` 停止回调，适用于停止重复执行的操作或中止闲置任务。
+  
+- **API 插件加载**：  
+  - `Core.require_api()` 用于动态加载扩展 API（如 `mixer-api`），加载完成后可以通过回调函数调用插件功能。
+
+- **同步与退出**：  
+  - `Core.sync()` 用于确保脚本与 PipeWire 的同步状态一致。  
+  - `Core.quit()` 用于退出运行的 `wpexec` 脚本，但在主守护进程中无效。
+
+---
+
+### **适用场景**
+- **脚本化的核心操作**：  
+  提供核心属性、信息的查询和操作功能，适合动态管理 WirePlumber 的运行状态。
+- **事件驱动的编程**：  
+  通过 `idle_add` 和 `timeout_add` 实现基于事件循环的编程，适用于处理异步任务。
+- **扩展功能管理**：  
+  支持动态加载 API 插件，增强 WirePlumber 脚本的功能。
+
+# log api
+
+### Debug Logging — WirePlumber 0.5.7 概述
+
+WirePlumber 0.5.7 文档中的调试日志部分提供了一系列用于记录日志的方法和构造函数，主要用于脚本开发。
+
+#### 主要内容
+
+1. **构造函数**
+   
+   - **`Log.open_topic(topic)`**: 打开一个日志主题。主题的名称作为参数传入，返回一个日志主题对象。
+   
+   **示例代码**:
+   ```lua
+   local obj_log = Log.open_topic("s-linking")
+   obj_log:info(obj, "an info message on obj")
+   obj_log:debug("a debug message")
+   ```
+   
+2. **日志方法**
+   - **`Log.warning(object, message)`**: 记录警告消息。
+   - **`Log.notice(object, message)`**: 记录通知消息。
+   - **`Log.info(object, message)`**: 记录信息消息。
+   - **`Log.debug(object, message)`**: 记录调试消息。
+   - **`Log.trace(object, message)`**: 记录跟踪消息。
+
+   每个方法的参数可以选择性地包含一个对象和一条消息。
+
+3. **调试工具**
+   - **`Debug.dump_table(t)`**: 将表的所有内容递归打印到标准输出，用于调试目的。
+
+#### 使用示例
+
+通过这些方法，开发者可以有效地记录和管理脚本中的日志，帮助调试和监控程序的运行状态。
+
+### 结论
+
+WirePlumber 的调试日志 API 为开发者提供了强大的工具来记录和管理日志信息，有助于在开发和维护过程中更好地理解程序的行为。
+
+# Object Manager
+
+### Object Manager — WirePlumber 0.5.7 概述
+
+WirePlumber 0.5.7 文档中的对象管理器部分提供了一个用于管理和监控对象的 API，允许开发者收集符合特定条件的对象，并在这些对象被创建或销毁时接收通知。
+
+#### 主要内容
+
+1. **构造函数**
+   - **`ObjectManager(interest_list)`**: 构造一个新的对象管理器，接受一个包含一个或多个兴趣对象的表作为参数。对象管理器将管理所有匹配指定兴趣的对象。
+
+   **示例代码**:
+   
+   ```lua
+   streams_om = ObjectManager {
+       Interest {
+           type = "node",
+           Constraint { "media.class", "matches", "Stream/*", type = "pw-global" },
+       },
+       Interest {
+           type = "node",
+           Constraint { "media.class", "matches", "Audio/*", type = "pw-global" },
+           Constraint { "device.routes", "equals", "0", type = "pw" },
+       },
+   }
+   ```
+   
+2. **方法**
+   - **`ObjectManager.activate(self)`**: 激活对象管理器，并使预先存在的符合兴趣的对象可用。
+   - **`ObjectManager.get_n_objects(self)`**: 返回对象管理器管理的对象数量。
+   - **`ObjectManager.iterate(self, interest)`**: 返回所有符合指定兴趣的管理对象的迭代器。
+   - **`ObjectManager.lookup(self, interest)`**: 查找并返回第一个符合兴趣的管理对象。
+
+#### 使用示例
+
+开发者可通过这些方法灵活地管理对象，处理对象的创建和销毁，并根据需求进行过滤和查找。
+
+### 结论
+
+WirePlumber 的对象管理器 API 为开发者提供了强大的工具来管理和监控对象，有助于在复杂的音频和视频处理场景中实现高效的资源管理。
+
+# interest
+
+
+
+### Object Interest — WirePlumber 0.5.7 详细概述
+
+#### 1. **介绍**
+`Interest` 对象用于声明对特定对象或对象集合的兴趣，并提供过滤功能。这在 `ObjectManager` 中被广泛使用，同时也适用于其他需要遍历或查找特定对象的方法。
+
+#### 2. **构造**
+- **`Interest(decl)`**: 用于创建 `Interest` 对象。参数为一个包含兴趣声明的表。兴趣由 GType 和一组约束组成。
+
+  **示例**:
+  
+  ```lua
+  local om = ObjectManager {
+      Interest {
+          type = "node",
+          Constraint {
+              "node.name", "matches", "alsa*",
+              type = "pw-global"
+          },
+          Constraint {
+              "media.class", "equals", "Audio/Sink",
+              type = "pw-global"
+          },
+      }
+  }
+  ```
+
+#### 3. **兴趣的组成**
+- **GType**: 兴趣的类型，指定要匹配的对象类型（如节点、设备等）。
+- **约束**: 约束是一个包含属性名、操作符及其值的表。约束通过严格的顺序定义。
+
+#### 4. **约束**
+- **构造**: 约束同样通过表构造，必须包括：
+  - **属性名**（subject）: 要匹配的属性的名称。
+  - **操作符**（verb）: 匹配操作，如 `equals`、`matches` 等。
+  - **值**（object）: 操作符所需的值。
+
+  **操作符示例**:
+  - `equals` (`=`)
+  - `not-equals` (`!`)
+  - `in-list` (`c`)
+  - `in-range` (`~`)
+  - `matches` (`#`)
+  - `is-present` (`+`)
+  - `is-absent` (`-`)
+
+#### 5. **约束类型**
+- 约束可以指定应用于的属性列表类型：
+  - `pw-global`: 全局属性
+  - `pw`: PipeWire 属性
+  - `gobject`: GObject 属性
+
+  **示例约束**:
+  ```lua
+  Constraint {
+      "node.id", "equals", 42, type = "pw-global"
+  }
+  ```
+
+#### 6. **方法**
+- **`Interest.matches(self, obj)`**: 检查特定对象是否与兴趣匹配。可以接受 GObject 或可转换为 `WpProperties` 的表。
+
+  **返回值**: 布尔值，指示对象是否匹配兴趣。
+
+#### 7. **使用示例**
+开发者可以通过 `Interest` 对象和约束灵活地管理对象。例如，可以在 `ObjectManager` 中使用兴趣对象来匹配特定类型的音频节点或设备。
+
+# PipeWire Proxies
+
+### PipeWire Proxies — WirePlumber 0.5.7 概述
+
+WirePlumber 0.5.7 文档中的“PipeWire Proxies”部分介绍了与 PipeWire 对象交互的 Lua API，包括代理、节点、端口、客户端和元数据的操作。
+
+#### 主要内容
+
+1. **Proxy**
+   - `Proxy` 对象提供了与 `WpProxy` 绑定的方法。
+   - **方法**:
+     - **`get_interface_type(self)`**: 获取代理类型及其版本。
+
+2. **PipeWire Object**
+   - `PipewireObject` 绑定了 `WpPipewireObject`，允许操作 PipeWire 对象。
+   - **方法**:
+     - **`iterate_params(self, param_name)`**: 枚举指定的参数。
+     - **`set_param(self, param_name, pod)`**: 设置指定的参数为新的值。
+
+3. **Global Proxy**
+   - `GlobalProxy` 绑定了 `WpGlobalProxy`。
+   - **方法**:
+     - **`request_destroy(self)`**: 请求销毁该全局代理。
+
+4. **PipeWire Node**
+   - `Node` 绑定了 `WpNode`，用于管理节点相关操作。
+   - **方法**:
+     - **`get_state(self)`**: 获取节点的当前状态。
+     - **`get_n_input_ports(self)`**: 获取输入端口的数量。
+     - **`get_n_output_ports(self)`**: 获取输出端口的数量。
+     - **`iterate_ports(self, interest)`**: 迭代匹配兴趣的端口。
+     - **`lookup_port(self, interest)`**: 查找匹配兴趣的端口。
+     - **`send_command(self, command)`**: 向节点发送命令。
+
+5. **PipeWire Port**
+   - `Port` 绑定了 `WpPort`，用于管理端口。
+   - **方法**:
+     - **`get_direction(self)`**: 获取端口的方向。
+
+6. **PipeWire Client**
+   - `Client` 绑定了 `WpClient`，用于管理客户端操作。
+   - **方法**:
+     - **`update_permissions(self, perms)`**: 更新客户端权限。
+
+7. **PipeWire Metadata**
+   - `Metadata` 绑定了 `WpMetadata`，用于管理元数据。
+   - **方法**:
+     - **`iterate(self, subject)`**: 创建元数据迭代器。
+     - **`find(self, subject, key)`**: 查找指定键的元数据值。
+
+### 结论
+WirePlumber 的 PipeWire Proxies API 提供了丰富的功能以与 PipeWire 对象进行交互，支持节点、端口、客户端及元数据的管理，极大地增强了音频和视频处理的灵活性与控制能力。
+
+# default node
+
+### Default Nodes Scripts — WirePlumber 0.5.7 概述
+
+WirePlumber 0.5.7 文档中的“Default Nodes Scripts”部分介绍了用于选择默认音频源和音频接收节点的脚本，及其用户偏好的管理。
+
+#### 主要内容
+
+1. **脚本功能**
+   - 这些脚本负责扫描所有可用节点并根据特定逻辑为其分配优先级。每个类别中优先级最高的节点将被设置为默认节点。
+
+2. **钩子机制**
+   - 通过“rescan-for-default-nodes”事件实现节点的重新扫描。
+   - **钩子**:
+     - **`default-nodes/rescan-trigger`**: 监控图形变化并调度“rescan-for-default-nodes”。
+     - **`default-nodes/rescan`**: 在“rescan-for-default-nodes”事件触发时，推送“select-default-node”事件，用于每个需要默认节点的类别（音频接收、音频源、视频源）。
+
+3. **图形变化触发的钩子**
+   - **`default-nodes/rescan-trigger`**: 当有链接添加/删除或 `default.configured.*` 元数据更改时触发。
+   - **`default-nodes/store-configured-default-nodes`**: 存储用户选择的默认节点。
+   - **`default-nodes/metadata-added`**: 恢复 `default.configured.*` 值。
+
+4. **“select-default-node”事件**
+   - 这是一个高优先级事件，用于选择给定类别的默认节点。
+   - 每个钩子负责查找该类别中优先级最高的节点。可选择节点列表由“default-nodes/rescan”钩子提前计算，并传递给每个“select-default-node”钩子。
+
+5. **事件属性**
+   - **`default-node.type`**: 相关默认节点的元数据键后缀（如 `audio.sink`、`audio.source`、`video.source`）。
+
+6. **事件数据交换**
+   - **`available-nodes`**: 所有可选择节点的 JSON 数组。
+   - **`selected-node`**: 被选中节点的名称。
+   - **`selected-node-priority`**: 选中节点的优先级。
+
+### 结论
+Default Nodes Scripts 在 WirePlumber 中提供了自动选择和管理默认音频和视频节点的机制，确保用户的偏好能够得到有效管理和应用。通过钩子机制，系统能够实时响应节点的变化，优化用户体验。
+
+# Device Profile/Route Management Scripts 
+
+### Device Profile/Route Management Scripts — WirePlumber 0.5.7 概述
+
+WirePlumber 0.5.7 文档中的“Device Profile/Route Management Scripts”部分介绍了用于为每个设备选择适当配置文件和路由的脚本。
+
+#### 主要内容
+
+1. **脚本功能**
+   - 这些脚本负责根据设备的状态选择合适的配置文件和路由。
+
+2. **钩子机制**
+   - 钩子在图形变化时被触发，具体包括：
+     - **`device/select-profile`**: 设备添加或配置文件枚举变化时调度“select-profile”事件。
+     - **`device/select-route`**: 设备添加或路由枚举变化时更新设备信息缓存并调度“select-routes”事件。
+     - **`device/store-user-selected-profile`**: 当配置文件参数变化时存储用户选择的配置文件。
+     - **`device/store-or-restore-routes`**: 路由参数变化时存储或恢复路由选择。
+
+3. **选择配置文件事件**
+   - **高优先级事件**，用于为给定设备选择配置文件。
+   - 事件“subject”是设备（`WpDevice`）对象。
+   - **交换事件数据**:
+     - **`selected-profile`**: 要设置的选定配置文件，类型为包含配置文件参数属性的 JSON 对象。
+
+4. **选择路由事件**
+   - **高优先级事件**，用于为给定配置文件选择路由。
+   - 事件“subject”是设备（`WpDevice`）对象。
+   - **事件属性**:
+     - **`profile.changed`**: 如果选择了新配置文件，则为 true；如果仅更改了可用路由，则为 false。
+     - **`profile.name`**: 当前活动配置文件的名称。
+     - **`profile.active-device-ids`**: 活动设备 ID 的 JSON 数组，用于选择路由。
+
+   - **交换事件数据**:
+     - **`selected-routes`**: 要设置的选定路由，类型为映射，键为设备 ID，值为包含路由索引及属性的 JSON 对象。
+
+### 结论
+Device Profile/Route Management Scripts 在 WirePlumber 中提供了一种动态选择和管理设备配置文件及路由的机制，确保系统能够根据设备状态自动调整设置，优化用户体验。通过钩子机制，系统能够实时响应设备的变化。
+
+# Linking Scripts
+
+### Linking Scripts — WirePlumber 0.5.7 概述
+
+WirePlumber 0.5.7 文档中的“Linking Scripts”部分介绍了用于在节点之间创建链接的逻辑，这些脚本负责决定哪些链接需要创建。
+
+#### 主要内容
+
+1. **脚本功能**
+   - 这些脚本主要用于处理节点之间的连接逻辑，决定如何创建链接。
+
+2. **钩子机制**
+   - 钩子分为三个子类别，主要用于响应图形中的变化。它们的功能包括：
+     - **调度“rescan-for-linking”事件**：这是一个低优先级事件，目的是扫描所有可链接的会话项并将它们链接到特定目标。
+     - **选择每个可链接目标**：通过推送“select-target”事件来处理，这个事件的优先级高，因此在目标选择期间不会处理其他图形变化。
+
+3. **钩子触发的事件**
+   - **`linking/rescan-trigger`**: 当可链接会话项（SI）添加、移除或元数据变化时触发，调度“rescan-for-linking”事件。
+   - **`linking/linkable-removed`**: 移除可链接会话项时，销毁相关链接。
+   - **`linking/follow`**: 当用户更改默认源/接收器时调度“rescan-for-linking”。
+   - **`linking/move`**: 当节点目标元数据属性变化时调度“rescan-for-linking”。
+   - **`linking/rescan-media-role-links`**: 活动或非活动角色基础链接，基于角色优先级和操作。
+
+4. **事件处理顺序**
+   - **“rescan-for-linking”钩子**:
+     - **`m-standard-event-source/rescan-done`**: 清除调度标志。
+     - **`linking/rescan`**: 为每个可链接的会话项调度选择目标。
+
+5. **选择目标的钩子**
+   - **`linking/find-defined-target`**: 选择由 `target.object` 属性或元数据明确定义的目标。
+   - **`linking/find-filter-target`**: 如果主题是过滤节点，选择过滤器节点的目标。
+   - **`linking/find-media-role-target`**: 根据流的媒体角色和目标的设备意图角色选择目标。
+   - **`linking/find-default-target`**: 选择默认源/接收器作为目标。
+   - **`linking/find-best-target`**: 根据优先级选择目标。
+
+6. **链接创建流程**
+   - **`linking/prepare-link`**: 检查是否需要断开现有链接，并确保目标可用。
+   - **`linking/link-target`**: 创建会话项以在主题可链接项和选定目标之间创建链接。
+
+### 结论
+Linking Scripts 在 WirePlumber 中提供了一种自动化的方式来管理节点之间的链接，确保在节点状态变化时能够有效地更新连接。通过钩子机制，系统能够灵活响应图形的变化，优化音频和视频流的处理。
+
+# linkable
+
+它具体是怎么工作的？
+
+```
+Constraint { "event.session-item.interface", "=", "linkable" },
+```
+
+C语言里的是这里：
+
+```
+modules/module-standard-event-source.c
+136:          "event.session-item.interface", "linkable");
+```
+
+link_new
+
+```
+static void
+request_destroy_link (gpointer data, gpointer user_data)
+{
+  WpLink *link = WP_LINK (data);
+
+  wp_global_proxy_request_destroy (WP_GLOBAL_PROXY (link));
+}
+```
+
+
+
+# request_destroy
+
+
+
+# transition 
+
+transition是一个异步操作。
+
+跟GTask类似。
+
+包含一个内部状态机。
+
+包含一系列的steps。
+
+get_next_step
+
+execute_step
+
+step完成后，必须在step处理函数里调用advance函数来走到下一步。
+
+
+
+# Object Manager
+
+提供一种收集一组object的方法。
+
+当前符合某些条件的对象被create或者destroy的时候，会收到通知。
+
+管理了4种object：
+
+* 远程pipewire在registry上广播的对象。这些对象被绑定到WpGlobalProxy。
+* 通过wireplumber在pipewire里创建的global对象。
+* wireplumber里创建的pipewire对象，并且进行了export。
+* wireplumber特有的对象，例如plugin、factory、session item。
+
+# 蓝牙设备的创建过程
+
+```
+monitor = createMonitor()
+	monitor = SpaDevice("api.bluez5.enum.dbus", config.properties)
+	monitor:connect("create-object", createDevice)
+		createDevice(parent, id, type, factory, properties)
+			这些参数：
+				parent表示什么？应该就是monitor本身。
+				是一个spadevice。
+			device = SpaDevice(factory, properties)
+			device:connect("create-object", createNode)
+				createNode(parent, id, type, factory, properties)
+					这里的parent就是Device
+	monitor:activate(Feature.SpaDevice.ENABLED)
+```
+
+
 
 # 参考资料
 

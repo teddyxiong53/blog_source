@@ -221,3 +221,22 @@ Audio Precision基于这个测量推出了LTV-1光电转换器，可直接搭配
 3. 通过工具（如示波器或音频分析仪）计算输入与输出信号的时间差。
 
 这种方法适用于评估整体用户体验，但无法单独区分各部分的延迟。
+
+# AV Latency.com
+
+https://avlatency.com/tools/av-latency-com-toolkit/
+
+AV Latency.com 工具包是一个软件套件，利用廉价且常见的消费电子设备来准确测量目标设备的音频延迟。
+
+
+
+# rtings.com
+
+https://www.rtings.com/headphones/learn/research/latency
+
+查看他对 HDMI 延迟测试的解释时，将 HDMI 输出分成两个环路并在这两个环路之间比较差异（其中一个环路包含待测设备）的概念很简单且非常巧妙。
+
+然而，由于这种方法需要在信号源侧使用电缆分隔音频，我们立刻看到了使用这种方法添加蓝牙测量所增加的挑战。
+
+不过，如果我们采用 AVLatency.com 使用的偏移方法，这个想法可能是可扩展的。
+

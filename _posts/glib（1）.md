@@ -2890,6 +2890,119 @@ gcc -o main_dispatch_example main_dispatch_example.c `pkg-config --cflags --libs
 
 这个结构体的作用是提供一个统一的接口，允许其他部分的代码访问GLib库的私有函数，而不需要直接包含这些函数的源文件。通过这种方式，可以实现模块化和封装，提高代码的可维护性和可重用性。
 
+# WP_SESSION_ITEM_GET_CLASS 
+
+在 GObject 和相关的类系统中，使用 `WP_SESSION_ITEM_GET_CLASS(self)->configure` 而不是直接调用 `self->configure()` 有几个重要的原因。这种做法主要与多态性、虚函数的概念以及对象的实现细节有关。
+
+### 1. 多态性
+
+- **虚函数机制**：在 GObject 的体系结构中，方法通常是以虚函数的方式实现的。这意味着每个子类可以实现自己的 `configure` 方法。通过 `WP_SESSION_ITEM_GET_CLASS(self)`，你可以获取当前对象的类，并调用该类中定义的 `configure` 方法。
+
+### 2. 动态绑定
+
+- **运行时选择**：使用 `WP_SESSION_ITEM_GET_CLASS(self)->configure` 可以确保调用的是当前对象实际的类实现的 `configure` 方法。这对于实现动态绑定是必要的，即在运行时根据对象的实际类型选择合适的方法。
+
+### 3. 继承和重写
+
+- **子类的实现**：如果某个子类重写了 `configure` 方法，调用 `WP_SESSION_ITEM_GET_CLASS(self)->configure` 会确保调用的是子类的实现，而不是父类的实现。这样可以实现更灵活的设计。
+
+### 4. 设计模式
+
+- **符合 GObject 设计**：这种设计符合 GObject 的面向对象编程范式，强调通过类和虚函数来实现多态性和代码重用。
+
+### 示例
+
+假设你有一个基类和两个子类，它们都实现了 `configure` 方法：
+
+```c
+typedef struct {
+    WpSessionItem parent_instance;
+} MySessionItem;
+
+static gboolean my_session_item_configure(WpSessionItem *self, WpProperties *props) {
+    // 子类特有的配置逻辑
+    return TRUE;
+}
+
+static void my_session_item_class_init(MySessionItemClass *klass) {
+    WP_SESSION_ITEM_CLASS(klass)->configure = my_session_item_configure;
+}
+```
+
+在这样的结构中，使用 `WP_SESSION_ITEM_GET_CLASS(self)->configure` 是确保调用 `my_session_item_configure` 的正确方式。
+
+### 总结
+
+- 使用 `WP_SESSION_ITEM_GET_CLASS(self)->configure` 是 GObject 中实现多态性和动态绑定的标准方式。
+- 这种方式确保调用的是当前对象的实际类的方法，支持继承和方法重写，使得代码更加灵活和可扩展。
+
+# g_signal_connect_object
+
+```c
+#include <glib-object.h>
+#include <stdio.h>
+
+// 定义一个信号的枚举
+enum {
+    SIGNAL_MY_EVENT,
+    N_SIGNALS
+};
+
+// 自定义对象
+typedef struct {
+    GObject parent_instance;
+} MyObject;
+
+typedef struct {
+    GObjectClass parent_class;
+} MyObjectClass;
+
+// 定义类型宏
+#define MY_TYPE_OBJECT (my_object_get_type())
+G_DEFINE_TYPE(MyObject, my_object, G_TYPE_OBJECT)
+
+// 信号的定义
+static void my_object_init(MyObject *self) {
+    // 初始化代码
+}
+
+static void my_object_class_init(MyObjectClass *klass) {
+    g_signal_new("my-event", G_TYPE_FROM_CLASS(klass),
+                 G_SIGNAL_RUN_LAST, 0, NULL, NULL,
+                 g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+}
+
+// 回调函数
+void my_event_handler() {
+    g_print("My event was triggered!\n");
+}
+
+// 创建和连接信号的函数
+void create_and_connect() {
+    MyObject *obj = g_object_new(MY_TYPE_OBJECT, NULL);
+
+    // 使用 g_signal_connect_object 连接信号
+    g_signal_connect_object(obj, "my-event", G_CALLBACK(my_event_handler), obj, 0);
+
+    // 触发信号
+    g_signal_emit_by_name(obj, "my-event");
+
+    // 释放对象
+    g_object_unref(obj);
+}
+
+int main() {
+    // g_type_init() 在 GLib 2.36 及以后版本中不再需要
+    // g_type_init(); // 初始化 GType
+
+    create_and_connect();
+
+    return 0;
+}
+```
+
+
+
 # 参考资料
 
 1、浅析GLib

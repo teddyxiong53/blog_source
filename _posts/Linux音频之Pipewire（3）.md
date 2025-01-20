@@ -1567,3 +1567,595 @@ struct adapter
 
 适配器的功能是将设备原格式转换为所需的外部格式。这可以包括格式或采样率转换，也可能包括声道重新混音/映射。
 
+
+
+
+
+维基百科上的《音视频同步》文章指出：
+
+对于电视应用，
+
+高级电视系统委员会建议音频领先视频不超过15毫秒，
+
+音频落后视频不超过45毫秒。
+
+然而，国际电信联盟进行了严格控制的测试，并与专业观众一起发现可察觉的阈值为-125ms至+45ms。
+
+对于电影来说，可接受的嘴唇同步偏差被认为不超过22毫秒。
+
+我们看到缓冲区目前没有延迟。
+
+在下一步中，您将需要输出的`名称`和`端口`。
+
+在这个例子中，它们分别是`bluez_card.28_11_A5_84_B6_F9`和`speaker-output`。 
+
+将您的卡的缓冲区大小（延迟）设置为适当的值，使用以下命令模式：
+
+ pactl set-port-latency-offset 以下命令的延迟单位为微秒，
+
+因此我在这里使用了50毫秒的缓冲区来执行命令：
+
+```
+    pactl set-port-latency-offset bluez_card.28_11_A5_84_B6_F9 speaker-output 50000 
+```
+
+https://gitlab.freedesktop.org/pipewire/pipewire/-/issues/4269
+
+`pw-cli s <node-name> ProcessLatency '{ nsec=<latency> }'`.
+
+# pw-loopback
+
+```
+# pw-loopback -h
+pw-loopback [options]
+  -h, --help                            Show this help
+      --version                         Show version
+  -r, --remote                          Remote daemon name
+  -n, --name                            Node name (default 'pw-loopback-3776')
+  -g, --group                           Node group (default 'pw-loopback-3776')
+  -c, --channels                        Number of channels (default 2)
+  -m, --channel-map                     Channel map (default '[ FL, FR ]')
+  -l, --latency                         Desired latency in ms
+  -d, --delay                           Desired delay in float s
+  -C  --capture                         Capture source to connect to (name or serial)
+      --capture-props                   Capture stream properties
+  -P  --playback                        Playback sink to connect to (name or serial)
+      --playback-props                  Playback stream properties
+```
+
+https://gitlab.freedesktop.org/pipewire/pipewire/-/issues/3064
+
+
+
+直接执行pw-loopback命令，不带任何参数，也是启动了一个filter。
+
+wpctl status看到是这样：
+
+```
+ ├─ Filters:
+ │    - loopback-2914-19
+ │      55. output.pw-loopback-2914                                      [Stream/Output/Audio]
+ │      56. input.pw-loopback-2914                                       [Stream/Input/Audio]
+```
+
+这个命令等价于：
+
+```
+pactl load-module module-loopback
+```
+
+
+
+创建一个可以在应用程序中选择的接收器，并将数据转发到另一个接收器。
+
+```plaintext
+pw-loopback -m '[ FL FR]' --capture-props='media.class=Audio/Sink node.name=my-sink'
+```
+
+创建一个可以在应用程序中选择的源，并将另一个源的数据转发出去。
+
+```plaintext
+pw-loopback -m '[ FL FR]' --playback-props='media.class=Audio/Source node.name=my-source'
+```
+
+创建一个可以在应用程序中选择的接收器，并且该接收器可以交换左声道和右声道到另一个接收器。
+
+```plaintext
+pw-loopback --capture-props='media.class=Audio/Sink node.name=my-sink audio.position=[FL FR]' --playback-props='audio.position=[FR FL]'
+```
+
+对于更复杂的虚拟接收器，请使用filter-chain。
+
+
+
+`stream.dont-remix` 属性确保只有捕获设备的 FL 端口被链接（而不是所有端口混合到 FL 中）。
+
+
+
+`node.passive` 属性指示会话管理器在流和设备节点之间创建被动链接，以便当源端口未连接任何内容时，两个流都将空闲（如果会话管理器配置了此选项，则会暂停）。
+
+`node.target` 使流由会话管理器自动连接到命名设备。请注意，如果设备被移除，流将会移动到其他设备，直到命名设备重新出现。如果你想让虚拟设备与真实设备一同出现和消失，你需要使用一个 WirePlumber 脚本。
+
+# 有2套keys.h
+
+* 一套是spa的。这个是集中在api.xx这一类。不过spa也还有个spa/node/keys.h的。里面只有10个左右的，主要是node和port的。
+
+* 一套是pw的。这个是集中在node、port、link、device、module、factory、stream、media、audio、target这一类。
+
+
+
+# aplay -D pipewire
+
+可以使用环境变量
+
+```
+PIPEWIRE_ALSA
+PIPEWIRE_NODE
+```
+
+
+
+# 为什么创建combine stream是context.modules，而不是context.objects方式？
+
+在 PipeWire 和 WirePlumber 的配置中，**`context.modules`** 和 **`context.objects`** 都用于加载功能和资源，但它们的用途和适用场景有所区别：
+
+------
+
+### **1. `context.modules` 的特点**
+
+- **用于加载模块（Module）**：
+   `context.modules` 是 PipeWire 的核心机制，用于加载功能模块。这些模块通常是底层功能的实现，例如音频设备模拟、流处理、协议支持等。
+- **模块的功能范围广泛**：
+   它们提供系统级别的功能，比如 `libpipewire-module-combine-stream` 模块用于组合多个音频流，而不是具体的节点或流对象。
+- **生命周期和配置紧密绑定**：
+   模块的加载和卸载与 PipeWire 实例的生命周期绑定，一旦模块被加载，它会持续运行直到 PipeWire 停止或模块被卸载。
+
+------
+
+### **2. `context.objects` 的特点**
+
+- **用于创建逻辑对象**：
+   `context.objects` 是 WirePlumber 提供的高级功能，用于创建更高层次的逻辑对象，例如节点、设备、链接等。
+- **对象更灵活**：
+   它们通常对应 PipeWire 的实体，如 `Node`、`Link`，可用于动态管理设备间的链接和连接规则。
+- **面向具体场景**：
+   `context.objects` 更适合在运行时动态修改设备的行为，而不是加载系统级功能。
+
+------
+
+### **为什么 `combine-stream` 使用 `context.modules`？**
+
+- **模块级别功能**：
+   `libpipewire-module-combine-stream` 是一个核心模块，负责处理多个音频流的组合。它是底层实现，不仅仅是一个逻辑对象，而是提供组合流功能的系统模块。
+- **不可拆分的功能性**：
+   `combine-stream` 是一个整体功能模块，无法通过 WirePlumber 的 `context.objects` 单独实现。它需要通过 `context.modules` 提前加载并初始化。
+- **作用范围**：
+   模块加载后，PipeWire 会自动创建对应的节点和流。通过 `context.modules` 加载后，可以通过规则定义其行为（如 `stream.rules`）。
+
+------
+
+### **`context.objects` 适合的场景**
+
+- 动态创建或管理逻辑对象（如设备、链接）。
+- 需要运行时调整或响应特定事件的配置。
+- 例如，创建一个蓝牙设备节点并自动连接到某个输出设备：
+
+```lua
+context.objects = [
+    {
+        name = "bluez-auto-link"
+        type = "link"
+        args = {
+            node.name = "bluez_output.00_00_00_00_00_00"
+            target.name = "my-default-sink"
+        }
+    }
+]
+```
+
+------
+
+### **总结**
+
+- **`context.modules`**：用于加载系统功能模块，如 `libpipewire-module-combine-stream`，这是模块级别的功能实现。
+- **`context.objects`**：用于动态创建和管理运行时的逻辑对象，更适合用于管理链接、节点或设备的行为。
+
+`combine-stream` 需要模块支持，因此使用 `context.modules` 是合适的选择。
+
+
+
+
+
+# 1
+
+PipeWire 提供了三个兼容层：通过 PCM 设备与 ALSA 兼容，通过 pipewire-pulse 服务器与 PulseAudio 兼容，以及通过 `pw-jack` 命令与 Jack 兼容。
+
+
+
+实际上，这是一种 LTV（长度-类型-值）格式，因此使用字节计数分帧，其中长度和类型是固定的 32 位值，帧总是 8 字节对齐。因此，通常会为不对齐的值添加填充。（注意：分帧是指值的开始和结束的概念，如何分隔。）
+
+这种格式的优点是它是一种“原封不动”的格式，可以直接在网络上传输、从内存中读取、存储在堆栈或磁盘上而无需额外的打包处理。
+
+该库是一个仅包含头文件的无依赖 C 库，这使其非常容易进行测试。
+
+
+
+有很多插件和使用它们的不同方式。有些接口是异步的，并通过注册的事件处理程序和钩子使用回调，有些是同步的。
+
+SPA 的一般概念可能看起来有些繁琐且令人失望：固定工厂名称在头文件中定义，固定接口，然后从动态加载库中手动获取它们，再根据信息使用其中的方法。
+
+
+
+PipeWire 使用 POD 对消息（方法和事件）进行编码，以及对服务器上对象的一些属性进行编码。
+
+同时，SPA 库用于在服务器的图中创建对象。
+
+
+
+图中的对象是通过 SPA 工厂创建的插件：实现特定接口的对象。其中一些对象始终存在——如核心和注册表这样的单例，而其他对象则动态出现——无论是由模块创建还是由会话管理器创建。
+
+
+
+PipeWire，就像 PulseAudio 一样，具有插件架构：核心部分很小，其他一切都是模块，在这种情况下是 SPA 插件。这使其非常扩展和动态。
+
+这些通过 SPA 工厂创建的对象都有 ID。其中一个对象，核心单例对象，具有固定的 ID 0，以便客户端总是能够找到它。
+
+客户端随后可以“绑定”——这就是我们所说的获取远程对象的代理——将注册表单例对象绑定到该注册表，以便列出所有服务器端存在的对象（如果需要，也可以绑定到它们）。
+
+绑定是必要的，以便能够调用对象的方法或注册它们发出的事件
+
+
+
+一些对象与媒体处理相关，例如节点、链接和端口——是的，这些都是图中的独立实体。其他对象是扩展核心模块，或用于创建其他对象的工厂（工厂也可以生活在图中），或会话管理相关的对象。
+
+这些工厂创建的对象实现的一些接口示例：
+
+- PipeWire:Interface:Core (`struct pw_core`)
+- PipeWire:Interface:Registry (`struct pw_registry`)
+- PipeWire:Interface:Module (`struct pw_module`)
+- PipeWire:Interface:Factory (`struct pw_factory`)
+- PipeWire:Interface:Client (`struct pw_client`)
+- PipeWire:Interface:Metadata (`struct pw_metadata`)
+- PipeWire:Interface:Device (`struct pw_device`)
+- PipeWire:Interface:Node (`struct pw_node`)
+- PipeWire:Interface:Port (`struct pw_port`)
+- PipeWire:Interface:Link (`struct pw_link`)
+
+PipeWire 守护进程提供了一个事件循环，
+
+在事件到达时依次处理这些事件。
+
+客户端可以与图中远程对象进行交互，
+
+调用方法并注册以接收实现上述接口的事件，
+
+通过代理（bind）可以调用它们所遵循的接口相关的方法。
+
+如果你对 Wayland 有所了解，这种进行 IPC 的方式会让你想起 Wayland 异步 IPC 设计。不错，因为 PipeWire 事件循环、代理和注册机制都受到了 Wayland 异步 IPC 设计的启发。
+
+然而，与 Wayland 不同，这些接口仍然仅仅在头文件中定义，并未在 XML 文件中定义，因此你必须像我们在上一个 SPA 示例中所做的那样查阅它们。
+
+
+
+作为客户端，这具体表现为与 PipeWire 服务器建立初始连接，
+
+服务器返回核心对象的代理（ID=0），
+
+然后是一个持续的事件循环，
+
+用于检测新的活动。
+
+
+
+然后我们使用 `pw_context_connect` 连接到 PipeWire 服务器，
+
+这将返回单例核心对象的代理，
+
+一个 `struct pw_core` 。
+
+最后，当循环结束时，我们需要清理对象、销毁我们创建的代理、断开与核心的连接、销毁上下文，并销毁循环。
+
+
+
+如我们所说，通常我们会绑定以获取一个 `struct pw_registry` 代理，并注册“global”事件，
+
+该事件会为图中每个存在的对象发出事件。
+
+在事件回调中钩住“global”事件，
+
+我们可以选择绑定我们被告知的任何对象，
+
+以执行更多操作：检查元素属性、调用它们的方法，或注册它们可以发出的事件。
+
+
+
+此外，除了注册表对象，
+
+核心对象本身还获得了有趣的事件，
+
+可以通知新的客户端绑定、对象创建、错误等。
+
+一个有用的是“done”事件，
+
+在核心处理“sync”方法（以及相同的序列号设置）之后会发出。
+
+这听起来可能无害，
+
+但由于核心是顺序处理一切，
+
+这意味着在“sync”之前发送的任何内容都将被处理完毕。
+
+这是一种异步了解之前发送的内容是否已到达服务器并确实“完成”的好方法。
+
+
+
+PipeWire 客户端要么加载特定的配置文件，要么默认加载 `client.conf` 。它们会在加入图形并被会话管理器的策略连接到其他节点之前进行此配置步骤。
+
+这些文件包含我们之前见过的常规部分，
+
+同时还包含两个其他部分 `fitler.properties` 和 `stream.properties` ，
+
+用于配置如何内部处理过滤器和流。
+
+客户端主要负责样本转换、混音和重采样，因此这些部分描述了具体是如何进行的。
+
+
+
+会话管理器是负责策略的软件：
+
+- 查找和配置设备、
+- 将它们适当地连接到图形中、
+- 在需要时设置和恢复其属性、
+- 将流路由到正确的设备、
+- 设置其音量等。
+
+
+
+WirePlumber 是一个基于 Glib/GObject 的更高级的会话管理器，用于封装 PipeWire 类型/功能，并主要依赖 Lua 插件实现其额外逻辑。
+
+这意味着，一方面，你可以使用通常的 Glib 工具来调试 WirePlumber，例如环境变量 `G_MESSAGES_DEBUG=all` （尽管它已被 `WIREPLUMBER_DEBUG` 代替），另一方面，你可以通过添加 lua 插件来扩展其功能以满足你的需求。
+
+我曾尝试使用 Rust 构建一些东西，然而 Rust 的绑定，尤其是与 POD 和 SPA 相关的部分，仍然处于开发中。由于 PipeWire 库主要只有 `static inline` 函数，因此绑定起来非常困难。
+
+
+
+pipewire-pulse，
+
+正如我们所说，
+
+是一个加载模块 `libpipewire-module-protocol-pulse` 的包装器，
+
+允许在 PipeWire 兼容层上使用大多数 PulseAudio 功能和软件。
+
+该模块本身可以在 `pipewire-pulse.conf` 中通过某些选项进行配置，如这里所示。
+
+它甚至涵盖了网络协议支持的模块。
+
+
+
+它因此让我们可以使用习惯使用的 PulseAudio 用户界面，
+
+如 pavucontrol、pulsemixer、pamixer 等。
+
+这还包括命令行工具 `pactl` ，
+
+它给我们提供了另一种与 PipeWire 交互的方式，而不是 `pw-cli` 。
+
+
+
+
+
+https://gitlab.freedesktop.org/pipewire/pipewire/-/wikis/Migrate-PulseAudio
+
+# metadata
+
+在pw-dump的输出内容里搜索PipeWire:Interface:Metadata，就可以找到
+
+```
+  {
+    "id": 32,
+    "type": "PipeWire:Interface:Metadata",
+    "version": 3,
+    "permissions": [ "r", "w", "x" ],
+    "props": {
+      "metadata.name": "settings",
+      "object.serial": 32
+    },
+    "metadata": [
+      { "subject": 0, "key": "log.level", "type": "", "value": 2 },
+      { "subject": 0, "key": "clock.rate", "type": "", "value": 48000 },
+      { "subject": 0, "key": "clock.allowed-rates", "type": "", "value": "[ 48000 ]" },
+      { "subject": 0, "key": "clock.quantum", "type": "", "value": 1024 },
+      { "subject": 0, "key": "clock.min-quantum", "type": "", "value": 32 },
+      { "subject": 0, "key": "clock.max-quantum", "type": "", "value": 2048 },
+      { "subject": 0, "key": "clock.force-quantum", "type": "", "value": 0 },
+      { "subject": 0, "key": "clock.force-rate", "type": "", "value": 0 }
+    ]
+  },
+```
+
+可以看到pipewire的metadata默认就是log和clock开头的这些。
+
+wireplumber注册了2份metadata。sm-settings和default。
+
+```
+{
+    "id": 36,
+    "type": "PipeWire:Interface:Metadata",
+    "version": 3,
+    "permissions": [ "r", "w", "x" ],
+    "props": {
+      "client.id": 33,
+      "factory.id": 7,
+      "metadata.name": "sm-settings",
+      "module.id": 6,
+      "object.serial": 36
+    },
+    "metadata": [
+      { "subject": 0, "key": "bluetooth.use-persistent-storage", "type": "Spa:String:JSON", "value": true },
+      { "subject": 0, "key": "bluetooth.autoswitch-to-headset-profile", "type": "Spa:String:JSON", "value": true },
+      { "subject": 0, "key": "device.restore-profile", "type": "Spa:String:JSON", "value": true },
+      { "subject": 0, "key": "device.restore-routes", "type": "Spa:String:JSON", "value": true },
+      { "subject": 0, "key": "device.routes.default-sink-volume", "type": "Spa:String:JSON", "value": 0.064000 },
+      { "subject": 0, "key": "device.routes.default-source-volume", "type": "Spa:String:JSON", "value": 1.000000 },
+      { "subject": 0, "key": "linking.allow-moving-streams", "type": "Spa:String:JSON", "value": true },
+      { "subject": 0, "key": "linking.follow-default-target", "type": "Spa:String:JSON", "value": true },
+      { "subject": 0, "key": "monitor.camera-discovery-timeout", "type": "Spa:String:JSON", "value": 100 },
+      { "subject": 0, "key": "node.features.audio.no-dsp", "type": "Spa:String:JSON", "value": false },
+      { "subject": 0, "key": "node.features.audio.monitor-ports", "type": "Spa:String:JSON", "value": true },
+      { "subject": 0, "key": "node.features.audio.control-port", "type": "Spa:String:JSON", "value": false },
+      { "subject": 0, "key": "node.stream.restore-props", "type": "Spa:String:JSON", "value": true },
+      { "subject": 0, "key": "node.stream.restore-target", "type": "Spa:String:JSON", "value": true },
+      { "subject": 0, "key": "node.stream.default-playback-volume", "type": "Spa:String:JSON", "value": 1.000000 },
+      { "subject": 0, "key": "node.stream.default-capture-volume", "type": "Spa:String:JSON", "value": 1.000000 },
+      { "subject": 0, "key": "node.filter.forward-format", "type": "Spa:String:JSON", "value": false },
+      { "subject": 0, "key": "node.restore-default-targets", "type": "Spa:String:JSON", "value": true }
+    ]
+  },
+```
+
+```
+  {
+    "id": 38,
+    "type": "PipeWire:Interface:Metadata",
+    "version": 3,
+    "permissions": [ "r", "w", "x" ],
+    "props": {
+      "client.id": 33,
+      "factory.id": 7,
+      "metadata.name": "default",
+      "module.id": 6,
+      "object.serial": 38
+    },
+    "metadata": [
+      { "subject": 0, "key": "default.audio.sink", "type": "Spa:String:JSON", "value": { "name": "my-default-sink" } },
+      { "subject": 0, "key": "default.audio.source", "type": "Spa:String:JSON", "value": { "name": "my-default-sink" } }
+    ]
+  },
+```
+
+default的只有2个以default开头的metadata。
+
+看最新的wireplumber，增加了sm-objects
+
+```
+    metadata.sm-settings = required
+    metadata.sm-objects = required
+    
+    metadata.filters
+```
+
+
+
+# node.virtual
+
+`node.virtual`：标记为虚拟节点，意味着它不是一个真实的物理设备。
+
+`monitor.channel-volumes`：允许监控通道音量。
+
+
+
+# 蓝牙的DeviceSet是什么概念
+
+在蓝牙（特别是蓝牙 LE Audio）中，**DeviceSet** 是一个逻辑概念，用于表示一组设备的集合，这些设备可以协同工作并共享配对信息或音频流。这个概念的引入是为了支持诸如耳机双耳模式、多设备播放等复杂应用场景。
+
+以下是DeviceSet的核心特点和作用：
+
+| 特点/作用          | 描述                                                         |
+| ------------------ | ------------------------------------------------------------ |
+| **设备组管理**     | 允许多个蓝牙设备作为一个整体进行操作，例如一对左右耳机。     |
+| **同步操作**       | 保证设备组中的所有设备能够同步工作，比如左右耳机播放同一音频流时保持时序同步。 |
+| **共享配对信息**   | 设备组可以共享一个配对记录，简化用户与多个设备的交互流程。   |
+| **支持LE Audio**   | 在LE Audio中，DeviceSet用于实现广播音频（Broadcast Audio）或通用音频分组（Coordinated Audio Sharing）。 |
+| **多设备场景支持** | 例如两个音箱组成立体声模式，或者多个麦克风协同录音。         |
+
+### 应用场景
+
+1. **双耳模式耳机**：左右耳机组成一个DeviceSet，共享音频源。
+2. **多房间音频**：多个音响设备组成一个DeviceSet，实现同步播放。
+3. **广播音频**：用于LE Audio中通过广播方式将音频发送到多个设备。
+
+通过DeviceSet，蓝牙协议栈能更高效地管理和操作多设备，改善用户体验并简化开发复杂的多设备应用。
+
+pipewire里只有这一个地方。
+
+```
+spa/plugins/bluez5/bluez5-device.c
+540:    items[n_items++] = SPA_DICT_ITEM_INIT("api.bluez5.set.leader", "true");
+```
+
+# Stream Node和Device Node
+
+Stream Node的class是这些的：
+
+```
+Stream/Output/Audio  例如pw-play
+Stream/Input/Audio   例如pw-record
+```
+
+而Device Node是这些class
+
+```
+Audio/Sink     例如喇叭
+Audio/Source   例如麦克风
+```
+
+大多数情况下，都是把Stream Node连接到Device Node。
+
+一个Stream确定class之后，就有多个Device Node可以跟它匹配。
+
+这个就需要一个匹配的策略。
+
+如果找不到，就不会进行连接。
+
+## Stream Node的跟link相关的props
+
+```
+target.object
+	stream要连接的device的名称。
+	如果有这个属性。
+	那么wireplumber会尝试找到这个node。
+	并检查是否可以连接。
+	如果没有指定，那么就根据lua的脚本逻辑自动找一个。
+node.dont-reconnect
+	说明当目标node不存在的时候，不要把stream node连接到新的节点。
+	但是一般是配置为false。
+	也就要要重新连接。
+node.dont-move
+node.dont-fallback
+node.linger
+	没有找到目标node，而且node.dont-fallback是true的是，
+	是否进行停留。
+	如果为true，找不到目标节点的时候，
+	wireplumber不会向client发送错误，也不会销毁stream node。
+	
+```
+
+# props分类
+
+主要的props分为3大类：
+
+* monitor。都是bluez5开头的。alsa的就2个，忽略。
+* device。api.alsa开头的、bluez开头的。大部分是device开头的。
+* node。api.alsa开头的比较多、audio开头的、channelmix开头的、media开头的、node开头的、resample开头的。
+
+https://docs.pipewire.org/page_man_pipewire-props_7.html
+
+看这个网页最后面的index部分，就很清晰。
+
+有些属性是device和node都有的。
+
+例如api.alsa.path。
+
+
+
+有个疑问，为什么link没有场景的props列举出来呢？
+
+port的有几个，很少。
+
+
+
+
+
+# latency.internal.ns 和node.latency是什么关系
+
