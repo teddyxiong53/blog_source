@@ -5219,6 +5219,22 @@ monitor = createMonitor()
 	monitor:activate(Feature.SpaDevice.ENABLED)
 ```
 
+# 配置文件和lua的相互转换
+
+tests\examples\filter-chain.lua
+
+src\daemon\filter-chain\sink-eq6.conf
+
+
+
+
+
+# 以item开头的属性
+
+src/scripts/node/create-item.lua
+
+看起来都是这个文件里设置的。
+
 
 
 # 参考资料

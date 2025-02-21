@@ -240,3 +240,144 @@ https://www.rtings.com/headphones/learn/research/latency
 
 不过，如果我们采用 AVLatency.com 使用的偏移方法，这个想法可能是可扩展的。
 
+# pipewire增加的延迟
+
+- `aplay` **直接播放**：ALSA 内核级驱动 + 硬件缓冲，典型延迟约 **5-20ms**（取决于 buffer/period 配置）
+- **PipeWire 默认配置**：客户端 ↔ PipeWire 服务 ↔ ALSA，额外增加 **10-40ms**（默认 quantum 通常为 64-256 samples）
+- **总延迟对比**：PipeWire 默认比直接 ALSA 多 **15-60ms**（若配置不当可能更高）
+
+优化方法
+
+```
+# /etc/pipewire/pipewire.conf.d/low-latency.conf
+context.properties = {
+    default.clock.quantum     = 64   # 量子数（帧数）
+    default.clock.min-quantum = 64   # 最小量子数
+    default.clock.max-quantum = 64   # 强制固定量子数
+    default.clock.rate        = 48000 # 高采样率可降低相对延迟
+}
+
+context.modules = [
+    { name = libpipewire-module-rtkit
+      flags = [ nofail ] }
+]
+```
+
+# 测试方法
+
+## 基于硬件的测试
+
+- 将LED与音频信号同步输出（如通过GPIO控制）。
+- 使用光传感器捕捉LED信号，同时连接示波器探头到耳机插孔。
+
+应该就是2s播放一个音频。播放音频的同时把gpio拉一下。
+
+gpio的波形变化可以认为是没有延迟的。
+
+看音频的滞后了多少。
+
+特点是跟平台关系不大，有很好的通用性。
+
+## 基于软件的测试
+
+## **系统级优化与测量**
+
+**缓冲区大小调整**
+
+**Linux内核优化**
+
+
+
+**信号控制**：测试信号需具备可辨识特征（如短脉冲或正弦波），否则需依赖交叉相关法
+
+**多因素分析**：延迟可能由硬件转换（ADC/DAC）、驱动、系统负载共同导致，需分层排查
+
+
+
+`audio_sync` 是一个 Python 库，用于比较两个音频信号并获得一个信号相对于另一个信号的延迟（或延迟）。该库最初是为测试 Chromecast Audio 的多房间功能而开发的。
+
+为了库能够确定延迟，
+
+测试用的音频源（例如扬声器）输出的音频信号需要具有某些特性（详见如何测量延迟部分）。
+
+这限制了库的应用范围，
+
+仅适用于可以控制源播放的音频的情况。
+
+如果做不到这一点，则可能需要考虑使用互相关技术。
+
+
+
+以下 SoX 命令生成一个测试音频文件，具有以下属性
+
+- Duration: 1 min 持续时间: 1 分钟
+- Period: 100 msecs 周期: 100 毫秒
+- Max sine pulse amplitud: 0.8
+  最大正弦脉冲幅度: 0.8
+- Max noise amplitud: 0.2
+  最大噪声幅度: 0.2
+- Sampling rate: 48 kHz
+  采样率: 48 kHz
+- Encoding: signed int, low-endian
+  编码：带符号整数，小端序
+
+```
+sox -n -r 48k sine.wav synth 0.002 sine 500 gain -n vol 0.8
+sox -n -r 48k noise.wav synth 0.098 pinknoise gain -n vol 0.2
+sox sine.wav noise.wav sine_noise_f48k_p100msecs_d60sec.wav repeat 599
+```
+
+生成的文件是轻微的杂音，每100ms一个脉冲。
+
+![image-20250207195804994](images/random_name2/image-20250207195804994.png)
+
+
+
+较小的帧大小和更高的采样率会降低往返延迟。然而，代价是出现中断（溢出/下溢）的概率更高。
+
+
+
+https://www.cnblogs.com/lp1129/articles/15820483.html
+
+
+
+从科伊尔公布的测量图表来看，
+
+苹果公司的第一代AirPods测量延迟时间为274毫秒；
+
+第二代AirPods延迟时间为178毫秒，
+
+第三代AirPods(即AirPods Pro)延迟降达144毫秒。
+
+据悉，第二代AirPods和AirPods Pro使用同样芯片(H1芯片)，
+
+这似乎意味着苹果公司找到了更好的算法来缩短延迟。
+
+| 蓝牙音讯转码器 | 延迟时间     |
+| -------------- | ------------ |
+| SBC            | 150～250毫秒 |
+| AAC            | 140～200毫秒 |
+| aptX           | 130～180毫秒 |
+| aptX HD        | 40～100毫秒  |
+| aptX LL        | 32～40毫秒   |
+| LDAC           | 160～210毫秒 |
+
+https://www.audioapp.cn/thread-209023-1-1.html
+
+BLE传输延迟(Latency)主要是指设备端将数据放至蓝牙协议栈到Android主机收到的时间间隔。
+
+由于通信双方时间戳不统一，
+
+无法按照前面通过打印时间戳的方式来做统计传输延迟，
+
+只能通过硬件信号做同步。
+
+设备端将数据放至蓝牙协议栈时给出一个信号，
+
+Android主机收到该数据时也给出一个信号，
+
+使用示波器抓取两个信号即可得到数据通过蓝牙BLE传输的延迟，如下图所示。
+
+
+
+对于视频播放来说，任何平台都有可能采用音频早一点、视频晚一点的方法来解决延迟问题。

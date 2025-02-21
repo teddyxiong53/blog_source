@@ -8,6 +8,20 @@ tags:
 
 
 
+--
+
+# 资源收集
+
+这个系列梳理很清晰。适合学习。
+
+https://blog.csdn.net/field1003/category_11680135.html
+
+https://blog.csdn.net/field1003/article/details/123435559
+
+
+
+# 简介
+
 glib和glibc是2个东西。glib主要是给gnome用的。
 
 但是因为封装得挺好，其他人在其他地方也会用。
@@ -3001,7 +3015,10 @@ int main() {
 }
 ```
 
+### 与 `g_signal_connect` 的区别
 
+- `g_signal_connect` 不会自动管理对象的生命周期，需要手动处理引用计数。
+- `g_signal_connect_object` 更适合在回调函数中访问另一个对象的场景，因为它确保目标对象在回调期间有效。
 
 # 参考资料
 

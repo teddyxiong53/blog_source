@@ -46,6 +46,8 @@ http://www.huahuaxie.com/lua-study-overview/
 
 https://www.miaoerduo.com/2020/02/26/lua-state-tutorial/
 
+https://www.luafaq.org/
+
 # lua发展历史
 
 Lua 是一种轻量级、高效的脚本语言，最初由巴西里约热内卢天主教大学（Pontifical Catholic University of Rio de Janeiro）的一个研究小组开发。下面是 Lua 的发展历史：
@@ -5033,7 +5035,17 @@ https://www.cnblogs.com/sevenyuan/p/4511808.html
 
 https://www.itbook.team/book/lua/LUATuoZhanYueDu/LUAChangYongShuJuJieGou.html
 
+# lua函数调用时的小括号可以省略
 
+当参数是字面字符串或table构造式时，括号可以省略。
+
+当只有一个参数且为字符串或table构造器时，括号可以省略，举的例子和前面的证据一致。
+
+提到在require时按照惯例也会省略括号，比如require "math"。
+
+不过这可能只是特定函数的使用习惯，而不是语言本身的规则。
+
+则分析说，这种省略是因为Lua作为数据描述语言的语法糖，==目的是提高代码简洁性，但自定义函数可能不推荐使用。==
 
 
 # 参考资料
