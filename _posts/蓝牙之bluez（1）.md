@@ -2414,6 +2414,68 @@ https://juejin.cn/post/6904788133867421704
 - 如果你需要对蓝牙设备进行深入的管理，或者需要使用蓝牙的高级特性，选择 `btmgmt`。
 - 如果你的需求是进行基本的设备配对和连接，选择 `bluetoothctl` 会更加方便和直观。
 
+# SetConfiguration和SelectConfiguration 的关系是什么？
+
+在蓝牙 A2DP（Advanced Audio Distribution Profile） 的 SBC（Streaming Bluetooth Codec） 配置过程中，`SetConfiguration` 和 `SelectConfiguration` 主要涉及 **设备间的音频参数协商**，两者的关系如下：
+
+| 方法                    | 作用                   | 调用主体                     | 交互时机                                                     |
+| ----------------------- | ---------------------- | ---------------------------- | ------------------------------------------------------------ |
+| **SelectConfiguration** | 选择合适的音频配置     | Sink（接收端，如耳机、音箱） | 由 Source（音源，如手机、PC）发送 `GetCapabilities` 后，Sink 选择并返回合适的配置 |
+| **SetConfiguration**    | 确定最终使用的音频配置 | Source（音源，如手机、PC）   | 由 Source 发送给 Sink，要求使用某个具体的音频参数            |
+
+### 交互流程：
+
+1. **Source**（播放端）向 **Sink**（接收端）请求支持的音频参数：
+   - 发送 `GetCapabilities`，Sink 返回支持的编码格式、采样率、比特率等。
+2. **Sink** 选择最佳配置：
+   - Sink 通过 `SelectConfiguration` 选择一个合适的 SBC 编码参数，并返回给 Source。
+3. **Source** 确定最终配置：
+   - Source 发送 `SetConfiguration`，通知 Sink 使用这个配置，并进入 Streaming 状态。
+
+### 关系总结：
+
+- `SelectConfiguration` 由 Sink 选择适配的参数，类似于“挑选合适的选项”。
+- `SetConfiguration` 由 Source 确认并应用最终的参数，类似于“确定使用该选项”。
+- `SelectConfiguration` 先于 `SetConfiguration` 发生，Source 基于 Sink 的选择结果进行最终配置。
+
+在 BlueZ 的 DBus API 里，这两个过程通常由 `org.bluez.MediaEndpoint1` 的 `SelectConfiguration` 和 `SetConfiguration` 方法实现。
+
+# SelectProperties、ClearConfiguration、Release 这3个又分别在什么时候调用？
+
+在 A2DP（Advanced Audio Distribution Profile）的连接和断开过程中，`SelectProperties`、`ClearConfiguration` 和 `Release` 这三个方法分别用于不同的阶段：
+
+| 方法                   | 作用                 | 调用主体                        | 交互时机                                                     |
+| ---------------------- | -------------------- | ------------------------------- | ------------------------------------------------------------ |
+| **SelectProperties**   | 确定最终配置的属性   | Sink（接收端，如耳机、音箱）    | Source（音源，如手机、PC）调用 `SetConfiguration` 之后，由 Sink 解析并存储最终的配置参数 |
+| **ClearConfiguration** | 清除当前音频流的配置 | Source（音源，如手机、PC）      | Source 断开 A2DP 连接或重新配置音频参数时调用                |
+| **Release**            | 释放 Endpoint 资源   | Source（音源）或 Sink（接收端） | 设备断开或 Endpoint 需要被移除时调用                         |
+
+------
+
+### 交互流程：
+
+1. **音频配置阶段**
+   - Source 发送 `GetCapabilities`，Sink 返回支持的编码参数。
+   - Sink 通过 `SelectConfiguration` 选择最佳 SBC 配置，并返回给 Source。
+   - Source 发送 `SetConfiguration`，Sink 接收并存储参数，并调用 **`SelectProperties`** 解析最终配置。
+2. **音频流播放**
+   - Source 开始音频流传输（Streaming）。
+   - Sink 使用 **`SelectProperties`** 中的配置参数进行音频解码和播放。
+3. **音频断开或重新配置**
+   - 如果 Source 需要更改配置或断开连接，它会调用 **`ClearConfiguration`**，清除当前的 A2DP 设置。
+4. **资源释放**
+   - 当设备断开连接或不再需要使用某个 Endpoint 时，Source 或 Sink 调用 **`Release`** 来释放资源。
+
+------
+
+### 关系总结：
+
+- **`SelectProperties`**：Sink 在接收到 `SetConfiguration` 后，解析最终的 SBC 配置。
+- **`ClearConfiguration`**：Source 在 A2DP 连接断开或重新配置时清除当前音频配置。
+- **`Release`**：在设备断开或 Endpoint 不再使用时，释放资源。
+
+这些方法通常在 BlueZ 的 `org.bluez.MediaEndpoint1` D-Bus API 里被使用。
+
 # 参考资料
 
 1、ARM平台上蓝牙协议栈Bluez的移植使用和配置

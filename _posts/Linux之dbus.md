@@ -2647,6 +2647,29 @@ typedef void (*DBusPendingCallNotifyFunction)(
 - `free_user_data` 可用于避免内存泄漏，如果 `user_data` 不需要释放，可以设置为 `NULL`。
 - 调用完成后，记得调用 `dbus_pending_call_unref` 来释放资源。
 
+# NameOwnerChanged
+
+### 五、在 BlueZ 中的应用
+
+在 BlueZ 上下文中，"NameOwnerChanged" 信号可以用来监控 BlueZ 服务（org.bluez）的状态。例如：
+
+- 如果 bluetoothd
+
+  进程崩溃或重启，客户端会收到：
+
+  - NameOwnerChanged("org.bluez", ":1.10", "")（失去所有权）。
+  - NameOwnerChanged("org.bluez", "", ":1.11")（新实例上线）。
+
+- 客户端可以据此重新初始化连接或调整逻辑。
+
+------
+
+### 六、总结
+
+- **含义**："org.freedesktop.DBus" 的 "NameOwnerChanged" 信号通知总线名称所有权的变化，参数分别是名称、旧拥有者和新拥有者。
+- **用途**：监控服务状态、动态调整客户端行为、调试总线活动。
+- **触发**：由 D-Bus 守护进程在名称注册、释放或连接断开时发出。
+
 # 参考资料
 
 1、DBus 入门与应用 －－ DBus 的 C 编程接口

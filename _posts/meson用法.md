@@ -43,7 +43,7 @@ Meson是一个现代的、快速的构建系统，用于管理软件项目的构
 
    ```meson
    project('my_project', 'c')
-
+   
    executable('my_app', 'main.c', dependencies: ['my_dependency'])
    ```
 
@@ -467,12 +467,53 @@ https://mesonbuild.com/Reference-manual.html
    
 3. **交叉编译配置**：
    如果你正在进行交叉编译，你可以在交叉工具链的配置文件中指定`prefix`。
-请注意，如果你改变了`prefix`，你可能还需要修改其他相关的安装选项，比如`libdir`（库文件安装目录）、`bindir`（可执行文件安装目录）等，以确保所有的文件都被安装到正确的位置。
-在安装项目时，你可以使用`meson install`命令，Meson会根据`prefix`和其他安装选项将文件安装到正确的位置。
+   请注意，如果你改变了`prefix`，你可能还需要修改其他相关的安装选项，比如`libdir`（库文件安装目录）、`bindir`（可执行文件安装目录）等，以确保所有的文件都被安装到正确的位置。
+   在安装项目时，你可以使用`meson install`命令，Meson会根据`prefix`和其他安装选项将文件安装到正确的位置。
 
 
 
 # buildroot里的meson
+
+# 单独的软件包交叉编译
+
+在软件目录下创建cross_file.txt文件，内容：
+
+```
+[binaries]
+c = '/path/to/your/toolchain/bin/your-gcc'
+cpp = '/path/to/your/toolchain/bin/your-g++'
+ar = '/path/to/your/toolchain/bin/your-ar'
+strip = '/path/to/your/toolchain/bin/your-strip'
+pkgconfig = '/path/to/your/toolchain/bin/your-pkg-config'
+
+[host_machine]
+system = 'linux'
+cpu_family = 'arm'
+cpu = 'armv7'
+endian = 'little'
+
+```
+
+把路径改成你的buildroot下面的工具链的相关路径。
+
+然后执行：
+
+```
+meson setup builddir --cross-file cross_file.txt
+meson compile -C builddir
+```
+
+就可以进行交叉编译。
+
+
+
+如果要加上--prefix安装目录配置
+
+```
+meson setup builddir --cross-file cross_file.txt --prefix=/your/install/path
+meson compile -C builddir
+meson install -C builddir
+```
 
 
 
