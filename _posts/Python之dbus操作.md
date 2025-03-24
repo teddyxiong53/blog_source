@@ -700,6 +700,209 @@ GLib.MainLoop().run()
 ### 总结
 `dbus.service.Object`是`dbus-python`中创建D-Bus服务的核心工具，通过继承它并使用装饰器，你可以轻松定义方法和信号。它适合需要低级控制或与传统D-Bus系统集成的场景。如果你有具体需求（例如实现复杂服务、调试方法），可以告诉我，我会提供更详细的指导！有什么问题吗？
 
+# dbus.exceptions
+
+作为Python dbus专家，我来为你详细讲解`dbus-python`中的`dbus.exceptions`模块，它是处理D-Bus相关异常的核心部分。当使用`dbus-python`与D-Bus总线交互时，可能会遇到各种错误，这些错误会被封装为`dbus.exceptions.DBusException`或其子类抛出。以下是关于`dbus.exceptions`的全面介绍。
+
+---
+
+### 什么是`dbus.exceptions`？
+`dbus.exceptions`是`dbus-python`提供的一个异常模块，用于捕获和处理D-Bus操作中的错误。这些异常通常由底层的libdbus抛出，并被`dbus-python`转换为Python异常对象。它们涵盖了服务不可用、方法调用失败、参数错误等多种情况。
+
+- **基类**：`dbus.exceptions.DBusException`
+  - 所有D-Bus相关的异常都继承自这个类。
+  - 它是一个通用的异常类型，包含错误名称和错误消息。
+
+---
+
+### 常见的异常类型
+`dbus.exceptions.DBusException`是一个通用异常，但其子类或具体实例会根据错误类型携带不同的`name`属性（对应D-Bus错误名称）。以下是常见的异常场景和对应的处理方式：
+
+#### 1. **`DBusException`的基本结构**
+当抛出`DBusException`时，它通常包含：
+- **`name`**：D-Bus错误名称（如`org.freedesktop.DBus.Error.ServiceUnknown`）。
+- **`message`**：具体的错误描述。
+
+示例：
+```python
+import dbus
+try:
+    bus = dbus.SessionBus()
+    obj = bus.get_object('org.invalid.Service', '/Invalid/Path')
+except dbus.exceptions.DBusException as e:
+    print(f"错误名称: {e.get_dbus_name()}")
+    print(f"错误消息: {e.get_dbus_message()}")
+```
+输出可能为：
+```
+错误名称: org.freedesktop.DBus.Error.ServiceUnknown
+错误消息: The name org.invalid.Service was not provided by any .service files
+```
+
+#### 2. **常见的D-Bus错误名称**
+以下是`dbus-python`中常见的D-Bus错误类型及其含义：
+| 错误名称                                    | 含义           | 可能原因                                                |
+| ------------------------------------------- | -------------- | ------------------------------------------------------- |
+| `org.freedesktop.DBus.Error.ServiceUnknown` | 服务未知       | 请求的总线名称（如`org.invalid.Service`）不存在或未运行 |
+| `org.freedesktop.DBus.Error.NameHasNoOwner` | 名称没有所有者 | 服务曾经存在但已退出                                    |
+| `org.freedesktop.DBus.Error.NoReply`        | 无响应         | 服务未及时响应（超时）                                  |
+| `org.freedesktop.DBus.Error.UnknownMethod`  | 未知方法       | 调用了服务不支持的方法                                  |
+| `org.freedesktop.DBus.Error.InvalidArgs`    | 参数无效       | 方法参数的数量或类型不匹配                              |
+| `org.freedesktop.DBus.Error.AccessDenied`   | 访问被拒绝     | 无权限调用系统总线上的服务                              |
+| `org.freedesktop.DBus.Error.TimedOut`       | 超时           | 服务处理时间过长                                        |
+
+#### 3. **异常的捕获与处理**
+由于`DBusException`是所有D-Bus异常的基类，你可以直接捕获它来处理所有D-Bus错误，然后根据`name`属性细分处理逻辑。
+
+示例：
+```python
+import dbus
+
+def call_method():
+    bus = dbus.SystemBus()
+    try:
+        obj = bus.get_object('org.freedesktop.DBus', '/org/freedesktop/DBus')
+        interface = dbus.Interface(obj, 'org.freedesktop.DBus')
+        # 故意调用不存在的方法
+        interface.InvalidMethod()
+    except dbus.exceptions.DBusException as e:
+        if e.get_dbus_name() == 'org.freedesktop.DBus.Error.UnknownMethod':
+            print("方法不存在")
+        else:
+            print(f"未知错误: {e}")
+
+call_method()
+```
+输出：
+```
+方法不存在
+```
+
+---
+
+### 使用场景与示例
+以下是一些典型场景中异常的处理方式：
+
+#### 1. **服务不可用**
+```python
+import dbus
+
+try:
+    bus = dbus.SessionBus()
+    obj = bus.get_object('org.invalid.Service', '/Invalid/Path')
+except dbus.exceptions.DBusException as e:
+    if 'ServiceUnknown' in e.get_dbus_name():
+        print("服务未运行或不存在")
+    else:
+        raise  # 抛出其他未处理的异常
+```
+
+#### 2. **方法调用超时**
+```python
+import dbus
+
+bus = dbus.SessionBus()
+obj = bus.get_object('org.freedesktop.Notifications', '/org/freedesktop/Notifications')
+interface = dbus.Interface(obj, 'org.freedesktop.Notifications')
+
+try:
+    # 设置一个很短的超时时间（假设服务响应慢）
+    interface.Notify("App", 0, "", "Title", "Message", [], {}, 5000, timeout=1)
+except dbus.exceptions.DBusException as e:
+    if 'TimedOut' in e.get_dbus_name():
+        print("服务响应超时")
+    else:
+        print(f"错误: {e}")
+```
+
+#### 3. **服务端抛出异常**
+如果服务端方法抛出错误，客户端会接收到对应的`DBusException`。
+服务端代码：
+```python
+import dbus
+import dbus.service
+from dbus.mainloop.glib import DBusGMainLoop
+from gi.repository import GLib
+
+DBusGMainLoop(set_as_default=True)
+
+class MyService(dbus.service.Object):
+    def __init__(self):
+        bus_name = dbus.service.BusName('com.example.MyService', dbus.SessionBus())
+        dbus.service.Object.__init__(self, bus_name, '/com/example/MyObject')
+
+    @dbus.service.method('com.example.MyInterface')
+    def RaiseError(self):
+        raise dbus.exceptions.DBusException("自定义错误", name="com.example.Error.Custom")
+
+service = MyService()
+GLib.MainLoop().run()
+```
+
+客户端代码：
+```python
+import dbus
+
+bus = dbus.SessionBus()
+obj = bus.get_object('com.example.MyService', '/com/example/MyObject')
+interface = dbus.Interface(obj, 'com.example.MyInterface')
+
+try:
+    interface.RaiseError()
+except dbus.exceptions.DBusException as e:
+    print(f"服务端错误: {e.get_dbus_name()} - {e.get_dbus_message()}")
+```
+输出：
+```
+服务端错误: com.example.Error.Custom - 自定义错误
+```
+
+---
+
+### 自定义异常
+在服务端，你可以通过抛出`dbus.exceptions.DBusException`来自定义错误：
+- 参数：
+  - `message`：错误描述。
+  - `name`：自定义错误名称（通常以服务域名开头，如`com.example.Error.xxx`）。
+
+这允许客户端根据`name`区分不同的错误类型。
+
+---
+
+### 注意事项
+1. **异常来源**：
+   - 异常可能来自客户端（调用错误）或服务端（逻辑错误）。
+   - 使用`get_dbus_name()`检查具体错误类型。
+2. **超时处理**：
+   - 方法调用支持`timeout`参数（单位：秒），超时会抛出`TimedOut`异常。
+3. **调试**：
+   - 使用`dbus-monitor`观察总线上的消息，可以帮助定位异常原因。
+4. **权限问题**：
+   - 系统总线操作可能因权限不足抛出`AccessDenied`，需要检查D-Bus策略文件。
+
+---
+
+### 与`pydbus`的对比
+- **`dbus-python`**：异常直接映射D-Bus错误，使用`dbus.exceptions.DBusException`，较为底层。
+- **`pydbus`**：异常更Pythonic，通常抛出标准Python异常（如`KeyError`、`AttributeError`），但仍可能包含D-Bus错误信息。
+
+示例（`pydbus`）：
+```python
+from pydbus import SessionBus
+bus = SessionBus()
+try:
+    obj = bus.get('org.invalid.Service')
+except KeyError:
+    print("服务不存在")
+```
+
+---
+
+### 总结
+`dbus.exceptions`是`dbus-python`中处理D-Bus错误的统一入口，通过`DBusException`及其`name`和`message`属性，你可以捕获并处理各种异常。常见错误如`ServiceUnknown`、`UnknownMethod`等反映了D-Bus交互中的典型问题。结合异常处理和调试工具（如`dbus-monitor`），你可以有效管理D-Bus通信中的错误。
+
+如果你有具体的异常场景需要分析或代码调试，告诉我，我可以进一步协助你！有什么问题吗？
+
 # 参考资料
 
 1、DbusExamples

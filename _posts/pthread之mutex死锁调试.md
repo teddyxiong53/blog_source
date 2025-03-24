@@ -6,7 +6,9 @@ tags:
 
 ---
 
-1
+--
+
+# 基本方法
 
 把下面的内容，保存成deadlock_gdb_debug.txt文件。
 
@@ -57,7 +59,7 @@ thread apply all bt
 
 
 
-参考资料
+# 参考资料
 
 1、用gdb脚本解决死锁的调试方法(由pthread_mutex_lock引起的死锁)
 
