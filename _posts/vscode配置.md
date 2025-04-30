@@ -552,6 +552,31 @@ Unicode code point of current character
 
 https://github.com/zeithaste/cursorCharCode/blob/master/src/extension.ts
 
+# windows下配置musl作为标准库头文件跳转
+
+通过命令面板（Ctrl+Shift+P）输入 Preferences: Open User Settings (JSON) 打开 settings.json 文件。
+
+```
+
+    "C_Cpp.default.includePath": [
+        "D:/musl/include"
+    ],
+    "C_Cpp.default.cStandard": "c11",
+    "C_Cpp.default.cppStandard": "c++17",
+    "C_Cpp.default.intelliSenseMode": "gcc-x64"
+
+```
+
+"C_Cpp.default.includePath"：指定 musl 的头文件目录，注意使用正斜杠 / 并确保路径正确。
+
+"C_Cpp.default.cStandard" 和 "C_Cpp.default.cppStandard"：设置 C/C++ 标准，musl 通常使用 C11 或更高版本。
+
+"C_Cpp.default.intelliSenseMode"：选择适合的 IntelliSense 模式，gcc-x64 通常适用于 musl。
+
+验证有效果。
+
+
+
 # 参考资料
 
 1、

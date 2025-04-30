@@ -51,9 +51,26 @@ sudo systemctl restart docker
 
 然后重启docker就可以了。
 
+# 2025年验证可行的
 
+```
+cat /etc/docker/daemon.json
+{
+        "registry-mirrors": ["https://xxx.mirror.aliyuncs.com",
+                "https://docker-0.unsee.tech",
+                "https://docker-cf.registry.cyou",
+                "https://docker.m.daocloud.io",
+                "https://dockerproxy.com",
+                "https://docker.nju.edu.cn"
+        ]
+}
+```
 
-参考资料
+aliyun那个url里的要改成你从阿里云网站上申请的正确地址。
+
+我也不知道是哪个在具体生效。反正这个就可以正常下载。
+
+# 参考资料
 
 1、Docker：docker国内镜像加速
 

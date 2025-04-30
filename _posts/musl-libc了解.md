@@ -37,9 +37,206 @@ https://www.etalabs.net/compare_libcs.html 这里有详细数据。
 
 12、作者是Rich Felker。github上关注的人不多，才20人。
 
+
+
+
+
 # 参考手册
 
 https://musl.libc.org/doc/1.1.24/manual.html
+
+```mermaid
+graph LR
+    A[musl libc] --> B[标准合规性]
+    A --> C[构建系统]
+    A --> D[支持架构]
+    A --> E[动态链接]
+    A --> F[特性与优势]
+
+    B --> B1[ISO C11]
+    B --> B2[POSIX 2008]
+    B --> B3[依赖内核: Linux 2.6.39+]
+    B --> B4[依赖编译器: C99]
+
+    C --> C1[./configure]
+    C --> C2[GNU Make 3.81+]
+    C --> C3[POSIX Shell]
+    C --> C4[编译器: GCC/Clang]
+    C --> C5[支持 -fPIC]
+
+    D --> D1[x86/x86_64]
+    D --> D2[ARM/AArch64]
+    D --> D3[MIPS/PowerPC]
+    D --> D4[RISC-V/Microblaze]
+    D --> D5[实验性架构]
+
+    E --> E1[ld-musl-xx.so.1]
+    E --> E2[单共享库]
+    E --> E3[路径配置]
+
+    F --> F1[静态链接]
+    F --> F2[动态链接优化]
+    F --> F3[线程鲁棒性]
+    F --> F4[低内存占用]
+    F --> F5[MIT 许可证]
+```
+
+# open-std网站内容
+
+```mermaid
+graph LR
+    A[open-std.org 标准文件] --> B[C 语言标准]
+    A --> C[C++ 语言标准]
+    A --> D[技术报告与规范]
+    A --> E[工作组内部文档]
+    A --> F[其他相关文档]
+
+    B --> B1[C23 ISO/IEC 9899:2024]
+    B --> B2[历史版本: C99, C11]
+    B --> B3[技术规范: N3389, N3231]
+    B --> B4[澄清请求: N2397]
+
+    C --> C1[ISO/IEC 14882: 1998-2020]
+    C --> C2[草案与提案]
+    C --> C3[邮件列表: 2024-01 至 2024-12]
+    C --> C4[库扩展: ISO/IEC TR 19768:2007]
+
+    D --> D1[十进制浮点运算: ISO/IEC TR 24733:2011]
+    D --> D2[数学特殊函数: ISO/IEC 29124:2010]
+    D --> D3[安全提案: memset_explicit N2485]
+
+    E --> E1[会议记录]
+    E --> E2[问题列表: 核心/库]
+    E --> E3[提案文档]
+    E --> E4[成员专属文档]
+
+    F --> F1[信息技术词汇: ISO/IEC 2382:2015]
+    F --> F2[Ada Ravenscar Profile 指南]
+    F --> F3[历史技术报告: C++ 性能]
+```
+
+# ubuntu下安装使用musl
+
+```
+sudo apt-get install musl musl-dev musl-tools
+```
+
+```
+ls /usr/lib/x86_64-linux-musl/ -lh
+total 2.3M
+-rw-r--r-- 1 root root 1.2K 5月  19  2015 crt1.o
+-rw-r--r-- 1 root root 1016 5月  19  2015 crti.o
+-rw-r--r-- 1 root root  960 5月  19  2015 crtn.o
+-rw-r--r-- 1 root root 2.3M 5月  19  2015 libc.a
+-rw-r--r-- 1 root root    8 5月  19  2015 libcrypt.a
+lrwxrwxrwx 1 root root   30 5月  19  2015 libc.so -> /lib/x86_64-linux-musl/libc.so
+-rw-r--r-- 1 root root    8 5月  19  2015 libdl.a
+-rw-r--r-- 1 root root    8 5月  19  2015 libm.a
+-rw-r--r-- 1 root root    8 5月  19  2015 libpthread.a
+-rw-r--r-- 1 root root    8 5月  19  2015 libresolv.a
+-rw-r--r-- 1 root root    8 5月  19  2015 librt.a
+-rw-r--r-- 1 root root    8 5月  19  2015 libutil.a
+-rw-r--r-- 1 root root    8 5月  19  2015 libxnet.a
+-rw-r--r-- 1 root root  724 5月  19  2015 musl-gcc.specs
+-rw-r--r-- 1 root root 1.2K 5月  19  2015 Scrt1.o
+```
+
+检查：
+
+```
+musl-gcc --version
+```
+
+测试编译：hello.c 
+
+```
+#include <stdio.h>
+int main() {
+    printf("Hello, musl!\n");
+    return 0;
+}
+```
+
+编译：
+
+```
+musl-gcc -static -Os hello.c -o hello
+./hello
+```
+
+查看ldd
+
+```
+musl-ldd ./hello
+musl-ldd: ./hello: Not a valid dynamic program
+~/work/tmp/0427$ ldd ./hello
+        not a dynamic executable
+```
+
+hello大小只有9.3K。
+
+这个是静态链接的。
+
+要配置动态链接的，需要做这些：
+
+```
+sudo mkdir -p /etc/ld-musl-x86_64.d
+echo "/usr/local/musl/lib" | sudo tee /etc/ld-musl-x86_64.path
+```
+
+然后编译：
+
+```
+musl-gcc -no-pie hello.c -o hello
+```
+
+-no-pie 是需要的，不然会报错。
+
+```
+musl-ldd ./hello
+        /lib/ld-musl-x86_64.so.1 (0x7f00673bd000)
+        libc.so => /lib/ld-musl-x86_64.so.1 (0x7f00673bd000)
+```
+
+```mermaid
+graph TD
+    A[musl-gcc 编译错误] --> B{错误原因}
+    B --> C[PIE 与 crt1.o/crtbegin.o 不兼容]
+    B --> D[musl-gcc 配置问题]
+    B --> E[工具链混合]
+    C --> F{解决方案}
+    F --> G[方法 1: 静态链接<br>musl-gcc -static]
+    F --> H[方法 2: 禁用 PIE<br>musl-gcc -no-pie]
+    F --> I[方法 3: 重新编译 musl<br>CFLAGS=-fPIC]
+    F --> J[方法 4: 使用 musl 交叉工具链<br>x86_64-linux-musl-gcc]
+    F --> K[方法 5: 检查 musl 安装]
+    G --> L[生成静态二进制]
+    H --> M[生成动态二进制]
+    I --> M
+    J --> L
+    J --> M
+    K --> F
+    L --> N[验证: file, ./hello]
+    M --> N
+```
+
+# 版本历史
+
+
+
+| **版本**   | **发布日期**                 | **主要功能与新特性**                                         | **主要修复**                                                 | **备注**                                      |
+| ---------- | ---------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | --------------------------------------------- |
+| **1.2.5**  | 2023-05-02                   | - 添加 qsort_r（POSIX 未来标准）。<br>- 支持 PowerPC 的 SPE FPU。<br>- 动态链接器支持 RELR 格式的紧凑相对重定位（需 musl 1.2.4+ 运行时）。 | - 修复宽字符 printf 系列函数的多个错误。<br>- 修复 strverscmp 中数字与非数字排序错误。<br>- 修复线程同步逻辑中的罕见竞争条件（线程退出、多线程 fork、pthread_detach、POSIX 信号量）。 | 最新版本，推荐使用以获取最新修复。            |
+| **1.2.4**  | 未明确日期（推测 2022-2023） | - 引入 mallocng 分配器，替换原有 dlmalloc：<br> - 更细粒度释放内存。<br> - 避免灾难性碎片化。<br> - 增强错误检测（溢出、双重释放、释放后使用）。<br>- res_* API 报告 DNSSEC 状态（支持 DANE）。<br>- AArch64 优化的 memcpy 和 memset。 | - 修复多线程进程返回单线程状态后的锁跳跃错误。<br>- 修复 32 位架构的 time64 回归问题。 | 强调内存分配改进，适合高可靠性场景。          |
+| **1.2.0**  | 未明确日期（推测 2020-2021） | - 所有 32 位架构升级到 64 位 time_t，解决 2038 年问题（不影响 64 位系统）。<br>- 更新字符数据到 Unicode 12.1.0。<br>- 添加 GLOB_TILDE 扩展（glob）。<br>- 实现非存根的 catgets 本地化 API。<br>- posix_spawn 支持子进程 chdir。 | - 改进数学库的正确性（复杂函数、32 位 x86 汇编）。<br>- 修复特定架构的 bug。 | 32 位用户需阅读 time64 发布说明以确保兼容性。 |
+| **1.1.15** | 未明确日期（推测 2016-2017） | - 添加新 64 位 MIPS 和 PowerPC 端口。<br>- 支持 32 位 PowerPC 软浮点 ABI。<br>- 支持 MIPS ISA 第 6 版（不兼容旧 MIPS）。<br>- 添加 pthread_tryjoin_np、pthread_timedjoin_np 和 sched_getcpu 扩展函数。<br>- 支持 Linux 4.5 和 4.6 新功能。 | - 修复 memmem、ungetwc 和 putenv 的严重错误。<br>- 修复 PowerPC 线程局部存储问题（依赖编译器）。 | 修复了 1.1.13 的回归问题。                    |
+| **1.1.13** | 未明确日期（推测 2015-2016） | - 引入新的 C 本地化（符合未来 POSIX 要求），支持非 UTF-8 数据处理。<br>- 支持首个 NOMMU 目标 SH-2，为未来 NOMMU 目标奠定基础。<br>- 提供 musl-clang 包装器，复用非 musl 目标的 clang。<br>- 动态链接器性能增强。<br>- ARM 系统使用 vdso 加速 clock_gettime。<br>- i386 调试器回溯改进（自动生成调用框架信息）。 | - 修复 fputs 和 puts 在零长度字符串上的失败。<br>- 修复 ARM 硬浮点在 clang 上的编译失败。<br>- 修复 SH/FDPIC 动态链接器入口点挂起。<br>- 修复 make clean/make distclean 在未配置树中的问题。 | 主要修复回归问题，增强调试和性能。            |
+| **1.1.0**  | 未明确日期（推测 2014-2015） | - 完成 ISO C99 和 POSIX 2008 基本接口覆盖。<br>- 添加 Linux、BSD 和 glibc 兼容的非标准接口。 | - 未详细列出，但专注于标准符合性和兼容性。                   | 1.1 系列的起点，奠定现代 musl 基础。          |
+| **1.0.0**  | 未明确日期（推测 2013-2014） | - 提供完整的 ISO C99 和 POSIX 2008 基本接口支持。<br>- 支持静态链接，生成小巧二进制文件（最小可低于 10kB）。 | - 未详细列出，重点是稳定性和标准实现。                       | 首个稳定主版本，强调轻量和高效。              |
+| **0.9.0**  | 2012-05-06                   | - 早期版本，奠定 musl 基础。<br>- 支持基本 C 标准库功能。    | - 修复早期实现中的基本问题。                                 | 早期开发阶段，功能有限。                      |
+| **0.5.0**  | 2011-02-12                   | - 首个公开版本，初步实现标准 C 库功能。<br>- MIT 许可证发布。 | - 初始实现，未列出具体修复。                                 | 项目起点，面向嵌入式和轻量系统。              |
+
+
 
 # 代码简单分析
 
@@ -309,6 +506,127 @@ CC="musl-gcc -static" ./configure --prefix=$HOME/musl && make
 ```
 
 ## 使用musl库编译交叉编译器
+
+# musl-gcc原理
+
+### musl-gcc 包装脚本的作用和原理
+
+#### 作用
+`musl-gcc` 是一个围绕 `gcc`（GNU 编译器集合）的包装脚本，其主要作用是方便使用 musl libc（一个轻量级 C 标准库）替代默认的 C 标准库（如 glibc）进行编译。具体作用包括：
+
+1. **重定向库和头文件路径**：
+   - `musl-gcc` 修改 `gcc` 的默认头文件和库搜索路径，使其指向 musl 的头文件（通常在 `/usr/local/musl/include`）和库文件（通常在 `/usr/local/musl/lib`），而不是系统默认的 glibc 路径。
+   - 这允许开发者在不更改现有工具链的情况下，使用 musl libc 编译程序。
+
+2. **简化 musl 的集成**：
+   - 对于需要在 musl 环境中编译程序的开发者，`musl-gcc` 提供了一种便捷的方式，无需构建完整的 musl 专用交叉编译工具链。
+   - 它特别适合在 glibc 主机系统上快速编译针对 musl 的程序，或在 musl 系统中重用现有 `gcc` 工具链。
+
+3. **支持静态链接**：
+   - `musl-gcc` 常用于生成完全静态链接的可执行文件（通过 `-static` 标志），生成单一、可移植的二进制文件，无需外部动态库依赖。
+   - 例如，编译一个简单的 C 程序：
+     ```bash
+     musl-gcc -static -Os hello.c
+     ```
+     会生成一个静态链接的二进制文件，体积小巧（如 10kB 级别）。[](https://www.musl-libc.org/how.html)
+
+4. **引导 musl 系统**：
+   - `musl-gcc` 可用于构建新的 musl 环境（如 musl 发行版或小型嵌入式系统），通过在主机系统上编译 musl 链接的程序来引导目标系统。[](https://www.musl-libc.org/how.html)
+
+5. **兼容性**：
+   - 它允许在现有 glibc 主机系统上编译 musl 程序，无需替换系统全局的 C 库，适合开发者和嵌入式系统构建。
+
+#### 原理
+`musl-gcc` 的工作原理基于以下机制：
+
+1. **包装脚本本质**：
+   - `musl-gcc` 是一个 shell 脚本，调用底层的 `gcc` 编译器，并通过特定的命令行参数或配置文件修改其行为。
+   - 它通过设置环境变量或传递参数（如 `-specs`）来覆盖 `gcc` 的默认配置。
+
+2. **使用 specs 文件**：
+   - `musl-gcc` 依赖一个特定的 specs 文件（通常位于 `/usr/lib/$ARCH-linux-musl/musl-gcc.specs`），该文件定义了 musl 的头文件和库路径。
+   - 脚本通过 `-specs` 参数将此文件传递给 `gcc`，覆盖默认的 include 和 library 路径。例如：
+     ```bash
+     gcc -specs=/usr/lib/$ARCH-linux-musl/musl-gcc.specs "$@"
+     ```
+     这里的 `$@` 表示传递给 `musl-gcc` 的所有命令行参数。[](https://manpages.ubuntu.com/manpages/focal/man1/musl-gcc.1.html)[](https://manpages.ubuntu.com/manpages/jammy/man1/musl-gcc.1.html)
+
+3. **环境变量支持**：
+   - `musl-gcc` 支持通过环境变量 `REALGCC` 指定实际的 `gcc` 编译器路径，允许用户自定义底层编译器（默认为 `gcc`）。
+   - 例如：
+     ```bash
+     export REALGCC=/usr/bin/gcc-9
+     musl-gcc -static hello.c
+     ```
+     这会使用指定的 `gcc-9` 而不是默认的 `gcc`。[](https://www.musl-libc.org/faq.html)
+
+4. **动态链接器配置**：
+   - 对于动态链接的程序，`musl-gcc` 确保二进制文件使用 musl 的动态链接器（通常为 `/lib/ld-musl-$ARCH.so.1`）。
+   - 动态链接需要配置库搜索路径（如 `/etc/ld-musl-$ARCH.path`），`musl-gcc` 通过 specs 文件自动设置正确的链接器路径。[](https://github.com/quic/musl/blob/master/INSTALL)
+
+5. **C++ 支持的局限性**：
+   - 默认情况下，`musl-gcc` 主要支持 C 程序，因为 musl 的标准安装不包含 C++ 标准库（如 libstdc++）的头文件和库。
+   - 若需 C++ 支持，需额外构建 musl 专用的交叉编译工具链（如通过 musl-cross-make），以包含 libstdc++ 或 libc++。[](https://stackoverflow.com/questions/64230710/how-does-musls-gcc-wrapper-differ-from-musls-cross-compiler)[](https://www.musl-libc.org/faq.html)
+
+6. **构建与安装**：
+   - 在 musl 的构建过程中，`musl-gcc` 脚本由 `make install` 自动生成并安装到指定路径（默认 `/usr/local/bin`）。
+   - 脚本内容由 `tools/musl-gcc.specs.sh` 生成，包含 musl 的安装路径（如 `includedir` 和 `libdir`）。[](https://www.openwall.com/lists/musl/2015/06/28/12)
+
+#### 示例
+以下是一个典型的 `musl-gcc` 脚本内容（简化版）：
+```bash
+#!/bin/sh
+exec "${REALGCC:-gcc}" "$@" -specs "/usr/lib/$ARCH-linux-musl/musl-gcc.specs"
+```
+- 脚本调用 `gcc`，并附加 `-specs` 参数指向 musl 的 specs 文件。
+- `$@` 确保所有用户提供的参数（如 `-static`、`-Os`）传递给 `gcc`。
+
+#### 与交叉编译工具链的区别
+- **musl-gcc 包装器**：
+  - 依赖主机系统的 `gcc`，仅修改库和头文件路径。
+  - 适合快速开发或简单项目，但对复杂项目（如需要 C++ 或多架构支持）可能不足。
+  - 不支持完整的 musl 目标架构配置（如特定的 ABI 或指令集优化）。[](https://stackoverflow.com/questions/64230710/how-does-musls-gcc-wrapper-differ-from-musls-cross-compiler)
+- **musl 交叉编译器**（如 `x86_64-linux-musl-gcc`）：
+  - 专为 musl 构建的完整工具链，包含针对特定架构的编译器、链接器和库。
+  - 支持 C++、多架构，且路径配置更独立，适合大型项目或嵌入式系统。[](https://www.openwall.com/lists/musl/2019/06/18/2)[](https://stackoverflow.com/questions/64230710/how-does-musls-gcc-wrapper-differ-from-musls-cross-compiler)
+
+#### 局限性
+1. **C++ 支持**：
+   - 默认不支持 C++，需额外配置或使用交叉编译器。[](https://stackoverflow.com/questions/64230710/how-does-musls-gcc-wrapper-differ-from-musls-cross-compiler)[](https://www.openwall.com/lists/musl/2019/06/18/10)
+2. **复杂依赖**：
+   - 对于依赖 glibc 特定功能的库，`musl-gcc` 可能需要额外的 ABI 兼容层（如 gcompat）。[](https://en.wikipedia.org/wiki/Musl)
+3. **主机依赖**：
+   - 依赖主机系统的 `gcc`，可能因版本或配置差异导致兼容性问题。[](https://www.openwall.com/lists/musl/2011/09/21/4)
+4. **动态链接配置**：
+   - 动态链接需要手动配置库路径文件，增加了部署复杂性。[](https://github.com/quic/musl/blob/master/INSTALL)
+
+#### Mermaid 示意图
+以下是 `musl-gcc` 包装脚本的工作流程示意图：
+
+```mermaid
+graph TD
+    A[用户调用 musl-gcc] --> B[Shell 脚本]
+    B -->|读取 REALGCC 环境变量| C[调用底层 gcc]
+    B -->|加载 specs 文件| D[musl-gcc.specs]
+    D --> E[设置 musl 头文件路径: /usr/local/musl/include]
+    D --> F[设置 musl 库路径: /usr/local/musl/lib]
+    D --> G[设置动态链接器: /lib/ld-musl-$ARCH.so.1]
+    C -->|传递用户参数| H[编译 C 程序]
+    H --> I[生成可执行文件]
+    I -->|静态链接| J[单一二进制文件]
+    I -->|动态链接| K[依赖 musl 动态链接器]
+```
+
+#### 示意图说明
+- **用户调用**：用户运行 `musl-gcc` 命令，传入参数（如 `-static`）。
+- **脚本处理**：脚本读取 `REALGCC` 或默认使用 `gcc`，加载 musl 的 specs 文件。
+- **路径配置**：specs 文件重定向头文件、库文件和动态链接器路径。
+- **编译输出**：根据参数生成静态或动态链接的可执行文件。
+
+#### 结论
+`musl-gcc` 是一个轻量、便捷的工具，允许开发者在 glibc 主机系统上快速使用 musl libc 编译 C 程序。其核心原理是通过 specs 文件修改 `gcc` 的路径配置，支持静态链接和 musl 的动态链接器。虽然适合简单项目和系统引导，但对于需要 C++ 或复杂依赖的项目，推荐使用 musl 专用的交叉编译工具链。
+
+如果需要更详细的配置示例或特定场景的分析，请告知！
 
 # libc.h
 

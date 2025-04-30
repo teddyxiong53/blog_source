@@ -342,6 +342,221 @@ x
 
 https://chenanbao.github.io/2018/07/28/Lua%E8%99%9A%E6%8B%9F%E6%A0%88%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B/
 
+# 保证栈平衡
+
+在Lua C API中，栈操作是核心功能之一，用于在C代码和Lua运行时之间传递数据。栈平衡指的是在调用API函数后，确保栈的状态（如栈顶位置）符合预期，避免栈溢出或遗留多余数据。以下我将通过示例详细说明Lua C API的栈操作，并分析如何保证栈平衡。
+
+---
+
+### 1. Lua C API栈的基本概念
+
+- **栈结构**：`lua_State`中的栈是一个`TValue`数组，`L->top`指向栈顶。
+- **索引**：
+  - 正索引：从当前函数（`ci->func`）开始计数。
+  - 负索引：从栈顶（`L->top`）向下计数。
+- **平衡原则**：
+  - 推送（push）操作增加栈顶。
+  - 弹出（pop）操作减少栈顶。
+  - 调用函数时，参数和返回值需要匹配。
+
+---
+
+### 2. 栈操作示例
+
+以下是几个常见的栈操作示例，展示如何使用API并保持栈平衡。
+
+#### 示例1：推送和弹出值
+```c
+void example_push_pop(lua_State *L) {
+    // 初始栈顶
+    int top = lua_gettop(L);
+
+    // 推送几个值
+    lua_pushnumber(L, 42);     // 栈: [..., 42]
+    lua_pushstring(L, "hello"); // 栈: [..., 42, "hello"]
+    lua_pushnil(L);            // 栈: [..., 42, "hello", nil]
+
+    // 检查栈顶变化
+    printf("Stack size after push: %d\n", lua_gettop(L) - top); // 输出 3
+
+    // 恢复栈平衡
+    lua_settop(L, top);        // 栈: [...]
+    printf("Stack size after pop: %d\n", lua_gettop(L) - top);  // 输出 0
+}
+```
+- **操作**：
+  - `lua_push*`增加栈顶，每次调用`api_incr_top(L)`。
+  - `lua_settop`直接设置栈顶，移除多余值。
+- **栈平衡**：通过记录初始`top`并在结束时恢复，确保不遗留数据。
+
+---
+
+#### 示例2：调用Lua函数
+```c
+void example_call_lua_function(lua_State *L) {
+    int top = lua_gettop(L);
+
+    // 获取全局函数 "print"
+    lua_getglobal(L, "print");     // 栈: [..., print]
+    
+    // 推送参数
+    lua_pushstring(L, "Hello from C!"); // 栈: [..., print, "Hello from C!"]
+    
+    // 调用函数：1个参数，0个返回值
+    lua_call(L, 1, 0);            // 栈: [...]
+
+    // 检查栈平衡
+    lua_assert(lua_gettop(L) == top);
+}
+```
+- **操作**：
+  - `lua_getglobal`推送函数。
+  - `lua_pushstring`推送参数。
+  - `lua_call`消耗函数和参数，不保留返回值（`nresults=0`）。
+- **栈平衡**：
+  - 初始栈顶为`top`，调用后栈顶回到`top`。
+  - `lua_call`自动清理参数和函数，确保平衡。
+
+---
+
+#### 示例3：从Lua表中读取和写入
+```c
+void example_table_operations(lua_State *L) {
+    int top = lua_gettop(L);
+
+    // 创建新表
+    lua_createtable(L, 0, 1);     // 栈: [..., {}]
+
+    // 设置字段 t["key"] = 100
+    lua_pushstring(L, "key");     // 栈: [..., {}, "key"]
+    lua_pushinteger(L, 100);      // 栈: [..., {}, "key", 100]
+    lua_settable(L, -3);          // 栈: [..., {}]
+
+    // 获取字段 t["key"]
+    lua_getfield(L, -1, "key");   // 栈: [..., {}, 100]
+    printf("Value: %d\n", (int)lua_tointeger(L, -1));
+    lua_pop(L, 1);                // 栈: [..., {}]
+
+    // 恢复栈平衡
+    lua_settop(L, top);           // 栈: [...]
+}
+```
+- **操作**：
+  - `lua_createtable`推送新表。
+  - `lua_settable`消耗键值对，栈顶不变。
+  - `lua_getfield`推送字段值，需手动弹出。
+- **栈平衡**：
+  - 每次推送后，若不使用值，则通过`lua_pop`或`lua_settop`清理。
+  - 最后恢复初始栈顶。
+
+---
+
+#### 示例4：保护模式调用
+```c
+void example_pcall(lua_State *L) {
+    int top = lua_gettop(L);
+
+    // 获取全局函数 "error"
+    lua_getglobal(L, "error");    // 栈: [..., error]
+    lua_pushstring(L, "test error"); // 栈: [..., error, "test error"]
+
+    // 保护调用：1个参数，0个返回值，无错误处理函数
+    int status = lua_pcall(L, 1, 0, 0); // 栈: [..., <error message if failed>]
+    if (status != LUA_OK) {
+        printf("Error: %s\n", lua_tostring(L, -1));
+        lua_pop(L, 1);            // 栈: [...]
+    }
+
+    // 检查栈平衡
+    lua_assert(lua_gettop(L) == top);
+}
+```
+- **操作**：
+  - `lua_pcall`调用函数，失败时推送错误消息。
+  - 成功时栈恢复，失败时需手动弹出错误。
+- **栈平衡**：
+  - 检查`status`，若出错则清理错误消息。
+  - 确保栈顶回到初始状态。
+
+---
+
+### 3. 如何保证栈平衡
+
+Lua C API通过以下机制和实践保证栈平衡：
+
+#### API设计
+1. **明确的参数和返回值处理**：
+   - `lua_call`和`lua_pcall`自动消耗参数，按`nresults`调整返回值。
+   - 如`lua_settable`消耗键值对，不改变栈顶。
+2. **栈检查**：
+   - `api_checknelems`确保栈上有足够元素。
+   - `lua_checkstack`预分配栈空间，避免溢出。
+
+#### 编程实践
+1. **记录初始栈顶**：
+   - 使用`lua_gettop`保存初始状态，最后恢复。
+   ```c
+   int top = lua_gettop(L);
+   // 操作
+   lua_settop(L, top);
+   ```
+2. **手动清理**：
+   - 对推送但不使用的值，使用`lua_pop`或`lua_remove`。
+   ```c
+   lua_pushnumber(L, 42);
+   lua_pop(L, 1); // 移除42
+   ```
+3. **检查返回值数量**：
+   - 调用函数时，指定`nresults`，避免多余返回值。
+   - 使用`LUA_MULTRET`时，需调整栈顶。
+4. **错误处理**：
+   - `lua_pcall`失败时，处理错误对象并清理。
+
+#### 示例：复杂操作的栈平衡
+```c
+void example_complex(lua_State *L) {
+    int top = lua_gettop(L);
+
+    // 创建表并设置值
+    lua_createtable(L, 0, 0);     // 栈: [..., {}]
+    lua_pushinteger(L, 1);        // 栈: [..., {}, 1]
+    lua_pushstring(L, "one");     // 栈: [..., {}, 1, "one"]
+    lua_settable(L, -3);          // 栈: [..., {}]
+
+    // 调用函数处理表
+    lua_getglobal(L, "pairs");    // 栈: [..., {}, pairs]
+    lua_pushvalue(L, -2);         // 栈: [..., {}, pairs, {}]
+    lua_call(L, 1, 3);            // 栈: [..., {}, iter, state, firstkey]
+
+    // 遍历并清理
+    while (lua_next(L, -3)) {     // 栈: [..., {}, iter, state, key, value]
+        lua_pop(L, 1);            // 栈: [..., {}, iter, state, key]
+    }                             // 栈: [..., {}, iter, state]
+
+    lua_pop(L, 3);                // 栈: [...]
+    lua_assert(lua_gettop(L) == top);
+}
+```
+- **栈平衡**：
+  - `lua_call`返回3个值（迭代器、状态、第一个键）。
+  - `lua_next`推送键值对，循环结束时清理。
+  - 最后弹出多余值，恢复初始栈顶。
+
+---
+
+### 4. 注意事项
+
+- **栈溢出**：调用`lua_checkstack`确保空间。
+- **伪索引**：如`LUA_REGISTRYINDEX`，不影响栈顶。
+- **垃圾回收**：推送对象后调用`luaC_checkGC`，但不影响栈平衡。
+- **多返回值**：使用`LUA_MULTRET`时，手动调整栈顶。
+
+---
+
+### 总结
+
+Lua C API的栈操作通过明确的API语义（如`lua_call`的自动清理）和编程实践（如记录栈顶、手动弹出）保证栈平衡。示例展示了从简单推送、函数调用到表操作的平衡方法。关键是理解每个API对栈的影响，并在操作结束时恢复初始状态。如果你有具体场景想分析，可以告诉我，我会进一步举例说明！
+
 # 参考资料
 
 1、
