@@ -42,3 +42,79 @@ Dokku 的发展历史可以追溯到 2013 年左右，以下是 Dokku 主要的�
 # 官网文档
 
 https://dokku.com/docs/getting-started/installation/
+
+# 安装
+
+```
+# 下载官方安装脚本
+wget -NP . https://dokku.com/install/v0.34.8/bootstrap.sh
+sudo DOKKU_TAG=v0.34.8 bash bootstrap.sh
+```
+
+
+
+```
+! If using virtualhost routing is desired (eg. my-app => my-app.dokku.me), set a global domain for your server:
+
+     dokku domains:set-global dokku.me
+```
+
+
+
+```
+cat ~/.ssh/id_rsa.pub | ssh root@SERVER_IP dokku ssh-keys:add admin
+# 添加后打印
+SHA256:P9Kf4xDy+zsP/hP+pvzOMxIxnOMLPZHQOx+TjSPzy0Q
+```
+
+
+
+```
+dokku domains:set-global SERVER_IP
+# SERVER_IP 这里是你服务器的ip或者域名。
+```
+
+- 若使用 IP 地址，可通过 `sslip.io` 生成动态子域名（如 `10.0.0.2.sslip.io`）
+
+
+
+通过插件安装数据库支持
+
+```
+# 安装 PostgreSQL 插件
+sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git
+
+# 创建数据库实例
+dokku postgres:create mydatabase
+dokku postgres:link mydatabase myapp
+```
+
+以nodejs的部署为例。
+
+```
+git clone https://github.com/heroku/node-js-sample.git
+cd node-js-sample
+git remote add dokku dokku@your-domain:test
+git push dokku master
+```
+
+我部署这个的时候，卡了很久，应该网络有问题。
+
+容器内部不能使用外面的代理？
+
+如果push的时候，中途取消。
+
+需要unlock，不如再次直接push会失败。
+
+```
+ssh dokku@xxx.sslip.io apps:unlock test
+```
+
+xxx是我的公网ip地址。
+
+最后还是推送完成了。得到这样的访问地址：
+
+http://test.xxx.sslip.io/
+
+所以这个test，就是应用的名字。
+
