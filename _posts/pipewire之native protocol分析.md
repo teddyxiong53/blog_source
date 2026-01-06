@@ -7,6 +7,58 @@ tags:
 
 --
 
+# deepwiki总结
+
+消息格式：16字节的header和可变的payload。
+
+16字节的header：
+
+```
+u32 id          4字节
+u8 opcode       1字节
+u24 size        3字节
+u32 seq         4字节  
+u32 n_fds       4字节  这个消息里的fd的数量。
+```
+
+包含的文件：
+
+```
+module-protocol-native.c  
+module-protocol-native/local-socket.c  
+module-protocol-native/portal-screencast.c  
+module-protocol-native/protocol-native.c  
+module-protocol-native/v0/protocol-native.c  
+module-protocol-native/protocol-footer.c  
+module-protocol-native/security-context.c  
+module-protocol-native/connection.c  
+```
+
+`pw_protocol_native_connection`结构体负责管理客户端和服务器之间的连接：
+
+```
+struct pw_protocol_native_connection {  
+    int fd; // 套接字  
+    struct spa_hook_list listener_list;  
+};
+```
+
+处理消息的buffer，在connection.c里定义。
+
+
+
+消息处理
+
+收到消息的时候，使用prepare_packet 解析header。
+
+处理消息的核心函数是process_messages
+
+PipeWire的原生协议支持扩展，通过`pw_protocol_add_marshal`函数注册新的接口：
+
+pw_protocol_new 这个是入口。
+
+
+
 # protocol-native.c总结
 
 这份代码是 PipeWire 的协议实现文件，

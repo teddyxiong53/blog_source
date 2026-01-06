@@ -930,6 +930,13 @@ wpexec test.lua
 
 可以打印，但是会卡住不会自动退出。
 
+要退出可以这样：
+
+```
+print('hello')  
+Script.finish_activation()
+```
+
 
 
 # debug 日志

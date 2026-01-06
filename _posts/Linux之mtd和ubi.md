@@ -71,7 +71,7 @@ ubi是一个单独的软件层，代码在drivers/mtd/ubi目录。
 
 ubi提供的volume概念是比mtd device更高层的抽象。
 
-
+实际使用：通常先通过fs/ubifs生成文件系统镜像，再通过fs/ubi将UBIFS镜像嵌入UBI卷，生成最终的NAND闪存镜像。
 
 **对ubi device的编程模型，跟mtd device的编程模型很像。**
 

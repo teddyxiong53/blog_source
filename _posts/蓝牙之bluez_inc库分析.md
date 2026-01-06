@@ -244,3 +244,13 @@ log_debug("MyTag", "hello %s", "world");
 
 
 
+在 BINC 库中，`Application` 表示一个 GATT 服务器应用程序，用于实现 BLE 外围设备的功能
+
+Application 是一个分层的数据结构，包含以下核心组件：
+
+- **Application**: 顶层容器，管理所有 GATT 服务 应用：顶
+- **LocalService 本地服务**: 表示 GATT 服务，每个服务有唯一的 UUID
+- **LocalCharacteristic 局部特征**: 表示服务中的特征值
+- **LocalDescriptor**: 表示特征值中的描述符
+
+根据文档，Application 主要用于创建外围设备，例如温度计设备：

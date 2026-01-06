@@ -18,6 +18,8 @@ https://hugh712.gitbooks.io/buildroot/content/
 
 https://bootlin.com/~thomas/site/buildroot/common-usage.html
 
+
+
 # 梳理过程
 
 写一个系列文章，把buildroot的编译过程梳理一下。
@@ -25,7 +27,7 @@ https://bootlin.com/~thomas/site/buildroot/common-usage.html
 先看顶层Makefile。
 
 ```
-1、export当前的版本，2012.05 
+1、export当前的版本，2012.05
 2、检查make版本，最低要求是3.81
 3、不允许在顶层make -j
 4、定义TOPDIR
@@ -153,8 +155,8 @@ hlxiong@hlxiong-VirtualBox:~/work2/buildroot/buildroot$ make qemu_x86_64_defconf
 ```
 hlxiong@hlxiong-VirtualBox:~/work2/buildroot/buildroot$ export https_proxy=http://localhost:8123
 hlxiong@hlxiong-VirtualBox:~/work2/buildroot/buildroot$ export http_proxy=http://localhost:8123
-hlxiong@hlxiong-VirtualBox:~/work2/buildroot/buildroot$ 
-hlxiong@hlxiong-VirtualBox:~/work2/buildroot/buildroot$ 
+hlxiong@hlxiong-VirtualBox:~/work2/buildroot/buildroot$
+hlxiong@hlxiong-VirtualBox:~/work2/buildroot/buildroot$
 hlxiong@hlxiong-VirtualBox:~/work2/buildroot/buildroot$ ping www.google.com
 PING www.google.com (14.215.177.38) 56(84) bytes of data.
 64 bytes from 14.215.177.38: icmp_seq=1 ttl=55 time=8.15 ms
@@ -309,12 +311,12 @@ adding dns 10.0.2.3
 OK
 
 Welcome to Buildroot
-buildroot login: 
+buildroot login:
 Welcome to Buildroot
 buildroot login: root
-# 
-# 
-# 
+#
+#
+#
 # ls
 # df -h
 Filesystem                Size      Used Available Use% Mounted on
@@ -456,7 +458,7 @@ eth0: adding default route via 10.0.2.2
 forked to background, child pid 810
 Starting dropbear sshd: OK
 Starting lighttpd: OK
-ssh-keygen: generating new host keys: RSA DSA ECDSA ED25519 
+ssh-keygen: generating new host keys: RSA DSA ECDSA ED25519
 Starting sshd: OK
 Starting NFS statd: OK
 Starting NFS services: exportfs: can't open /run/nfs/xtab for reading
@@ -478,9 +480,9 @@ make savedefconfig
 cp defconfig configs/<boardname>_defconfig
 ```
 
-Once you have a known working configuration, run `make savedefconfig`. This will generate a minimal `defconfig` file at the root of the Buildroot source tree. Move this file into the `configs/` directory, and rename it `<boardname>_defconfig`. 
+Once you have a known working configuration, run `make savedefconfig`. This will generate a minimal `defconfig` file at the root of the Buildroot source tree. Move this file into the `configs/` directory, and rename it `<boardname>_defconfig`.
 
-The recommended place to store this defconfig is `configs/<boardname>_defconfig`. If you follow this recommendation, the configuration will be listed in `make help` and can be set again by running `make <boardname>_defconfig`. 
+The recommended place to store this defconfig is `configs/<boardname>_defconfig`. If you follow this recommendation, the configuration will be listed in `make help` and can be set again by running `make <boardname>_defconfig`.
 
 
 
@@ -507,7 +509,7 @@ qemu-system-arm -M vexpress-a9 -smp 1 -m 256 -kernel output/images/zImage -dtb o
 buildroot提供了一个脚本来检查这个的。
 
 ```
- ./support/dependencies/dependencies.sh 
+ ./support/dependencies/dependencies.sh
 ```
 
 其实主要安装一下build-essential就差不多了。
@@ -557,7 +559,7 @@ help信息里。
 	import matplotlib as mpl
 	import numpy
 	这2句产生了import错误。
-	
+
 ```
 
 直接打开python。进入交互，import matplotlib，报错如下：
@@ -570,7 +572,7 @@ ImportError: No module named functools_lru_cache
 
 输出目录是：
 
-output/graphs/build.hist-name.pdf 
+output/graphs/build.hist-name.pdf
 
 没有太多可看的。
 
@@ -623,7 +625,7 @@ eval $(make -s printvars VARS=BUSYBOX_DEPENDENCIES QUOTED_VARS=YES)
 
 ```
 define list-defconfigs
-	
+
 endef
 ```
 
@@ -689,7 +691,7 @@ $(BUILD_DIR)/buildroot-config/auto.conf: $(BR2_CONFIG)
 ```
 $(BR2_CONFIG)
 	这个就是.config文件。
-	
+
 ```
 
 ## sdk
@@ -707,11 +709,11 @@ make sdk依赖于make world。
 在world的基础上，做了
 
 ```
-1、调用support/scripts/fix-rpath host 
+1、调用support/scripts/fix-rpath host
 2、调用support/scripts/fix-rpath staging
 3、安装一个脚本。
 	$(INSTALL) -m 755 $(TOPDIR)/support/misc/relocate-sdk.sh $(HOST_DIR)/relocate-sdk.sh
-	
+
 ```
 
 target-post-image
@@ -853,11 +855,11 @@ PACKAGES += $(DEPENDENCIES_HOST_PREREQ)
 
 staging：
 
-软链接到host/< tuple >/sysroot/ 
+软链接到host/< tuple >/sysroot/
 
 就是上面说到的文件系统需要的库等目录,方便查看
 
-target： 
+target：
 
 目录是用来制作rootfs的，
 
@@ -884,7 +886,7 @@ target：
 看doc/manual下面的txt文档。
 
 ```
-BR2_ROOTFS_OVERLAY 
+BR2_ROOTFS_OVERLAY
 	这个指向一个目录，我们可以放一些我们希望覆盖到目标文件系统的东西。
 BR2_ROOTFS_POST_BUILD_SCRIPT
 BR2_ROOTFS_POST_IMAGE_SCRIPT
@@ -922,7 +924,7 @@ package/
 		package1/
 			Config.in
 			package1.mk
-			
+
 ```
 
 如果是放在buildroot外面，则目录这样：
@@ -987,9 +989,9 @@ br2-external机制，就是把你的定制的东西，放在buildroot外面。
 
 ```
 BR2_EXTERNAL ?= /home/hlxiong/work2/buildroot/snapos/buildroot-external
-BR2_EXTERNAL_NAMES = 
-BR2_EXTERNAL_DIRS = 
-BR2_EXTERNAL_MKS = 
+BR2_EXTERNAL_NAMES =
+BR2_EXTERNAL_DIRS =
+BR2_EXTERNAL_MKS =
 
 BR2_EXTERNAL_NAMES += SNAPOS
 BR2_EXTERNAL_DIRS += /home/hlxiong/work2/buildroot/snapos/buildroot-external
@@ -1223,7 +1225,7 @@ $(eval $(host-generic-package))
 
 我喜欢文本方式的。
 
-make manual-text 
+make manual-text
 
 这个需要系统安装好些工具才行。
 
@@ -1343,16 +1345,16 @@ host-virtual-package
 另外还有几个以skeleton开头的package。
 
 ```
-skeleton/              
-skeleton-custom/       
-skeleton-init-common/  
-skeleton-init-none/    
-skeleton-init-openrc/  
-skeleton-init-systemd/ 
+skeleton/
+skeleton-custom/
+skeleton-init-common/
+skeleton-init-none/
+skeleton-init-openrc/
+skeleton-init-systemd/
 skeleton-init-sysv/  用的这个。
 ```
 
-当前配置的是这个Symbol: BR2_PACKAGE_SKELETON_INIT_SYSV [=y] 
+当前配置的是这个Symbol: BR2_PACKAGE_SKELETON_INIT_SYSV [=y]
 
 对应的配置是system/Config.in。
 
@@ -1362,7 +1364,7 @@ select BR2_PACKAGE_SKELETON_INIT_SYSV if BR2_INIT_BUSYBOX # 因为我们是busyb
 ```
 
 ```
-Init system (BusyBox)  ---> 
+Init system (BusyBox)  --->
 ```
 
 然后skeleton需要配置的信息：
@@ -1842,7 +1844,7 @@ xx为hash值。这样的方式在版本之间穿梭。
 	2.安装
 		1.host工具被安装到host目录
 		2.target工具及库被 安装到target目录和staging目录)
-	
+
 然后 进行打包
 ```
 
@@ -1875,10 +1877,10 @@ Installing to host directory
 Extracting
 	bzcat buildroot_topdir/dl/pcre/pcre-8.41.tar.bz2 | buildroot_topdir/output/host/bin/tar --strip-components=1 -C buildroot_topdir/output/build/pcre-8.41   -xf -
 Patching
-	Applying 0001-Kill-compatibility-bits.patch using patch: 
+	Applying 0001-Kill-compatibility-bits.patch using patch:
 	patching file pcrecpp.cc
-	
-	Applying 0002-Disable-C-unit-tests.patch using patch: 
+
+	Applying 0002-Disable-C-unit-tests.patch using patch:
 	patching file Makefile.in
 Updating config.sub and config.guess
 	将support/gnuconfig 下的 文件更新到 build目录
@@ -1930,17 +1932,17 @@ Generating common rootfs tarball
 	创建 output/build/buildroot-fs/fakeroot.fs 文件,并写命令到该文件
 	创建 output/build/buildroot-fs/device_table.txt
 	chmod a+x output/build/buildroot-fs/fakeroot.fs
-	output/host/bin/fakeroot -- output/build/buildroot-fs/fakeroot.fs 
-		// 执行这个脚本,这个脚本的作用 
-		//1.根据output/build/buildroot-fs/device_table.txt创建/dev下的dev文件 
+	output/host/bin/fakeroot -- output/build/buildroot-fs/fakeroot.fs
+		// 执行这个脚本,这个脚本的作用
+		//1.根据output/build/buildroot-fs/device_table.txt创建/dev下的dev文件
 		//2.打包output/build/buildroot-fs/target 为 output/build/buildroot-fs/rootfs.common.tar
-	
+
 Generating root filesystem image rootfs.squashfs
 	删除并创建文件夹output/build/buildroot-fs/squashfs
 	创建 output/build/buildroot-fs/squashfs/fakeroot 文件,并写命令到该文件
 	chmod a+x output/build/buildroot-fs/squashfs/fakeroot
 	output/host/bin/fakeroot -- output/build/buildroot-fs/squashfs/fakeroot
-		// 执行这个脚本,这个脚本的作用 
+		// 执行这个脚本,这个脚本的作用
 		//1.创建 output/build/buildroot-fs/squashfs/target
 		//2.解压 output/build/buildroot-fs/rootfs.common.tar 到 output/build/buildroot-fs/squashfs/target
 		//3.用output/host/bin/mksquashfs,将output/build/buildroot-fs/squashfs/target 做输入,输出output/images/rootfs.squashfs
@@ -1949,7 +1951,7 @@ Generating root filesystem image rootfs.tar
 	创建文件 output/build/buildroot-fs/tar/fakeroot并写命令到output/build/buildroot-fs/tar/fakeroot
 	chmod a+x output/build/buildroot-fs/tar/fakeroot
 	output/host/bin/fakeroot -- output/build/buildroot-fs/tar/fakeroot
-		// 执行这个脚本,这个脚本的作用 
+		// 执行这个脚本,这个脚本的作用
 		//1.创建 output/build/buildroot-fs/tar/target
 		//2.解压 output/build/buildroot-fs/rootfs.common.tar 到 output/build/buildroot-fs/tar/target
 		//3.cd output/build/buildroot-fs/tar/target ;find -print0 | LC_ALL=C sort -z | tar  -cf output/images/rootfs.tar --null --no-recursion -T - --numeric-owner
@@ -1965,7 +1967,7 @@ output/build 	// 编译目录,target和host的编译过程都在 output/build/xx
 				// rootfs 的打包也在该目录下进行
 output/host		// host 的安装目录,在output/build/host-yyy 下编译后,安装到 output/host目录
 output/images	// 最终的输出目录,我们要的所有最终文件都在这里
-output/staging -> output/host/gpt-buildroot-linux-gnu/sysroot 
+output/staging -> output/host/gpt-buildroot-linux-gnu/sysroot
 				// 包A在编译过程中需要链接包B的头文件和so.
 				// 则 需要创建一个目录来安装B的头文件和so
 output/target 	// target的安装目录,在output/build/xxx 下编译后,安装到 output/target目录
@@ -2137,11 +2139,11 @@ BR2_LINUX_KERNEL_PATCH 不受BR2_GLOBAL_PATCH_DIR节制。
 
 
 
- I generated the patch by going to `buildroot` repo, 
+ I generated the patch by going to `buildroot` repo,
 
-applying the changes to package, 
+applying the changes to package,
 
-committing them with git and creating a patch from the last commit: `git format-patch HEAD~1` 
+committing them with git and creating a patch from the last commit: `git format-patch HEAD~1`
 
 So the patch looks like this:
 
@@ -2176,9 +2178,9 @@ BR2_GLOBAL_PATCH_DIR 这个变量里，**用空格分开的多个目录**。
 # buildroot重要目录及变量名梳理
 
 ```
-TOPDIR 
+TOPDIR
 	buildroot根目录。
-BASEDIR 
+BASEDIR
 	output目录
 HOST_DIR
 	host目录。
@@ -2193,7 +2195,7 @@ STAGING_DIR
 	staging目录的位置。
 BR2_STATIC_LIBS
 	是否编译静态库。一般不编译的。
-	
+
 TARGET_MAKE_ENV
 TARGET_CFLAGS
 TARGET_LDFLAGS
@@ -2210,7 +2212,7 @@ XX_CONF_ENV
 	ALSA_LIB_CONF_ENV = \
 	CFLAGS="$(ALSA_LIB_CFLAGS)" \
 	LDFLAGS="$(TARGET_LDFLAGS) -lm"
-	
+
 ```
 
 这些变量，很多是在package\Makefile.in文件里定义的。
@@ -2245,11 +2247,11 @@ TARGET_MAKE_ENV = PATH=$(BR_PATH)
 TARGET_CONFIGURE_OPTS = \
 	$(TARGET_MAKE_ENV) \
 	AR="$(TARGET_AR)" \
-	
+
 HOST_MAKE_ENV = \
 	PATH=$(BR_PATH) \
 	PKG_CONFIG="$(PKG_CONFIG_HOST_BINARY)" \
-	
+
 HOST_CONFIGURE_OPTS = \
 	$(HOST_MAKE_ENV) \
 	AR="$(HOSTAR)" \
@@ -2967,7 +2969,7 @@ Buildroot 将采取一系列措施来**提高构建过程的可重现性**，
 以下是 `BR2_PACKAGE_BUSYBOX_SHOW_OTHERS` 选项的可能取值和含义：
 
 - 如果设置为 `y` 或 `yes`：表示包含额外的工具。这意味着 BusyBox 将包含更多的工具，以增强系统的功能。
-  
+
 - 如果设置为 `n` 或 `no`：表示不包含额外的工具。这将保持 BusyBox 的核心工具，以节省系统资源。
 
 - 如果设置为其他值：具体取决于 Buildroot 配置，可能会有不同的行为。
@@ -3073,7 +3075,7 @@ ifeq ($(LIBC),uclibc)
 ABI = gnueabi
 else
 ABI = eabi
-endif 
+endif
 ```
 
 `gnueabi` 和 `eabi` 都是与嵌入式系统和ARM架构相关的ABI（Application Binary Interface）的变种。==ABI定义了二进制接口的规范，包括函数调用规则、寄存器使用、参数传递方式等，==以确保不同组件（例如编译器、库和操作系统）之间的二进制兼容性。
@@ -3186,12 +3188,12 @@ endif
 FS_DIR = $(BUILD_DIR)/buildroot-fs
 ```
 
-# alsa-lib-clean-for-rebuild 
+# alsa-lib-clean-for-rebuild
 
 ```
-alsa-lib-clean-for-rebuild     
-alsa-lib-clean-for-reconfigure 
-alsa-lib-clean-for-reinstall  
+alsa-lib-clean-for-rebuild
+alsa-lib-clean-for-reconfigure
+alsa-lib-clean-for-reinstall
 ```
 
 这个倒有几个不同的clean。
@@ -3222,7 +3224,7 @@ TARGET_CONFIGURE_ARGS += --disable-feature2
 以ffmpeg的为例：
 
 ```
-package/ffmpeg/ffmpeg.mk:578: TARGET_CONFIGURE_ARGS:ac_cv_lbl_unaligned_fail=yes ac_cv_func_mmap_fixed_mapped=yes ac_cv_func_memcmp_working=yes ac_cv_have_decl_malloc=yes gl_cv_func_malloc_0_nonnull=yes ac_cv_func_malloc_0_nonnull=yes ac_cv_func_calloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes lt_cv_sys_lib_search_path_spec="" ac_cv_c_bigendian=no 
+package/ffmpeg/ffmpeg.mk:578: TARGET_CONFIGURE_ARGS:ac_cv_lbl_unaligned_fail=yes ac_cv_func_mmap_fixed_mapped=yes ac_cv_func_memcmp_working=yes ac_cv_have_decl_malloc=yes gl_cv_func_malloc_0_nonnull=yes ac_cv_func_malloc_0_nonnull=yes ac_cv_func_calloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes lt_cv_sys_lib_search_path_spec="" ac_cv_c_bigendian=no
 ```
 
 这一串看似复杂的字符串实际上是一组 configure 脚本中使用的变量设置。这些变量用于配置和检测系统环境，以确保软件包能够正确地构建和运行。让我解释其中一些关键的设置：
@@ -3467,10 +3469,10 @@ GLIBC_ADD_TOOLCHAIN_DEPENDENCY = NO
 依赖了：
 
 ```
-GLIBC_DEPENDENCIES = host-gcc-initial linux-headers 
+GLIBC_DEPENDENCIES = host-gcc-initial linux-headers
 ```
 
-## GLIBC_LIBS_LIB 
+## GLIBC_LIBS_LIB
 
 ```
 GLIBC_LIBS_LIB = \
@@ -3500,7 +3502,7 @@ GLIBC_LIBS_LIB = \
 
 这些库是构建和运行基于 glibc 的程序所需的一些基本库。在 Makefile 或类似的构建脚本中，这样的变量通常用于在编译和链接过程中指定共享库的路径。例如，可以将这些库文件包含在链接命令中，以确保程序在运行时能够正确加载这些库。
 
-# ADD_TOOLCHAIN_DEPENDENCY 
+# ADD_TOOLCHAIN_DEPENDENCY
 
 ```
 package/glibc/glibc.mk:34:GLIBC_ADD_TOOLCHAIN_DEPENDENCY = NO
@@ -3778,7 +3780,7 @@ target-finalize: ROOTFS=
 target-finalize: $(PACKAGES) $(TARGET_DIR) host-finalize
 	首先也是对target进行rsync。
 	然后调用TARGET_FINALIZE_HOOKS
-		
+
 host-finalize: $(PACKAGES) $(HOST_DIR) $(HOST_DIR_SYMLINK)
 	这个的操作就是对host进行rsync操作。
 
@@ -3791,18 +3793,18 @@ TARGET_FINALIZE_HOOKS展开有这些：
 ```
 make -s printvars  VARS='TARGET_FINALIZE_HOOKS' QUOTED_VARS=YES
 
-TARGET_FINALIZE_HOOKS='                                       
-BUSYBOX_SET_GETTY 
-SYSTEM_REMOUNT_ROOT_INITTAB 
-BUSYBOX_INSTALL_ADD_TO_SHELLS                                        LIBGLIB2_REMOVE_TARGET_SCHEMAS 
-LIBGLIB2_COMPILE_SCHEMAS                                          SKELETON_INIT_COMMON_SET_HOSTNAME 
-SKELETON_INIT_COMMON_SET_ISSUE 
-SKELETON_INIT_COMMON_SET_ROOT_PASSWD 
-SKELETON_INIT_COMMON_ADD_SH_TO_SHELLS 
-SKELETON_INIT_COMMON_SET_BIN_SH 
-SKELETON_INIT_SYSV_SWAPON_SWAPOFF_INITTAB           
-LINUX_RUN_DEPMOD 
-LINUX_RM_MODULES_ALIAS_BIN 
+TARGET_FINALIZE_HOOKS='
+BUSYBOX_SET_GETTY
+SYSTEM_REMOUNT_ROOT_INITTAB
+BUSYBOX_INSTALL_ADD_TO_SHELLS                                        LIBGLIB2_REMOVE_TARGET_SCHEMAS
+LIBGLIB2_COMPILE_SCHEMAS                                          SKELETON_INIT_COMMON_SET_HOSTNAME
+SKELETON_INIT_COMMON_SET_ISSUE
+SKELETON_INIT_COMMON_SET_ROOT_PASSWD
+SKELETON_INIT_COMMON_ADD_SH_TO_SHELLS
+SKELETON_INIT_COMMON_SET_BIN_SH
+SKELETON_INIT_SYSV_SWAPON_SWAPOFF_INITTAB
+LINUX_RUN_DEPMOD
+LINUX_RM_MODULES_ALIAS_BIN
 PURGE_LOCALES'
 ```
 
@@ -3819,7 +3821,11 @@ package/pkg-generic.mk
 1087:TARGET_FINALIZE_HOOKS += $$($(2)_TARGET_FINALIZE_HOOKS)
 ```
 
+# BR_BUILDING
 
+- `BR_BUILDING = y` 表示当前正在执行构建操作（而非清理、查询等操作）。
+- 软件包可以通过检查该变量来决定是否执行配置的完整性检查（例如：只有在真正构建时才检查依赖是否满足）。
+- 这提高了非构建操作（如 `make clean`）的执行效率，避免了不必要的检查。
 
 # 参考资料
 
