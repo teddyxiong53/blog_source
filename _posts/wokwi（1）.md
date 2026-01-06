@@ -123,7 +123,15 @@ https://wokwi.com/projects/356530577106394113
 
 
 
+# 自己定制一个芯片
 
+https://wokwi.com/projects/429751083103298561
+
+参考这个教程写的：https://docs.google.com/document/u/0/d/1wM7MTHtDus0j7P3BcJ_VE-ZeElnK84arpiW3qVIg0S4/mobilebasic?pli=1&tab=t.0&_immersive_translate_auto_translate=1#heading=h.kf24or4t82pq
+
+
+
+https://stackblitz.com/edit/avr8js-minimal?file=index.ts
 
 # 参考资料
 
